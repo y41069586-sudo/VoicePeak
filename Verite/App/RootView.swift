@@ -25,7 +25,7 @@ struct RootView: View {
             }
         }
         .veriteAnimation(value: onboardingComplete)
-        .tint(Theme.primaryBright)
+        .tint(Theme.primary)
         .task { SeedData.seedCatalogIfNeeded(modelContext) }
     }
 }

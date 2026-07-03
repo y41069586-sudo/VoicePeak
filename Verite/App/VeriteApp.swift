@@ -18,7 +18,7 @@ struct VeriteApp: App {
         WindowGroup {
             RootView()
                 .environment(appState)
-                .preferredColorScheme(.dark) // dark-mode-first, committed look
+                .preferredColorScheme(.light) // light-first white-and-blue, committed look
                 .applyLanguageOverride(languageOverride)
         }
         .modelContainer(modelContainer)

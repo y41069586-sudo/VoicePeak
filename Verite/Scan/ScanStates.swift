@@ -76,7 +76,7 @@ struct CaptureShutterButton: View {
                     .strokeBorder(enabled ? AnyShapeStyle(Theme.signature) : AnyShapeStyle(Theme.strokeSubtle), lineWidth: 4)
                     .frame(width: 78, height: 78)
                 Circle()
-                    .fill(enabled ? Theme.textPrimary : Theme.textSecondary.opacity(0.4))
+                    .fill(enabled ? Color.white : Color.white.opacity(0.4)) // shutter dot, over camera
                     .frame(width: 62, height: 62)
             }
             .blueGlow(Theme.primary, radius: enabled ? 20 : 0, opacity: enabled ? 0.5 : 0)
@@ -92,10 +92,10 @@ struct CountdownOverlay: View {
 
     var body: some View {
         ZStack {
-            Theme.bgBase.opacity(0.35).ignoresSafeArea()
+            Color.black.opacity(0.35).ignoresSafeArea()
             Text(verbatim: "\(value)")
                 .font(Typography.number(96, weight: .bold))
-                .foregroundStyle(Theme.textPrimary)
+                .foregroundStyle(.white) // over the darkened camera
                 .blueGlow(Theme.accent, radius: 30, opacity: 0.6)
                 .transition(.scale.combined(with: .opacity))
                 .id(value)

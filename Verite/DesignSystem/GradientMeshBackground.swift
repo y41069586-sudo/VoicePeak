@@ -59,13 +59,14 @@ struct GradientMeshBackground: View {
         let phase: Double       // 0...1 offset so blobs don't move in lockstep
     }
 
+    // Soft, low-opacity tints on the white-blue base — a calm, airy mesh.
     private static let blobs: [Blob] = [
         Blob(center: CGPoint(x: 0.20, y: 0.18), travel: CGPoint(x: 0.06, y: 0.05),
-             radius: 0.60, color: Theme.primary, opacity: 0.55, phase: 0.0),
+             radius: 0.60, color: Theme.primary, opacity: 0.16, phase: 0.0),
         Blob(center: CGPoint(x: 0.82, y: 0.30), travel: CGPoint(x: 0.05, y: 0.07),
-             radius: 0.52, color: Theme.accent, opacity: 0.32, phase: 0.35),
+             radius: 0.52, color: Theme.accent, opacity: 0.14, phase: 0.35),
         Blob(center: CGPoint(x: 0.55, y: 0.88), travel: CGPoint(x: 0.08, y: 0.05),
-             radius: 0.70, color: Theme.primaryBright, opacity: 0.28, phase: 0.68),
+             radius: 0.70, color: Theme.primaryBright, opacity: 0.12, phase: 0.68),
     ]
 }
 

@@ -37,9 +37,9 @@
 	<key>NSCameraUsageDescription</key>
 	<string>Vérité uses the camera to analyze your skin and scan product barcodes. Photos are processed on your device and never uploaded.</string>
 
-	<!-- Dark-mode-first committed look. -->
+	<!-- Light-first white-and-blue committed look. -->
 	<key>UIUserInterfaceStyle</key>
-	<string>Dark</string>
+	<string>Light</string>
 
 	<key>UILaunchScreen</key>
 	<dict>

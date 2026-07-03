@@ -128,7 +128,7 @@ struct BarcodeScannerView: View {
                     .blueGlow(Theme.accent, radius: 16, opacity: 0.5)
                 Text("catalog.scan.prompt")
                     .font(.subheadline.weight(.semibold))
-                    .foregroundStyle(.white)
+                    .foregroundStyle(Theme.textPrimary)
                     .padding(.horizontal, 14).padding(.vertical, 9)
                     .background(.ultraThinMaterial, in: Capsule())
                 Spacer()

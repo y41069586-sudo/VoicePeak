@@ -1,29 +1,29 @@
 import SwiftUI
 
 /// "Aesthetic Blue" — the single source of truth for Vérité's color language.
-/// Tokens mirror docs/DESIGN_SPEC.md. Dark-mode-first: these are the dark values,
-/// which the app uses as its committed look (`.preferredColorScheme(.dark)`).
+/// Tokens mirror docs/DESIGN_SPEC.md. Light-first white-and-blue: these are the
+/// committed light values (`.preferredColorScheme(.light)`).
 enum Theme {
 
-    // MARK: Backgrounds
-    static let bgBase      = Color(hex: 0x070B18) // near-black indigo
-    static let bgSurface   = Color(hex: 0x0E1526)
-    static let bgElevated  = Color(hex: 0x16203A)
-    static let strokeSubtle = Color(hex: 0x243350)
+    // MARK: Backgrounds (white-blue)
+    static let bgBase      = Color(hex: 0xEEF3FD) // soft blue-white app background
+    static let bgSurface   = Color(hex: 0xFFFFFF) // cards
+    static let bgElevated  = Color(hex: 0xF6F9FF)
+    static let strokeSubtle = Color(hex: 0xD7E1F3)
 
     // MARK: Brand
     static let primary       = Color(hex: 0x3E6BFF) // vivid blue
     static let primaryBright = Color(hex: 0x6E9BFF)
-    static let accent        = Color(hex: 0x5AD1FF) // soft cyan glow
+    static let accent        = Color(hex: 0x1CA3E6) // cyan-blue (legible on white)
 
-    // MARK: Semantic (honest flags)
-    static let success = Color(hex: 0x3FD8A4)
-    static let warning = Color(hex: 0xFFC24B)
-    static let danger  = Color(hex: 0xFF6B6B) // "this may irritate you"
+    // MARK: Semantic (honest flags — tuned for contrast on white)
+    static let success = Color(hex: 0x10A87E)
+    static let warning = Color(hex: 0xD9820A)
+    static let danger  = Color(hex: 0xE24857) // "this may irritate you"
 
     // MARK: Text
-    static let textPrimary   = Color(hex: 0xF3F6FF)
-    static let textSecondary = Color(hex: 0x9AA9C8)
+    static let textPrimary   = Color(hex: 0x0E1B34) // deep navy
+    static let textSecondary = Color(hex: 0x5D6E90) // muted blue-grey
 
     // MARK: Signature gradient (used sparingly on hero elements + CTAs)
     static let signature = LinearGradient(

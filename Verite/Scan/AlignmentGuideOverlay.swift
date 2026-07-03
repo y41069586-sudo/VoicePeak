@@ -15,9 +15,9 @@ struct AlignmentGuideOverlay: View {
             let ovalHeight = geo.size.height * 0.46
 
             ZStack {
-                // Focus vignette (darkens the edges, draws the eye to the face).
+                // Focus vignette (darkens the edges of the camera feed).
                 RadialGradient(
-                    colors: [.clear, Theme.bgBase.opacity(0.55)],
+                    colors: [.clear, Color.black.opacity(0.5)],
                     center: .center,
                     startRadius: ovalWidth * 0.35,
                     endRadius: geo.size.height * 0.62

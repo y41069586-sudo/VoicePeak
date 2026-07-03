@@ -1,24 +1,31 @@
 # Vérité — Design Spec ("Aesthetic Blue")
 
-A refined, editorial, deep-blue aesthetic: premium beauty-tech meets honest lab
-instrument. Dark-mode-first, ultra-smooth motion, 60fps everywhere.
+A refined, editorial, **white-and-blue** aesthetic: premium beauty-tech meets
+honest lab instrument. Light-first (committed `.preferredColorScheme(.light)`),
+ultra-smooth motion, 60fps everywhere. The only intentionally dark surfaces are
+the live camera screens (scan / barcode), where a dark feed and white controls
+are correct.
 
 ## Color tokens (`DesignSystem/Theme.swift`)
 
 | Token | Hex | Use |
 |---|---|---|
-| `bgBase` | `#070B18` | Near-black indigo — root background |
-| `bgSurface` | `#0E1526` | Surfaces, subtle fills |
-| `bgElevated` | `#16203A` | Elevated surfaces |
-| `strokeSubtle` | `#243350` | Hairline strokes / track fills |
-| `primary` | `#3E6BFF` | Vivid blue — primary brand |
-| `primaryBright` | `#6E9BFF` | Tint / accent color asset |
-| `accent` | `#5AD1FF` | Soft cyan glow |
-| `success` | `#3FD8A4` | Positive / "it works for you" |
-| `warning` | `#FFC24B` | Caution / streak flame |
-| `danger` | `#FF6B6B` | Honest "this may irritate you" flags |
-| `textPrimary` | `#F3F6FF` | Primary text |
-| `textSecondary` | `#9AA9C8` | Secondary text |
+| `bgBase` | `#EEF3FD` | Soft blue-white — root background |
+| `bgSurface` | `#FFFFFF` | Cards, surfaces |
+| `bgElevated` | `#F6F9FF` | Elevated / inset surfaces |
+| `strokeSubtle` | `#D7E1F3` | Hairline strokes / track fills |
+| `primary` | `#3E6BFF` | Vivid blue — primary brand (gradient CTAs use white text) |
+| `primaryBright` | `#6E9BFF` | Lighter brand tint |
+| `accent` | `#1CA3E6` | Cyan-blue — icons/glow, legible on white |
+| `success` | `#10A87E` | Positive / "it works for you" |
+| `warning` | `#D9820A` | Caution / streak flame |
+| `danger` | `#E24857` | Honest "this may irritate you" flags |
+| `textPrimary` | `#0E1B34` | Deep navy — primary text |
+| `textSecondary` | `#5D6E90` | Muted blue-grey — secondary text |
+
+The animated gradient mesh uses these brand tints at **low opacity** over the
+white base for a calm, airy feel. Frosted-glass cards (`.ultraThinMaterial`)
+render light. Text on the blue gradient (buttons, shutter) is white.
 
 **Signature gradient** `primary → accent`, used *sparingly*: scan ring, hero
 elements, primary CTAs. A soft blue bloom (`.blueGlow()`) on those same key

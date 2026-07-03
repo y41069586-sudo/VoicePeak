@@ -28,7 +28,7 @@ struct ProductDetailView: View {
                             Text("product.viewMatch")
                         }
                         .font(.headline)
-                        .foregroundStyle(Theme.textPrimary)
+                        .foregroundStyle(.white) // on the blue gradient capsule
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 16)
                         .background(Theme.signature, in: Capsule())
