@@ -1,0 +1,81 @@
+# Codemagic CI/CD — Vérité (iOS / SwiftUI)
+#
+# The repo ships an XcodeGen spec (project.yml) instead of a checked-in
+# .xcodeproj, so every workflow generates the project first, then builds.
+#
+# `ios-compile-check` is the fast, unsigned simulator build — the green/red
+# "does it compile?" signal. Add signing + TestFlight later once you have an
+# Apple Developer account wired into Codemagic (see the commented workflow).
+
+workflows:
+  ios-compile-check:
+    name: Vérité · Compile check (simulator, unsigned)
+    instance_type: mac_mini_m2
+    max_build_duration: 45
+    environment:
+      xcode: latest
+      vars:
+        XCODE_PROJECT: "Verite.xcodeproj"
+        XCODE_SCHEME: "Verite"
+    triggering:
+      events:
+        - push
+      branch_patterns:
+        - pattern: "claude/*"
+          include: true
+    scripts:
+      - name: Install XcodeGen
+        script: |
+          brew install xcodegen
+      - name: Generate Xcode project
+        script: |
+          xcodegen generate --spec project.yml
+      - name: Build for iOS Simulator (no code signing)
+        script: |
+          set -o pipefail
+          xcodebuild build \
+            -project "$XCODE_PROJECT" \
+            -scheme "$XCODE_SCHEME" \
+            -configuration Debug \
+            -destination 'generic/platform=iOS Simulator' \
+            CODE_SIGNING_ALLOWED=NO
+    artifacts:
+      - $HOME/Library/Developer/Xcode/DerivedData/**/Build/Products/**/*.app
+
+  # ----------------------------------------------------------------------------
+  # Signed device build → TestFlight. Enable once an Apple Developer account and
+  # an App Store Connect API key integration are configured in the Codemagic UI.
+  # Uncomment and fill in `app_store_connect` / `ios_signing` to use it.
+  # ----------------------------------------------------------------------------
+  # ios-testflight:
+  #   name: Vérité · TestFlight
+  #   instance_type: mac_mini_m2
+  #   max_build_duration: 60
+  #   integrations:
+  #     app_store_connect: CodemagicAppStoreKey   # name of your API key integration
+  #   environment:
+  #     xcode: latest
+  #     ios_signing:
+  #       distribution_type: app_store
+  #       bundle_identifier: com.verite.app
+  #     vars:
+  #       XCODE_PROJECT: "Verite.xcodeproj"
+  #       XCODE_SCHEME: "Verite"
+  #   scripts:
+  #     - name: Install XcodeGen
+  #       script: brew install xcodegen
+  #     - name: Generate Xcode project
+  #       script: xcodegen generate --spec project.yml
+  #     - name: Set up signing
+  #       script: xcode-project use-profiles
+  #     - name: Build & archive
+  #       script: |
+  #         xcode-project build-ipa \
+  #           --project "$XCODE_PROJECT" \
+  #           --scheme "$XCODE_SCHEME"
+  #   artifacts:
+  #     - build/ios/ipa/*.ipa
+  #   publishing:
+  #     app_store_connect:
+  #       auth: integration
+  #       submit_to_testflight: true

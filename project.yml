@@ -38,3 +38,19 @@ targets:
         # require no linked frameworks until their milestones are enabled.
     info:
       path: Verite/Resources/Info.plist
+
+schemes:
+  Verite:
+    build:
+      targets:
+        Verite: all
+    run:
+      config: Debug
+    test:
+      config: Debug
+    profile:
+      config: Release
+    analyze:
+      config: Debug
+    archive:
+      config: Release

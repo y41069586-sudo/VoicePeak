@@ -24,6 +24,24 @@ open Verite.xcodeproj
 Select an iPhone simulator (iOS 17+) and run. On first launch you'll see
 onboarding → tap **Get started** → the dashboard.
 
+## Building on Codemagic (CI)
+
+This repo includes **`codemagic.yaml`** so the app builds on Codemagic's cloud
+macOS machines — which is where the real compile happens (no Mac needed locally).
+
+- **`ios-compile-check`** workflow: installs XcodeGen, runs `xcodegen generate`,
+  and does an **unsigned iOS Simulator build** — the fast green/red "does it
+  compile?" signal. It auto-triggers on pushes to `claude/*` branches.
+- A commented **`ios-testflight`** workflow is included as a starting point for
+  signed device builds → TestFlight. Enable it once you've connected an Apple
+  Developer account + App Store Connect API key in the Codemagic UI, and set up
+  `ios_signing` / `app_store_connect` there.
+
+In Codemagic: add this repository, and it will pick up `codemagic.yaml`
+automatically. The first run of `ios-compile-check` is the quickest way to
+surface any environment-specific issues the Linux authoring environment couldn't
+catch. Paste any build errors back and they'll get fixed.
+
 ## Signing
 
 `project.yml` uses automatic signing with bundle id `com.verite.app`. In Xcode →
