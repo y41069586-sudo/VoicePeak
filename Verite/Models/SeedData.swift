@@ -26,6 +26,16 @@ enum SeedData {
         context.insert(SavingsLedger(totalSaved: 92, currencyCode: "EUR", failedTestsCount: 2))
     }
 
+    /// Seed the bundled starter catalog into the real store on first launch so the
+    /// app is functional offline immediately (§14). No-op once any product exists.
+    @MainActor
+    static func seedCatalogIfNeeded(_ context: ModelContext) {
+        let existing = (try? context.fetchCount(FetchDescriptor<Product>())) ?? 0
+        guard existing == 0 else { return }
+        for product in starterCatalog { context.insert(product) }
+        try? context.save()
+    }
+
     /// A tiny, source-attributed starter catalog (INCI only — imagery is added at
     /// runtime from legal/open sources, never bundled from brand assets).
     /// Computed so each call yields fresh, uninserted model instances.

@@ -5,6 +5,7 @@ import SwiftData
 /// main tab experience. The animated gradient mesh sits behind everything.
 struct RootView: View {
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(\.modelContext) private var modelContext
     @Query private var profiles: [UserProfile]
 
     private var onboardingComplete: Bool {
@@ -25,6 +26,7 @@ struct RootView: View {
         }
         .veriteAnimation(value: onboardingComplete)
         .tint(Theme.primaryBright)
+        .task { SeedData.seedCatalogIfNeeded(modelContext) }
     }
 }
 

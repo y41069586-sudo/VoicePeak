@@ -9,9 +9,11 @@ final class Product {
     var barcode: String?
     var name: String
     var brand: String
-    /// Local filename of a cached, legally-sourced image (Open Beauty Facts /
-    /// affiliate / user-supplied). Never a scraped remote asset baked in.
+    /// Local filename of a cached, legally-sourced image (affiliate / user-supplied).
     var imageFilename: String?
+    /// Open-licensed remote image URL (Open Beauty Facts). Disk-cached on load;
+    /// never a scraped brand/retailer asset.
+    var imageURLString: String?
     /// Raw INCI ingredient list, in label order.
     var inci: [String]
     var source: ProductSource
@@ -26,6 +28,7 @@ final class Product {
         name: String,
         brand: String,
         imageFilename: String? = nil,
+        imageURLString: String? = nil,
         inci: [String] = [],
         source: ProductSource = .seed,
         profileJSON: String? = nil,
@@ -36,6 +39,7 @@ final class Product {
         self.name = name
         self.brand = brand
         self.imageFilename = imageFilename
+        self.imageURLString = imageURLString
         self.inci = inci
         self.source = source
         self.profileJSON = profileJSON

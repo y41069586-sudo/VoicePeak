@@ -86,12 +86,28 @@ enum TimeOfDay: String, Codable, CaseIterable, Identifiable, Sendable {
 enum IngredientClass: String, Codable, CaseIterable, Sendable {
     case active, irritant, fragrance, alcohol, comedogenic, humectant, emollient, other
     var localizationKey: LocalizedStringKey { "ingredient.class.\(rawValue)" }
+    /// Localized plain-language "what this type does".
+    var descriptionKey: LocalizedStringKey { "ingredient.class.\(rawValue).desc" }
 
     /// Whether this class is an honesty *flag* worth surfacing risk-first.
     var isRiskFlag: Bool {
         switch self {
         case .irritant, .fragrance, .alcohol, .comedogenic: return true
         default: return false
+        }
+    }
+
+    /// PillTag tone used when this class is shown as a chip.
+    var tone: PillTag.Tone {
+        switch self {
+        case .active:      return .info
+        case .irritant:    return .danger
+        case .fragrance:   return .warning
+        case .alcohol:     return .warning
+        case .comedogenic: return .warning
+        case .humectant:   return .success
+        case .emollient:   return .success
+        case .other:       return .neutral
         }
     }
 }
