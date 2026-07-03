@@ -21,6 +21,9 @@ final class HalfFaceTest {
     var perSideDeltas: [String: Double]
     /// 0...1 confidence derived from capture quality + number of scans.
     var confidence: Double
+    /// Optional product price the user entered, for the money-saved counter on fail.
+    var price: Double?
+    var currencyCode: String
     var createdAt: Date
 
     init(
@@ -34,6 +37,8 @@ final class HalfFaceTest {
         status: TestStatus = .running,
         perSideDeltas: [String: Double] = [:],
         confidence: Double = 0,
+        price: Double? = nil,
+        currencyCode: String = Locale.current.currency?.identifier ?? "EUR",
         createdAt: Date = .now
     ) {
         self.id = id
@@ -46,6 +51,8 @@ final class HalfFaceTest {
         self.status = status
         self.perSideDeltas = perSideDeltas
         self.confidence = confidence
+        self.price = price
+        self.currencyCode = currencyCode
         self.createdAt = createdAt
     }
 

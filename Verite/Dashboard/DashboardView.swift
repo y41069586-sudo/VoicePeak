@@ -103,18 +103,26 @@ struct DashboardView: View {
     // MARK: Active test
 
     private func activeTestCard(_ test: HalfFaceTest) -> some View {
-        GlassCard {
-            VStack(alignment: .leading, spacing: 10) {
-                HStack {
-                    PillTag(titleKey: "dashboard.test.active", systemImage: "flask.fill", tone: .info)
-                    Spacer()
-                    Text(test.status.localizationKey)
-                        .font(.caption.weight(.semibold))
-                        .foregroundStyle(Theme.textSecondary)
+        NavigationLink {
+            HalfFaceTestDetailView(test: test)
+        } label: {
+            GlassCard {
+                VStack(alignment: .leading, spacing: 10) {
+                    HStack {
+                        PillTag(titleKey: "dashboard.test.active", systemImage: "flask.fill", tone: .info)
+                        Spacer()
+                        Text(test.status.localizationKey)
+                            .font(.caption.weight(.semibold))
+                            .foregroundStyle(Theme.textSecondary)
+                        Image(systemName: "chevron.right")
+                            .font(.footnote.weight(.semibold))
+                            .foregroundStyle(Theme.textSecondary)
+                    }
+                    ScoreBar(labelKey: "dashboard.test.confidence", value: test.confidence, tone: .info)
                 }
-                ScoreBar(labelKey: "dashboard.test.confidence", value: test.confidence, tone: .info)
             }
         }
+        .buttonStyle(.plain)
     }
 
     // MARK: Quick actions
@@ -124,6 +132,22 @@ struct DashboardView: View {
             GlassActionCard(action: { appState.selectedTab = .catalog }) {
                 actionLabel("dashboard.action.analyzeProduct", "sparkles.rectangle.stack")
             }
+            NavigationLink {
+                TestsListView()
+            } label: {
+                HStack {
+                    actionLabel("dashboard.action.tests", "flask")
+                    Spacer(minLength: 8)
+                    Image(systemName: "chevron.right")
+                        .font(.footnote.weight(.semibold))
+                        .foregroundStyle(Theme.textSecondary)
+                }
+                .padding(18)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 22, style: .continuous))
+                .overlay(RoundedRectangle(cornerRadius: 22, style: .continuous).strokeBorder(Theme.strokeSubtle, lineWidth: 1))
+            }
+            .buttonStyle(.plain)
             GlassActionCard(action: { appState.selectedTab = .routine }) {
                 actionLabel("dashboard.action.provenRoutine", "checklist")
             }

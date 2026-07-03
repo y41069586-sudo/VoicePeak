@@ -19,6 +19,24 @@ struct ScanAnalysis: Sendable {
     }
 }
 
+/// Per-side attribute estimates for the half-face test. Each side is later
+/// compared against *its own* Day-0 baseline — never left-vs-right absolute.
+struct SideAnalysis: Sendable {
+    var left: [SkinAttribute: Double]
+    var right: [SkinAttribute: Double]
+    var faceFound: Bool
+
+    static let empty = SideAnalysis(left: [:], right: [:], faceFound: false)
+
+    func attributes(for side: FaceSide) -> [SkinAttribute: Double] {
+        side == .left ? left : right
+    }
+
+    func scores(for side: FaceSide) -> [String: Double] {
+        Dictionary(uniqueKeysWithValues: attributes(for: side).map { ($0.key.rawValue, $0.value) })
+    }
+}
+
 /// One attribute's change from the user's own Day-0 baseline. Direction is
 /// interpreted honestly: for most attributes lower is better; hydration is the
 /// exception (see `SkinAttribute.lowerIsBetter`).

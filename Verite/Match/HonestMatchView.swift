@@ -14,7 +14,7 @@ struct HonestMatchView: View {
     @Query private var allProducts: [Product]
     @Query private var routineItems: [RoutineItem]
 
-    @State private var showTestNote = false
+    @State private var showTestSetup = false
 
     private var userProfile: UserProfile? { profiles.first }
     private var productProfile: ProductProfile { IngredientEngine.profile(for: product) }
@@ -31,10 +31,8 @@ struct HonestMatchView: View {
         .navigationTitle("match.title")
         .navigationBarTitleDisplayMode(.inline)
         .background(GradientMeshBackground())
-        .alert("match.cta.test", isPresented: $showTestNote) {
-            Button("common.done", role: .cancel) {}
-        } message: {
-            Text("match.cta.testNote")
+        .sheet(isPresented: $showTestSetup) {
+            HalfFaceTestSetupView(product: product)
         }
     }
 
@@ -172,7 +170,7 @@ struct HonestMatchView: View {
 
     private var testCTA: some View {
         PrimaryButton(titleKey: "match.cta.test", systemImage: "flask.fill") {
-            showTestNote = true
+            showTestSetup = true
         }
     }
 
