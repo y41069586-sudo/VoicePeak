@@ -12,6 +12,10 @@ struct DashboardView: View {
     @Query private var ledgers: [SavingsLedger]
 
     private var hasBaseline: Bool { scans.contains(where: { $0.isBaseline }) }
+    private var fullScanCount: Int { scans.filter { $0.side == .full }.count }
+    private var highlights: [AttributeChange] { BaselineTracker.highlights(scans) }
+    private var changeConfidence: Double { BaselineTracker.confidence(scans) }
+    private var reliableVerdict: Bool { BaselineTracker.hasReliableVerdict(scans) }
     private var activeTest: HalfFaceTest? {
         tests.first(where: { $0.status == .running || $0.status == .verdictReady })
     }
@@ -60,13 +64,7 @@ struct DashboardView: View {
                     .font(Typography.display(26))
                     .foregroundStyle(Theme.textPrimary)
 
-                if hasBaseline {
-                    // Real change-vs-baseline readouts land with the analysis
-                    // engine (Milestone 3); this is the frame they render into.
-                    Text("dashboard.snapshot.tracking")
-                        .font(.subheadline)
-                        .foregroundStyle(Theme.textSecondary)
-                } else {
+                if !hasBaseline {
                     Text("dashboard.snapshot.noBaseline")
                         .font(.subheadline)
                         .foregroundStyle(Theme.textSecondary)
@@ -74,6 +72,29 @@ struct DashboardView: View {
                         appState.selectedTab = .scan
                     }
                     .padding(.top, 4)
+                } else if fullScanCount < AnalysisConfidence.minScansForChange {
+                    Text("dashboard.snapshot.onlyBaseline")
+                        .font(.subheadline)
+                        .foregroundStyle(Theme.textSecondary)
+                } else if reliableVerdict {
+                    Text("dashboard.snapshot.summaryTitle")
+                        .font(.footnote.weight(.semibold))
+                        .foregroundStyle(Theme.textSecondary)
+                    if highlights.isEmpty {
+                        Text("dashboard.snapshot.stable")
+                            .font(.subheadline)
+                            .foregroundStyle(Theme.textSecondary)
+                    } else {
+                        ForEach(highlights) { AttributeChangeRow(change: $0) }
+                    }
+                    ScoreBar(labelKey: "result.confidence", value: changeConfidence, tone: .success)
+                        .padding(.top, 2)
+                } else {
+                    Text("dashboard.snapshot.notEnough")
+                        .font(.subheadline)
+                        .foregroundStyle(Theme.textSecondary)
+                    ScoreBar(labelKey: "result.confidence", value: changeConfidence, tone: .warning)
+                        .padding(.top, 2)
                 }
             }
         }

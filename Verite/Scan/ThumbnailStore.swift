@@ -36,6 +36,14 @@ enum ThumbnailStore {
 }
 
 extension UIImage {
+    /// Redraw the image with `.up` orientation so downstream CGImage/Vision work
+    /// sees pixels in the expected order (front-camera stills carry EXIF orientation).
+    func normalizedUp() -> UIImage {
+        guard imageOrientation != .up else { return self }
+        let renderer = UIGraphicsImageRenderer(size: size)
+        return renderer.image { _ in draw(in: CGRect(origin: .zero, size: size)) }
+    }
+
     /// Aspect-preserving downscale so the longest side is at most `maxDimension`.
     func downscaled(to maxDimension: CGFloat) -> UIImage {
         let longest = max(size.width, size.height)

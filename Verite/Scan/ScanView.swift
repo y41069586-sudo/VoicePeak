@@ -13,6 +13,7 @@ struct ScanView: View {
     @Query private var streaks: [Streak]
 
     @StateObject private var camera = CameraController()
+    @State private var engine = SkinAnalysisEngine()
 
     @State private var authStatus = CameraPermission.status
     @State private var isCapturing = false
@@ -24,6 +25,7 @@ struct ScanView: View {
         let image: UIImage
         let isBaseline: Bool
         let quality: Double
+        let analysis: ScanAnalysis
     }
 
     private var isFirstBaseline: Bool { !scans.contains { $0.isBaseline } }
@@ -45,9 +47,14 @@ struct ScanView: View {
             .toolbarBackground(.hidden, for: .navigationBar)
         }
         .fullScreenCover(item: $captured) { cap in
-            ScanCapturedView(thumbnail: cap.image, isBaseline: cap.isBaseline, quality: cap.quality) {
+            ScanResultView(image: cap.image,
+                           analysis: cap.analysis,
+                           isBaseline: cap.isBaseline,
+                           captureQuality: cap.quality,
+                           scans: scans) {
+                let faceFound = cap.analysis.faceFound
                 captured = nil
-                appState.selectedTab = .today
+                if faceFound { appState.selectedTab = .today }
             }
         }
     }
@@ -126,27 +133,43 @@ struct ScanView: View {
             countdown = nil
             Haptics.fire(.capture)
             if let image = await camera.capture() {
-                saveScan(image)
+                await saveScan(image)
             }
             isCapturing = false
         }
     }
 
-    private func saveScan(_ image: UIImage) {
-        let filename = ThumbnailStore.save(image)
+    private func saveScan(_ image: UIImage) async {
+        let quality = camera.quality.overall
         let baseline = isFirstBaseline
-        let scan = Scan(
-            captureQuality: camera.quality.overall,
-            isBaseline: baseline,
-            side: .full,
-            thumbnailFilename: filename
-        )
-        modelContext.insert(scan)
-        updateStreak()
-        try? modelContext.save()
 
-        captured = CapturedScan(image: image, isBaseline: baseline, quality: camera.quality.overall)
-        Haptics.fire(.verdictReveal)
+        // Analyze the capture on a background task (Vision + CV metrics).
+        let analysis: ScanAnalysis
+        if let cgImage = image.normalizedUp().cgImage {
+            analysis = await engine.analyze(cgImage: cgImage, captureQuality: quality)
+        } else {
+            analysis = .empty
+        }
+
+        // Only persist a scan when a face was actually read.
+        if analysis.faceFound {
+            let filename = ThumbnailStore.save(image)
+            let scan = Scan(
+                captureQuality: quality,
+                attributeScores: analysis.attributeScores,
+                isBaseline: baseline,
+                side: .full,
+                thumbnailFilename: filename
+            )
+            modelContext.insert(scan)
+            updateStreak()
+            try? modelContext.save()
+            Haptics.fire(.verdictReveal)
+        } else {
+            Haptics.fire(.riskFlagged)
+        }
+
+        captured = CapturedScan(image: image, isBaseline: baseline, quality: quality, analysis: analysis)
     }
 
     private func updateStreak() {
