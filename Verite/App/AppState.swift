@@ -1,0 +1,38 @@
+import SwiftUI
+
+/// Global, observable app state injected into the environment. Kept deliberately
+/// small — persistent data lives in SwiftData; this holds transient UI/session state.
+@Observable
+final class AppState {
+    /// Currently selected main tab.
+    var selectedTab: AppTab = .today
+
+    /// Language override chosen in Settings (nil = follow the system locale).
+    /// Persisted separately via `@AppStorage("languageOverride")` in Settings.
+    var languageOverride: String?
+
+    let featureFlags: FeatureFlags
+
+    init(featureFlags: FeatureFlags = .default) {
+        self.featureFlags = featureFlags
+    }
+}
+
+/// The six primary destinations. Titles + icons are localized via the catalog.
+enum AppTab: String, CaseIterable, Identifiable {
+    case today, scan, catalog, routine, progress, settings
+    var id: String { rawValue }
+
+    var titleKey: LocalizedStringKey { "tab.\(rawValue)" }
+
+    var systemImage: String {
+        switch self {
+        case .today:    return "sun.max"
+        case .scan:     return "camera.viewfinder"
+        case .catalog:  return "sparkles.rectangle.stack"
+        case .routine:  return "checklist"
+        case .progress: return "chart.line.uptrend.xyaxis"
+        case .settings: return "gearshape"
+        }
+    }
+}

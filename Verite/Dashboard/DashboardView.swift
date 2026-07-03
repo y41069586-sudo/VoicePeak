@@ -1,0 +1,156 @@
+import SwiftUI
+import SwiftData
+
+/// "Today" — the aesthetic home. Shows a skin snapshot (change vs baseline), any
+/// active half-face test, quick actions, and the money-saved counter. Renders
+/// honest empty states until there's real data (no baseline yet, no active test).
+struct DashboardView: View {
+    @Environment(AppState.self) private var appState
+    @Query private var scans: [Scan]
+    @Query private var tests: [HalfFaceTest]
+    @Query private var streaks: [Streak]
+    @Query private var ledgers: [SavingsLedger]
+
+    private var hasBaseline: Bool { scans.contains(where: { $0.isBaseline }) }
+    private var activeTest: HalfFaceTest? {
+        tests.first(where: { $0.status == .running || $0.status == .verdictReady })
+    }
+    private var streak: Streak? { streaks.first }
+    private var ledger: SavingsLedger? { ledgers.first }
+
+    var body: some View {
+        NavigationStack {
+            ScrollView {
+                VStack(spacing: 16) {
+                    snapshotCard
+                    if let activeTest { activeTestCard(activeTest) }
+                    actionGrid
+                    savingsCard
+                    DisclaimerBanner(style: .short)
+                }
+                .padding(20)
+            }
+            .scrollIndicators(.hidden)
+            .navigationTitle("tab.today")
+            .toolbar {
+                ToolbarItem(placement: .topBarTrailing) {
+                    if let streak, streak.current > 0 {
+                        Label {
+                            Text(verbatim: "\(streak.current)")
+                        } icon: {
+                            Image(systemName: "flame.fill")
+                        }
+                        .font(.subheadline.weight(.semibold))
+                        .foregroundStyle(Theme.warning)
+                        .accessibilityLabel(Text("dashboard.streak.accessibility"))
+                        .accessibilityValue(Text(verbatim: "\(streak.current)"))
+                    }
+                }
+            }
+            .toolbarBackground(.hidden, for: .navigationBar)
+        }
+    }
+
+    // MARK: Skin snapshot
+
+    private var snapshotCard: some View {
+        GlassCard {
+            VStack(alignment: .leading, spacing: 12) {
+                Text("dashboard.snapshot.title")
+                    .font(Typography.display(26))
+                    .foregroundStyle(Theme.textPrimary)
+
+                if hasBaseline {
+                    // Real change-vs-baseline readouts land with the analysis
+                    // engine (Milestone 3); this is the frame they render into.
+                    Text("dashboard.snapshot.tracking")
+                        .font(.subheadline)
+                        .foregroundStyle(Theme.textSecondary)
+                } else {
+                    Text("dashboard.snapshot.noBaseline")
+                        .font(.subheadline)
+                        .foregroundStyle(Theme.textSecondary)
+                    PrimaryButton(titleKey: "dashboard.action.scanNow", systemImage: "camera.viewfinder") {
+                        appState.selectedTab = .scan
+                    }
+                    .padding(.top, 4)
+                }
+            }
+        }
+    }
+
+    // MARK: Active test
+
+    private func activeTestCard(_ test: HalfFaceTest) -> some View {
+        GlassCard {
+            VStack(alignment: .leading, spacing: 10) {
+                HStack {
+                    PillTag(titleKey: "dashboard.test.active", systemImage: "flask.fill", tone: .info)
+                    Spacer()
+                    Text(test.status.localizationKey)
+                        .font(.caption.weight(.semibold))
+                        .foregroundStyle(Theme.textSecondary)
+                }
+                ScoreBar(labelKey: "dashboard.test.confidence", value: test.confidence, tone: .info)
+            }
+        }
+    }
+
+    // MARK: Quick actions
+
+    private var actionGrid: some View {
+        VStack(spacing: 12) {
+            GlassActionCard(action: { appState.selectedTab = .catalog }) {
+                actionLabel("dashboard.action.analyzeProduct", "sparkles.rectangle.stack")
+            }
+            GlassActionCard(action: { appState.selectedTab = .routine }) {
+                actionLabel("dashboard.action.provenRoutine", "checklist")
+            }
+        }
+    }
+
+    private func actionLabel(_ key: LocalizedStringKey, _ icon: String) -> some View {
+        HStack(spacing: 12) {
+            Image(systemName: icon)
+                .foregroundStyle(Theme.accent)
+                .frame(width: 26)
+            Text(key)
+                .font(.headline)
+                .foregroundStyle(Theme.textPrimary)
+        }
+    }
+
+    // MARK: Money saved
+
+    private var savingsCard: some View {
+        GlassCard {
+            HStack {
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("dashboard.savings.title")
+                        .font(.subheadline)
+                        .foregroundStyle(Theme.textSecondary)
+                    Text(savedString)
+                        .font(Typography.number(30))
+                        .foregroundStyle(Theme.success)
+                }
+                Spacer()
+                Image(systemName: "eurosign.circle")
+                    .font(.system(size: 34, weight: .light))
+                    .foregroundStyle(Theme.success.opacity(0.7))
+            }
+        }
+    }
+
+    private var savedString: String {
+        let amount = ledger?.totalSaved ?? 0
+        let code = ledger?.currencyCode ?? (Locale.current.currency?.identifier ?? "EUR")
+        return amount.formatted(.currency(code: code).precision(.fractionLength(0)))
+    }
+}
+
+#Preview {
+    DashboardView()
+        .modelContainer(Persistence.previewContainer)
+        .environment(AppState())
+        .preferredColorScheme(.dark)
+}

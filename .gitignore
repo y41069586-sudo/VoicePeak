@@ -1,0 +1,25 @@
+# Xcode / Swift
+build/
+DerivedData/
+*.xcodeproj/xcuserdata/
+*.xcworkspace/xcuserdata/
+*.xcuserstate
+*.xcscmblueprint
+
+# XcodeGen output (regenerate with `xcodegen generate`)
+Verite.xcodeproj/
+
+# Swift Package Manager
+.build/
+.swiftpm/
+Package.resolved
+
+# macOS
+.DS_Store
+
+# Fonts / assets that must be added locally (see SETUP.md)
+# (custom display font binaries are NOT committed — licensing lives with the user)
+
+# Secrets (never commit)
+Secrets.xcconfig
+*.env
