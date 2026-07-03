@@ -19,12 +19,24 @@ struct ProductDetailView: View {
                     if !profile.actives.isEmpty { activesCard }
                     ingredientList
                 }
+                if !profile.isEmpty {
+                    NavigationLink {
+                        HonestMatchView(product: product)
+                    } label: {
+                        HStack(spacing: 8) {
+                            Image(systemName: "person.crop.circle.badge.checkmark")
+                            Text("product.viewMatch")
+                        }
+                        .font(.headline)
+                        .foregroundStyle(Theme.textPrimary)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 16)
+                        .background(Theme.signature, in: Capsule())
+                        .blueGlow(Theme.primary, radius: 22, opacity: 0.45)
+                    }
+                    .buttonStyle(.plain)
+                }
                 DisclaimerBanner(style: .short)
-                Text("product.matchFooter")
-                    .font(.footnote)
-                    .foregroundStyle(Theme.textSecondary)
-                    .multilineTextAlignment(.center)
-                    .padding(.top, 2)
             }
             .padding(20)
         }
