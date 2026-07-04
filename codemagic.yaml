@@ -83,7 +83,15 @@ workflows:
       - name: Fetch code-signing files
         script: |
           set -e
+          if [ -z "$CERTIFICATE_PRIVATE_KEY" ]; then
+            echo "❌ CERTIFICATE_PRIVATE_KEY is empty — add it to the 'Verite' variable group."
+            echo "   Generate it ONCE on your Mac, then paste the whole PEM (incl. BEGIN/END):"
+            echo "     ssh-keygen -t rsa -b 2048 -m PEM -f cmkey -q -N '' && cat cmkey"
+            exit 1
+          fi
           keychain initialize
+          # First run creates a distribution certificate from CERTIFICATE_PRIVATE_KEY;
+          # later runs reuse it (the key is stable), so you don't hit Apple's cert limit.
           app-store-connect fetch-signing-files "$BUNDLE_ID" \
             --type IOS_APP_STORE \
             --issuer-id "$APP_STORE_CONNECT_ISSUER_ID" \
