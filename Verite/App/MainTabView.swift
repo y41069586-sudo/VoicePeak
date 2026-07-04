@@ -1,7 +1,7 @@
 import SwiftUI
 
-/// The six-tab shell. Individual tabs are filled in across later milestones;
-/// for now Today + Settings are real and the rest are honest "coming soon" states.
+/// The premium four-tab shell: Home, Analyzer (core), Routine, Progress.
+/// Settings are moved to a dedicated settings modal, accessed via Home.
 struct MainTabView: View {
     @Environment(AppState.self) private var appState
 
@@ -9,30 +9,23 @@ struct MainTabView: View {
         @Bindable var appState = appState
 
         TabView(selection: $appState.selectedTab) {
-            DashboardView()
-                .tabItem { Label(AppTab.today.titleKey, systemImage: AppTab.today.systemImage) }
-                .tag(AppTab.today)
+            HomeTabView()
+                .tabItem { Label(AppTab.home.titleKey, systemImage: AppTab.home.systemImage) }
+                .tag(AppTab.home)
 
-            ScanView()
-                .tabItem { Label(AppTab.scan.titleKey, systemImage: AppTab.scan.systemImage) }
-                .tag(AppTab.scan)
+            AnalyzerTabView()
+                .tabItem { Label(AppTab.analyzer.titleKey, systemImage: AppTab.analyzer.systemImage) }
+                .tag(AppTab.analyzer)
 
-            CatalogView()
-                .tabItem { Label(AppTab.catalog.titleKey, systemImage: AppTab.catalog.systemImage) }
-                .tag(AppTab.catalog)
-
-            RoutineView()
+            RoutineTabView()
                 .tabItem { Label(AppTab.routine.titleKey, systemImage: AppTab.routine.systemImage) }
                 .tag(AppTab.routine)
 
-            ProgressDashboardView()
+            ProgressTabView()
                 .tabItem { Label(AppTab.progress.titleKey, systemImage: AppTab.progress.systemImage) }
                 .tag(AppTab.progress)
-
-            SettingsView()
-                .tabItem { Label(AppTab.settings.titleKey, systemImage: AppTab.settings.systemImage) }
-                .tag(AppTab.settings)
         }
+        .tint(VColor.primary)
     }
 }
 
