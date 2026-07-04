@@ -37,7 +37,7 @@ enum AppTab: String, CaseIterable, Identifiable {
     case today, scan, catalog, routine, progress, settings
     var id: String { rawValue }
 
-    var titleKey: LocalizedStringKey { "tab.\(rawValue)" }
+    var titleKey: LocalizedStringKey { "\(rawValue)" }
 
     var systemImage: String {
         switch self {

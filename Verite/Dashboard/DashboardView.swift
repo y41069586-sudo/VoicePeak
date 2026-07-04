@@ -46,7 +46,7 @@ struct DashboardView: View {
             }
             .scrollIndicators(.hidden)
             .background(GradientMeshBackground().ignoresSafeArea())
-            .navigationTitle("tab.today")
+            .navigationTitle("today")
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
                     if let streak, streak.current > 0 {

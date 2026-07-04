@@ -32,7 +32,7 @@ struct CatalogView: View {
                     list
                 }
             }
-            .navigationTitle("tab.catalog")
+            .navigationTitle("catalog")
             .searchable(text: $searchText, prompt: Text("catalog.search.prompt"))
             .onSubmit(of: .search) { Task { await searchOnline() } }
             .toolbar {

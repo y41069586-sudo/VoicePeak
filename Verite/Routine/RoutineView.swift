@@ -31,7 +31,7 @@ struct RoutineView: View {
                     routineList
                 }
             }
-            .navigationTitle("tab.routine")
+            .navigationTitle("routine")
             .toolbar {
                 if !proven.isEmpty {
                     ToolbarItem(placement: .topBarTrailing) {
