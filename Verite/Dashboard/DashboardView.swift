@@ -19,6 +19,9 @@ struct DashboardView: View {
     private var activeTest: HalfFaceTest? {
         tests.first(where: { $0.status == .running || $0.status == .verdictReady })
     }
+    private var latestPassedTest: HalfFaceTest? {
+        tests.filter { $0.status == .passed }.sorted { $0.createdAt > $1.createdAt }.first
+    }
     private var streak: Streak? { streaks.first }
     private var ledger: SavingsLedger? { ledgers.first }
 
@@ -150,6 +153,24 @@ struct DashboardView: View {
             .buttonStyle(.plain)
             GlassActionCard(action: { appState.selectedTab = .routine }) {
                 actionLabel("dashboard.action.provenRoutine", "checklist")
+            }
+            if let latestPassedTest {
+                NavigationLink {
+                    VerifiedShareView(test: latestPassedTest)
+                } label: {
+                    HStack {
+                        actionLabel("dashboard.action.share", "square.and.arrow.up")
+                        Spacer(minLength: 8)
+                        Image(systemName: "chevron.right")
+                            .font(.footnote.weight(.semibold))
+                            .foregroundStyle(Theme.textSecondary)
+                    }
+                    .padding(18)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 22, style: .continuous))
+                    .overlay(RoundedRectangle(cornerRadius: 22, style: .continuous).strokeBorder(Theme.strokeSubtle, lineWidth: 1))
+                }
+                .buttonStyle(.plain)
             }
         }
     }

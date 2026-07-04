@@ -197,13 +197,30 @@ struct HalfFaceTestDetailView: View {
 
     private var finalOutcomeCard: some View {
         GlassCard {
-            VStack(spacing: 10) {
+            VStack(spacing: 12) {
                 Image(systemName: test.status == .passed ? "checkmark.seal.fill" : "xmark.seal.fill")
                     .font(.largeTitle)
                     .foregroundStyle(test.status == .passed ? Theme.success : Theme.textSecondary)
                 Text(test.status == .passed ? "halfface.done.passed" : "halfface.done.failed")
                     .font(Typography.display(22)).foregroundStyle(Theme.textPrimary)
                     .multilineTextAlignment(.center)
+                if test.status == .passed {
+                    NavigationLink {
+                        VerifiedShareView(test: test)
+                    } label: {
+                        HStack(spacing: 8) {
+                            Image(systemName: "square.and.arrow.up")
+                            Text("halfface.share")
+                        }
+                        .font(.headline)
+                        .foregroundStyle(.white)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 14)
+                        .background(Theme.signature, in: Capsule())
+                    }
+                    .buttonStyle(.plain)
+                    .padding(.top, 4)
+                }
             }
             .frame(maxWidth: .infinity)
         }
