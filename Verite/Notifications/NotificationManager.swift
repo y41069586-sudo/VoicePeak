@@ -17,11 +17,17 @@ enum NotificationManager {
     // MARK: Routine
 
     static func scheduleRoutineReminders() {
+        scheduleRoutineReminders(hour: 21, minute: 0)
+    }
+
+    /// Schedule the AM nudge at a fixed morning hour and the PM nudge at the
+    /// user-chosen evening time (from onboarding / Settings time picker).
+    static func scheduleRoutineReminders(hour: Int, minute: Int) {
         cancelRoutineReminders()
         add(id: "routine.am", hour: 8, minute: 0,
             title: String(localized: "notif.routine.am.title"),
             body: String(localized: "notif.routine.am.body"))
-        add(id: "routine.pm", hour: 21, minute: 0,
+        add(id: "routine.pm", hour: hour, minute: minute,
             title: String(localized: "notif.routine.pm.title"),
             body: String(localized: "notif.routine.pm.body"))
     }
