@@ -56,7 +56,7 @@ workflows:
     # gave it when you connected Apple). This one integration does BOTH the signing
     # (auto-creates the cert + profile for com.verite.app) AND the TestFlight upload.
     integrations:
-      app_store_connect: CHANGE_ME_INTEGRATION_NAME
+      app_store_connect: "Verite 1"
     environment:
       xcode: latest
       ios_signing:
