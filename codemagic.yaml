@@ -1,108 +1,59 @@
-# Codemagic CI/CD — Vérité (iOS / SwiftUI)
-#
-# The repo ships an XcodeGen spec (project.yml) instead of a checked-in
-# .xcodeproj, so every workflow generates the project first, then builds.
-#
-#   • ios-compile-check → fast unsigned simulator build (green/red "does it
-#     compile?" signal). Runs on every push to a claude/* branch.
-#   • ios-release       → signed device build → TestFlight / App Store. Runs on
-#     a version tag (e.g. `v1.0.0`).
-#
-# WHAT YOU MUST SET UP IN CODEMAGIC BEFORE `ios-release` WORKS  (see docs/DEPLOYMENT.md):
-#   1. App Store Connect API key integration (Codemagic → Teams → Integrations →
-#      App Store Connect). Name it and put that name in `integrations.app_store_connect`
-#      below. This one integration covers BOTH signing and the upload.
-#   2. The app must exist in App Store Connect with bundle id `com.verite.app`.
-#   3. (Optional) an env-var group `verite_secrets` — only if you turn the backend
-#      or affiliate modules ON. Not needed for a normal App Store build.
-
 workflows:
-  ios-compile-check:
-    name: Vérité · Compile check (simulator, unsigned)
-    instance_type: mac_mini_m2
-    max_build_duration: 45
-    environment:
-      xcode: latest
-      vars:
-        XCODE_PROJECT: "Verite.xcodeproj"
-        XCODE_SCHEME: "Verite"
-    triggering:
-      events:
-        - push
-      branch_patterns:
-        - pattern: "claude/*"
-          include: true
-    scripts:
-      - name: Install XcodeGen
-        script: brew install xcodegen
-      - name: Generate Xcode project
-        script: xcodegen generate --spec project.yml
-      - name: Build for iOS Simulator (no code signing)
-        script: |
-          set -o pipefail
-          xcodebuild build \
-            -project "$XCODE_PROJECT" \
-            -scheme "$XCODE_SCHEME" \
-            -configuration Debug \
-            -destination 'generic/platform=iOS Simulator' \
-            CODE_SIGNING_ALLOWED=NO
-    artifacts:
-      - $HOME/Library/Developer/Xcode/DerivedData/**/Build/Products/**/*.app
-
   ios-release:
-    name: Vérité · TestFlight / App Store
-    instance_type: mac_mini_m2
+    name: iOS Release (App Store)
     max_build_duration: 60
-    # The name of the App Store Connect API key integration you created in the
-    # Codemagic UI. Rename this to match yours.
-    integrations:
-      app_store_connect: Verite
+
+    xcode: latest
+
     environment:
-      xcode: latest
-      # Codemagic uses the App Store Connect integration above to fetch/create the
-      # distribution certificate + provisioning profile for this bundle id.
       ios_signing:
         distribution_type: app_store
         bundle_identifier: com.verite.app
+
       vars:
         XCODE_PROJECT: "Verite.xcodeproj"
         XCODE_SCHEME: "Verite"
         BUNDLE_ID: "com.verite.app"
-      # Uncomment ONLY if you enable the backend/affiliate modules (see
-      # docs/DEPLOYMENT.md → "Optional: backend/affiliate secrets").
-      # groups:
-      #   - verite_secrets
+        # optional (falls du Build-Version stabil halten willst)
+        MARKETING_VERSION: "1.0.0"
+
     triggering:
       events:
         - tag
       tag_patterns:
         - pattern: "v*"
           include: true
+
     scripts:
       - name: Install XcodeGen
         script: brew install xcodegen
+
       - name: Generate Xcode project
         script: xcodegen generate --spec project.yml
+
       - name: Set up code signing
         script: xcode-project use-profiles
+
       - name: Build & sign IPA
         script: |
           set -o pipefail
-          # Use Codemagic's auto-incrementing $BUILD_NUMBER as the App Store build
-          # number so every upload is unique (Info.plist reads $(CURRENT_PROJECT_VERSION)).
+
           xcode-project build-ipa \
             --project "$XCODE_PROJECT" \
             --scheme "$XCODE_SCHEME" \
             --config Release \
-            --archive-xcargs "CURRENT_PROJECT_VERSION=$BUILD_NUMBER"
+            --archive-xcargs "CURRENT_PROJECT_VERSION=$BUILD_NUMBER MARKETING_VERSION=$MARKETING_VERSION"
+
     artifacts:
       - build/ios/ipa/*.ipa
       - /tmp/xcodebuild_logs/*.log
+
     publishing:
       app_store_connect:
-        auth: integration
-        # Uploads to TestFlight on every tagged build. Flip submit_to_app_store to
-        # true (and set a release_type) once you're ready to push a public release.
+        # 🔥 WICHTIG: echte API Key Integration (NICHT nur "integration")
+        api_key: $APP_STORE_CONNECT_API_KEY
+
         submit_to_testflight: true
-        # submit_to_app_store: false
+        # optional später:
+        # submit_to_app_store: true
         # release_type: MANUAL
