@@ -6,32 +6,39 @@ import UIKit
 /// Typography system (DESIGN_SPEC §3). Two fonts: Playfair Display for hero
 /// moments + big numerals (≥ 20pt only), SF Pro for everything functional.
 ///
-/// The Playfair `.ttf` files are **not committed** (licensing travels with the
-/// shipping app — see Resources/Fonts/README.md). Until they're bundled, display
-/// styles fall back to an italic/regular system serif so nothing shows tofu.
+/// Playfair Display ships as two **variable** TTFs (upright + italic, SIL OFL) in
+/// Resources/Fonts/, registered in Info.plist under the family name "Playfair
+/// Display". We select weight via the variable `wght` axis (`.weight`) and pick
+/// the italic face via `.italic`. If the family isn't available for any reason,
+/// every display style falls back to the system serif so nothing shows tofu.
 enum VType {
-    private static func available(_ name: String) -> Bool {
+    /// Family name shared by both (upright + italic) variable font files.
+    private static let playfair = "Playfair Display"
+
+    private static var hasPlayfair: Bool {
         #if canImport(UIKit)
-        return UIFont(name: name, size: 12) != nil
+        return UIFont(name: playfair, size: 12) != nil
         #else
         return false
         #endif
     }
 
-    private static func display(_ postScript: String, size: CGFloat,
-                                italic: Bool, weight: Font.Weight) -> Font {
-        if available(postScript) { return .custom(postScript, size: size) }
+    private static func display(size: CGFloat, italic: Bool, weight: Font.Weight) -> Font {
+        if hasPlayfair {
+            let face = Font.custom(playfair, size: size).weight(weight)
+            return italic ? face.italic() : face
+        }
         let base = Font.system(size: size, weight: weight, design: .serif)
         return italic ? base.italic() : base
     }
 
     // Display — Playfair, hero moments ONLY (never < 20pt, never body/buttons)
-    static var heroTitle: Font    { display("PlayfairDisplay-Italic", size: 34, italic: true, weight: .semibold) }
-    static var scoreNumber: Font  { display("PlayfairDisplay-Medium", size: 56, italic: false, weight: .medium) }
-    static var sectionTitle: Font { display("PlayfairDisplay-Italic", size: 22, italic: true, weight: .medium) }
+    static var heroTitle: Font    { display(size: 34, italic: true, weight: .semibold) }
+    static var scoreNumber: Font  { display(size: 56, italic: false, weight: .medium) }
+    static var sectionTitle: Font { display(size: 22, italic: true, weight: .medium) }
     /// Scaled display for arbitrary hero sizes (still Playfair/serif).
-    static func hero(_ size: CGFloat) -> Font { display("PlayfairDisplay-Italic", size: max(20, size), italic: true, weight: .semibold) }
-    static func number(_ size: CGFloat) -> Font { display("PlayfairDisplay-Medium", size: max(20, size), italic: false, weight: .medium) }
+    static func hero(_ size: CGFloat) -> Font { display(size: max(20, size), italic: true, weight: .semibold) }
+    static func number(_ size: CGFloat) -> Font { display(size: max(20, size), italic: false, weight: .medium) }
 
     // Body — SF Pro
     static let title       = Font.system(size: 20, weight: .semibold)
