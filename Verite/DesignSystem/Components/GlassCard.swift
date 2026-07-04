@@ -1,27 +1,39 @@
 import SwiftUI
 
-/// Frosted-glass card (`.ultraThinMaterial`) with a subtle stroke, used over the
-/// animated gradient mesh. The building block for nearly every surface in Vérité.
+/// The Card (DESIGN_SPEC §6.1): `bgSurface`, radius `md`, 1pt `strokeSubtle`
+/// hairline, `md` padding, dual tinted `vCardShadow`. The hairline + lifted
+/// shadow are what separate "designed" from "flat". Set `featured` for a 2pt
+/// signature accent line at the top edge.
 struct GlassCard<Content: View>: View {
-    var padding: CGFloat = 18
-    var cornerRadius: CGFloat = 22
+    var padding: CGFloat = VSpace.md
+    var cornerRadius: CGFloat = VRadius.md
+    var featured: Bool = false
     @ViewBuilder var content: () -> Content
 
     var body: some View {
         content()
             .padding(padding)
             .frame(maxWidth: .infinity, alignment: .leading)
-            .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: cornerRadius, style: .continuous))
+            .background(VColor.bgSurface, in: RoundedRectangle(cornerRadius: cornerRadius, style: .continuous))
+            .overlay(alignment: .top) {
+                if featured {
+                    VColor.heroGradient
+                        .frame(height: 2)
+                        .clipShape(Capsule())
+                        .padding(.horizontal, cornerRadius)
+                }
+            }
             .overlay(
                 RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
-                    .strokeBorder(Theme.strokeSubtle, lineWidth: 1)
+                    .strokeBorder(VColor.strokeSubtle, lineWidth: 1)
             )
+            .vCardShadow()
     }
 }
 
-/// A tappable variant that adds press feedback + a chevron affordance.
+/// Tappable card variant with press feedback + a chevron affordance.
 struct GlassActionCard<Content: View>: View {
-    var cornerRadius: CGFloat = 22
+    var cornerRadius: CGFloat = VRadius.md
     let action: () -> Void
     @ViewBuilder var content: () -> Content
 
@@ -29,18 +41,19 @@ struct GlassActionCard<Content: View>: View {
         Button(action: action) {
             HStack {
                 content()
-                Spacer(minLength: 8)
+                Spacer(minLength: VSpace.sm)
                 Image(systemName: "chevron.right")
                     .font(.footnote.weight(.semibold))
-                    .foregroundStyle(Theme.textSecondary)
+                    .foregroundStyle(VColor.textTertiary)
             }
-            .padding(18)
+            .padding(VSpace.md)
             .frame(maxWidth: .infinity, alignment: .leading)
-            .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: cornerRadius, style: .continuous))
+            .background(VColor.bgSurface, in: RoundedRectangle(cornerRadius: cornerRadius, style: .continuous))
             .overlay(
                 RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
-                    .strokeBorder(Theme.strokeSubtle, lineWidth: 1)
+                    .strokeBorder(VColor.strokeSubtle, lineWidth: 1)
             )
+            .vCardShadow()
         }
         .buttonStyle(PressableStyle())
     }

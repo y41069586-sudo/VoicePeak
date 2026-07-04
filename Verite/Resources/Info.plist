@@ -55,5 +55,15 @@
 	<array>
 		<string>armv7</string>
 	</array>
+
+	<!-- Display font (Playfair Display, SIL OFL). Drop the .ttf files into
+	     Resources/Fonts/ (see that folder's README). Until then, VType falls
+	     back to the system serif — no tofu. -->
+	<key>UIAppFonts</key>
+	<array>
+		<string>PlayfairDisplay-Italic.ttf</string>
+		<string>PlayfairDisplay-Regular.ttf</string>
+		<string>PlayfairDisplay-Medium.ttf</string>
+	</array>
 </dict>
 </plist>

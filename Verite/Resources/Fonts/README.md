@@ -1,18 +1,20 @@
-# Display font drop location
+# Display font — Playfair Display (SIL OFL)
 
-The "Aesthetic Blue" look uses an elegant editorial serif for headlines and big
-numbers. It is intentionally **not committed** — font licensing travels with the
-shipping developer.
+The design system (`VType`, DESIGN_SPEC §3) uses **Playfair Display** for hero
+moments and big numerals. The font files are **not committed** — drop them here.
 
-## To bundle the display font
+## What to add (exact filenames — they're already registered in Info.plist)
+- `PlayfairDisplay-Italic.ttf`  → hero titles, section titles
+- `PlayfairDisplay-Regular.ttf` → available for large regular display use
+- `PlayfairDisplay-Medium.ttf`  → big score numerals (ScoreRing, reveals)
+- `LICENSE.txt` (the SIL OFL license text that ships with Playfair Display)
 
-1. Download an **SIL OFL** face that permits app embedding — recommended:
-   **Playfair Display Italic** (or Cormorant / Marcellus).
-2. Drop the `.ttf` / `.otf` here (`Verite/Resources/Fonts/`).
-3. Add a `UIAppFonts` array to `Verite/Resources/Info.plist` listing the file name(s).
-4. Confirm the PostScript name matches `Typography.displayFontName`
-   (default `"PlayfairDisplay-Italic"`) — update that constant if you chose another face.
+Get them from Google Fonts (SIL OFL) — confirm the license permits app embedding.
 
-Until a font is added, `Typography` falls back to the **system serif** — the app
-renders correctly and legibly, just without the custom face. See
-`docs/DESIGN_SPEC.md` for the font-usage rules.
+## PostScript names
+`VType` calls `Font.custom("PlayfairDisplay-Italic" / "-Regular" / "-Medium", …)`.
+If your files expose different PostScript names, adjust the strings in
+`DesignSystem/VType.swift`.
+
+Until the files are present, every display style falls back to an italic/regular
+**system serif** — legible, no tofu, just not the bespoke face.

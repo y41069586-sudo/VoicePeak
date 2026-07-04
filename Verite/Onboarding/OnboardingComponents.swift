@@ -1,27 +1,29 @@
 import SwiftUI
 
-/// Slim progress bar for the quiz steps.
+/// Segmented progress indicator (DESIGN_SPEC §6.9): one segment per step,
+/// completed = heroGradient, current = strokeBright, upcoming = strokeSubtle.
 struct OnboardingProgressBar: View {
-    let current: Int
+    let current: Int   // 1-based current step
     let total: Int
 
     var body: some View {
-        GeometryReader { geo in
-            ZStack(alignment: .leading) {
-                Capsule().fill(Theme.strokeSubtle)
-                Capsule().fill(Theme.signature)
-                    .frame(width: geo.size.width * fraction)
+        HStack(spacing: VSpace.xs) {
+            ForEach(0..<max(total, 1), id: \.self) { index in
+                Capsule()
+                    .fill(style(for: index))
+                    .frame(height: 3)
             }
         }
-        .frame(height: 6)
-        .veriteAnimation(value: current)
+        .animation(VMotion.standard, value: current)
+        .accessibilityElement()
         .accessibilityLabel("onboarding.progress")
         .accessibilityValue(Text(verbatim: "\(current)/\(total)"))
     }
 
-    private var fraction: CGFloat {
-        guard total > 0 else { return 0 }
-        return CGFloat(min(max(current, 0), total)) / CGFloat(total)
+    private func style(for index: Int) -> AnyShapeStyle {
+        if index < current - 1 { return AnyShapeStyle(VColor.heroGradient) } // completed
+        if index == current - 1 { return AnyShapeStyle(VColor.strokeBright) } // current
+        return AnyShapeStyle(VColor.strokeSubtle)                            // upcoming
     }
 }
 
