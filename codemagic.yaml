@@ -9,7 +9,7 @@
 #
 # SIGNING: this uses Codemagic's automatic code signing. Set it up in the UI
 # (you've done this): connect App Store Connect and add your distribution
-# certificate + provisioning profile for com.verite.app. The `ios_signing` block
+# certificate + provisioning profile for com.verite.com. The `ios_signing` block
 # below + `xcode-project use-profiles` then pick them up — no signing secrets in
 # this file. The `Verite` env-var group only needs the 3 API values used to
 # UPLOAD to TestFlight (see the publishing block).
@@ -54,14 +54,14 @@ workflows:
     # ⬇⬇⬇ REPLACE with the EXACT name of your App Store Connect integration
     # (Codemagic → Team settings → Integrations → App Store Connect — the name you
     # gave it when you connected Apple). This one integration does BOTH the signing
-    # (auto-creates the cert + profile for com.verite.app) AND the TestFlight upload.
+    # (auto-creates the cert + profile for com.verite.com) AND the TestFlight upload.
     integrations:
       app_store_connect: "Verite 1"
     environment:
       xcode: latest
       ios_signing:
         distribution_type: app_store
-        bundle_identifier: com.verite.app
+        bundle_identifier: com.verite.com
       vars:
         XCODE_PROJECT: "Verite.xcodeproj"
         XCODE_SCHEME: "Verite"

@@ -23,11 +23,11 @@ key. You create it once, paste it into a Codemagic variable group, and then it
 
 ### What you must set up (one time)
 
-1. **Create the app in App Store Connect** with bundle ID **`com.verite.app`**.
+1. **Create the app in App Store Connect** with bundle ID **`com.verite.com`**.
 
 2. **Set up code signing in the Codemagic UI** (automatic signing):
    - Connect App Store Connect (Apple) and add your **distribution certificate** +
-     **provisioning profile** for `com.verite.app` in Codemagic's code-signing
+     **provisioning profile** for `com.verite.com` in Codemagic's code-signing
      settings. The workflow's `ios_signing` block + `xcode-project use-profiles`
      pick these up — **no signing secrets go in the repo or the variable group.**
 
@@ -96,7 +96,7 @@ calls `functions/v1/delete-account` (see `SupabaseBackend.deleteAccount`).
 
 ### 3. Configure Sign in with Apple (Supabase Auth)
 - Supabase → **Authentication → Providers → Apple** → enable.
-- Add your app's **Bundle ID** (`com.verite.app`) as an authorized client ID.
+- Add your app's **Bundle ID** (`com.verite.com`) as an authorized client ID.
   (Native iOS uses the `id_token` flow; Supabase verifies the Apple token
   directly — no client secret needed for the native path.)
 - In Xcode/`project.yml`, add the **Sign in with Apple** capability to the target

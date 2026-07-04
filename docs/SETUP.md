@@ -44,9 +44,9 @@ catch. Paste any build errors back and they'll get fixed.
 
 ## Signing
 
-`project.yml` uses automatic signing with bundle id `com.verite.app`. In Xcode →
+`project.yml` uses automatic signing with bundle id `com.verite.com`. In Xcode →
 target **Verite** → Signing & Capabilities, pick your team. Change the bundle id
-there (and in `project.yml`) if `com.verite.app` is taken.
+there (and in `project.yml`) if `com.verite.com` is taken.
 
 ## The display font (optional but recommended)
 
