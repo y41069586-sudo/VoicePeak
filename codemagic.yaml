@@ -4,6 +4,9 @@ workflows:
     max_build_duration: 60
 
     environment:
+      groups:
+        - Verite
+
       xcode: latest
 
       ios_signing:
@@ -38,6 +41,6 @@ workflows:
       app_store_connect:
         api_key:
           key: $APP_STORE_CONNECT_KEY
-          issuer_id: $APP_STORE_CONNECT_ISSUER_ID
           key_id: $APP_STORE_CONNECT_KEY_ID
+          issuer_id: $APP_STORE_CONNECT_ISSUER_ID
         submit_to_testflight: true
