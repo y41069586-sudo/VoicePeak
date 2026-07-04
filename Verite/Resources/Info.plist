@@ -65,6 +65,14 @@
 	<array>
 		<string>UIInterfaceOrientationPortrait</string>
 	</array>
+
+	<!-- iPhone-only, portrait-only app: explicitly opt out of iPad Split View /
+	     Slide Over multitasking. Without this, App Store Connect validation
+	     (errors 90474/90475) requires a multitasking-ready launch screen and all
+	     4 orientations even though TARGETED_DEVICE_FAMILY is iPhone-only. -->
+	<key>UIRequiresFullScreen</key>
+	<true/>
+
 	<key>UIRequiredDeviceCapabilities</key>
 	<array>
 		<string>armv7</string>
