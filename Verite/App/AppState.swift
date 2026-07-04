@@ -13,8 +13,16 @@ final class AppState {
 
     let featureFlags: FeatureFlags
 
+    /// Optional backend. Defaults to `LocalOnlyBackend` — the app is fully
+    /// functional offline; switches to Supabase only when the flag is on *and*
+    /// config is present. Face photos never touch it.
+    let backend: BackendService
+
     init(featureFlags: FeatureFlags = .default) {
         self.featureFlags = featureFlags
+        self.backend = (featureFlags.backendEnabled && BackendConfig.shared.isConfigured)
+            ? SupabaseBackend()
+            : LocalOnlyBackend()
     }
 }
 

@@ -69,6 +69,24 @@ struct SettingsView: View {
                     }
                 }
 
+                // Account + community (backend module — off by default)
+                if appState.featureFlags.backendEnabled {
+                    Section("settings.section.account") {
+                        NavigationLink {
+                            AccountView()
+                        } label: {
+                            Label("account.title", systemImage: "person.crop.circle")
+                        }
+                        if appState.featureFlags.communityEnabled {
+                            NavigationLink {
+                                CommunityEfficacyView()
+                            } label: {
+                                Label("community.title", systemImage: "person.3")
+                            }
+                        }
+                    }
+                }
+
                 // Legal
                 Section("settings.section.legal") {
                     ForEach(LegalDocument.allCases) { doc in
