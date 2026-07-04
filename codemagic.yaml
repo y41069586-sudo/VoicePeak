@@ -56,7 +56,7 @@ workflows:
     # The name of the App Store Connect API key integration you created in the
     # Codemagic UI. Rename this to match yours.
     integrations:
-      app_store_connect: Verite ASC Key
+      app_store_connect: Verite
     environment:
       xcode: latest
       # Codemagic uses the App Store Connect integration above to fetch/create the
