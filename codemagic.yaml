@@ -107,9 +107,11 @@ workflows:
       - /tmp/xcodebuild_logs/*.log
     publishing:
       app_store_connect:
-        api_key:
-          key: $APP_STORE_CONNECT_KEY
-          key_id: $APP_STORE_CONNECT_KEY_ID
-          issuer_id: $APP_STORE_CONNECT_ISSUER_ID
+        # `api_key` is the private key ITSELF (the .p8 contents); key_id and
+        # issuer_id are siblings, NOT nested under api_key. Nesting them is what
+        # triggered "the API key, key identifier and issuer identifier are all required".
+        api_key: $APP_STORE_CONNECT_KEY
+        key_id: $APP_STORE_CONNECT_KEY_ID
+        issuer_id: $APP_STORE_CONNECT_ISSUER_ID
         submit_to_testflight: true
         # submit_to_app_store: false   # flip on (+ release_type) for a public release
