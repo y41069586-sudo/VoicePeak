@@ -33,6 +33,13 @@ enum ThumbnailStore {
     static func delete(_ filename: String) {
         try? FileManager.default.removeItem(at: directory.appendingPathComponent(filename))
     }
+
+    /// Remove every stored thumbnail (used by Delete-all-my-data).
+    static func deleteAll() {
+        let fm = FileManager.default
+        guard let files = try? fm.contentsOfDirectory(at: directory, includingPropertiesForKeys: nil) else { return }
+        for file in files { try? fm.removeItem(at: file) }
+    }
 }
 
 extension UIImage {

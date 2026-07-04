@@ -3369,35 +3369,35 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "The full text of this document is prepared before the App Store release and reviewed by a lawyer. See the Markdown source in the repository’s Legal folder."
+            "value": "Information pursuant to § 5 TMG (German Telemedia Act).\n\n[Operator name]\n[Street and number]\n[Postal code and city], Germany\n\nContact: [email]\n\nResponsible for content (§ 55(2) RStV): [name].\n\nDraft template — replace the bracketed fields with real details and have a lawyer review before publishing."
           }
         },
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "Der vollständige Text dieses Dokuments wird vor der App-Store-Veröffentlichung erstellt und von einer Anwältin oder einem Anwalt geprüft. Siehe die Markdown-Quelle im Legal-Ordner des Repositorys."
+            "value": "Angaben gemäß § 5 TMG.\n\n[Betreiber]\n[Straße und Hausnummer]\n[PLZ und Ort]\n\nKontakt: [E-Mail]\n\nVerantwortlich für den Inhalt nach § 55 Abs. 2 RStV: [Name].\n\nVorlage – Platzhalter durch echte Angaben ersetzen und vor der Veröffentlichung anwaltlich prüfen lassen."
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "El texto completo de este documento se prepara antes del lanzamiento en la App Store y lo revisa un abogado. Consulta el archivo Markdown en la carpeta Legal del repositorio."
+            "value": "Información conforme al § 5 TMG (Ley alemana de telemedios).\n\n[Titular]\n[Calle y número]\n[Código postal y ciudad], Alemania\n\nContacto: [correo]\n\nResponsable del contenido (§ 55(2) RStV): [nombre].\n\nPlantilla borrador: sustituye los campos entre corchetes por los datos reales y que lo revise un abogado antes de publicar."
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Le texte complet de ce document est rédigé avant la publication sur l’App Store et vérifié par un avocat. Voir la source Markdown dans le dossier Legal du dépôt."
+            "value": "Informations conformément au § 5 TMG (loi allemande sur les médias).\n\n[Exploitant]\n[Rue et numéro]\n[Code postal et ville], Allemagne\n\nContact : [e-mail]\n\nResponsable du contenu (§ 55(2) RStV) : [nom].\n\nModèle provisoire — remplacez les champs entre crochets par les informations réelles et faites vérifier par un avocat avant publication."
           }
         },
         "it": {
           "stringUnit": {
             "state": "translated",
-            "value": "Il testo completo di questo documento viene redatto prima della pubblicazione sull’App Store e revisionato da un avvocato. Vedi il sorgente Markdown nella cartella Legal del repository."
+            "value": "Informazioni ai sensi del § 5 TMG (legge tedesca sui media).\n\n[Titolare]\n[Via e numero]\n[CAP e città], Germania\n\nContatto: [email]\n\nResponsabile dei contenuti (§ 55(2) RStV): [nome].\n\nModello in bozza — sostituisci i campi tra parentesi con i dati reali e falla revisionare da un avvocato prima della pubblicazione."
           }
         }
       },
-      "comment": "Placeholder — full localized legal text authored in Milestone 10 (lawyer review required)."
+      "comment": "DRAFT legal text — replace bracketed fields and have a lawyer review before publishing."
     },
     "legal.privacy.body": {
       "extractionState": "manual",
@@ -3405,35 +3405,35 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "The full text of this document is prepared before the App Store release and reviewed by a lawyer. See the Markdown source in the repository’s Legal folder."
+            "value": "Last updated: [date]. Draft to be finalized with a lawyer before release.\n\nOn-device by design. Vérité analyzes your face and skin entirely on your device. Your photos are processed locally and are never uploaded, transmitted, or collected by us.\n\nWhat we store. On your device only: your skin profile, scan estimates (numbers), your products and routine, and local photo thumbnails. We do not sell your data.\n\nOptional cloud features. Account sync, community efficacy data, and affiliate features are off by default. If you enable them, only anonymized numeric data — never photos — is processed, and only with your consent.\n\nYour rights. Export your data or delete everything anytime in Settings → Data & privacy. Under the GDPR you also have rights of access, rectification, erasure, and portability. Contact: [email].\n\nMinors. Vérité is not directed to children under 16.\n\nProduct data comes from the open-licensed Open Beauty Facts database."
           }
         },
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "Der vollständige Text dieses Dokuments wird vor der App-Store-Veröffentlichung erstellt und von einer Anwältin oder einem Anwalt geprüft. Siehe die Markdown-Quelle im Legal-Ordner des Repositorys."
+            "value": "Zuletzt aktualisiert: [Datum]. Entwurf, vor Veröffentlichung anwaltlich zu finalisieren.\n\nStandardmäßig auf dem Gerät. Vérité analysiert dein Gesicht und deine Haut vollständig auf deinem Gerät. Deine Fotos werden lokal verarbeitet und niemals hochgeladen, übertragen oder von uns erhoben.\n\nWas gespeichert wird. Nur auf deinem Gerät: dein Hautprofil, Scan-Schätzungen (Zahlen), deine Produkte und Routine sowie lokale Foto-Thumbnails. Wir verkaufen deine Daten nicht.\n\nOptionale Cloud-Funktionen. Kontosynchronisierung, Community-Daten und Affiliate-Funktionen sind standardmäßig deaktiviert. Wenn du sie aktivierst, werden nur anonymisierte Zahlen – niemals Fotos – und nur mit deiner Einwilligung verarbeitet.\n\nDeine Rechte. Exportiere deine Daten oder lösche alles jederzeit unter Einstellungen → Daten & Datenschutz. Nach der DSGVO hast du außerdem Rechte auf Auskunft, Berichtigung, Löschung und Datenübertragbarkeit. Kontakt: [E-Mail].\n\nMinderjährige. Vérité richtet sich nicht an Kinder unter 16 Jahren.\n\nProduktdaten stammen aus der offen lizenzierten Open-Beauty-Facts-Datenbank."
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "El texto completo de este documento se prepara antes del lanzamiento en la App Store y lo revisa un abogado. Consulta el archivo Markdown en la carpeta Legal del repositorio."
+            "value": "Última actualización: [fecha]. Borrador que un abogado debe finalizar antes del lanzamiento.\n\nEn el dispositivo por diseño. Vérité analiza tu rostro y tu piel íntegramente en tu dispositivo. Tus fotos se procesan localmente y nunca se suben, transmiten ni recopilan.\n\nQué almacenamos. Solo en tu dispositivo: tu perfil de piel, estimaciones de escaneo (números), tus productos y rutina, y miniaturas locales. No vendemos tus datos.\n\nFunciones en la nube opcionales. La sincronización de cuenta, los datos de comunidad y las funciones de afiliados están desactivados por defecto. Si los activas, solo se procesan datos numéricos anonimizados —nunca fotos— y con tu consentimiento.\n\nTus derechos. Exporta tus datos o elimina todo cuando quieras en Ajustes → Datos y privacidad. Según el RGPD tienes derechos de acceso, rectificación, supresión y portabilidad. Contacto: [correo].\n\nMenores. Vérité no está dirigida a menores de 16 años.\n\nLos datos de productos provienen de la base de datos con licencia abierta Open Beauty Facts."
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Le texte complet de ce document est rédigé avant la publication sur l’App Store et vérifié par un avocat. Voir la source Markdown dans le dossier Legal du dépôt."
+            "value": "Dernière mise à jour : [date]. Brouillon à finaliser avec un avocat avant publication.\n\nSur l’appareil par conception. Vérité analyse votre visage et votre peau entièrement sur votre appareil. Vos photos sont traitées localement et ne sont jamais téléchargées, transmises ni collectées.\n\nCe que nous stockons. Sur votre appareil uniquement : votre profil de peau, les estimations de scan (chiffres), vos produits et votre routine, et des miniatures locales. Nous ne vendons pas vos données.\n\nFonctions cloud optionnelles. La synchronisation de compte, les données communautaires et les fonctions d’affiliation sont désactivées par défaut. Si vous les activez, seules des données numériques anonymisées — jamais de photos — sont traitées, avec votre consentement.\n\nVos droits. Exportez vos données ou supprimez tout à tout moment dans Réglages → Données et confidentialité. Le RGPD vous accorde aussi des droits d’accès, de rectification, d’effacement et de portabilité. Contact : [e-mail].\n\nMineurs. Vérité ne s’adresse pas aux enfants de moins de 16 ans.\n\nLes données produits proviennent de la base sous licence ouverte Open Beauty Facts."
           }
         },
         "it": {
           "stringUnit": {
             "state": "translated",
-            "value": "Il testo completo di questo documento viene redatto prima della pubblicazione sull’App Store e revisionato da un avvocato. Vedi il sorgente Markdown nella cartella Legal del repository."
+            "value": "Ultimo aggiornamento: [data]. Bozza da finalizzare con un avvocato prima del rilascio.\n\nSul dispositivo per progettazione. Vérité analizza il tuo viso e la tua pelle interamente sul tuo dispositivo. Le tue foto sono elaborate localmente e non vengono mai caricate, trasmesse o raccolte.\n\nCosa memorizziamo. Solo sul tuo dispositivo: il tuo profilo cutaneo, le stime delle scansioni (numeri), i tuoi prodotti e la routine e le miniature locali. Non vendiamo i tuoi dati.\n\nFunzioni cloud opzionali. Sincronizzazione dell’account, dati della community e funzioni di affiliazione sono disattivati per impostazione predefinita. Se le attivi, vengono elaborati solo dati numerici anonimizzati — mai foto — e solo con il tuo consenso.\n\nI tuoi diritti. Esporta i tuoi dati o elimina tutto in qualsiasi momento in Impostazioni → Dati e privacy. Ai sensi del GDPR hai inoltre diritti di accesso, rettifica, cancellazione e portabilità. Contatto: [email].\n\nMinori. Vérité non è rivolta a minori di 16 anni.\n\nI dati dei prodotti provengono dal database con licenza aperta Open Beauty Facts."
           }
         }
       },
-      "comment": "Placeholder — full localized legal text authored in Milestone 10 (lawyer review required)."
+      "comment": "DRAFT legal text — replace bracketed fields and have a lawyer review before publishing."
     },
     "legal.terms.body": {
       "extractionState": "manual",
@@ -3441,35 +3441,35 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "The full text of this document is prepared before the App Store release and reviewed by a lawyer. See the Markdown source in the repository’s Legal folder."
+            "value": "Last updated: [date]. Draft to be finalized with a lawyer before release.\n\nAcceptance. By using Vérité you agree to these terms.\n\nNot medical advice. Vérité is a tracking and education tool. Skin readings are estimates, not clinical measurements, and are not a substitute for a dermatologist.\n\nSubscriptions. Vérité Pro is an auto-renewing subscription billed to your Apple ID. It renews unless cancelled at least 24 hours before the period ends; manage or cancel in your App Store account settings. Apple's standard EULA also applies: https://www.apple.com/legal/internet-services/itunes/dev/stdeula/\n\nAcceptable use. Don't misuse the app or infringe others' rights. Product information is provided as-is from third-party open data.\n\nLiability. To the extent permitted by law, Vérité is provided 'as is' without warranties.\n\nContact: [email]."
           }
         },
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "Der vollständige Text dieses Dokuments wird vor der App-Store-Veröffentlichung erstellt und von einer Anwältin oder einem Anwalt geprüft. Siehe die Markdown-Quelle im Legal-Ordner des Repositorys."
+            "value": "Zuletzt aktualisiert: [Datum]. Entwurf, vor Veröffentlichung anwaltlich zu finalisieren.\n\nAnnahme. Durch die Nutzung von Vérité stimmst du diesen Bedingungen zu.\n\nKeine medizinische Beratung. Vérité ist ein Tracking- und Bildungswerkzeug. Hautwerte sind Schätzungen, keine klinischen Messungen, und kein Ersatz für eine Dermatologin oder einen Dermatologen.\n\nAbonnements. Vérité Pro ist ein automatisch verlängerndes Abonnement, das über deine Apple-ID abgerechnet wird. Es verlängert sich, sofern nicht mindestens 24 Stunden vor Ablauf gekündigt; verwalten oder kündigen in deinen App-Store-Kontoeinstellungen. Es gilt zusätzlich Apples Standard-EULA: https://www.apple.com/legal/internet-services/itunes/dev/stdeula/\n\nZulässige Nutzung. Missbrauche die App nicht und verletze keine Rechte Dritter. Produktinformationen werden ohne Gewähr aus offenen Drittdaten bereitgestellt.\n\nHaftung. Soweit gesetzlich zulässig, wird Vérité „wie besehen“ ohne Gewährleistung bereitgestellt.\n\nKontakt: [E-Mail]."
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "El texto completo de este documento se prepara antes del lanzamiento en la App Store y lo revisa un abogado. Consulta el archivo Markdown en la carpeta Legal del repositorio."
+            "value": "Última actualización: [fecha]. Borrador que un abogado debe finalizar antes del lanzamiento.\n\nAceptación. Al usar Vérité aceptas estos términos.\n\nNo es asesoramiento médico. Vérité es una herramienta de seguimiento y educación. Las lecturas de la piel son estimaciones, no mediciones clínicas, y no sustituyen a un dermatólogo.\n\nSuscripciones. Vérité Pro es una suscripción de renovación automática cargada a tu Apple ID. Se renueva salvo que se cancele al menos 24 horas antes de que finalice el periodo; gestiónala o cancélala en los ajustes de tu cuenta de App Store. También se aplica el EULA estándar de Apple: https://www.apple.com/legal/internet-services/itunes/dev/stdeula/\n\nUso aceptable. No hagas un mal uso de la app ni infrinjas los derechos de otros. La información de productos se ofrece tal cual desde datos abiertos de terceros.\n\nResponsabilidad. En la medida permitida por la ley, Vérité se ofrece «tal cual», sin garantías.\n\nContacto: [correo]."
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Le texte complet de ce document est rédigé avant la publication sur l’App Store et vérifié par un avocat. Voir la source Markdown dans le dossier Legal du dépôt."
+            "value": "Dernière mise à jour : [date]. Brouillon à finaliser avec un avocat avant publication.\n\nAcceptation. En utilisant Vérité, vous acceptez ces conditions.\n\nPas un avis médical. Vérité est un outil de suivi et d’information. Les mesures de la peau sont des estimations, pas des mesures cliniques, et ne remplacent pas un dermatologue.\n\nAbonnements. Vérité Pro est un abonnement à renouvellement automatique facturé sur votre identifiant Apple. Il se renouvelle sauf annulation au moins 24 heures avant la fin de la période ; gérez-le ou annulez-le dans les réglages de votre compte App Store. Le CLUF standard d’Apple s’applique également : https://www.apple.com/legal/internet-services/itunes/dev/stdeula/\n\nUsage acceptable. N’utilisez pas l’app de façon abusive et ne violez pas les droits d’autrui. Les informations produits sont fournies telles quelles à partir de données ouvertes tierces.\n\nResponsabilité. Dans la mesure permise par la loi, Vérité est fourni « en l’état », sans garanties.\n\nContact : [e-mail]."
           }
         },
         "it": {
           "stringUnit": {
             "state": "translated",
-            "value": "Il testo completo di questo documento viene redatto prima della pubblicazione sull’App Store e revisionato da un avvocato. Vedi il sorgente Markdown nella cartella Legal del repository."
+            "value": "Ultimo aggiornamento: [data]. Bozza da finalizzare con un avvocato prima del rilascio.\n\nAccettazione. Usando Vérité accetti questi termini.\n\nNon è un consiglio medico. Vérité è uno strumento di monitoraggio e informazione. Le letture della pelle sono stime, non misurazioni cliniche, e non sostituiscono il dermatologo.\n\nAbbonamenti. Vérité Pro è un abbonamento a rinnovo automatico addebitato sul tuo ID Apple. Si rinnova salvo disdetta almeno 24 ore prima della fine del periodo; gestiscilo o annullalo nelle impostazioni del tuo account App Store. Si applica anche l’EULA standard di Apple: https://www.apple.com/legal/internet-services/itunes/dev/stdeula/\n\nUso accettabile. Non usare l’app in modo improprio e non violare i diritti altrui. Le informazioni sui prodotti sono fornite così come sono da dati aperti di terze parti.\n\nResponsabilità. Nei limiti consentiti dalla legge, Vérité è fornita «così com’è», senza garanzie.\n\nContatto: [email]."
           }
         }
       },
-      "comment": "Placeholder — full localized legal text authored in Milestone 10 (lawyer review required)."
+      "comment": "DRAFT legal text — replace bracketed fields and have a lawyer review before publishing."
     },
     "scan.permission.title": {
       "extractionState": "manual",
@@ -11167,6 +11167,76 @@
           "stringUnit": {
             "state": "translated",
             "value": "Condividi il risultato verificato"
+          }
+        }
+      }
+    },
+    "settings.data.export.share": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Save or share the file"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Datei speichern oder teilen"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Guardar o compartir el archivo"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Enregistrer ou partager le fichier"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Salva o condividi il file"
+          }
+        }
+      }
+    },
+    "settings.data.export.footer": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Exports your numbers and routine as JSON — never your photos."
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Exportiert deine Zahlen und Routine als JSON – niemals deine Fotos."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Exporta tus números y tu rutina como JSON, nunca tus fotos."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Exporte vos chiffres et votre routine en JSON — jamais vos photos."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Esporta i tuoi numeri e la routine in JSON — mai le tue foto."
           }
         }
       }

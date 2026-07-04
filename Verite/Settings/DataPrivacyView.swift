@@ -1,11 +1,12 @@
 import SwiftUI
 import SwiftData
 
-/// Data & privacy controls. Export and true delete-all are wired to real SwiftData
-/// wipes in Milestone 10; the destructive action is guarded by a confirmation.
+/// Data & privacy controls: export your data (numeric metrics + routine only,
+/// never photos) and a truly-wipes-everything delete, guarded by confirmation.
 struct DataPrivacyView: View {
     @Environment(\.modelContext) private var modelContext
     @State private var showingDeleteConfirm = false
+    @State private var exportURL: URL?
 
     var body: some View {
         Form {
@@ -17,10 +18,17 @@ struct DataPrivacyView: View {
 
             Section {
                 Button {
-                    // Full export (numeric metrics + routine, never photos) — M10.
+                    exportURL = DataExporter.exportURL(context: modelContext)
                 } label: {
                     Label("settings.data.export", systemImage: "square.and.arrow.up")
                 }
+                if let exportURL {
+                    ShareLink(item: exportURL) {
+                        Label("settings.data.export.share", systemImage: "arrow.up.doc")
+                    }
+                }
+            } footer: {
+                Text("settings.data.export.footer")
             }
 
             Section {
@@ -48,8 +56,9 @@ struct DataPrivacyView: View {
         }
     }
 
-    /// Truly wipes local SwiftData. (Any synced server row is removed in M10 when
-    /// the backend module exists.)
+    /// Truly wipes local SwiftData + on-device thumbnails. Deleting the profile
+    /// returns the app to onboarding. (Any synced server row is removed by the
+    /// backend module when it's enabled.)
     private func wipeAllData() {
         try? modelContext.delete(model: UserProfile.self)
         try? modelContext.delete(model: Scan.self)
@@ -59,5 +68,9 @@ struct DataPrivacyView: View {
         try? modelContext.delete(model: Streak.self)
         try? modelContext.delete(model: SavingsLedger.self)
         try? modelContext.save()
+        ThumbnailStore.deleteAll()
+        NotificationManager.cancelRoutineReminders()
+        exportURL = nil
+        Haptics.fire(.milestone)
     }
 }
