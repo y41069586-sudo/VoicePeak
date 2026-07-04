@@ -15,16 +15,22 @@ face. All face photos and analysis happen **on-device and are never uploaded.**
 
 ## Status
 
-Built milestone-by-milestone (see the brief in `docs/`). **Current: Milestone 1 —
-Scaffold.** The project structure, design system, feature flags, routing,
-SwiftData models, and a 5-language String Catalog are in place.
+Built milestone-by-milestone (see the brief in `docs/`). **Milestones 1–11 + 13
+implemented** — scaffold, camera + scan, classical-CV analysis engine, catalog +
+INCI, honest match + heatmap, half-face test, proven routine + progress,
+onboarding, verified share, settings + legal (×5) + export/delete, compliance
+pass, and polish. **Milestone 12 (StoreKit / Supabase / Affiliate) is
+feature-flagged OFF and awaits explicit opt-in.** 321 localized keys × 5 languages.
+
+Design is a committed **light white-and-blue** theme (only the live camera
+screens are dark, as they should be).
 
 ## Tech
 
-SwiftUI (iOS 17+, dark-first) · SwiftData · AVFoundation · Apple Vision +
-classical-CV skin pipeline · Swift Charts · String Catalog (EN/DE/ES/FR/IT).
-StoreKit 2, Supabase, and Affiliate modules are **feature-flagged OFF** — the app
-is fully functional offline without them.
+SwiftUI (iOS 17+, light-first) · SwiftData · AVFoundation · Apple Vision +
+classical-CV skin pipeline · Swift Charts · UserNotifications · String Catalog
+(EN/DE/ES/FR/IT). StoreKit 2, Supabase, and Affiliate modules are
+**feature-flagged OFF** — the app is fully functional offline without them.
 
 ## Getting started
 

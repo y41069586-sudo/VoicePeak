@@ -57,6 +57,7 @@ struct RemoteImage<Placeholder: View>: View {
                 placeholder()
             }
         }
+        .animation(.easeInOut(duration: 0.25), value: image != nil) // gentle fade-in on load
         .task(id: urlString) {
             image = await ImageCache.shared.image(for: urlString)
         }

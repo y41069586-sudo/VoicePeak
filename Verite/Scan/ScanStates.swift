@@ -89,6 +89,7 @@ struct CaptureShutterButton: View {
 /// Full-screen countdown before capture ("hold still").
 struct CountdownOverlay: View {
     let value: Int
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     var body: some View {
         ZStack {
@@ -97,7 +98,7 @@ struct CountdownOverlay: View {
                 .font(Typography.number(96, weight: .bold))
                 .foregroundStyle(.white) // over the darkened camera
                 .blueGlow(Theme.accent, radius: 30, opacity: 0.6)
-                .transition(.scale.combined(with: .opacity))
+                .transition(reduceMotion ? .opacity : .scale.combined(with: .opacity))
                 .id(value)
         }
         .allowsHitTesting(false)
