@@ -109,7 +109,10 @@ final class SupabaseBackend: BackendService, @unchecked Sendable {
 
     func deleteAccount() async throws {
         guard currentUser() != nil else { throw BackendError.notSignedIn }
-        _ = try await send("rest/v1/rpc/delete_account", method: "POST", authorized: true,
+        // Uses the `delete-account` Edge Function (supabase/functions/) — the
+        // Apple-compliant path that removes the auth user + cascades their rows.
+        // (A SQL `delete_account()` RPC is kept in schema.sql as an alternative.)
+        _ = try await send("functions/v1/delete-account", method: "POST", authorized: true,
                            body: Data("{}".utf8))
         clearSession()
     }
