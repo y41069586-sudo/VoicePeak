@@ -15,13 +15,17 @@ struct ProductDetailView: View {
         ScrollView {
             VStack(spacing: 16) {
                 header
-                if let offer { affiliateCard(offer) }
+                    .vStaggeredAppear(index: 0)
+                if let offer { affiliateCard(offer).vStaggeredAppear(index: 1) }
                 if profile.isEmpty {
                     emptyIngredients
+                        .vStaggeredAppear(index: 2)
                 } else {
                     riskSummary
-                    if !profile.actives.isEmpty { activesCard }
+                        .vStaggeredAppear(index: 2)
+                    if !profile.actives.isEmpty { activesCard.vStaggeredAppear(index: 3) }
                     ingredientList
+                        .vStaggeredAppear(index: 4)
                 }
                 if !profile.isEmpty {
                     NavigationLink {
@@ -39,8 +43,10 @@ struct ProductDetailView: View {
                         .blueGlow(Theme.primary, radius: 22, opacity: 0.45)
                     }
                     .buttonStyle(.plain)
+                    .vStaggeredAppear(index: 5)
                 }
                 DisclaimerBanner(style: .short)
+                    .vStaggeredAppear(index: 6)
             }
             .padding(20)
         }

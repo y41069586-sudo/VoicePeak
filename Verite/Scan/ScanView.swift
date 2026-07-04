@@ -18,6 +18,7 @@ struct ScanView: View {
     @State private var authStatus = CameraPermission.status
     @State private var isCapturing = false
     @State private var countdown: Int?
+    @State private var flash = false
     @State private var analyzing = false
     @State private var captured: CapturedScan?
 
@@ -80,9 +81,14 @@ struct ScanView: View {
                 ScanAnalyzingOverlay()
                     .transition(.opacity)
             }
+            if flash {
+                Color.white.ignoresSafeArea()
+                    .transition(.opacity)
+            }
         }
         .animation(Motion.springSnappy, value: countdown)
         .animation(Motion.springSnappy, value: analyzing)
+        .animation(.easeOut(duration: 0.18), value: flash)
         .onAppear { startIfAuthorized() }
         .onDisappear { camera.stop() }
     }
@@ -138,6 +144,10 @@ struct ScanView: View {
             }
             countdown = nil
             Haptics.fire(.capture)
+            // Shutter flash over the frozen frame.
+            flash = true
+            try? await Task.sleep(for: .seconds(0.09))
+            flash = false
             if let image = await camera.capture() {
                 await saveScan(image)
             }

@@ -30,14 +30,22 @@ struct DashboardView: View {
             ScrollView {
                 VStack(spacing: 16) {
                     snapshotCard
-                    if let activeTest { activeTestCard(activeTest) }
+                        .vStaggeredAppear(index: 0)
+                    if let activeTest {
+                        activeTestCard(activeTest)
+                            .vStaggeredAppear(index: 1)
+                    }
                     actionGrid
+                        .vStaggeredAppear(index: 2)
                     savingsCard
+                        .vStaggeredAppear(index: 3)
                     DisclaimerBanner(style: .short)
+                        .vStaggeredAppear(index: 4)
                 }
                 .padding(20)
             }
             .scrollIndicators(.hidden)
+            .background(GradientMeshBackground().ignoresSafeArea())
             .navigationTitle("tab.today")
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
