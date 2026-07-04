@@ -86,6 +86,46 @@ struct CaptureShutterButton: View {
     }
 }
 
+/// Shown while the on-device engine reads the capture — a short, honest
+/// "analyzing your skin" beat before the result. Never fakes speed; it simply
+/// covers the real Vision + CV pass so the transition isn't an abrupt cut.
+struct ScanAnalyzingOverlay: View {
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @State private var sweep = false
+
+    var body: some View {
+        ZStack {
+            Color.black.opacity(0.55).ignoresSafeArea()
+            VStack(spacing: 18) {
+                ZStack {
+                    Circle()
+                        .stroke(Color.white.opacity(0.2), lineWidth: 4)
+                        .frame(width: 88, height: 88)
+                    Circle()
+                        .trim(from: 0, to: 0.28)
+                        .stroke(Theme.signature, style: StrokeStyle(lineWidth: 4, lineCap: .round))
+                        .frame(width: 88, height: 88)
+                        .rotationEffect(.degrees(sweep ? 360 : 0))
+                }
+                Text("scan.analyzing")
+                    .font(Typography.display(24))
+                    .foregroundStyle(.white) // over the darkened camera
+                    .multilineTextAlignment(.center)
+                Text("scan.analyzing.sub")
+                    .font(.subheadline)
+                    .foregroundStyle(.white.opacity(0.75))
+                    .multilineTextAlignment(.center)
+                    .padding(.horizontal, 40)
+            }
+        }
+        .onAppear {
+            guard !reduceMotion else { return }
+            withAnimation(.linear(duration: 1.0).repeatForever(autoreverses: false)) { sweep = true }
+        }
+        .allowsHitTesting(false)
+    }
+}
+
 /// Full-screen countdown before capture ("hold still").
 struct CountdownOverlay: View {
     let value: Int

@@ -18,6 +18,7 @@ struct ScanView: View {
     @State private var authStatus = CameraPermission.status
     @State private var isCapturing = false
     @State private var countdown: Int?
+    @State private var analyzing = false
     @State private var captured: CapturedScan?
 
     struct CapturedScan: Identifiable {
@@ -75,8 +76,13 @@ struct ScanView: View {
             if let countdown {
                 CountdownOverlay(value: countdown)
             }
+            if analyzing {
+                ScanAnalyzingOverlay()
+                    .transition(.opacity)
+            }
         }
         .animation(Motion.springSnappy, value: countdown)
+        .animation(Motion.springSnappy, value: analyzing)
         .onAppear { startIfAuthorized() }
         .onDisappear { camera.stop() }
     }
@@ -143,13 +149,16 @@ struct ScanView: View {
         let quality = camera.quality.overall
         let baseline = isFirstBaseline
 
-        // Analyze the capture on a background task (Vision + CV metrics).
+        // Analyze the capture on a background task (Vision + CV metrics), showing
+        // an honest "analyzing" beat over the frozen frame while it runs.
+        analyzing = true
         let analysis: ScanAnalysis
         if let cgImage = image.normalizedUp().cgImage {
             analysis = await engine.analyze(cgImage: cgImage, captureQuality: quality)
         } else {
             analysis = .empty
         }
+        analyzing = false
 
         // Only persist a scan when a face was actually read.
         if analysis.faceFound {
