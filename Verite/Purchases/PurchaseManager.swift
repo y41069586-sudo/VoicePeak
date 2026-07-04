@@ -7,7 +7,9 @@ import SwiftUI
 @Observable
 @MainActor
 final class PurchaseManager {
-    private(set) var products: [Product] = []
+    // Fully qualified: the app also declares a SwiftData `Product` model, which
+    // would otherwise shadow StoreKit's `Product` within this module.
+    private(set) var products: [StoreKit.Product] = []
     private(set) var isPro = false
     private(set) var isPurchasing = false
 
@@ -23,13 +25,13 @@ final class PurchaseManager {
 
     /// Load products + current entitlement. Call once when purchases are enabled.
     func load() async {
-        products = (try? await Product.products(for: VeriteProducts.proIDs))?
+        products = (try? await StoreKit.Product.products(for: VeriteProducts.proIDs))?
             .sorted { $0.price < $1.price } ?? []
         await refreshEntitlements()
     }
 
     @discardableResult
-    func purchase(_ product: Product) async -> Bool {
+    func purchase(_ product: StoreKit.Product) async -> Bool {
         isPurchasing = true
         defer { isPurchasing = false }
         guard let result = try? await product.purchase() else { return false }

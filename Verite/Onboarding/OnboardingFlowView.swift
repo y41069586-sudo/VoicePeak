@@ -264,7 +264,7 @@ struct OnboardingFlowView: View {
                            progress: (2, quizTotal),
                            continueEnabled: !concerns.isEmpty,
                            onContinue: { advance() }) {
-            FlowLayout {
+            FlexWrap {
                 ForEach(SkinConcern.allCases) { concern in
                     ChoiceChip(titleKey: concern.localizationKey, selected: concerns.contains(concern)) {
                         toggle(concern, in: &concerns)
@@ -326,7 +326,7 @@ struct OnboardingFlowView: View {
     /// Multi-select chips where selecting "none" clears the rest (and vice-versa).
     private func chipGrid(_ options: [(id: String, key: LocalizedStringKey)],
                           selection: Binding<Set<String>>) -> some View {
-        FlowLayout {
+        FlexWrap {
             ForEach(options, id: \.id) { option in
                 ChoiceChip(titleKey: option.key, selected: selection.wrappedValue.contains(option.id)) {
                     toggleOption(option.id, in: selection)
