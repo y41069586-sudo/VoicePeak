@@ -14,7 +14,7 @@ settings:
     SWIFT_VERSION: "5.10"
     TARGETED_DEVICE_FAMILY: "1" # iPhone
     ENABLE_USER_SCRIPT_SANDBOXING: YES
-    GENERATE_INFOPLIST_FILE: NO
+    GENERATE_INFOPLIST_FILE: YES
     CODE_SIGN_STYLE: Automatic
     MARKETING_VERSION: "0.1.0"
     CURRENT_PROJECT_VERSION: "1"
@@ -30,7 +30,6 @@ targets:
           - "**/*.md"
     settings:
       base:
-        INFOPLIST_FILE: Verite/Resources/Info.plist
         PRODUCT_BUNDLE_IDENTIFIER: com.verite.com
         ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
         SUPPORTS_MACCATALYST: NO
@@ -38,6 +37,34 @@ targets:
         # require no linked frameworks until their milestones are enabled.
     info:
       path: Verite/Resources/Info.plist
+      properties:
+        CFBundleDevelopmentRegion: en
+        CFBundleDisplayName: Vérité
+        CFBundleInfoDictionaryVersion: "6.0"
+        CFBundleIconName: AppIcon
+        ITSAppUsesNonExemptEncryption: false
+        LSApplicationCategoryType: public.app-category.lifestyle
+        CFBundleLocalizations:
+          - en
+          - de
+          - es
+          - fr
+          - it
+        NSCameraUsageDescription: "Vérité uses the camera to analyze your skin and scan product barcodes. Photos are processed on your device and never uploaded."
+        UIUserInterfaceStyle: Light
+        UILaunchScreen:
+          UIColorName: LaunchBackground
+        UISupportedInterfaceOrientations:
+          - UIInterfaceOrientationPortrait
+          - UIInterfaceOrientationPortraitUpsideDown
+          - UIInterfaceOrientationLandscapeLeft
+          - UIInterfaceOrientationLandscapeRight
+        UIRequiresFullScreen: true
+        UIRequiredDeviceCapabilities:
+          - armv7
+        UIAppFonts:
+          - PlayfairDisplay.ttf
+          - PlayfairDisplay-Italic.ttf
 
 schemes:
   Verite:
