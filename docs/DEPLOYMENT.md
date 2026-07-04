@@ -25,31 +25,23 @@ key. You create it once, paste it into a Codemagic variable group, and then it
 
 1. **Create the app in App Store Connect** with bundle ID **`com.verite.app`**.
 
-2. **Generate the App Store Connect API key**
-   - App Store Connect → **Users and Access → Integrations → App Store Connect API**
-     → **Generate API Key**, role **App Manager**.
-   - Download the `.p8` (only downloadable once). Note the **Key ID** and, at the
-     top of that page, the **Issuer ID**.
+2. **Set up code signing in the Codemagic UI** (automatic signing):
+   - Connect App Store Connect (Apple) and add your **distribution certificate** +
+     **provisioning profile** for `com.verite.app` in Codemagic's code-signing
+     settings. The workflow's `ios_signing` block + `xcode-project use-profiles`
+     pick these up — **no signing secrets go in the repo or the variable group.**
 
-3. **Generate a signing certificate private key** (once, on your Mac):
-   ```bash
-   ssh-keygen -t rsa -b 2048 -m PEM -f cmkey -q -N "" && cat cmkey
-   ```
-
-4. **Add all four to a Codemagic variable group named `Verite`**
-   (App settings → **Environment variables** → *Group* = `Verite`, each **Secure**):
+3. **Add the 3 upload values to a Codemagic variable group named `Verite`**
+   (App settings → **Environment variables** → *Group* = `Verite`, each **Secure**).
+   These are used only to UPLOAD the build to TestFlight:
 
 | Variable | Value | From |
 |---|---|---|
-| `APP_STORE_CONNECT_KEY` | the **whole `.p8` file contents** | the downloaded `.p8` |
-| `APP_STORE_CONNECT_KEY_ID` | the Key ID | the key you generated |
-| `APP_STORE_CONNECT_ISSUER_ID` | the Issuer ID (a UUID) | App Store Connect API page |
-| `CERTIFICATE_PRIVATE_KEY` | the whole PEM from step 3 (`cat cmkey`) | your Mac |
+| `APP_STORE_CONNECT_KEY` | the **whole `.p8` file contents** | App Store Connect → Users and Access → Integrations → App Store Connect API → Generate API Key (App Manager) |
+| `APP_STORE_CONNECT_KEY_ID` | the Key ID | same page |
+| `APP_STORE_CONNECT_ISSUER_ID` | the Issuer ID (a UUID) | same page (top) |
 
-That's the complete list. The `ios-release` workflow already references the `Verite`
-group. The `publishing` block uses the first three for the upload; the
-`fetch-signing-files` step uses all four to create the distribution certificate +
-provisioning profile. Build number comes from `$BUILD_NUMBER` — nothing to set.
+That's the complete list. Build number comes from `$BUILD_NUMBER` — nothing to set.
 
 ### Release it
 

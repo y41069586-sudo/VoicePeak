@@ -7,18 +7,12 @@
 #     compile?" signal). Runs on every push to a claude/* branch.
 #   • ios-release       → signed build → TestFlight. Runs on a version tag (v*).
 #
-# ── What you must put in Codemagic for `ios-release` (env-var group `Verite`) ──
-# These are secrets only YOU can generate from your Apple account; no code can
-# contain or skip them. In Codemagic → App settings → Environment variables,
-# set Group = "Verite", mark each Secure:
-#
-#   APP_STORE_CONNECT_KEY        the WHOLE .p8 file contents  ┐ App Store Connect →
-#   APP_STORE_CONNECT_KEY_ID     the Key ID                   ┤ Users and Access →
-#   APP_STORE_CONNECT_ISSUER_ID  the Issuer ID                ┘ Integrations → API key
-#   CERTIFICATE_PRIVATE_KEY      a PEM you make once on your Mac:
-#        ssh-keygen -t rsa -b 2048 -m PEM -f cmkey -q -N "" && cat cmkey
-#
-# See docs/DEPLOYMENT.md for the click-by-click.
+# SIGNING: this uses Codemagic's automatic code signing. Set it up in the UI
+# (you've done this): connect App Store Connect and add your distribution
+# certificate + provisioning profile for com.verite.app. The `ios_signing` block
+# below + `xcode-project use-profiles` then pick them up — no signing secrets in
+# this file. The `Verite` env-var group only needs the 3 API values used to
+# UPLOAD to TestFlight (see the publishing block).
 
 workflows:
   ios-compile-check:
@@ -62,10 +56,13 @@ workflows:
         - Verite
         # - verite_secrets   # only if you turn the backend/affiliate modules ON
       xcode: latest
+      # Uses the certificate + provisioning profile you set up in Codemagic.
+      ios_signing:
+        distribution_type: app_store
+        bundle_identifier: com.verite.app
       vars:
         XCODE_PROJECT: "Verite.xcodeproj"
         XCODE_SCHEME: "Verite"
-        BUNDLE_ID: "com.verite.app"
     triggering:
       events:
         - tag
@@ -77,30 +74,8 @@ workflows:
         script: brew install xcodegen
       - name: Generate Xcode project
         script: xcodegen generate --spec project.yml
-      # Automatic signing needs the certificate + provisioning profile fetched
-      # first — this is the step the earlier version was missing. It uses the same
-      # App Store Connect API key from the `Verite` group.
-      - name: Fetch code-signing files
-        script: |
-          set -e
-          if [ -z "$CERTIFICATE_PRIVATE_KEY" ]; then
-            echo "❌ CERTIFICATE_PRIVATE_KEY is empty — add it to the 'Verite' variable group."
-            echo "   Generate it ONCE on your Mac, then paste the whole PEM (incl. BEGIN/END):"
-            echo "     ssh-keygen -t rsa -b 2048 -m PEM -f cmkey -q -N '' && cat cmkey"
-            exit 1
-          fi
-          keychain initialize
-          # First run creates a distribution certificate from CERTIFICATE_PRIVATE_KEY;
-          # later runs reuse it (the key is stable), so you don't hit Apple's cert limit.
-          app-store-connect fetch-signing-files "$BUNDLE_ID" \
-            --type IOS_APP_STORE \
-            --issuer-id "$APP_STORE_CONNECT_ISSUER_ID" \
-            --key-id "$APP_STORE_CONNECT_KEY_ID" \
-            --private-key "$APP_STORE_CONNECT_KEY" \
-            --certificate-key "$CERTIFICATE_PRIVATE_KEY" \
-            --create
-          keychain add-certificates
-          xcode-project use-profiles
+      - name: Set up signing
+        script: xcode-project use-profiles
       - name: Build & sign IPA
         script: |
           set -o pipefail
@@ -115,9 +90,7 @@ workflows:
       - /tmp/xcodebuild_logs/*.log
     publishing:
       app_store_connect:
-        # `api_key` is the private key ITSELF (the .p8 contents); key_id and
-        # issuer_id are siblings, NOT nested under api_key. Nesting them is what
-        # triggered "the API key, key identifier and issuer identifier are all required".
+        # api_key = the .p8 contents; key_id + issuer_id are siblings (not nested).
         api_key: $APP_STORE_CONNECT_KEY
         key_id: $APP_STORE_CONNECT_KEY_ID
         issuer_id: $APP_STORE_CONNECT_ISSUER_ID
