@@ -13,7 +13,9 @@ final class PurchaseManager {
     private(set) var isPro = false
     private(set) var isPurchasing = false
 
-    private var updatesTask: Task<Void, Never>?
+    // nonisolated(unsafe): only ever written from `init` (MainActor) and read
+    // from `deinit`, which runs nonisolated — cancelling a Task is thread-safe.
+    nonisolated(unsafe) private var updatesTask: Task<Void, Never>?
 
     init() {
         updatesTask = listenForTransactions()
