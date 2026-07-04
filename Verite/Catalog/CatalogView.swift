@@ -61,6 +61,9 @@ struct CatalogView: View {
                     ProgressView()
                     Text("catalog.searching").foregroundStyle(Theme.textSecondary)
                 }
+                ForEach(0..<3, id: \.self) { _ in
+                    SkeletonRow().listRowBackground(Theme.bgSurface.opacity(0.4))
+                }
             }
             if onlineError {
                 Label("catalog.error", systemImage: "wifi.exclamationmark")

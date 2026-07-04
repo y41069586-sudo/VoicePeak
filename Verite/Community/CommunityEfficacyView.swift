@@ -14,7 +14,11 @@ struct CommunityEfficacyView: View {
     var body: some View {
         Group {
             if loading {
-                ProgressView()
+                VStack(spacing: VSpace.md) {
+                    ForEach(0..<5, id: \.self) { _ in SkeletonRow() }
+                    Spacer()
+                }
+                .padding(VSpace.lg)
             } else if items.isEmpty {
                 ContentUnavailableView("community.empty", systemImage: "person.3")
             } else {
