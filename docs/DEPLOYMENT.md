@@ -13,41 +13,43 @@ Two independent things:
 The `ios-release` workflow in `codemagic.yaml` builds a signed IPA and uploads it
 to TestFlight. It runs when you push a **git tag** matching `v*` (e.g. `v1.0.0`).
 
+### Why Codemagic asks for a Key ID / Issuer ID — it's not a YAML bug
+
+Apple requires an **App Store Connect API key** to upload any build. It's a secret
+tied to *your* Apple account, so it can never live in the repo and no code avoids
+it. Having an Apple Developer login is **not** the same as having generated this
+key. You create it once, paste it into a Codemagic variable group, and then it
+"is there."
+
 ### What you must set up (one time)
 
-1. **Create the app in App Store Connect**
-   - Bundle ID **`com.verite.app`** (matches `project.yml`).
-   - App name, primary language, etc.
+1. **Create the app in App Store Connect** with bundle ID **`com.verite.app`**.
 
-2. **App Store Connect API key** (this single key covers *both* code signing and
-   the upload — you do **not** need to upload certificates manually):
+2. **Generate the App Store Connect API key**
    - App Store Connect → **Users and Access → Integrations → App Store Connect API**
-     → generate a key with the **App Manager** role.
-   - Download the `.p8` (you can only download it once). Note the **Key ID** and
-     the **Issuer ID**.
+     → **Generate API Key**, role **App Manager**.
+   - Download the `.p8` (only downloadable once). Note the **Key ID** and, at the
+     top of that page, the **Issuer ID**.
 
-3. **Add the key to Codemagic**
-   - Codemagic → **Teams → (your team) → Integrations → App Store Connect → Connect**.
-   - Give it a **name**, and paste Issuer ID, Key ID, and the `.p8` contents.
-   - Put that **name** into `codemagic.yaml`:
-     ```yaml
-     integrations:
-       app_store_connect: Verite ASC Key   # ← your integration's name
-     ```
+3. **Generate a signing certificate private key** (once, on your Mac):
+   ```bash
+   ssh-keygen -t rsa -b 2048 -m PEM -f cmkey -q -N "" && cat cmkey
+   ```
 
-That's it. No other variables are required for a standard App Store build.
-Codemagic uses the API key to auto-create the distribution certificate and
-provisioning profile for `com.verite.app` (driven by the `ios_signing` block).
+4. **Add all four to a Codemagic variable group named `Verite`**
+   (App settings → **Environment variables** → *Group* = `Verite`, each **Secure**):
 
-### Variables / settings summary
+| Variable | Value | From |
+|---|---|---|
+| `APP_STORE_CONNECT_KEY` | the **whole `.p8` file contents** | the downloaded `.p8` |
+| `APP_STORE_CONNECT_KEY_ID` | the Key ID | the key you generated |
+| `APP_STORE_CONNECT_ISSUER_ID` | the Issuer ID (a UUID) | App Store Connect API page |
+| `CERTIFICATE_PRIVATE_KEY` | the whole PEM from step 3 (`cat cmkey`) | your Mac |
 
-| Where | Key | Value | Required? |
-|---|---|---|---|
-| Codemagic UI (integration) | App Store Connect API key | your `.p8` + Key ID + Issuer ID | **Yes** |
-| `codemagic.yaml` | `integrations.app_store_connect` | the integration's name | **Yes** |
-| `codemagic.yaml` | `ios_signing.bundle_identifier` | `com.verite.app` | already set |
-| `codemagic.yaml` | `ios_signing.distribution_type` | `app_store` | already set |
-| build number | `$BUILD_NUMBER` (Codemagic-provided) | auto-increment | already wired |
+That's the complete list. The `ios-release` workflow already references the `Verite`
+group. The `publishing` block uses the first three for the upload; the
+`fetch-signing-files` step uses all four to create the distribution certificate +
+provisioning profile. Build number comes from `$BUILD_NUMBER` — nothing to set.
 
 ### Release it
 

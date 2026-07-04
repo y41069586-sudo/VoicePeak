@@ -1,42 +1,110 @@
+# Codemagic CI/CD — Vérité (iOS / SwiftUI)
+#
+# The repo ships an XcodeGen spec (project.yml) instead of a checked-in
+# .xcodeproj, so every workflow generates the project first, then builds.
+#
+#   • ios-compile-check → fast unsigned simulator build (the green/red "does it
+#     compile?" signal). Runs on every push to a claude/* branch.
+#   • ios-release       → signed build → TestFlight. Runs on a version tag (v*).
+#
+# ── What you must put in Codemagic for `ios-release` (env-var group `Verite`) ──
+# These are secrets only YOU can generate from your Apple account; no code can
+# contain or skip them. In Codemagic → App settings → Environment variables,
+# set Group = "Verite", mark each Secure:
+#
+#   APP_STORE_CONNECT_KEY        the WHOLE .p8 file contents  ┐ App Store Connect →
+#   APP_STORE_CONNECT_KEY_ID     the Key ID                   ┤ Users and Access →
+#   APP_STORE_CONNECT_ISSUER_ID  the Issuer ID                ┘ Integrations → API key
+#   CERTIFICATE_PRIVATE_KEY      a PEM you make once on your Mac:
+#        ssh-keygen -t rsa -b 2048 -m PEM -f cmkey -q -N "" && cat cmkey
+#
+# See docs/DEPLOYMENT.md for the click-by-click.
+
 workflows:
-  ios-release:
-    name: iOS Release
-    max_build_duration: 60
-
+  ios-compile-check:
+    name: Vérité · Compile check (simulator, unsigned)
+    instance_type: mac_mini_m2
+    max_build_duration: 45
     environment:
-      groups:
-        - Verite
-
       xcode: latest
-
-      ios_signing:
-        distribution_type: app_store
-        bundle_identifier: com.verite.app
-
       vars:
         XCODE_PROJECT: "Verite.xcodeproj"
         XCODE_SCHEME: "Verite"
-
+    triggering:
+      events:
+        - push
+      branch_patterns:
+        - pattern: "claude/*"
+          include: true
     scripts:
       - name: Install XcodeGen
         script: brew install xcodegen
-
       - name: Generate Xcode project
         script: xcodegen generate --spec project.yml
-
-      - name: Set up signing
-        script: xcode-project use-profiles
-
-      - name: Build IPA
+      - name: Build for iOS Simulator (no code signing)
         script: |
+          set -o pipefail
+          xcodebuild build \
+            -project "$XCODE_PROJECT" \
+            -scheme "$XCODE_SCHEME" \
+            -configuration Debug \
+            -destination 'generic/platform=iOS Simulator' \
+            CODE_SIGNING_ALLOWED=NO
+    artifacts:
+      - $HOME/Library/Developer/Xcode/DerivedData/**/Build/Products/**/*.app
+
+  ios-release:
+    name: iOS Release
+    instance_type: mac_mini_m2
+    max_build_duration: 60
+    environment:
+      groups:
+        - Verite
+        # - verite_secrets   # only if you turn the backend/affiliate modules ON
+      xcode: latest
+      vars:
+        XCODE_PROJECT: "Verite.xcodeproj"
+        XCODE_SCHEME: "Verite"
+        BUNDLE_ID: "com.verite.app"
+    triggering:
+      events:
+        - tag
+      tag_patterns:
+        - pattern: "v*"
+          include: true
+    scripts:
+      - name: Install XcodeGen
+        script: brew install xcodegen
+      - name: Generate Xcode project
+        script: xcodegen generate --spec project.yml
+      # Automatic signing needs the certificate + provisioning profile fetched
+      # first — this is the step the earlier version was missing. It uses the same
+      # App Store Connect API key from the `Verite` group.
+      - name: Fetch code-signing files
+        script: |
+          set -e
+          keychain initialize
+          app-store-connect fetch-signing-files "$BUNDLE_ID" \
+            --type IOS_APP_STORE \
+            --issuer-id "$APP_STORE_CONNECT_ISSUER_ID" \
+            --key-id "$APP_STORE_CONNECT_KEY_ID" \
+            --private-key "$APP_STORE_CONNECT_KEY" \
+            --certificate-key "$CERTIFICATE_PRIVATE_KEY" \
+            --create
+          keychain add-certificates
+          xcode-project use-profiles
+      - name: Build & sign IPA
+        script: |
+          set -o pipefail
+          # $BUILD_NUMBER (Codemagic auto-increment) → a unique App Store build number.
           xcode-project build-ipa \
             --project "$XCODE_PROJECT" \
             --scheme "$XCODE_SCHEME" \
-            --config Release
-
+            --config Release \
+            --archive-xcargs "CURRENT_PROJECT_VERSION=$BUILD_NUMBER"
     artifacts:
       - build/ios/ipa/*.ipa
-
+      - /tmp/xcodebuild_logs/*.log
     publishing:
       app_store_connect:
         api_key:
@@ -44,3 +112,4 @@ workflows:
           key_id: $APP_STORE_CONNECT_KEY_ID
           issuer_id: $APP_STORE_CONNECT_ISSUER_ID
         submit_to_testflight: true
+        # submit_to_app_store: false   # flip on (+ release_type) for a public release
