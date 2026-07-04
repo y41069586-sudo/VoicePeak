@@ -44,7 +44,7 @@ struct ScanView: View {
                     CameraDeniedView()
                 }
             }
-            .navigationTitle("tab.scan")
+            .navigationTitle("scan")
             .navigationBarTitleDisplayMode(.inline)
             .toolbarBackground(.hidden, for: .navigationBar)
         }

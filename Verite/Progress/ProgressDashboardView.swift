@@ -38,7 +38,7 @@ struct ProgressDashboardView: View {
                     .scrollIndicators(.hidden)
                 }
             }
-            .navigationTitle("tab.progress")
+            .navigationTitle("progress")
             .background(GradientMeshBackground())
         }
     }

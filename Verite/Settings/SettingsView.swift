@@ -105,7 +105,7 @@ struct SettingsView: View {
             }
             .scrollContentBackground(.hidden)
             .background(GradientMeshBackground().ignoresSafeArea())
-            .navigationTitle("tab.settings")
+            .navigationTitle("settings")
             .onChange(of: routineReminders) { _, enabled in
                 Task { await updateReminders(enabled) }
             }
