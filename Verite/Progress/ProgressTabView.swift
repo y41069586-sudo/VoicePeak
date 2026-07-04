@@ -10,10 +10,6 @@ struct ProgressTabView: View {
     @Query private var streaks: [Streak]
     @State private var selectedTab: ProgressViewTab = .timeline
 
-    enum ProgressViewTab: String {
-        case timeline, comparison, analytics, streak
-    }
-
     var body: some View {
         NavigationStack {
             VStack(spacing: 0) {
@@ -49,44 +45,12 @@ struct ProgressTabView: View {
     }
 }
 
-// MARK: - Tab Selector
-
-private struct ProgressTabSelector: View {
-    @Binding var selected: ProgressTabView.ProgressViewTab
-    
-    var body: some View {
-        HStack(spacing: 8) {
-            ForEach([
-                (ProgressTabView.ProgressViewTab.timeline, "chart.line.uptrend.xyaxis", "Timeline"),
-                (ProgressTabView.ProgressViewTab.comparison, "rectangle.2.swap", "Compare"),
-                (ProgressTabView.ProgressViewTab.analytics, "sum", "Stats"),
-                (ProgressTabView.ProgressViewTab.streak, "flame.fill", "Streak")
-            ], id: \.0) { tab, icon, label in
-                Button(action: { withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) { selected = tab } }) {
-                    VStack(spacing: 4) {
-                        Image(systemName: icon)
-                            .font(.system(size: 14, weight: .semibold))
-                        Text(label)
-                            .font(.caption2.weight(.semibold))
-                    }
-                    .frame(maxWidth: .infinity)
-                    .foregroundStyle(selected == tab ? .white : VColor.textSecondary)
-                    .padding(.vertical, 8)
-                    .background(selected == tab ? VColor.primary : VColor.bgSurface)
-                    .cornerRadius(8)
-                    .overlay(RoundedRectangle(cornerRadius: 8).stroke(VColor.strokeSubtle, lineWidth: 1))
-                }
-            }
-        }
-    }
-}
-
 // MARK: - Progress Timeline View
 
 private struct ProgressTimelineView: View {
     let scans: [Scan]
     
-    var sortedScans: [Scan] {
+    private var sortedScans: [Scan] {
         scans.sorted { $0.date > $1.date }
     }
     
@@ -95,12 +59,12 @@ private struct ProgressTimelineView: View {
             if sortedScans.isEmpty {
                 EmptyProgressState()
             } else {
-                Text("Your Journey")
+                Text("Your Scan Journey")
                     .font(.headline.weight(.semibold))
                     .foregroundStyle(VColor.textPrimary)
                 
                 VStack(spacing: 12) {
-                    ForEach(sortedScans.prefix(5), id: \.id) { scan in
+                    ForEach(sortedScans.prefix(10), id: \.id) { scan in
                         TimelineEntry(scan: scan)
                     }
                 }
@@ -109,259 +73,132 @@ private struct ProgressTimelineView: View {
     }
 }
 
-private struct TimelineEntry: View {
-    let scan: Scan
-    
-    var body: some View {
-        HStack(spacing: 12) {
-            VStack(spacing: 4) {
-                Image(systemName: scan.isBaseline ? "flag.fill" : "checkmark.circle.fill")
-                    .font(.title3)
-                    .foregroundStyle(scan.isBaseline ? VColor.danger : VColor.success)
-                
-                Divider()
-                    .frame(height: 20)
-                    .opacity(0)
-            }
-            
-            VStack(alignment: .leading, spacing: 4) {
-                Text(scan.isBaseline ? "Baseline Established" : "Scan Complete")
-                    .font(.callout.weight(.semibold))
-                    .foregroundStyle(VColor.textPrimary)
-                
-                Text(scan.date.formatted(date: .abbreviated, time: .short))
-                    .font(.caption)
-                    .foregroundStyle(VColor.textSecondary)
-            }
-            
-            Spacer()
-            
-            VStack(alignment: .trailing, spacing: 4) {
-                Text("\(Int(scan.captureQuality * 100))%")
-                    .font(.callout.weight(.semibold))
-                    .foregroundStyle(VColor.textPrimary)
-                
-                Text("Quality")
-                    .font(.caption2)
-                    .foregroundStyle(VColor.textSecondary)
-            }
-        }
-        .padding(12)
-        .background(VColor.bgSurface)
-        .cornerRadius(10)
-        .overlay(RoundedRectangle(cornerRadius: 10).stroke(VColor.strokeSubtle, lineWidth: 1))
-    }
-}
-
 // MARK: - Before/After Comparison
 
 private struct BeforeAfterView: View {
     let scans: [Scan]
     
-    var baselineScan: Scan? {
+    private var baseline: Scan? {
         scans.first(where: { $0.isBaseline })
     }
     
-    var latestScan: Scan? {
-        scans.sorted { $0.date > $1.date }.first(where: { !$0.isBaseline })
+    private var latest: Scan? {
+        scans.sorted(by: { $0.date > $1.date }).first(where: { !$0.isBaseline })
     }
     
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
-            if baselineScan == nil || latestScan == nil {
-                EmptyProgressState()
-            } else {
-                Text("Before & After")
+            if let baseline, let latest {
+                Text("Your Progress")
                     .font(.headline.weight(.semibold))
                     .foregroundStyle(VColor.textPrimary)
                 
                 HStack(spacing: 12) {
-                    ComparisonCard(scan: baselineScan!, label: "Before")
-                    ComparisonCard(scan: latestScan!, label: "After")
+                    ComparisonCard(
+                        label: "Baseline",
+                        date: baseline.date,
+                        quality: baseline.captureQuality
+                    )
+                    
+                    ComparisonCard(
+                        label: "Latest",
+                        date: latest.date,
+                        quality: latest.captureQuality
+                    )
                 }
                 
                 VStack(alignment: .leading, spacing: 12) {
                     Text("Improvements")
-                        .font(.subheadline.weight(.semibold))
+                        .font(.headline.weight(.semibold))
                         .foregroundStyle(VColor.textPrimary)
                     
                     VStack(spacing: 8) {
-                        ImprovementRow(metric: "Redness", change: -12)
-                        ImprovementRow(metric: "Texture", change: -8)
-                        ImprovementRow(metric: "Hydration", change: +24)
+                        ImprovementRow(metric: "Hydration", change: 0.15)
+                        ImprovementRow(metric: "Redness", change: -0.22)
+                        ImprovementRow(metric: "Acne", change: -0.10)
+                        ImprovementRow(metric: "Texture", change: 0.18)
                     }
                 }
-                .padding(16)
-                .background(VColor.bgSurface)
-                .cornerRadius(12)
-                .overlay(RoundedRectangle(cornerRadius: 12).stroke(VColor.strokeSubtle, lineWidth: 1))
+            } else {
+                EmptyProgressState()
             }
         }
     }
 }
 
-private struct ComparisonCard: View {
-    let scan: Scan
-    let label: String
-    
-    var body: some View {
-        VStack(spacing: 12) {
-            RoundedRectangle(cornerRadius: 10)
-                .fill(VColor.bgElevated)
-                .frame(height: 140)
-                .overlay(
-                    Image(systemName: "photo.fill")
-                        .foregroundStyle(VColor.textTertiary)
-                )
-            
-            Text(label)
-                .font(.callout.weight(.semibold))
-                .foregroundStyle(VColor.textPrimary)
-            
-            Text(scan.date.formatted(date: .abbreviated, time: .omitted))
-                .font(.caption)
-                .foregroundStyle(VColor.textSecondary)
-        }
-        .frame(maxWidth: .infinity)
-        .padding(12)
-        .background(VColor.bgSurface)
-        .cornerRadius(10)
-        .overlay(RoundedRectangle(cornerRadius: 10).stroke(VColor.strokeSubtle, lineWidth: 1))
-    }
-}
-
-private struct ImprovementRow: View {
-    let metric: String
-    let change: Int
-    
-    var color: Color {
-        change < 0 ? VColor.success : VColor.warning
-    }
-    
-    var body: some View {
-        HStack {
-            Text(metric)
-                .font(.callout)
-                .foregroundStyle(VColor.textPrimary)
-            
-            Spacer()
-            
-            HStack(spacing: 4) {
-                Image(systemName: change < 0 ? "arrow.down.circle.fill" : "arrow.up.circle.fill")
-                    .foregroundStyle(color)
-                
-                Text("\(abs(change))%")
-                    .font(.callout.weight(.semibold))
-                    .foregroundStyle(color)
-            }
-        }
-    }
-}
-
-// MARK: - Progress Analytics
+// MARK: - Analytics View
 
 private struct ProgressAnalyticsView: View {
     let scans: [Scan]
     
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
-            if scans.isEmpty {
-                EmptyProgressState()
-            } else {
-                Text("Your Skin Metrics")
-                    .font(.headline.weight(.semibold))
+            Text("Progress Metrics")
+                .font(.headline.weight(.semibold))
+                .foregroundStyle(VColor.textPrimary)
+            
+            VStack(spacing: 8) {
+                AnalyticsCard(
+                    title: "Total Scans",
+                    value: "\(scans.count)",
+                    subtitle: "Since baseline",
+                    icon: "camera.fill",
+                    color: VColor.primary
+                )
+                
+                AnalyticsCard(
+                    title: "Avg Quality",
+                    value: "\(Int(scans.map { $0.captureQuality }.average * 100))%",
+                    subtitle: "Capture quality",
+                    icon: "checkmark.circle.fill",
+                    color: VColor.success
+                )
+                
+                AnalyticsCard(
+                    title: "Trend",
+                    value: "Improving",
+                    subtitle: "Overall trajectory",
+                    icon: "arrow.up.right",
+                    color: VColor.accent
+                )
+                
+                AnalyticsCard(
+                    title: "Consistency",
+                    value: "Good",
+                    subtitle: "Scanning regularly",
+                    icon: "calendar",
+                    color: VColor.warning
+                )
+            }
+            
+            // Trend graph placeholder
+            VStack(alignment: .leading, spacing: 12) {
+                Text("7-Day Trend")
+                    .font(.callout.weight(.semibold))
                     .foregroundStyle(VColor.textPrimary)
                 
-                // Metrics grid
-                VStack(spacing: 12) {
-                    MetricCard(
-                        icon: "camera.fill",
-                        label: "Total Scans",
-                        value: "\(scans.count)",
-                        color: VColor.primary
-                    )
-                    
-                    MetricCard(
-                        icon: "checkmark.circle.fill",
-                        label: "Avg Quality",
-                        value: "\(Int(scans.map { $0.captureQuality }.reduce(0, +) / Double(scans.count) * 100))%",
-                        color: VColor.success
-                    )
-                    
-                    MetricCard(
-                        icon: "calendar",
-                        label: "Days Tracked",
-                        value: "\(scans.count * 2)",
-                        color: VColor.accent
-                    )
-                    
-                    MetricCard(
-                        icon: "flame.fill",
-                        label: "Consistency",
-                        value: "Excellent",
-                        color: VColor.warning
-                    )
-                }
-                
-                // Trend graph
-                VStack(alignment: .leading, spacing: 12) {
-                    Text("Redness Trend")
-                        .font(.subheadline.weight(.semibold))
-                        .foregroundStyle(VColor.textPrimary)
-                    
-                    HStack(alignment: .bottom, spacing: 8) {
-                        ForEach(0..<7, id: \.self) { index in
-                            VStack(spacing: 4) {
-                                RoundedRectangle(cornerRadius: 3)
-                                    .fill(VColor.danger.opacity(Double(7 - index) / 8))
-                                    .frame(height: CGFloat(15 + (7 - index) * 5))
-                                
-                                Text("W\(index + 1)")
-                                    .font(.caption2)
-                                    .foregroundStyle(VColor.textTertiary)
-                            }
-                            .frame(maxWidth: .infinity)
-                        }
+                HStack(alignment: .bottom, spacing: 8) {
+                    ForEach(0..<7, id: \.self) { _ in
+                        RoundedRectangle(cornerRadius: 3)
+                            .fill(
+                                LinearGradient(
+                                    gradient: Gradient(colors: [
+                                        VColor.primary.opacity(0.8),
+                                        VColor.accent.opacity(0.6)
+                                    ]),
+                                    startPoint: .top,
+                                    endPoint: .bottom
+                                )
+                            )
+                            .frame(height: CGFloat.random(in: 20...80))
                     }
-                    .frame(height: 100)
                 }
-                .padding(16)
+                .frame(height: 100)
+                .padding(12)
                 .background(VColor.bgSurface)
-                .cornerRadius(12)
-                .overlay(RoundedRectangle(cornerRadius: 12).stroke(VColor.strokeSubtle, lineWidth: 1))
+                .cornerRadius(8)
             }
         }
-    }
-}
-
-private struct MetricCard: View {
-    let icon: String
-    let label: String
-    let value: String
-    let color: Color
-    
-    var body: some View {
-        HStack(spacing: 12) {
-            Image(systemName: icon)
-                .font(.title3)
-                .foregroundStyle(color)
-                .frame(width: 40, alignment: .center)
-            
-            VStack(alignment: .leading, spacing: 2) {
-                Text(label)
-                    .font(.caption)
-                    .foregroundStyle(VColor.textSecondary)
-                Text(value)
-                    .font(.title3.weight(.bold))
-                    .foregroundStyle(VColor.textPrimary)
-            }
-            
-            Spacer()
-        }
-        .padding(12)
-        .background(VColor.bgSurface)
-        .cornerRadius(10)
-        .overlay(RoundedRectangle(cornerRadius: 10).stroke(VColor.strokeSubtle, lineWidth: 1))
     }
 }
 
@@ -370,88 +207,54 @@ private struct MetricCard: View {
 private struct StreakView: View {
     let streak: Streak?
     
+    private var current: Int {
+        streak?.current ?? 0
+    }
+    
+    private var best: Int {
+        streak?.best ?? 0
+    }
+
     var body: some View {
-        VStack(spacing: 20) {
-            if let streak = streak {
-                VStack(spacing: 16) {
-                    ZStack {
-                        Circle()
-                            .stroke(VColor.strokeSubtle, lineWidth: 2)
-                            .frame(width: 140, height: 140)
-                        
-                        VStack(spacing: 4) {
-                            Image(systemName: "flame.fill")
-                                .font(.system(size: 32))
-                                .foregroundStyle(VColor.warning)
-                            
-                            Text("\(streak.current)")
-                                .font(.system(size: 40, weight: .bold))
-                                .foregroundStyle(VColor.textPrimary)
-                            
-                            Text("Day Streak")
-                                .font(.caption.weight(.semibold))
-                                .foregroundStyle(VColor.textSecondary)
-                        }
-                    }
-                    .frame(maxWidth: .infinity)
-                    .padding(.top, 20)
-                    
-                    VStack(alignment: .leading, spacing: 12) {
-                        StreakStat(label: "Personal Best", value: "\(streak.longest) days")
-                        StreakStat(label: "Started", value: streak.startDate.formatted(date: .abbreviated, time: .omitted))
-                    }
-                    .padding(16)
-                    .background(VColor.bgSurface)
-                    .cornerRadius(12)
-                    .overlay(RoundedRectangle(cornerRadius: 12).stroke(VColor.strokeSubtle, lineWidth: 1))
+        VStack(alignment: .center, spacing: 16) {
+            Text("Consistency Streak")
+                .font(.headline.weight(.semibold))
+                .foregroundStyle(VColor.textPrimary)
+            
+            StreakCounter(current: current, best: best)
+            
+            VStack(alignment: .leading, spacing: 12) {
+                Text("Streak Tips")
+                    .font(.callout.weight(.semibold))
+                    .foregroundStyle(VColor.textPrimary)
+                
+                VStack(alignment: .leading, spacing: 10) {
+                    StreakTip(icon: "calendar", text: "Scan around the same time each day")
+                    StreakTip(icon: "sun.max", text: "Consistent lighting conditions help")
+                    StreakTip(icon: "target", text: "Follow the AR guide for best results")
                 }
-            } else {
-                EmptyProgressState()
             }
         }
     }
 }
 
-private struct StreakStat: View {
-    let label: String
-    let value: String
+private struct StreakTip: View {
+    let icon: String
+    let text: String
     
     var body: some View {
-        HStack {
-            Text(label)
+        HStack(spacing: 10) {
+            Image(systemName: icon)
+                .font(.body.weight(.semibold))
+                .foregroundStyle(VColor.primary)
+                .frame(width: 24)
+            
+            Text(text)
                 .font(.callout)
                 .foregroundStyle(VColor.textSecondary)
+            
             Spacer()
-            Text(value)
-                .font(.callout.weight(.semibold))
-                .foregroundStyle(VColor.textPrimary)
         }
-    }
-}
-
-// MARK: - Empty State
-
-private struct EmptyProgressState: View {
-    var body: some View {
-        VStack(spacing: 16) {
-            Image(systemName: "chart.line.uptrend.xyaxis")
-                .font(.system(size: 40))
-                .foregroundStyle(VColor.primary.opacity(0.5))
-            
-            Text("No progress data yet")
-                .font(.headline.weight(.semibold))
-                .foregroundStyle(VColor.textPrimary)
-            
-            Text("Start scanning to track your skin's journey.")
-                .font(.callout)
-                .foregroundStyle(VColor.textSecondary)
-                .multilineTextAlignment(.center)
-        }
-        .frame(maxWidth: .infinity)
-        .padding(24)
-        .background(VColor.bgSurface)
-        .cornerRadius(12)
-        .overlay(RoundedRectangle(cornerRadius: 12).stroke(VColor.strokeSubtle, lineWidth: 1))
     }
 }
 
