@@ -1,6 +1,6 @@
 workflows:
   ios-release:
-    name: iOS Release (App Store)
+    name: iOS Release
     max_build_duration: 60
 
     xcode: latest
@@ -13,16 +13,6 @@ workflows:
       vars:
         XCODE_PROJECT: "Verite.xcodeproj"
         XCODE_SCHEME: "Verite"
-        BUNDLE_ID: "com.verite.app"
-        # optional (falls du Build-Version stabil halten willst)
-        MARKETING_VERSION: "1.0.0"
-
-    triggering:
-      events:
-        - tag
-      tag_patterns:
-        - pattern: "v*"
-          include: true
 
     scripts:
       - name: Install XcodeGen
@@ -31,29 +21,23 @@ workflows:
       - name: Generate Xcode project
         script: xcodegen generate --spec project.yml
 
-      - name: Set up code signing
+      - name: Set up signing
         script: xcode-project use-profiles
 
-      - name: Build & sign IPA
+      - name: Build IPA
         script: |
-          set -o pipefail
-
           xcode-project build-ipa \
             --project "$XCODE_PROJECT" \
             --scheme "$XCODE_SCHEME" \
-            --config Release \
-            --archive-xcargs "CURRENT_PROJECT_VERSION=$BUILD_NUMBER MARKETING_VERSION=$MARKETING_VERSION"
+            --config Release
 
     artifacts:
       - build/ios/ipa/*.ipa
-      - /tmp/xcodebuild_logs/*.log
 
     publishing:
       app_store_connect:
-        # 🔥 WICHTIG: echte API Key Integration (NICHT nur "integration")
-        api_key: $APP_STORE_CONNECT_API_KEY
-
+        api_key:
+          key: $APP_STORE_CONNECT_KEY
+          issuer_id: $APP_STORE_CONNECT_ISSUER_ID
+          key_id: $APP_STORE_CONNECT_KEY_ID
         submit_to_testflight: true
-        # optional später:
-        # submit_to_app_store: true
-        # release_type: MANUAL
