@@ -8,6 +8,7 @@ struct SettingsView: View {
     @Environment(AppState.self) private var appState
     @Environment(\.modelContext) private var modelContext
     @AppStorage("languageOverride") private var languageOverride: String = ""
+    @AppStorage("routineReminders") private var routineReminders = false
 
     var body: some View {
         NavigationStack {
@@ -38,6 +39,17 @@ struct SettingsView: View {
                     Text("settings.data.footer") // "Face photos never leave your device."
                 }
 
+                // Reminders
+                Section {
+                    Toggle(isOn: $routineReminders) {
+                        Label("settings.reminders.routine", systemImage: "bell")
+                    }
+                } header: {
+                    Text("settings.section.reminders")
+                } footer: {
+                    Text("settings.reminders.routine.footer")
+                }
+
                 // Purchases (only when the flag is on — off by default)
                 if appState.featureFlags.purchasesEnabled {
                     Section("settings.section.purchases") {
@@ -64,6 +76,22 @@ struct SettingsView: View {
             }
             .scrollContentBackground(.hidden)
             .navigationTitle("tab.settings")
+            .onChange(of: routineReminders) { _, enabled in
+                Task { await updateReminders(enabled) }
+            }
+        }
+    }
+
+    private func updateReminders(_ enabled: Bool) async {
+        if enabled {
+            let granted = await NotificationManager.requestAuthorization()
+            if granted {
+                NotificationManager.scheduleRoutineReminders()
+            } else {
+                routineReminders = false // permission denied → reflect reality
+            }
+        } else {
+            NotificationManager.cancelRoutineReminders()
         }
     }
 

@@ -47,6 +47,15 @@ enum IngredientConflicts {
         return s
     }
 
+    /// Clashes *within* a routine (co-occurring actives across proven products).
+    static func internalWarnings(signals s: Signals) -> [ConflictWarning] {
+        var warnings: [ConflictWarning] = []
+        if s.hasRetinol && s.hasAcid { warnings.append(ConflictWarning(titleKey: "match.conflict.retinolAcid")) }
+        if s.hasRetinol && s.hasVitaminC { warnings.append(ConflictWarning(titleKey: "match.conflict.vitCRetinol")) }
+        if s.hasRetinol && s.hasBenzoylPeroxide { warnings.append(ConflictWarning(titleKey: "match.conflict.bpoRetinol")) }
+        return warnings
+    }
+
     static func check(product: ProductProfile, routine: Signals) -> [ConflictWarning] {
         let new = signals(for: product)
         var warnings: [ConflictWarning] = []
