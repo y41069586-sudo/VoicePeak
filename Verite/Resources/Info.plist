@@ -23,6 +23,20 @@
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 
+	<!-- Required for App Store upload when using a manual Info.plist: points at
+	     the asset-catalog icon set (AppIcon). Without it the upload is rejected. -->
+	<key>CFBundleIconName</key>
+	<string>AppIcon</string>
+
+	<!-- App uses only standard/exempt encryption (HTTPS). Declaring this skips the
+	     manual export-compliance question on every TestFlight build. -->
+	<key>ITSAppUsesNonExemptEncryption</key>
+	<false/>
+
+	<!-- App Store category. -->
+	<key>LSApplicationCategoryType</key>
+	<string>public.app-category.lifestyle</string>
+
 	<!-- Supported UI languages (mirrors the String Catalog). -->
 	<key>CFBundleLocalizations</key>
 	<array>
