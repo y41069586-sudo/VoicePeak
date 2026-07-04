@@ -26,7 +26,10 @@ struct AccountView: View {
                 }
                 Section {
                     Button {
-                        Task { await sync() }
+                        // Build the @Query-backed payload on the main actor, then
+                        // hand the Sendable value to the background sync.
+                        let payload = buildPayload()
+                        Task { await sync(payload) }
                     } label: {
                         Label("account.sync", systemImage: "arrow.triangle.2.circlepath")
                     }
@@ -46,12 +49,30 @@ struct AccountView: View {
                     SignInWithAppleButton(.signIn) { request in
                         request.requestedScopes = [.email]
                         let nonce = AppleSignIn.randomNonce()
+                        currentNonce = nonce
                         request.nonce = AppleSignIn.sha256(nonce)
-                        // AuthenticationServices' closures aren't guaranteed MainActor;
-                        // hop explicitly before touching @State / calling into the view.
-                        Task { @MainActor in currentNonce = nonce }
                     } onCompletion: { result in
-                        Task { @MainActor in handleSignIn(result) }
+                        // Extract the token as a String *synchronously* here (the
+                        // non-Sendable ASAuthorization must not cross into the Task).
+                        // This closure inherits body's @MainActor, so the Task does
+                        // too — capturing self is safe, unlike a Task made inside a
+                        // separate nonisolated method.
+                        guard case .success(let authorization) = result,
+                              let credential = authorization.credential as? ASAuthorizationAppleIDCredential,
+                              let tokenData = credential.identityToken,
+                              let token = String(data: tokenData, encoding: .utf8) else {
+                            statusKey = "account.error"
+                            return
+                        }
+                        let nonce = currentNonce
+                        Task {
+                            do {
+                                user = try await backend.signInWithApple(idToken: token, nonce: nonce)
+                                statusKey = nil
+                            } catch {
+                                statusKey = "account.error"
+                            }
+                        }
                     }
                     .signInWithAppleButtonStyle(.black)
                     .frame(height: 46)
@@ -80,27 +101,9 @@ struct AccountView: View {
         }
     }
 
-    private func handleSignIn(_ result: Result<ASAuthorization, Error>) {
-        guard case .success(let authorization) = result,
-              let credential = authorization.credential as? ASAuthorizationAppleIDCredential,
-              let tokenData = credential.identityToken,
-              let token = String(data: tokenData, encoding: .utf8) else {
-            statusKey = "account.error"
-            return
-        }
-        Task {
-            do {
-                user = try await backend.signInWithApple(idToken: token, nonce: currentNonce)
-                statusKey = nil
-            } catch {
-                statusKey = "account.error"
-            }
-        }
-    }
-
-    private func sync() async {
+    private func sync(_ payload: MetricsPayload) async {
         do {
-            try await backend.syncMetrics(buildPayload())
+            try await backend.syncMetrics(payload)
             statusKey = "account.synced"
         } catch {
             statusKey = "account.error"
