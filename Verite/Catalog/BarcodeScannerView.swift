@@ -62,9 +62,14 @@ final class BarcodeScannerController: NSObject, ObservableObject, AVCaptureMetad
               let object = metadataObjects.first as? AVMetadataMachineReadableCodeObject,
               let code = object.stringValue, !code.isEmpty else { return }
         didFind = true
-        Haptics.fire(.capture)
-        onCode?(code)
         stop()
+        // The delegate queue is `.main`, but this method itself is nonisolated
+        // (AVCaptureMetadataOutputObjectsDelegate isn't MainActor); hop explicitly
+        // to call the MainActor-isolated Haptics.fire.
+        Task { @MainActor in
+            Haptics.fire(.capture)
+            onCode?(code)
+        }
     }
 }
 
