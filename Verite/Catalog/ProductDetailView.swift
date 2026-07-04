@@ -6,12 +6,16 @@ import SwiftUI
 struct ProductDetailView: View {
     let product: Product
 
+    @Environment(AppState.self) private var appState
+    @State private var offer: AffiliateOffer?
+
     private var profile: ProductProfile { IngredientEngine.profile(for: product) }
 
     var body: some View {
         ScrollView {
             VStack(spacing: 16) {
                 header
+                if let offer { affiliateCard(offer) }
                 if profile.isEmpty {
                     emptyIngredients
                 } else {
@@ -44,6 +48,42 @@ struct ProductDetailView: View {
         .navigationTitle(Text(verbatim: product.name))
         .navigationBarTitleDisplayMode(.inline)
         .background(GradientMeshBackground())
+        .task { await loadOffer() }
+    }
+
+    private func loadOffer() async {
+        guard appState.featureFlags.affiliateEnabled else { return }
+        offer = await appState.affiliate.offer(barcode: product.barcode, name: product.name, brand: product.brand)
+    }
+
+    /// Affiliate buy row + mandatory disclosure (radical transparency).
+    private func affiliateCard(_ offer: AffiliateOffer) -> some View {
+        GlassCard {
+            VStack(alignment: .leading, spacing: 10) {
+                Link(destination: offer.url) {
+                    HStack(spacing: 8) {
+                        Image(systemName: "cart.fill")
+                        Text("affiliate.buy")
+                        if let price = offer.price {
+                            Text(price.formatted(.currency(code: offer.currencyCode ?? "EUR")))
+                        }
+                        Spacer()
+                        Image(systemName: "arrow.up.right")
+                    }
+                    .font(.headline)
+                    .foregroundStyle(.white)
+                    .padding(.vertical, 14).padding(.horizontal, 16)
+                    .frame(maxWidth: .infinity)
+                    .background(Theme.signature, in: Capsule())
+                }
+                .buttonStyle(.plain)
+                HStack(alignment: .top, spacing: 6) {
+                    Image(systemName: "info.circle").font(.caption2)
+                    Text("affiliate.disclosure").font(.caption2)
+                }
+                .foregroundStyle(Theme.textSecondary)
+            }
+        }
     }
 
     // MARK: Header

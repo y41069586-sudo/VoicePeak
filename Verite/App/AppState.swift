@@ -18,11 +18,17 @@ final class AppState {
     /// config is present. Face photos never touch it.
     let backend: BackendService
 
+    /// Optional affiliate enrichment. OFF by default → `DisabledAffiliate`.
+    let affiliate: AffiliateService
+
     init(featureFlags: FeatureFlags = .default) {
         self.featureFlags = featureFlags
         self.backend = (featureFlags.backendEnabled && BackendConfig.shared.isConfigured)
             ? SupabaseBackend()
             : LocalOnlyBackend()
+        self.affiliate = (featureFlags.affiliateEnabled && AffiliateConfig.shared.isConfigured)
+            ? ConfiguredAffiliateProvider(config: .shared)
+            : DisabledAffiliate()
     }
 }
 

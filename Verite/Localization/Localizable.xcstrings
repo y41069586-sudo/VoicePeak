@@ -11905,6 +11905,76 @@
           }
         }
       }
+    },
+    "affiliate.buy": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Buy"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kaufen"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Comprar"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Acheter"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Acquista"
+          }
+        }
+      }
+    },
+    "affiliate.disclosure": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Affiliate link — we may earn a commission. It never affects your honest match."
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Affiliate-Link – wir erhalten ggf. eine Provision. Dein ehrlicher Abgleich bleibt davon unberührt."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Enlace de afiliado: podemos ganar una comisión. Nunca afecta a tu análisis honesto."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Lien affilié — nous pouvons percevoir une commission. Cela n’affecte jamais votre verdict honnête."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Link di affiliazione — potremmo guadagnare una commissione. Non influisce mai sul tuo verdetto onesto."
+          }
+        }
+      }
     }
   },
   "version": "1.0"
