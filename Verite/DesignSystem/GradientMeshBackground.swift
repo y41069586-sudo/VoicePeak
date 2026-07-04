@@ -47,6 +47,7 @@ struct GradientMeshBackground: View {
             .ignoresSafeArea()
         }
         .background(Theme.bgBase.ignoresSafeArea())
+        .accessibilityHidden(true) // purely decorative
     }
 
     // Precomputed blob definitions — no allocation during animation frames.
