@@ -51,18 +51,22 @@ workflows:
     name: iOS Release
     instance_type: mac_mini_m2
     max_build_duration: 60
+    # ⬇⬇⬇ REPLACE with the EXACT name of your App Store Connect integration
+    # (Codemagic → Team settings → Integrations → App Store Connect — the name you
+    # gave it when you connected Apple). This one integration does BOTH the signing
+    # (auto-creates the cert + profile for com.verite.app) AND the TestFlight upload.
+    integrations:
+      app_store_connect: CHANGE_ME_INTEGRATION_NAME
     environment:
-      groups:
-        - Verite
-        # - verite_secrets   # only if you turn the backend/affiliate modules ON
       xcode: latest
-      # Uses the certificate + provisioning profile you set up in Codemagic.
       ios_signing:
         distribution_type: app_store
         bundle_identifier: com.verite.app
       vars:
         XCODE_PROJECT: "Verite.xcodeproj"
         XCODE_SCHEME: "Verite"
+      # groups:
+      #   - verite_secrets   # only if you turn the backend/affiliate modules ON
     triggering:
       events:
         - tag
@@ -90,9 +94,6 @@ workflows:
       - /tmp/xcodebuild_logs/*.log
     publishing:
       app_store_connect:
-        # api_key = the .p8 contents; key_id + issuer_id are siblings (not nested).
-        api_key: $APP_STORE_CONNECT_KEY
-        key_id: $APP_STORE_CONNECT_KEY_ID
-        issuer_id: $APP_STORE_CONNECT_ISSUER_ID
+        auth: integration          # uses the integration referenced above
         submit_to_testflight: true
         # submit_to_app_store: false   # flip on (+ release_type) for a public release
