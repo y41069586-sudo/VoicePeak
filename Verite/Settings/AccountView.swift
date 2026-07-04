@@ -46,10 +46,12 @@ struct AccountView: View {
                     SignInWithAppleButton(.signIn) { request in
                         request.requestedScopes = [.email]
                         let nonce = AppleSignIn.randomNonce()
-                        currentNonce = nonce
                         request.nonce = AppleSignIn.sha256(nonce)
+                        // AuthenticationServices' closures aren't guaranteed MainActor;
+                        // hop explicitly before touching @State / calling into the view.
+                        Task { @MainActor in currentNonce = nonce }
                     } onCompletion: { result in
-                        handleSignIn(result)
+                        Task { @MainActor in handleSignIn(result) }
                     }
                     .signInWithAppleButtonStyle(.black)
                     .frame(height: 46)
@@ -112,14 +114,16 @@ struct AccountView: View {
     }
 
     private func buildPayload() -> MetricsPayload {
-        MetricsPayload(
-            scans: scans.map {
-                .init(date: $0.date, side: $0.side.rawValue, isBaseline: $0.isBaseline,
-                      captureQuality: $0.captureQuality, attributes: $0.attributeScores)
-            },
-            routine: routineItems.map {
-                .init(timeOfDay: $0.timeOfDay.rawValue, order: $0.order, proven: $0.proven)
-            },
+        let scanMetrics: [MetricsPayload.ScanMetric] = scans.map { scan in
+            MetricsPayload.ScanMetric(date: scan.date, side: scan.side.rawValue, isBaseline: scan.isBaseline,
+                                      captureQuality: scan.captureQuality, attributes: scan.attributeScores)
+        }
+        let routineMetrics: [MetricsPayload.RoutineMetric] = routineItems.map { item in
+            MetricsPayload.RoutineMetric(timeOfDay: item.timeOfDay.rawValue, order: item.order, proven: item.proven)
+        }
+        return MetricsPayload(
+            scans: scanMetrics,
+            routine: routineMetrics,
             totalSaved: ledgers.first?.totalSaved ?? 0,
             currencyCode: ledgers.first?.currencyCode ?? "EUR"
         )
