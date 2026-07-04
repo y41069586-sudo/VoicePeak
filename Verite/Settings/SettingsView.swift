@@ -6,6 +6,7 @@ import SwiftData
 /// Data export/delete + full legal text are completed in Milestone 10.
 struct SettingsView: View {
     @Environment(AppState.self) private var appState
+    @Environment(PurchaseManager.self) private var purchases
     @Environment(\.modelContext) private var modelContext
     @AppStorage("languageOverride") private var languageOverride: String = ""
     @AppStorage("routineReminders") private var routineReminders = false
@@ -53,8 +54,18 @@ struct SettingsView: View {
                 // Purchases (only when the flag is on — off by default)
                 if appState.featureFlags.purchasesEnabled {
                     Section("settings.section.purchases") {
-                        Label("settings.purchases.manage", systemImage: "creditcard")
-                        Label("settings.purchases.restore", systemImage: "arrow.clockwise")
+                        if purchases.isPro {
+                            Label("settings.purchases.active", systemImage: "checkmark.seal.fill")
+                                .foregroundStyle(Theme.success)
+                        }
+                        Link(destination: URL(string: "https://apps.apple.com/account/subscriptions")!) {
+                            Label("settings.purchases.manage", systemImage: "creditcard")
+                        }
+                        Button {
+                            Task { await purchases.restore() }
+                        } label: {
+                            Label("settings.purchases.restore", systemImage: "arrow.clockwise")
+                        }
                     }
                 }
 
@@ -123,5 +134,6 @@ enum AppLanguage: String, CaseIterable, Identifiable {
     SettingsView()
         .modelContainer(Persistence.previewContainer)
         .environment(AppState())
-        .preferredColorScheme(.dark)
+        .environment(PurchaseManager())
+        .preferredColorScheme(.light)
 }

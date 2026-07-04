@@ -34,5 +34,6 @@ struct RootView: View {
     RootView()
         .modelContainer(Persistence.previewContainer)
         .environment(AppState())
-        .preferredColorScheme(.dark)
+        .environment(PurchaseManager())
+        .preferredColorScheme(.light)
 }

@@ -11,6 +11,10 @@ struct VeriteApp: App {
     /// Global observable state (holds the feature flags — all OFF by default).
     @State private var appState = AppState()
 
+    /// StoreKit manager — always in the environment, only *used* when purchases
+    /// are enabled.
+    @State private var purchases = PurchaseManager()
+
     /// Language override chosen in Settings; empty string = follow system locale.
     @AppStorage("languageOverride") private var languageOverride: String = ""
 
@@ -18,8 +22,12 @@ struct VeriteApp: App {
         WindowGroup {
             RootView()
                 .environment(appState)
+                .environment(purchases)
                 .preferredColorScheme(.light) // light-first white-and-blue, committed look
                 .applyLanguageOverride(languageOverride)
+                .task {
+                    if appState.featureFlags.purchasesEnabled { await purchases.load() }
+                }
         }
         .modelContainer(modelContainer)
     }

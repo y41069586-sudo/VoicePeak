@@ -40,5 +40,6 @@ struct MainTabView: View {
     MainTabView()
         .modelContainer(Persistence.previewContainer)
         .environment(AppState())
-        .preferredColorScheme(.dark)
+        .environment(PurchaseManager())
+        .preferredColorScheme(.light)
 }
