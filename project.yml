@@ -28,6 +28,7 @@ targets:
       - path: Verite
         excludes:
           - "**/*.md"
+          - "**/*Tests.swift"
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.verite.com
@@ -66,6 +67,21 @@ targets:
           - PlayfairDisplay.ttf
           - PlayfairDisplay-Italic.ttf
 
+  VeriteTests:
+    type: bundle
+    platform: iOS
+    deploymentTarget: "17.0"
+    sources:
+      - path: Verite
+        includes:
+          - "**/*Tests.swift"
+    dependencies:
+      - target: Verite
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.verite.com.tests
+        TEST_TARGET_NAME: Verite
+
 schemes:
   Verite:
     build:
@@ -74,6 +90,8 @@ schemes:
     run:
       config: Debug
     test:
+      targets:
+        - VeriteTests
       config: Debug
     profile:
       config: Release
