@@ -1,0 +1,437 @@
+================================================================================
+CODEMAGIC CI/CD BUILD COMMANDS REFERENCE
+VoicePeak/Verite - iOS 17.0+
+================================================================================
+
+PROJECT SETUP
+=============
+
+XcodeGen Installation:
+  $ brew install xcodegen
+
+Project Generation (generates Verite.xcodeproj from project.yml):
+  $ xcodegen generate --spec project.yml
+
+Expected output:
+  ✓ Verite.xcodeproj created
+  ✓ Verite.xcodeproj/project.pbxproj contains both Verite and VeriteTests targets
+
+
+WORKFLOW 1: COMPILE CHECK
+=========================
+Purpose: Fast build verification (no tests)
+Time: 15-20 minutes
+Branch trigger: claude/*
+
+Commands:
+  1. brew install xcodegen
+  2. xcodegen generate --spec project.yml
+  3. xcodebuild build \
+       -project "Verite.xcodeproj" \
+       -scheme "Verite" \
+       -configuration Debug \
+       -destination 'generic/platform=iOS Simulator' \
+       CODE_SIGNING_ALLOWED=NO
+
+Expected output (success):
+  ✓ XcodeGen generates project
+  ✓ Swift compilation succeeds
+  ✓ Linking succeeds
+  ✓ Build products created in DerivedData
+
+Expected errors (NONE):
+  ✗ Compilation error
+  ✗ Linking error
+  ✗ CoreML dependency error (NOT expected - model is optional)
+
+Success criteria:
+  Build finishes with return code 0
+
+
+WORKFLOW 2: PHASE 3 TESTS
+=========================
+Purpose: Run all Phase 3A + 3B tests (with coverage)
+Time: 20-30 minutes
+Branch trigger: claude/* (same as compile check, can run in parallel)
+
+Commands:
+  1. brew install xcodegen
+  2. xcodegen generate --spec project.yml
+  3. xcodebuild test \
+       -project "Verite.xcodeproj" \
+       -scheme "Verite" \
+       -configuration Debug \
+       -destination 'generic/platform=iOS Simulator' \
+       -verbose
+
+  4. xcodebuild test \
+       -project "Verite.xcodeproj" \
+       -scheme "Verite" \
+       -configuration Debug \
+       -destination 'generic/platform=iOS Simulator' \
+       -enableCodeCoverage YES \
+       -derivedDataPath "$CI_BUILD_DIR/derived_data"
+
+Expected test output:
+  Test Target 'VeriteTests' started
+    Compiling Swift Module 'Verite'
+    Compiling Swift Module 'VeriteTests'
+    Linking VeriteTests.xctest
+    
+  Test Suite 'VeriteTests.xctest' started
+    Test Suite 'SkinAnalysisEngineTests' started
+      Test Case 'testHeuristicAnalysis' started
+      Test Case 'testHeuristicAnalysis' passed (0.123 seconds)
+      ... more tests ...
+    Test Suite 'SkinAnalysisEngineTests' passed
+    
+    Test Suite 'SkinAnalysisEngineCoreMLTests' started
+      Test Case 'testModelLoaderHandlesMissingModel' started
+      Test Case 'testModelLoaderHandlesMissingModel' passed (0.456 seconds)
+      Test Case 'testFallbackWhenModelUnavailable' started
+      Test Case 'testFallbackWhenModelUnavailable' passed (0.234 seconds)
+      Test Case 'testHybridModeWithoutModel' started
+      Test Case 'testHybridModeWithoutModel' passed (0.567 seconds)
+      ... more tests ...
+    Test Suite 'SkinAnalysisEngineCoreMLTests' passed
+    
+    Test Suite 'ARKitFaceEngineTests' started
+      ... tests ...
+    Test Suite 'ARKitFaceEngineTests' passed
+    
+    Test Suite 'SkinRegionExtractorTests' started
+      ... tests ...
+    Test Suite 'SkinRegionExtractorTests' passed
+  
+  Test Suite 'VeriteTests.xctest' passed
+  
+  Code coverage reports:
+    Statements coverage: XX.X%
+    Functions coverage: XX.X%
+    Lines coverage: XX.X%
+
+Expected errors (NONE):
+  ✗ Compilation error
+  ✗ Link error
+  ✗ Test failure
+  ✗ "Model not found" EXCEPTION (NOTE: Warning is OK, exception is not)
+
+CoreML in CI (expected behavior):
+  [CoreML] ⚠️  Failed to load CoreML model: SkinAnalysisModel not found in bundle
+  [CoreML] ℹ️  Falling back to heuristic analysis
+  → Test still PASSES (fallback verified)
+
+Success criteria:
+  ✓ All 4 test suites pass
+  ✓ No test failures
+  ✓ Code coverage reported
+  ✓ Return code 0
+
+
+WORKFLOW 3: ARCHIVE BUILD
+=========================
+Purpose: Build Release configuration app bundle (unsigned)
+Time: 20-25 minutes
+Branch trigger: main / develop
+
+Commands:
+  1. brew install xcodegen
+  2. xcodegen generate --spec project.yml
+  3. xcodebuild build-for-testing \
+       -project "Verite.xcodeproj" \
+       -scheme "Verite" \
+       -configuration Release \
+       -destination 'generic/platform=iOS' \
+       CODE_SIGNING_ALLOWED=NO
+
+  4. Verify app bundle:
+     ARCHIVE_PATH="$HOME/Library/Developer/Xcode/DerivedData/Verite-*/Build/Products/Release-iphoneos"
+     ls -lah "$ARCHIVE_PATH"
+
+Expected output:
+  ✓ Build products created
+  ✓ App bundle exists at:
+    /path/to/DerivedData/Verite.build/Products/Release-iphoneos/Verite.app
+  ✓ Bundle contains:
+    - Verite (executable)
+    - Info.plist
+    - Assets.car
+    - Base.lproj/
+    - PkgInfo
+  ✓ App size: 50-100 MB (reasonable)
+
+Expected errors (NONE):
+  ✗ Compilation error
+  ✗ Linking error
+  ✗ Missing resources
+
+Success criteria:
+  ✓ Archive builds successfully
+  ✓ App bundle is valid
+  ✓ Return code 0
+
+
+WORKFLOW 4: RELEASE (TESTFLIGHT)
+=================================
+Purpose: Sign IPA + upload to TestFlight
+Time: 30-40 minutes
+Tag trigger: v* (e.g., v0.1.0, v1.0.0)
+
+Prerequisite:
+  - Codemagic App Store Connect integration configured (named "Verite 1")
+  - Signing certificate + provisioning profile in App Store Connect
+
+Commands:
+  1. brew install xcodegen
+  2. xcodegen generate --spec project.yml
+  3. xcode-project use-profiles
+     (Auto-downloads signing profiles from App Store Connect)
+  
+  4. xcodebuild test \
+       -project "Verite.xcodeproj" \
+       -scheme "Verite" \
+       -configuration Release \
+       -destination 'generic/platform=iOS Simulator' \
+       -verbose
+     (Final verification before release)
+  
+  5. xcode-project build-ipa \
+       --project "Verite.xcodeproj" \
+       --scheme "Verite" \
+       --config Release \
+       --archive-xcargs "CURRENT_PROJECT_VERSION=$BUILD_NUMBER"
+     (Build + sign IPA)
+  
+  6. TestFlight upload (automatic via codemagic.yaml)
+
+Expected output:
+  ✓ Profiles downloaded and set up
+  ✓ Tests pass on Release config
+  ✓ IPA signed successfully
+  ✓ IPA uploaded to TestFlight
+
+Expected Codemagic UI feedback:
+  [✓] Build & sign IPA
+  [✓] Upload to TestFlight
+  
+  TestFlight:
+    Build processing...
+    (appears in App Store Connect within 5 minutes)
+
+Expected errors (NONE):
+  ✗ Compilation error
+  ✗ Signing error (cert/profile issue)
+  ✗ Test failure
+  ✗ TestFlight upload failure
+
+Success criteria:
+  ✓ IPA created (build/ios/ipa/*.ipa)
+  ✓ TestFlight build appears in App Store Connect
+  ✓ Return code 0
+
+
+COREML HANDLING IN CI
+====================
+
+Scenario 1: No .mlmodelc in Bundle (CI Environment)
+  1. SkinAnalysisEngineCoreML.analyze() called
+  2. Heuristic baseline always computed
+  3. ModelLoader.loadModel() returns nil
+     (file not found - expected)
+  4. mode == .hybrid, so fallback triggered
+  5. HybridFusionEngine.fuseScores() gets:
+     - heuristicResult: valid (computed in step 2)
+     - coreMLResult: nil/empty (model not available)
+  6. Returns: heuristic result as baseline
+  7. Test verifies: result is not nil, is correct type
+  
+  Outcome: ✓ Test PASSES
+           ✓ No crash
+           ✓ Fallback verified
+
+Log output (expected):
+  [CoreML] ⚠️  Failed to load CoreML model: SkinAnalysisModel not found in bundle
+  [CoreML] ℹ️  Falling back to heuristic analysis
+  
+  (Not an error, informational only)
+
+Scenario 2: With .mlmodelc in Bundle (Production)
+  1. ModelLoader.loadModel() succeeds
+  2. InferencePipeline.infer() runs ML model
+  3. Predictions return with confidence scores
+  4. HybridFusionEngine blends ML + heuristic
+  5. Returns: fused predictions
+  
+  Outcome: ✓ ML predictions used (weighted)
+           ✓ Heuristic provides baseline safety
+           ✓ Best of both
+
+
+LOCAL VERIFICATION (BEFORE PUSHING)
+===================================
+
+Complete pre-commit check:
+
+  1. Install dependencies:
+     $ brew install xcodegen
+  
+  2. Generate project:
+     $ xcodegen generate --spec project.yml
+     Verify: Verite.xcodeproj created
+  
+  3. Build for simulator:
+     $ xcodebuild build \
+         -project Verite.xcodeproj \
+         -scheme Verite \
+         -configuration Debug \
+         -destination 'generic/platform=iOS Simulator' \
+         CODE_SIGNING_ALLOWED=NO
+     Verify: Build succeeds, no CoreML errors
+  
+  4. Run all tests:
+     $ xcodebuild test \
+         -project Verite.xcodeproj \
+         -scheme Verite \
+         -configuration Debug \
+         -destination 'generic/platform=iOS Simulator'
+     Verify: All tests pass, fallback works
+  
+  5. Check Release config:
+     $ xcodebuild build \
+         -project Verite.xcodeproj \
+         -scheme Verite \
+         -configuration Release \
+         -destination 'generic/platform=iOS Simulator' \
+         CODE_SIGNING_ALLOWED=NO
+     Verify: Release build succeeds
+
+If all pass: Safe to push
+
+
+ENVIRONMENT VARIABLES
+=====================
+
+In codemagic.yaml:
+
+  Global:
+    XCODE_PROJECT: "Verite.xcodeproj"
+    XCODE_SCHEME: "Verite"
+  
+  Workflow-specific:
+    (none required; optional: LOG_LEVEL, CI_ENVIRONMENT)
+
+In Xcode build settings (project.yml):
+  SWIFT_VERSION: 5.10
+  TARGETED_DEVICE_FAMILY: 1 (iPhone)
+  MARKETING_VERSION: 0.1.0
+  CURRENT_PROJECT_VERSION: 1 (auto-incremented by $BUILD_NUMBER on release)
+
+
+COMMON ERRORS & FIXES
+=====================
+
+Error: "xcodegen: command not found"
+  Fix: brew install xcodegen (in codemagic.yaml script)
+
+Error: "Cannot find VeriteTests target"
+  Fix: Regenerate project: xcodegen generate --spec project.yml
+       Check project.yml has both Verite and VeriteTests targets
+
+Error: "Test suite 'VeriteTests' failed"
+  Fix: Check test sources are in Verite/**/*Tests.swift
+       Run locally to debug: xcodebuild test -project Verite.xcodeproj -scheme Verite
+
+Error: "CoreML model not found in bundle" (in tests)
+  Status: EXPECTED IN CI
+  Fix: None - this is correct behavior (fallback tested)
+       Verify tests still pass (if they fail, fallback logic broken)
+
+Error: "Code signing required for Release"
+  Fix: For release workflow only, requires App Store Connect integration
+       For archive workflow, use CODE_SIGNING_ALLOWED=NO
+
+Error: "TestFlight upload failed"
+  Fix: Check integration name in codemagic.yaml matches Codemagic UI
+       Check bundle ID: com.verite.com
+       Check certificate + profile valid in App Store Connect
+
+
+PERFORMANCE TARGETS
+===================
+
+Workflow               Baseline    Alert       Timeout
+ios-compile-check     15-20 min   > 30 min    45 min
+ios-test-phase3       20-30 min   > 45 min    60 min
+ios-archive           20-25 min   > 35 min    60 min
+ios-release           30-40 min   > 50 min    60 min
+
+If exceeding "Alert" time:
+  - Check Codemagic resource usage
+  - Check for new large files in bundle
+  - Check for slow tests
+  - Consider optimization or parallel runners
+
+
+FILES & STRUCTURE
+=================
+
+Key files for CI:
+  project.yml              ← XcodeGen spec (generates .xcodeproj)
+  codemagic.yaml           ← CI/CD workflows
+  Verite/                  ← App source
+  Verite/**/*Tests.swift   ← Test sources (auto-isolated by project.yml)
+
+Test organization:
+  Verite/Core/Analysis/SkinAnalysisEngineTests.swift
+  Verite/Core/Analysis/CoreML/SkinAnalysisEngineCoreMLTests.swift
+  Verite/Core/ARKitFaceEngineTests.swift
+  Verite/Core/SkinRegionExtractorTests.swift
+
+CoreML integration:
+  Verite/Core/Analysis/CoreML/AnalysisMode.swift
+  Verite/Core/Analysis/CoreML/ModelLoader.swift
+  Verite/Core/Analysis/CoreML/InferencePipeline.swift
+  Verite/Core/Analysis/CoreML/HybridFusionEngine.swift
+  Verite/Core/Analysis/CoreML/SkinAnalysisEngineCoreML.swift
+
+
+QUICK REFERENCE
+===============
+
+Start CI:
+  $ git push origin claude/my-feature  → ios-compile-check + ios-test-phase3
+
+Archive before release:
+  $ git push origin main               → ios-archive
+
+Release to TestFlight:
+  $ git tag v0.1.0 && git push origin v0.1.0  → ios-release
+
+Monitor CI:
+  Codemagic Dashboard → Select workflow → Watch logs
+
+Debug locally:
+  $ xcodegen generate --spec project.yml
+  $ xcodebuild test -project Verite.xcodeproj -scheme Verite
+
+
+STATUS
+======
+
+✅ Project configured for Codemagic
+✅ XcodeGen setup verified
+✅ Test target isolated properly
+✅ CoreML optional (fallback implemented)
+✅ 4-stage CI workflow defined
+✅ No manual Xcode steps needed
+✅ Ready for first CI run
+
+Next: Push to claude/* branch to trigger workflows
+
+
+================================================================================
+For full details, see:
+  - docs/CI_CD_DEPLOYMENT.md
+  - BUILD_CI_CONFIGURATION.md
+  - CODEMAGIC_SETUP_SUMMARY.md
+================================================================================
