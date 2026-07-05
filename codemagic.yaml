@@ -168,7 +168,7 @@ workflows:
           xcodebuild test \
             -project "$XCODE_PROJECT" \
             -scheme "$XCODE_SCHEME" \
-            -configuration Release \
+            -configuration Debug \
             -destination 'generic/platform=iOS Simulator' \
             -verbose
       - name: Build & sign IPA
