@@ -96,13 +96,13 @@ enum SkinAnalysisCore {
         }()
 
         // 3. Aggregate standard region metrics → per-attribute estimates.
-        var attributes = aggregate(regions, baseConfidence: baseConfidence)
+        let attributes = aggregate(regions, baseConfidence: baseConfidence)
 
         // 3b. Extended metrics: glow, dark circles, barrier.
         let ext = ExtendedSkinMetrics.compute(regions: regions, underEyeBuffer: underEyeBuffer)
         // Store as informal extra keys — UI can read these via ScanAnalysis.regions.
         // (SkinAttribute only has 7 cases; extended values live in the regions dict.)
-        var stringKeyed = Dictionary(uniqueKeysWithValues: regions.map { ($0.key.rawValue, $0.value) })
+        let stringKeyed = Dictionary(uniqueKeysWithValues: regions.map { ($0.key.rawValue, $0.value) })
 
         // 4. Left/right midline from eye landmarks (for the half-face test).
         let midlineX = eyeMidlineX(of: face)
