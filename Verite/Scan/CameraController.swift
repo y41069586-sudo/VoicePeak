@@ -9,7 +9,7 @@ import UIKit
 ///
 /// Everything here stays on-device. Nothing is transmitted; the captured image is
 /// handed back to the caller, which stores only a local thumbnail.
-final class CameraController: NSObject, ObservableObject,
+final class CameraController: NSObject, ObservableObject, @unchecked Sendable,
                              AVCaptureVideoDataOutputSampleBufferDelegate,
                              AVCapturePhotoCaptureDelegate {
 

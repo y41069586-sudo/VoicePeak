@@ -27,7 +27,7 @@ enum RiskLevel: String, Sendable {
 }
 
 /// A pair of ingredients that interact negatively when used together.
-struct IngredientConflict: Identifiable, Sendable {
+struct IngredientConflict: Identifiable, @unchecked Sendable {
     let id = UUID()
     let ingredientA: String
     let ingredientB: String
@@ -35,7 +35,7 @@ struct IngredientConflict: Identifiable, Sendable {
 }
 
 /// Sendable & Hashable wrapper around LocalizedStringKey for use in UI collections and Swift 6 Sendable models.
-struct LocalizedKeyWrapper: Hashable, Sendable, Identifiable {
+struct LocalizedKeyWrapper: Hashable, @unchecked Sendable, Identifiable {
     let id = UUID()
     let key: LocalizedStringKey
 
