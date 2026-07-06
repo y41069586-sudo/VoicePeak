@@ -27,17 +27,27 @@ enum RiskLevel: String, Sendable {
 }
 
 /// A pair of ingredients that interact negatively when used together.
-struct IngredientConflict: Identifiable, @unchecked Sendable {
+final class IngredientConflict: Identifiable, @unchecked Sendable {
     let id = UUID()
     let ingredientA: String
     let ingredientB: String
     let reasonKey: LocalizedStringKey
+
+    init(ingredientA: String, ingredientB: String, reasonKey: LocalizedStringKey) {
+        self.ingredientA = ingredientA
+        self.ingredientB = ingredientB
+        self.reasonKey = reasonKey
+    }
 }
 
 /// Sendable & Hashable wrapper around LocalizedStringKey for use in UI collections and Swift 6 Sendable models.
-struct LocalizedKeyWrapper: Hashable, @unchecked Sendable, Identifiable {
+final class LocalizedKeyWrapper: Hashable, @unchecked Sendable, Identifiable {
     let id = UUID()
     let key: LocalizedStringKey
+
+    init(key: LocalizedStringKey) {
+        self.key = key
+    }
 
     // Manually conform to Hashable since LocalizedStringKey is not Hashable
     func hash(into hasher: inout Hasher) {
@@ -51,7 +61,7 @@ struct LocalizedKeyWrapper: Hashable, @unchecked Sendable, Identifiable {
 
 /// Full structured compatibility output for a product × skin profile pair.
 /// Designed to be directly renderable by the UI without further transformation.
-struct CompatibilityReport: Sendable {
+struct CompatibilityReport: @unchecked Sendable {
     /// 0 (worst) … 100 (best match).
     let compatibilityScore: Int
     let riskLevel: RiskLevel

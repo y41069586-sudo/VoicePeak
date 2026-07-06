@@ -16,7 +16,7 @@ struct MockRecommendation: Identifiable, Sendable {
     let cta: String?
 }
 
-struct MockHeatmapRegion: Identifiable, Sendable {
+struct MockHeatmapRegion: Identifiable, @unchecked Sendable {
     let id: FaceRegion
     let name: String
     let value: Double // 0...1
@@ -24,7 +24,7 @@ struct MockHeatmapRegion: Identifiable, Sendable {
     let color: Color
 }
 
-struct MockSkinSnapshot: Sendable {
+struct MockSkinSnapshot: @unchecked Sendable {
     let score: Int
     let headline: String
     let keyInsight: String
