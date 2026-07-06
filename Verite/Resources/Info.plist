@@ -66,16 +66,6 @@
 		<string>UIInterfaceOrientationPortrait</string>
 	</array>
 
-	<key>UISupportedInterfaceOrientations~ipad</key>
-	<array>
-		<string>UIInterfaceOrientationPortrait</string>
-	</array>
-
-	<!-- Portrait-only app: opt out of iPad Split View / Slide Over multitasking.
-	     UIRequiresFullScreen=true ensures the app always fills the full iPad screen. -->
-	<key>UIRequiresFullScreen</key>
-	<true/>
-
 	<key>UIRequiredDeviceCapabilities</key>
 	<array>
 		<string>armv7</string>
