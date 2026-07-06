@@ -80,15 +80,20 @@ workflows:
         script: xcodegen generate --spec project.yml
       - name: Set up signing
         script: xcode-project use-profiles
+      - name: Stamp build version into Info.plist
+        script: |
+          PLIST="$CM_BUILD_DIR/Verite/Resources/Info.plist"
+          /usr/libexec/PlistBuddy -c "Set :CFBundleVersion 10" "$PLIST"
+          /usr/libexec/PlistBuddy -c "Set :CFBundleShortVersionString 1.0.3" "$PLIST"
+          echo "Stamped CFBundleVersion=$(/usr/libexec/PlistBuddy -c 'Print :CFBundleVersion' $PLIST)"
       - name: Build & sign IPA
         script: |
           set -o pipefail
-          # Version is controlled by project.yml (CURRENT_PROJECT_VERSION).
-          # We no longer override with $BUILD_NUMBER to avoid resetting to 1.
           xcode-project build-ipa \
             --project "$XCODE_PROJECT" \
             --scheme "$XCODE_SCHEME" \
-            --config Release
+            --config Release \
+            --archive-xcargs "CURRENT_PROJECT_VERSION=10 MARKETING_VERSION=1.0.3"
     artifacts:
       - build/ios/ipa/*.ipa
       - /tmp/xcodebuild_logs/*.log
