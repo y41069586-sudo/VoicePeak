@@ -1,559 +1,454 @@
 import SwiftUI
 import SwiftData
 
-/// Milestone 8 / SCREENS_SPEC Part A — the full conversion flow, A1→A16:
-///
-///   A1  hero          — welcome, single "Begin"
-///   A2  problem       — agitate: the industry runs on hope, not proof
-///   A3  promise       — three numbered steps; step 3 (prove) is featured
-///   A4  skinType      — single-select, auto-advances
-///   A5  concerns      — multi-select chips
-///   A6  sensitivities — multi-select chips (we flag these everywhere)
-///   A7  products      — current routine rows (catch conflicts)
-///   A8  goal          — single-select, auto-advances
-///   A9  building      — status lines tick as we "assemble" the profile
-///   A10 profileReveal — mirror back what they told us
-///   A11–A13 baseline  — standardized Day-0 capture + reveal (OnboardingBaselineView)
-///   A14 reminders     — opt-in with a routine time picker
-///   A15 paywall       — soft paywall, half-face proof first, plan selector
-///   A16 ready         — you're set → into the app
-///
-/// Every step is honest, skippable where appropriate, fully localized, and
-/// Reduce-Motion aware. Answers persist to the on-device `UserProfile` at the end.
-///
-/// HARD RULE (SCREENS_SPEC): this rebuild changes layout / motion / copy only —
-/// it routes every color, type, space, radius, shadow and motion through the
-/// existing V* tokens and components. No raw values, no new palette.
+// MARK: - Main Onboarding Flow
+
+/// Premium 8-screen onboarding for Vérité.
+/// Emotionally-driven, conversion-optimised, Apple-quality UX.
+/// All design tokens route through VColor / VType / VSpace / VMotion.
 struct OnboardingFlowView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @Query private var profiles: [UserProfile]
 
     enum Step: Int, CaseIterable {
-        case hero, problem, promise, skinType, concerns, sensitivities, products,
-             goal, building, profileReveal, baseline, reminders, paywall, ready
+        case emotionalHook     // Screen 1 — cinematic welcome
+        case whatVeriteDoes    // Screen 2 — mock dashboard preview
+        case mockScan          // Screen 3 — simulated face analysis
+        case productMatching   // Screen 4 — ingredient intelligence
+        case privacy           // Screen 5 — trust & data
+        case goalSetup         // Screen 6 — personalisation
+        case account           // Screen 7 — account creation
+        case firstScanCTA      // Screen 8 — start analysis
     }
-    @State private var step: Step = .hero
 
-    // Draft answers (persisted only at `complete()`).
+    @State private var step: Step = .emotionalHook
+
+    // Profile data collected across screens
     @State private var skinType: SkinType?
     @State private var concerns: Set<SkinConcern> = []
     @State private var sensitivities: Set<String> = []
     @State private var currentProducts: Set<String> = []
     @State private var goal: String?
-    @State private var heroAppeared = false
-    @State private var reminderTime = Self.defaultReminderTime
 
-    private let quizTotal = 5   // skinType … goal
-
-    // Option lists for the free-text-ish steps (id is stored; key is displayed).
-    private let sensitivityOptions: [(id: String, key: LocalizedStringKey)] = [
-        ("fragrance", "sensitivity.fragrance"),
-        ("alcohol", "sensitivity.alcohol"),
-        ("essential oil", "sensitivity.essentialOils"),
-        ("exfoliating acid", "sensitivity.acids"),
-        ("none", "sensitivity.none"),
-        ("not sure", "sensitivity.notSure"),
-    ]
-    private let productOptions: [(id: String, key: LocalizedStringKey)] = [
-        ("cleanser", "cp.cleanser"),
-        ("moisturizer", "cp.moisturizer"),
-        ("serum", "cp.serum"),
-        ("retinol", "cp.retinol"),
-        ("vitamin c", "cp.vitaminc"),
-        ("exfoliating acid", "cp.acid"),
-        ("spf", "cp.spf"),
-        ("none", "cp.none"),
-    ]
-    private let goalOptions: [(id: String, key: LocalizedStringKey)] = [
-        ("calmer", "goal.calmer"),
-        ("clearer", "goal.clearer"),
-        ("smoother", "goal.smoother"),
-        ("hydrated", "goal.hydrated"),
-        ("aging", "goal.aging"),
-        ("understand", "goal.understand"),
-        ("saveMoney", "goal.saveMoney"),
-    ]
+    // Per-screen animation state
+    @State private var heroVisible = false
 
     var body: some View {
         ZStack {
             VBackground().ignoresSafeArea()
-            currentStep
+            currentScreen
                 .id(step)
-                .transition(stepTransition)
+                .transition(pageTransition)
         }
-        .animation(Motion.animation(reduceMotion: reduceMotion), value: step)
+        .animation(
+            reduceMotion ? VMotion.crossfade : .spring(response: 0.42, dampingFraction: 0.88),
+            value: step
+        )
     }
 
-    private var stepTransition: AnyTransition {
-        reduceMotion ? .opacity :
-            .asymmetric(insertion: .move(edge: .trailing).combined(with: .opacity),
-                        removal: .move(edge: .leading).combined(with: .opacity))
+    private var pageTransition: AnyTransition {
+        guard !reduceMotion else { return .opacity }
+        return .asymmetric(
+            insertion: .move(edge: .trailing).combined(with: .opacity),
+            removal:   .move(edge: .leading).combined(with: .opacity)
+        )
     }
 
     @ViewBuilder
-    private var currentStep: some View {
+    private var currentScreen: some View {
         switch step {
-        case .hero:          hero
-        case .problem:       problem
-        case .promise:       promise
-        case .skinType:      skinTypeStep
-        case .concerns:      concernsStep
-        case .sensitivities: sensitivitiesStep
-        case .products:      productsStep
-        case .goal:          goalStep
-        case .building:      building
-        case .profileReveal: profileReveal
-        case .baseline:      OnboardingBaselineView { advance() }
-        case .reminders:     reminders
-        case .paywall:       OnboardingPaywallView(onContinue: { advance() }, onSkip: { advance() })
-        case .ready:         ready
+        case .emotionalHook:   screen1
+        case .whatVeriteDoes:  screen2
+        case .mockScan:        screen3
+        case .productMatching: screen4
+        case .privacy:         screen5
+        case .goalSetup:       screen6
+        case .account:         screen7
+        case .firstScanCTA:    screen8
         }
     }
 
-    // MARK: A1 — Hero
+    // MARK: Screen 1 — Emotional Hook
 
-    private var hero: some View {
+    private var screen1: some View {
         VStack(spacing: 0) {
             Spacer()
             VStack(spacing: VSpace.md) {
-                Text(Brand.name)
-                    .font(VType.hero(56))
+                // Wordmark
+                Text("Vérité")
+                    .font(VType.hero(52))
                     .foregroundStyle(VColor.textPrimary)
-                    .vGlow(VColor.accent, radius: 22, opacity: 0.3)
-                Text("onboarding.hero.valueProp")
-                    .font(VType.bodyLarge)
-                    .foregroundStyle(VColor.textSecondary)
-                    .multilineTextAlignment(.center)
-                    .padding(.horizontal, VSpace.xl)
-            }
-            .opacity(heroAppeared ? 1 : 0)
-            .offset(y: heroAppeared ? 0 : 16)
-            Spacer()
-            PrimaryButton(titleKey: "onboarding.cta.begin") { advance() }
-                .padding(.horizontal, VSpace.lg)
-            DisclaimerBanner(style: .short)
-                .padding(.horizontal, VSpace.lg).padding(.bottom, VSpace.lg)
-        }
-        .onAppear {
-            if reduceMotion { heroAppeared = true }
-            else { withAnimation(Motion.springSoft.delay(0.1)) { heroAppeared = true } }
-        }
-    }
+                    .tracking(-0.5)
+                    .vGlow(VColor.primary, radius: 28, opacity: 0.18)
 
-    // MARK: A2 — The problem (agitate)
-
-    private let problemPoints: [(icon: String, key: LocalizedStringKey)] = [
-        ("banknote", "onboarding.problem.p1"),
-        ("megaphone", "onboarding.problem.p2"),
-        ("eye.slash", "onboarding.problem.p3"),
-    ]
-
-    private var problem: some View {
-        VStack(spacing: 0) {
-            ScrollView {
-                VStack(alignment: .leading, spacing: VSpace.lg) {
-                    Text("onboarding.problem.title")
+                VStack(spacing: VSpace.sm) {
+                    Text("Your skin changes every day.")
                         .font(VType.heroTitle)
                         .foregroundStyle(VColor.textPrimary)
-                        .padding(.top, VSpace.xl)
-                    VStack(spacing: VSpace.sm) {
-                        ForEach(Array(problemPoints.enumerated()), id: \.offset) { index, point in
-                            GlassCard {
-                                HStack(spacing: VSpace.md) {
-                                    Image(systemName: point.icon)
-                                        .font(.title3)
-                                        .foregroundStyle(VColor.danger)
-                                        .frame(width: 30)
-                                    Text(point.key)
-                                        .font(VType.body)
-                                        .foregroundStyle(VColor.textPrimary)
-                                    Spacer(minLength: 0)
-                                }
-                            }
-                            .vStaggeredAppear(index: index)
-                        }
-                    }
-                    Text("onboarding.problem.turn")
-                        .font(VType.sectionTitle)
-                        .foregroundStyle(VColor.primary)
-                        .padding(.top, VSpace.xs)
+                        .multilineTextAlignment(.center)
+                    Text("Most skincare never notices.")
+                        .font(VType.heroTitle)
+                        .foregroundStyle(VColor.textSecondary)
+                        .multilineTextAlignment(.center)
                 }
-                .padding(VSpace.lg)
+                .padding(.horizontal, VSpace.xl)
+
+                // Trust micro-copy
+                Text("Science-backed · 100% on-device · Private")
+                    .font(VType.micro)
+                    .tracking(0.8)
+                    .textCase(.uppercase)
+                    .foregroundStyle(VColor.textTertiary)
+                    .padding(.top, VSpace.xs)
             }
-            .scrollIndicators(.hidden)
-            PrimaryButton(titleKey: "onboarding.continue") { advance() }
-                .padding(.horizontal, VSpace.lg).padding(.bottom, VSpace.lg)
+            .opacity(heroVisible ? 1 : 0)
+            .offset(y: heroVisible ? 0 : 28)
+            Spacer()
+            PrimaryButton(titleKey: "Begin") { advance() }
+                .padding(.horizontal, VSpace.lg)
+            Spacer().frame(height: VSpace.xxl)
+        }
+        .onAppear {
+            guard !heroVisible else { return }
+            if reduceMotion {
+                heroVisible = true
+            } else {
+                withAnimation(VMotion.gentle.delay(0.15)) { heroVisible = true }
+            }
         }
     }
 
-    // MARK: A3 — The promise (3 numbered steps; prove is featured)
+    // MARK: Screen 2 — What Vérité Does
 
-    private var promise: some View {
+    private var screen2: some View {
         VStack(spacing: 0) {
             ScrollView {
                 VStack(alignment: .leading, spacing: VSpace.lg) {
-                    VStack(alignment: .leading, spacing: VSpace.xs) {
-                        Text("onboarding.promise.title")
-                            .font(VType.heroTitle)
-                            .foregroundStyle(VColor.textPrimary)
-                        Text("onboarding.promise.subtitle")
-                            .font(VType.body)
-                            .foregroundStyle(VColor.textSecondary)
-                    }
-                    .padding(.top, VSpace.xl)
-                    VStack(spacing: VSpace.md) {
-                        promiseCard(1, "onboarding.promise.s1.title", "onboarding.promise.s1.body", index: 0)
-                        promiseCard(2, "onboarding.promise.s2.title", "onboarding.promise.s2.body", index: 1)
-                        promiseCard(3, "onboarding.promise.s3.title", "onboarding.promise.s3.body", index: 2, featured: true)
-                    }
+                    screen2Header
+                    MockDashboardCard().vStaggeredAppear(index: 0)
+                    MockTrendCard().vStaggeredAppear(index: 1)
+                    MockRoutineCard().vStaggeredAppear(index: 2)
                 }
-                .padding(VSpace.lg)
+                .padding(.horizontal, VSpace.lg)
+                .padding(.bottom, VSpace.lg)
             }
             .scrollIndicators(.hidden)
-            PrimaryButton(titleKey: "onboarding.continue") { advance() }
-                .padding(.horizontal, VSpace.lg).padding(.bottom, VSpace.lg)
+            PrimaryButton(titleKey: "See How It Works") { advance() }
+                .padding(.horizontal, VSpace.lg)
+            Spacer().frame(height: VSpace.xxl)
         }
     }
 
-    private func promiseCard(_ n: Int, _ titleKey: LocalizedStringKey, _ bodyKey: LocalizedStringKey,
-                             index: Int, featured: Bool = false) -> some View {
-        GlassCard(featured: featured) {
-            HStack(alignment: .top, spacing: VSpace.md) {
-                ZStack {
-                    Circle()
-                        .fill(featured ? AnyShapeStyle(VColor.heroGradient) : AnyShapeStyle(VColor.bgElevated2))
-                        .frame(width: 38, height: 38)
-                    Text(verbatim: "\(n)")
-                        .font(VType.number(18))
-                        .foregroundStyle(featured ? .white : VColor.primary)
-                }
-                VStack(alignment: .leading, spacing: 4) {
-                    Text(titleKey).font(VType.bodyLarge.weight(.semibold)).foregroundStyle(VColor.textPrimary)
-                    Text(bodyKey).font(VType.body).foregroundStyle(VColor.textSecondary)
-                }
-                Spacer(minLength: 0)
-            }
+    private var screen2Header: some View {
+        VStack(alignment: .leading, spacing: VSpace.sm) {
+            Text("Advanced skin intelligence,")
+                .font(VType.heroTitle)
+                .foregroundStyle(VColor.textPrimary)
+            Text("made personal.")
+                .font(VType.heroTitle)
+                .foregroundStyle(VColor.primary)
         }
-        .vStaggeredAppear(index: index)
+        .padding(.top, VSpace.xl)
     }
 
-    // MARK: A4 — Skin type (auto-advance)
+    // MARK: Screen 3 — Interactive Mock Scan
 
-    private var skinTypeStep: some View {
-        OnboardingScaffold(titleKey: "quiz.skinType.title",
-                           progress: (1, quizTotal),
-                           continueEnabled: skinType != nil,
-                           onContinue: { advance() }) {
-            VStack(spacing: VSpace.sm) {
-                ForEach(SkinType.allCases) { type in
-                    OnboardingSelectCard(titleKey: type.localizationKey, selected: skinType == type) {
-                        skinType = type
-                        autoAdvance()
-                    }
-                }
-            }
-        }
-    }
-
-    // MARK: A5 — Concerns (chips)
-
-    private var concernsStep: some View {
-        OnboardingScaffold(titleKey: "quiz.concerns.title",
-                           subtitleKey: "quiz.concerns.subtitle",
-                           progress: (2, quizTotal),
-                           continueEnabled: !concerns.isEmpty,
-                           onContinue: { advance() }) {
-            FlexWrap {
-                ForEach(SkinConcern.allCases) { concern in
-                    ChoiceChip(titleKey: concern.localizationKey, selected: concerns.contains(concern)) {
-                        toggle(concern, in: &concerns)
-                    }
-                }
-            }
-        }
-    }
-
-    // MARK: A6 — Sensitivities (chips)
-
-    private var sensitivitiesStep: some View {
-        OnboardingScaffold(titleKey: "quiz.sensitivities.title",
-                           subtitleKey: "quiz.sensitivities.subtitle",
-                           progress: (3, quizTotal),
-                           onContinue: { advance() },
-                           onSkip: { sensitivities = []; advance() }) {
-            chipGrid(sensitivityOptions, selection: $sensitivities)
-        }
-    }
-
-    // MARK: A7 — Current routine (rows)
-
-    private var productsStep: some View {
-        OnboardingScaffold(titleKey: "quiz.products.title",
-                           subtitleKey: "quiz.products.subtitle",
-                           progress: (4, quizTotal),
-                           onContinue: { advance() },
-                           onSkip: { currentProducts = []; advance() }) {
-            VStack(spacing: VSpace.sm) {
-                ForEach(productOptions, id: \.id) { option in
-                    OnboardingSelectCard(titleKey: option.key,
-                                         selected: currentProducts.contains(option.id)) {
-                        toggleOption(option.id, in: $currentProducts)
-                    }
-                }
-            }
-        }
-    }
-
-    // MARK: A8 — Goal (auto-advance)
-
-    private var goalStep: some View {
-        OnboardingScaffold(titleKey: "quiz.goal.title",
-                           progress: (5, quizTotal),
-                           continueEnabled: goal != nil,
-                           onContinue: { advance() }) {
-            VStack(spacing: VSpace.sm) {
-                ForEach(goalOptions, id: \.id) { option in
-                    OnboardingSelectCard(titleKey: option.key, selected: goal == option.id) {
-                        goal = option.id
-                        autoAdvance()
-                    }
-                }
-            }
-        }
-    }
-
-    /// Multi-select chips where selecting "none" clears the rest (and vice-versa).
-    private func chipGrid(_ options: [(id: String, key: LocalizedStringKey)],
-                          selection: Binding<Set<String>>) -> some View {
-        FlexWrap {
-            ForEach(options, id: \.id) { option in
-                ChoiceChip(titleKey: option.key, selected: selection.wrappedValue.contains(option.id)) {
-                    toggleOption(option.id, in: selection)
-                }
-            }
-        }
-    }
-
-    // MARK: A9 — Building loader (ticking status)
-
-    private let buildingSteps: [LocalizedStringKey] = [
-        "onboarding.building.s1", "onboarding.building.s2", "onboarding.building.s3",
-    ]
-    @State private var buildingDone = 0
-
-    private var building: some View {
+    private var screen3: some View {
         VStack(spacing: 0) {
-            Spacer()
-            VStack(alignment: .leading, spacing: VSpace.md) {
-                Text("onboarding.building")
+            VStack(spacing: VSpace.sm) {
+                Text("Experience your first analysis.")
                     .font(VType.heroTitle)
                     .foregroundStyle(VColor.textPrimary)
-                    .padding(.bottom, VSpace.xs)
-                ForEach(Array(buildingSteps.enumerated()), id: \.offset) { index, key in
-                    BuildingStatusRow(titleKey: key, done: index < buildingDone)
-                }
+                    .multilineTextAlignment(.center)
+                Text("This is what Vérité sees.")
+                    .font(VType.body)
+                    .foregroundStyle(VColor.textSecondary)
+                    .multilineTextAlignment(.center)
             }
-            .padding(VSpace.lg)
-            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(.top, VSpace.xxl)
+            .padding(.horizontal, VSpace.lg)
+
             Spacer()
-        }
-        .task {
-            buildingDone = 0
-            for i in 1...buildingSteps.count {
-                try? await Task.sleep(for: .seconds(0.6))
-                withAnimation(VMotion.snappy) { buildingDone = i }
-                Haptics.fire(.selection)
-            }
-            try? await Task.sleep(for: .seconds(0.5))
-            advance()
+
+            MockFaceScanView(reduceMotion: reduceMotion)
+                .padding(.horizontal, VSpace.lg)
+
+            Spacer()
+
+            PrimaryButton(titleKey: "This looks incredible. Continue.") { advance() }
+                .padding(.horizontal, VSpace.lg)
+            Spacer().frame(height: VSpace.xxl)
         }
     }
 
-    // MARK: A10 — Profile reveal (mirror it back)
+    // MARK: Screen 4 — Product Matching
 
-    private var profileReveal: some View {
+    private var screen4: some View {
         VStack(spacing: 0) {
             ScrollView {
-                VStack(spacing: VSpace.lg) {
-                    VStack(spacing: VSpace.xs) {
-                        Image(systemName: "person.crop.circle.badge.checkmark")
-                            .font(.system(size: 44, weight: .light))
-                            .foregroundStyle(VColor.primary)
-                            .vGlow(VColor.primary, radius: 18, opacity: 0.25)
-                        Text("onboarding.profile.title")
+                VStack(alignment: .leading, spacing: VSpace.lg) {
+                    VStack(alignment: .leading, spacing: VSpace.sm) {
+                        Text("Formulated around you.")
                             .font(VType.heroTitle)
                             .foregroundStyle(VColor.textPrimary)
-                            .multilineTextAlignment(.center)
-                        Text("onboarding.profile.subtitle")
+                        Text("Every ingredient, understood.")
                             .font(VType.body)
                             .foregroundStyle(VColor.textSecondary)
-                            .multilineTextAlignment(.center)
                     }
                     .padding(.top, VSpace.xl)
 
+                    IngredientMatchCard(
+                        icon: "checkmark.circle.fill",
+                        iconColor: VColor.success,
+                        name: "Barrier Repair Serum",
+                        brand: "La Roche-Posay",
+                        insight: "Ceramide complex supports your skin's natural lipid barrier — ideal for your profile.",
+                        badge: "Matches your barrier goal",
+                        badgeColor: VColor.success
+                    )
+                    .vStaggeredAppear(index: 0)
+
+                    IngredientMatchCard(
+                        icon: "exclamationmark.triangle.fill",
+                        iconColor: VColor.warning,
+                        name: "Denatured Alcohol (SD-38)",
+                        brand: "Ingredient alert detected",
+                        insight: "May amplify sensitivity in your skin type. Look for alcohol-free alternatives.",
+                        badge: "Flagged for your profile",
+                        badgeColor: VColor.warning
+                    )
+                    .vStaggeredAppear(index: 1)
+
                     GlassCard {
-                        VStack(spacing: 0) {
-                            summaryRow("onboarding.profile.type",
-                                       value: skinType?.localizationKey ?? "onboarding.profile.notSet")
-                            hairline
-                            summaryRow("onboarding.profile.concerns",
-                                       count: concerns.count)
-                            hairline
-                            summaryRow("onboarding.profile.flags",
-                                       count: sensitivities.filter { $0 != "none" && $0 != "not sure" }.count)
-                            hairline
-                            summaryRow("onboarding.profile.goal", value: goalKey)
+                        HStack(spacing: VSpace.md) {
+                            Image(systemName: "brain")
+                                .font(.title2)
+                                .foregroundStyle(VColor.primary)
+                                .frame(width: 36)
+                            VStack(alignment: .leading, spacing: 4) {
+                                Text("Vérité reads every ingredient label.")
+                                    .font(VType.bodyMedium)
+                                    .foregroundStyle(VColor.textPrimary)
+                                Text("Open Beauty Facts database, cross-matched with your unique skin profile.")
+                                    .font(VType.caption)
+                                    .foregroundStyle(VColor.textSecondary)
+                            }
                         }
                     }
+                    .vStaggeredAppear(index: 2)
                 }
-                .padding(VSpace.lg)
+                .padding(.horizontal, VSpace.lg)
+                .padding(.bottom, VSpace.lg)
             }
             .scrollIndicators(.hidden)
-            PrimaryButton(titleKey: "onboarding.profile.cta") { advance() }
-                .padding(.horizontal, VSpace.lg).padding(.bottom, VSpace.lg)
+            PrimaryButton(titleKey: "Continue") { advance() }
+                .padding(.horizontal, VSpace.lg)
+            Spacer().frame(height: VSpace.xxl)
         }
     }
 
-    /// The chosen goal's display key, looked up from `goalOptions` (avoids
-    /// constructing a `LocalizedStringKey` from a runtime string).
-    private var goalKey: LocalizedStringKey {
-        goalOptions.first { $0.id == goal }?.key ?? "onboarding.profile.notSet"
-    }
+    // MARK: Screen 5 — Privacy & Trust
 
-    private var hairline: some View {
-        Rectangle().fill(VColor.strokeSubtle).frame(height: 1)
-    }
-
-    private func summaryRow(_ labelKey: LocalizedStringKey, value: LocalizedStringKey) -> some View {
-        HStack {
-            Text(labelKey).font(VType.body).foregroundStyle(VColor.textSecondary)
-            Spacer()
-            Text(value).font(VType.bodyMedium).foregroundStyle(VColor.textPrimary)
-        }
-        .padding(.vertical, VSpace.sm)
-    }
-
-    private func summaryRow(_ labelKey: LocalizedStringKey, count: Int) -> some View {
-        HStack {
-            Text(labelKey).font(VType.body).foregroundStyle(VColor.textSecondary)
-            Spacer()
-            Text(verbatim: "\(count)").font(VType.bodyMedium).foregroundStyle(VColor.textPrimary)
-        }
-        .padding(.vertical, VSpace.sm)
-    }
-
-    // MARK: A14 — Reminder opt-in (with time picker)
-
-    private var reminders: some View {
+    private var screen5: some View {
         VStack(spacing: 0) {
             ScrollView {
-                VStack(spacing: VSpace.lg) {
-                    VStack(spacing: VSpace.md) {
-                        Image(systemName: "bell.badge")
-                            .font(.system(size: 50, weight: .light))
-                            .foregroundStyle(VColor.accent)
-                            .vGlow(VColor.accent, radius: 18, opacity: 0.25)
-                        Text("onboarding.reminders.title")
-                            .font(VType.heroTitle).foregroundStyle(VColor.textPrimary)
-                            .multilineTextAlignment(.center)
-                        Text("onboarding.reminders.body")
-                            .font(VType.body).foregroundStyle(VColor.textSecondary)
-                            .multilineTextAlignment(.center).padding(.horizontal, VSpace.md)
-                    }
-                    .padding(.top, VSpace.xl)
-
-                    GlassCard {
-                        HStack {
-                            Text("onboarding.reminders.time")
-                                .font(VType.body).foregroundStyle(VColor.textPrimary)
-                            Spacer()
-                            DatePicker("onboarding.reminders.time",
-                                       selection: $reminderTime,
-                                       displayedComponents: .hourAndMinute)
-                                .labelsHidden()
-                                .tint(VColor.primary)
-                        }
-                    }
+                VStack(spacing: VSpace.xl) {
+                    privacyHero
+                    privacyPillars
+                    privacyFootnote
                 }
-                .padding(VSpace.lg)
+                .padding(.horizontal, VSpace.lg)
+                .padding(.bottom, VSpace.lg)
             }
             .scrollIndicators(.hidden)
-
-            VStack(spacing: VSpace.xs) {
-                PrimaryButton(titleKey: "onboarding.reminders.set", systemImage: "bell.fill") {
-                    Task {
-                        if await NotificationManager.requestAuthorization() {
-                            let c = Calendar.current.dateComponents([.hour, .minute], from: reminderTime)
-                            NotificationManager.scheduleRoutineReminders(hour: c.hour ?? 8, minute: c.minute ?? 0)
-                        }
-                        advance()
-                    }
-                }
-                SecondaryButton(titleKey: "onboarding.reminders.later") { advance() }
-            }
-            .padding(.horizontal, VSpace.lg).padding(.bottom, VSpace.lg)
+            PrimaryButton(titleKey: "I Trust This. Let's Continue.") { advance() }
+                .padding(.horizontal, VSpace.lg)
+            Spacer().frame(height: VSpace.xxl)
         }
     }
 
-    // MARK: A16 — Ready
+    private var privacyHero: some View {
+        VStack(spacing: VSpace.md) {
+            Image(systemName: "lock.shield.fill")
+                .font(.system(size: 54, weight: .light))
+                .foregroundStyle(VColor.primary)
+                .vGlow(VColor.primary, radius: 20, opacity: 0.20)
+                .padding(.top, VSpace.xl)
+            Text("Your skin data\nstays with you.")
+                .font(VType.heroTitle)
+                .foregroundStyle(VColor.textPrimary)
+                .multilineTextAlignment(.center)
+            Text("Vérité was designed from the ground up with your privacy as the foundation — not an afterthought.")
+                .font(VType.body)
+                .foregroundStyle(VColor.textSecondary)
+                .multilineTextAlignment(.center)
+                .padding(.horizontal, VSpace.sm)
+        }
+    }
 
-    private var ready: some View {
+    private var privacyPillars: some View {
+        GlassCard {
+            VStack(spacing: 0) {
+                PrivacyPillarRow(icon: "iphone", text: "Scans processed entirely on-device", index: 0)
+                Rectangle().fill(VColor.strokeSubtle).frame(height: 1)
+                PrivacyPillarRow(icon: "xmark.icloud.fill", text: "No face images ever leave your phone", index: 1)
+                Rectangle().fill(VColor.strokeSubtle).frame(height: 1)
+                PrivacyPillarRow(icon: "hand.raised.slash.fill", text: "No biometric data shared or sold", index: 2)
+                Rectangle().fill(VColor.strokeSubtle).frame(height: 1)
+                PrivacyPillarRow(icon: "trash.fill", text: "Delete everything, any time", index: 3)
+            }
+        }
+    }
+
+    private var privacyFootnote: some View {
+        Text("Vérité uses Apple's Vision framework for on-device processing. No cloud AI. No third-party data sharing.")
+            .font(VType.caption)
+            .foregroundStyle(VColor.textTertiary)
+            .multilineTextAlignment(.center)
+    }
+
+    // MARK: Screen 6 — Goal Setup
+
+    private var screen6: some View {
+        GoalSetupScreen(
+            skinType: $skinType,
+            concerns: $concerns,
+            goal: $goal,
+            reduceMotion: reduceMotion,
+            onComplete: { advance() }
+        )
+    }
+
+    // MARK: Screen 7 — Account Creation
+
+    private var screen7: some View {
+        VStack(spacing: 0) {
+            ScrollView {
+                VStack(spacing: VSpace.xl) {
+                    screen7Hero
+                    screen7Benefits
+                }
+                .padding(.horizontal, VSpace.lg)
+                .padding(.bottom, VSpace.lg)
+            }
+            .scrollIndicators(.hidden)
+            screen7CTAs
+        }
+    }
+
+    private var screen7Hero: some View {
+        VStack(spacing: VSpace.md) {
+            Image(systemName: "chart.line.uptrend.xyaxis.circle.fill")
+                .font(.system(size: 58, weight: .light))
+                .foregroundStyle(VColor.primary)
+                .vGlow(VColor.primary, radius: 22, opacity: 0.20)
+                .padding(.top, VSpace.xl)
+            Text("Keep your progress.")
+                .font(VType.heroTitle)
+                .foregroundStyle(VColor.textPrimary)
+                .multilineTextAlignment(.center)
+            Text("Your scans, routines, and insights — persisted and always available.")
+                .font(VType.body)
+                .foregroundStyle(VColor.textSecondary)
+                .multilineTextAlignment(.center)
+                .padding(.horizontal, VSpace.md)
+        }
+    }
+
+    private var screen7Benefits: some View {
+        GlassCard {
+            VStack(spacing: 0) {
+                AccountBenefitRow(icon: "chart.xyaxis.line", text: "Scan history across all devices", index: 0)
+                Rectangle().fill(VColor.strokeSubtle).frame(height: 1)
+                AccountBenefitRow(icon: "arrow.triangle.2.circlepath", text: "Personalized routine sync", index: 1)
+                Rectangle().fill(VColor.strokeSubtle).frame(height: 1)
+                AccountBenefitRow(icon: "chart.bar.fill", text: "Long-term skin trend insights", index: 2)
+                Rectangle().fill(VColor.strokeSubtle).frame(height: 1)
+                AccountBenefitRow(icon: "bell.badge.fill", text: "Smart scan & routine reminders", index: 3)
+            }
+        }
+    }
+
+    private var screen7CTAs: some View {
+        VStack(spacing: VSpace.sm) {
+            AppleSignInPlaceholder { advance() }
+            Button(action: { advance() }) {
+                Text("Continue without account")
+                    .font(VType.body)
+                    .foregroundStyle(VColor.textSecondary)
+                    .padding(.vertical, VSpace.sm)
+            }
+            Text("No password. No marketing emails.")
+                .font(VType.caption)
+                .foregroundStyle(VColor.textTertiary)
+        }
+        .padding(.horizontal, VSpace.lg)
+        .padding(.bottom, VSpace.xxl)
+    }
+
+    // MARK: Screen 8 — First Scan CTA
+
+    private var screen8: some View {
         VStack(spacing: 0) {
             Spacer()
-            VStack(spacing: VSpace.md) {
-                Image(systemName: "checkmark.seal.fill")
-                    .font(.system(size: 60, weight: .light))
-                    .foregroundStyle(VColor.success)
-                    .vGlow(VColor.success, radius: 20, opacity: 0.25)
-                Text("onboarding.ready.title")
-                    .font(VType.heroTitle).foregroundStyle(VColor.textPrimary)
-                    .multilineTextAlignment(.center)
-                Text("onboarding.ready.body")
-                    .font(VType.bodyLarge).foregroundStyle(VColor.textSecondary)
-                    .multilineTextAlignment(.center).padding(.horizontal, VSpace.xl)
+            VStack(spacing: VSpace.lg) {
+                PulsingScanOrb()
+                VStack(spacing: VSpace.sm) {
+                    Text("Let's see your skin.")
+                        .font(VType.heroTitle)
+                        .foregroundStyle(VColor.textPrimary)
+                        .multilineTextAlignment(.center)
+                    Text("Your first analysis takes about 60 seconds.")
+                        .font(VType.body)
+                        .foregroundStyle(VColor.textSecondary)
+                        .multilineTextAlignment(.center)
+                }
+                screen8Hints
             }
+            .padding(.horizontal, VSpace.lg)
             Spacer()
-            PrimaryButton(titleKey: "onboarding.ready.cta", systemImage: "arrow.right") { complete() }
-                .padding(.horizontal, VSpace.lg)
-            DisclaimerBanner(style: .short)
-                .padding(.horizontal, VSpace.lg).padding(.bottom, VSpace.lg)
+            screen8CTAs
         }
     }
 
-    // MARK: Flow control
+    private var screen8Hints: some View {
+        VStack(alignment: .leading, spacing: VSpace.sm) {
+            ScanHintRow(icon: "sun.max", text: "Good lighting makes a difference")
+            ScanHintRow(icon: "face.smiling", text: "No makeup needed")
+            ScanHintRow(icon: "lock", text: "Completely private — processed on your iPhone")
+        }
+        .padding(.horizontal, VSpace.xl)
+    }
+
+    private var screen8CTAs: some View {
+        VStack(spacing: VSpace.sm) {
+            PrimaryButton(titleKey: "Start Your First Analysis", systemImage: "camera.fill") {
+                complete()
+            }
+            Button(action: { complete() }) {
+                Text("I'll do this later")
+                    .font(VType.body)
+                    .foregroundStyle(VColor.textSecondary)
+                    .padding(.vertical, VSpace.sm)
+            }
+        }
+        .padding(.horizontal, VSpace.lg)
+        .padding(.bottom, VSpace.xxl)
+    }
+
+    // MARK: — Navigation
 
     private func advance() {
         if let next = Step(rawValue: step.rawValue + 1) { step = next }
-    }
-
-    /// Brief delay so the selected state is visible before the step slides away.
-    private func autoAdvance() {
-        let delay = reduceMotion ? 0.0 : 0.32
-        DispatchQueue.main.asyncAfter(deadline: .now() + delay) { advance() }
-    }
-
-    private func toggle<T: Hashable>(_ value: T, in set: inout Set<T>) {
-        if set.contains(value) { set.remove(value) } else { set.insert(value) }
-    }
-
-    /// Toggle a string option where "none" is mutually exclusive with the rest.
-    private func toggleOption(_ id: String, in selection: Binding<Set<String>>) {
-        var set = selection.wrappedValue
-        if id == "none" {
-            set = set.contains("none") ? [] : ["none"]
-        } else {
-            set.remove("none")
-            if set.contains(id) { set.remove(id) } else { set.insert(id) }
-        }
-        selection.wrappedValue = set
+        else { complete() }
     }
 
     private func complete() {
         let profile = profiles.first ?? {
-            let created = UserProfile()
-            modelContext.insert(created)
-            return created
+            let p = UserProfile()
+            modelContext.insert(p)
+            return p
         }()
         profile.skinType = skinType
         profile.concerns = Array(concerns)
@@ -564,8 +459,189 @@ struct OnboardingFlowView: View {
         try? modelContext.save()
         Haptics.fire(.verdictReveal)
     }
+}
 
-    private static var defaultReminderTime: Date {
-        Calendar.current.date(from: DateComponents(hour: 21, minute: 0)) ?? .now
+// MARK: - Goal Setup Screen
+
+/// Extracted to its own struct to keep the main flow type-checker-friendly.
+private struct GoalSetupScreen: View {
+    @Binding var skinType: SkinType?
+    @Binding var concerns: Set<SkinConcern>
+    @Binding var goal: String?
+    let reduceMotion: Bool
+    let onComplete: () -> Void
+
+    private enum SubStep { case skinType, goal, concerns }
+    @State private var subStep: SubStep = .skinType
+
+    private let skinTypeOptions: [(type: SkinType, icon: String, desc: String)] = [
+        (.oily,        "drop.fill",               "Shine, enlarged pores"),
+        (.combination, "circle.lefthalf.filled",  "T-zone oily, cheeks normal"),
+        (.normal,      "checkmark.circle.fill",   "Balanced, minimal issues"),
+        (.dry,         "leaf.fill",               "Tightness, flakiness"),
+        (.sensitive,   "heart.fill",              "Reacts easily to products"),
+    ]
+
+    private let goalOptions: [(id: String, label: String, icon: String)] = [
+        ("calmer",     "Calmer skin",         "leaf"),
+        ("clearer",    "Clearer skin",         "sparkles"),
+        ("hydrated",   "Better hydration",     "drop.fill"),
+        ("redness",    "Reduce redness",       "heart.fill"),
+        ("barrier",    "Barrier recovery",     "shield.fill"),
+        ("understand", "Understand my skin",   "chart.bar.fill"),
+    ]
+
+    var body: some View {
+        VStack(spacing: 0) {
+            // Sub-step dots
+            HStack(spacing: 6) {
+                let steps: [SubStep] = [.skinType, .goal, .concerns]
+                ForEach(steps.indices, id: \.self) { i in
+                    let isCurrent = steps[i] == subStep
+                    Capsule()
+                        .fill(isCurrent ? VColor.primary : VColor.strokeSubtle)
+                        .frame(width: isCurrent ? 22 : 8, height: 6)
+                }
+            }
+            .animation(VMotion.snappy, value: subStep)
+            .padding(.top, VSpace.md)
+
+            switch subStep {
+            case .skinType: skinTypeView
+            case .goal:     goalView
+            case .concerns: concernsView
+            }
+        }
+        .animation(
+            reduceMotion ? VMotion.crossfade : VMotion.standard,
+            value: subStep
+        )
+    }
+
+    // Sub-step A: Skin type
+    private var skinTypeView: some View {
+        VStack(spacing: 0) {
+            ScrollView {
+                VStack(alignment: .leading, spacing: VSpace.md) {
+                    VStack(alignment: .leading, spacing: VSpace.sm) {
+                        Text("What's your skin type?")
+                            .font(VType.heroTitle)
+                            .foregroundStyle(VColor.textPrimary)
+                        Text("We'll personalise everything around this.")
+                            .font(VType.body)
+                            .foregroundStyle(VColor.textSecondary)
+                    }
+                    .padding(.top, VSpace.lg)
+
+                    VStack(spacing: VSpace.sm) {
+                        ForEach(skinTypeOptions.indices, id: \.self) { i in
+                            let option = skinTypeOptions[i]
+                            GoalLargeCard(
+                                icon: option.icon,
+                                label: option.type.rawValue.capitalized,
+                                subtitle: option.desc,
+                                selected: skinType == option.type
+                            ) {
+                                Haptics.fire(.selection)
+                                skinType = option.type
+                                DispatchQueue.main.asyncAfter(deadline: .now() + 0.32) {
+                                    withAnimation(VMotion.standard) { subStep = .goal }
+                                }
+                            }
+                            .vStaggeredAppear(index: i)
+                        }
+                    }
+                }
+                .padding(.horizontal, VSpace.lg)
+                .padding(.bottom, VSpace.lg)
+            }
+            .scrollIndicators(.hidden)
+        }
+    }
+
+    // Sub-step B: Primary goal
+    private var goalView: some View {
+        VStack(spacing: 0) {
+            ScrollView {
+                VStack(alignment: .leading, spacing: VSpace.md) {
+                    VStack(alignment: .leading, spacing: VSpace.sm) {
+                        Text("What matters most to you?")
+                            .font(VType.heroTitle)
+                            .foregroundStyle(VColor.textPrimary)
+                        Text("Your primary goal shapes every recommendation.")
+                            .font(VType.body)
+                            .foregroundStyle(VColor.textSecondary)
+                    }
+                    .padding(.top, VSpace.lg)
+
+                    VStack(spacing: VSpace.sm) {
+                        ForEach(goalOptions.indices, id: \.self) { i in
+                            let option = goalOptions[i]
+                            GoalLargeCard(
+                                icon: option.icon,
+                                label: option.label,
+                                subtitle: nil,
+                                selected: goal == option.id
+                            ) {
+                                Haptics.fire(.selection)
+                                goal = option.id
+                                DispatchQueue.main.asyncAfter(deadline: .now() + 0.32) {
+                                    withAnimation(VMotion.standard) { subStep = .concerns }
+                                }
+                            }
+                            .vStaggeredAppear(index: i)
+                        }
+                    }
+                }
+                .padding(.horizontal, VSpace.lg)
+                .padding(.bottom, VSpace.lg)
+            }
+            .scrollIndicators(.hidden)
+        }
+    }
+
+    // Sub-step C: Concerns (optional)
+    private var concernsView: some View {
+        VStack(spacing: 0) {
+            ScrollView {
+                VStack(alignment: .leading, spacing: VSpace.md) {
+                    VStack(alignment: .leading, spacing: VSpace.sm) {
+                        Text("Any specific concerns?")
+                            .font(VType.heroTitle)
+                            .foregroundStyle(VColor.textPrimary)
+                        Text("Select all that apply. Vérité flags these across every scan.")
+                            .font(VType.body)
+                            .foregroundStyle(VColor.textSecondary)
+                    }
+                    .padding(.top, VSpace.lg)
+
+                    FlexWrap {
+                        ForEach(SkinConcern.allCases) { concern in
+                            ChoiceChip(
+                                titleKey: concern.localizationKey,
+                                selected: concerns.contains(concern)
+                            ) {
+                                Haptics.fire(.selection)
+                                if concerns.contains(concern) {
+                                    concerns.remove(concern)
+                                } else {
+                                    concerns.insert(concern)
+                                }
+                            }
+                        }
+                    }
+                }
+                .padding(.horizontal, VSpace.lg)
+                .padding(.bottom, VSpace.lg)
+            }
+            .scrollIndicators(.hidden)
+
+            VStack(spacing: VSpace.sm) {
+                PrimaryButton(titleKey: "Continue") { onComplete() }
+                SecondaryButton(titleKey: "Skip") { onComplete() }
+            }
+            .padding(.horizontal, VSpace.lg)
+            .padding(.bottom, VSpace.xxl)
+        }
     }
 }
