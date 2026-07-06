@@ -3,6 +3,7 @@ import SwiftUI
 /// Global, observable app state injected into the environment. Kept deliberately
 /// small — persistent data lives in SwiftData; this holds transient UI/session state.
 @Observable
+@MainActor
 final class AppState {
     /// Currently selected main tab.
     var selectedTab: AppTab = .home

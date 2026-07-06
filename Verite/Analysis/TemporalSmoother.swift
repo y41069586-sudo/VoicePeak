@@ -104,7 +104,7 @@ actor TemporalSmoother {
 // MARK: - Live-frame smoother (lightweight synchronous EMA)
 
 /// A lightweight synchronous EMA buffer for the live video stream.
-final class LiveSmoother {
+final class LiveSmoother: @unchecked Sendable {
     private let alpha: Double
     private var history: [SkinAttribute: Double] = [:]
 

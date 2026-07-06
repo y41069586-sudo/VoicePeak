@@ -22,7 +22,7 @@ protocol FrameConsumer: AnyObject {
 /// This is intentionally less accurate than `SkinAnalysisCore`; it's a preview
 /// metric that guides the user and makes the scanner feel alive, not the final read.
 @Observable
-final class RealtimeSkinMonitor: FrameConsumer {
+final class RealtimeSkinMonitor: FrameConsumer, @unchecked Sendable {
 
     // MARK: Published state (read on MainActor)
 

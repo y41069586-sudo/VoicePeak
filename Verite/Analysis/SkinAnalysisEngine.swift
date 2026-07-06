@@ -10,6 +10,7 @@ import CoreGraphics
 /// Also holds a shared `TemporalSmoother` so repeated captures of the same
 /// person accumulate a stable running average rather than jumping on each scan.
 @Observable
+@MainActor
 final class SkinAnalysisEngine {
     private(set) var isAnalyzing = false
     private let smoother = TemporalSmoother()
