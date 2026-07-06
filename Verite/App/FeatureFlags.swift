@@ -6,7 +6,7 @@ import SwiftUI
 /// Exposed as `@Observable` so a debug settings screen can toggle them at
 /// runtime; production defaults come from `.default`.
 @Observable
-final class FeatureFlags {
+final class FeatureFlags: @unchecked Sendable {
 
     /// Affiliate catalog enrichment (Amazon PA-API / Awin / Impact). OFF.
     var affiliateEnabled: Bool

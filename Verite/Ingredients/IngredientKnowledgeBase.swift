@@ -5,7 +5,7 @@ import SwiftUI
 /// on most products without a network call. Extended over time.
 enum IngredientKnowledgeBase {
 
-    struct Entry {
+    struct Entry: @unchecked Sendable {
         let classes: [IngredientClass]
         let noteKey: LocalizedStringKey?
         let comedogenic: Int?

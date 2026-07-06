@@ -88,14 +88,20 @@ enum CompatibilityEngine {
 
     // MARK: Known conflicting pairs (INCI-normalized keys)
 
+    struct ConflictPair: @unchecked Sendable {
+        let a: String
+        let b: String
+        let reasonKey: LocalizedStringKey
+    }
+
     /// Pairs of ingredient keys that are known to be problematic when combined.
-    private static let conflictPairs: [(a: String, b: String, reasonKey: LocalizedStringKey)] = [
-        ("retinol",       "glycolic acid",  "ingredient.conflict.retinolGlycolic"),
-        ("retinol",       "lactic acid",    "ingredient.conflict.retinolAcid"),
-        ("retinol",       "salicylic acid", "ingredient.conflict.retinolAcid"),
-        ("benzoyl peroxide", "retinol",     "ingredient.conflict.benzRetinol"),
-        ("ascorbic acid", "niacinamide",    "ingredient.conflict.vitCNiacinamide"),
-        ("alcohol denat.", "retinol",       "ingredient.conflict.alcoholRetinol"),
+    private static let conflictPairs: [ConflictPair] = [
+        ConflictPair(a: "retinol",       b: "glycolic acid",  reasonKey: "ingredient.conflict.retinolGlycolic"),
+        ConflictPair(a: "retinol",       b: "lactic acid",    reasonKey: "ingredient.conflict.retinolAcid"),
+        ConflictPair(a: "retinol",       b: "salicylic acid", reasonKey: "ingredient.conflict.retinolAcid"),
+        ConflictPair(a: "benzoyl peroxide", b: "retinol",     reasonKey: "ingredient.conflict.benzRetinol"),
+        ConflictPair(a: "ascorbic acid", b: "niacinamide",    reasonKey: "ingredient.conflict.vitCNiacinamide"),
+        ConflictPair(a: "alcohol denat.", b: "retinol",       reasonKey: "ingredient.conflict.alcoholRetinol"),
     ]
 
     // MARK: Public API
