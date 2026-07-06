@@ -20,6 +20,9 @@ struct DashboardView: View {
     private var activeTest: HalfFaceTest? {
         tests.first(where: { $0.status == .running || $0.status == .verdictReady })
     }
+    private var latestPassedTest: HalfFaceTest? {
+        tests.filter { $0.status == .passed }.sorted { $0.createdAt > $1.createdAt }.first
+    }
     private var progress: UserProgress? { progresses.first }
     private var effectiveStreakCount: Int {
         guard let p = progress, let last = p.lastScanDate else { return 0 }
