@@ -79,7 +79,14 @@ struct ScanView: View {
     private var liveScanner: some View {
         ZStack {
             Color.black.ignoresSafeArea()
-            CameraPreviewView(session: camera.session).ignoresSafeArea()
+            if UIDevice.current.userInterfaceIdiom == .pad {
+                CameraPreviewView(session: camera.session)
+                    .scaledToFit()
+                    .ignoresSafeArea()
+            } else {
+                CameraPreviewView(session: camera.session)
+                    .ignoresSafeArea()
+            }
             
             if camera.quality.faceDetected && monitor.isReady {
                 let liveMap = [
