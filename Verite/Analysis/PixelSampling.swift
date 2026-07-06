@@ -2,7 +2,7 @@ import CoreGraphics
 
 /// A small RGBA8 pixel grid read from a region of a captured image. Kept tiny
 /// (downscaled) so per-attribute metrics run in well under a frame budget.
-struct PixelBuffer {
+struct PixelBuffer: Sendable {
     let pixels: [UInt8]   // RGBA8, row-major, premultiplied-last
     let width: Int
     let height: Int
