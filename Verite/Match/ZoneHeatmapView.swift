@@ -45,7 +45,7 @@ struct ZoneHeatmapView: View {
         case .rightCheek: return CGPoint(x: 0.68, y: 0.56)
         case .nose:       return CGPoint(x: 0.50, y: 0.50)
         case .chin:       return CGPoint(x: 0.50, y: 0.80)
-        case .bridge:     return CGPoint(x: 0.50, y: 0.40)
+        case .underEye:   return CGPoint(x: 0.50, y: 0.36)
         }
     }
 }

@@ -122,6 +122,8 @@ struct MockSkinSnapshot: Sendable {
                 val = regionData?.shine ?? 0.40
             case .chin:
                 val = regionData?.spots ?? 0.20
+            case .underEye:
+                val = regionData?.redness ?? 0.15
             }
 
             let status: String
@@ -144,6 +146,7 @@ struct MockSkinSnapshot: Sendable {
             case .rightCheek: displayName = "Right Cheek"
             case .nose: displayName = "Nose & T-Zone"
             case .chin: displayName = "Chin & Jawline"
+            case .underEye: displayName = "Under Eye"
             }
 
             return MockHeatmapRegion(id: region, name: displayName, value: val, statusLabel: status, color: color)
