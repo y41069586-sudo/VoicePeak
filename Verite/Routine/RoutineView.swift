@@ -114,9 +114,20 @@ struct RoutineView: View {
                 .font(.subheadline).foregroundStyle(Theme.textSecondary)
                 .multilineTextAlignment(.center)
                 .padding(.horizontal, 34)
-            PrimaryButton(titleKey: "dashboard.action.analyzeProduct", systemImage: "sparkles.rectangle.stack") {
-                appState.selectedTab = .catalog
+            NavigationLink {
+                CatalogView()
+            } label: {
+                HStack(spacing: 8) {
+                    Image(systemName: "sparkles.rectangle.stack")
+                    Text("dashboard.action.analyzeProduct")
+                }
+                .font(VType.bodyLarge.weight(.semibold))
+                .foregroundStyle(.white)
+                .frame(maxWidth: .infinity, minHeight: 54)
+                .background(VColor.heroGradient, in: Capsule())
+                .vGlow(VColor.primary, radius: 22, opacity: 0.25)
             }
+            .buttonStyle(PressableStyle(brightenOnPress: true))
             .padding(.horizontal, 34).padding(.top, 4)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)

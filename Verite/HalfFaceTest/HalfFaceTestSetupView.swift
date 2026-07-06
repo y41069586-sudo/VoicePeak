@@ -107,6 +107,6 @@ struct HalfFaceTestSetupView: View {
         )
         Haptics.fire(.milestone)
         dismiss()
-        appState.selectedTab = .today
+        appState.selectedTab = .home
     }
 }

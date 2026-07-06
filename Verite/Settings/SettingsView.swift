@@ -8,6 +8,7 @@ struct SettingsView: View {
     @Environment(AppState.self) private var appState
     @Environment(PurchaseManager.self) private var purchases
     @Environment(\.modelContext) private var modelContext
+    @Environment(\.dismiss) private var dismiss
     @AppStorage("languageOverride") private var languageOverride: String = ""
     @AppStorage("routineReminders") private var routineReminders = false
 
@@ -106,6 +107,13 @@ struct SettingsView: View {
             .scrollContentBackground(.hidden)
             .background(GradientMeshBackground().ignoresSafeArea())
             .navigationTitle("tab.settings")
+            .toolbar {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button("Done") {
+                        dismiss()
+                    }
+                }
+            }
             .onChange(of: routineReminders) { _, enabled in
                 Task { await updateReminders(enabled) }
             }

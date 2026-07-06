@@ -5,7 +5,7 @@ import SwiftUI
 @Observable
 final class AppState {
     /// Currently selected main tab.
-    var selectedTab: AppTab = .today
+    var selectedTab: AppTab = .home
 
     /// Language override chosen in Settings (nil = follow the system locale).
     /// Persisted separately via `@AppStorage("languageOverride")` in Settings.
@@ -32,21 +32,26 @@ final class AppState {
     }
 }
 
-/// The six primary destinations. Titles + icons are localized via the catalog.
+/// The four primary destinations.
 enum AppTab: String, CaseIterable, Identifiable {
-    case today, scan, catalog, routine, progress, settings
+    case home, analyze, routine, progress
     var id: String { rawValue }
 
-    var titleKey: LocalizedStringKey { "tab.\(rawValue)" }
+    var titleKey: LocalizedStringKey {
+        switch self {
+        case .home:     return "tab.today"
+        case .analyze:  return "tab.scan"
+        case .routine:  return "tab.routine"
+        case .progress: return "tab.progress"
+        }
+    }
 
     var systemImage: String {
         switch self {
-        case .today:    return "sun.max"
-        case .scan:     return "camera.viewfinder"
-        case .catalog:  return "sparkles.rectangle.stack"
+        case .home:     return "house.fill"
+        case .analyze:  return "camera.viewfinder"
         case .routine:  return "checklist"
         case .progress: return "chart.line.uptrend.xyaxis"
-        case .settings: return "gearshape"
         }
     }
 }

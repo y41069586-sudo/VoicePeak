@@ -191,7 +191,7 @@ struct HonestMatchView: View {
                 .multilineTextAlignment(.center)
                 .padding(.horizontal, 30)
             PrimaryButton(titleKey: "dashboard.action.scanNow", systemImage: "camera.viewfinder") {
-                appState.selectedTab = .scan
+                appState.selectedTab = .analyze
             }
             .padding(.horizontal, 30)
         }

@@ -56,7 +56,7 @@ struct ScanView: View {
                            scans: scans) {
                 let faceFound = cap.analysis.faceFound
                 captured = nil
-                if faceFound { appState.selectedTab = .today }
+                if faceFound { appState.selectedTab = .home }
             }
         }
     }

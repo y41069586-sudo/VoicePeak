@@ -6,6 +6,7 @@ import SwiftData
 /// honest empty states until there's real data (no baseline yet, no active test).
 struct DashboardView: View {
     @Environment(AppState.self) private var appState
+    @State private var showSettings = false
     @Query private var scans: [Scan]
     @Query private var tests: [HalfFaceTest]
     @Query private var streaks: [Streak]
@@ -46,8 +47,22 @@ struct DashboardView: View {
             }
             .scrollIndicators(.hidden)
             .background(GradientMeshBackground().ignoresSafeArea())
+            .sheet(isPresented: $showSettings) {
+                SettingsView()
+            }
             .navigationTitle("tab.today")
             .toolbar {
+                ToolbarItem(placement: .topBarLeading) {
+                    Button {
+                        Haptics.fire(.selection)
+                        showSettings = true
+                    } label: {
+                        Image(systemName: "person.crop.circle")
+                            .font(.title3)
+                            .foregroundStyle(Theme.textPrimary)
+                    }
+                    .accessibilityLabel("tab.settings")
+                }
                 ToolbarItem(placement: .topBarTrailing) {
                     if let streak, streak.current > 0 {
                         Label {
@@ -80,7 +95,7 @@ struct DashboardView: View {
                         .font(.subheadline)
                         .foregroundStyle(Theme.textSecondary)
                     PrimaryButton(titleKey: "dashboard.action.scanNow", systemImage: "camera.viewfinder") {
-                        appState.selectedTab = .scan
+                        appState.selectedTab = .analyze
                     }
                     .padding(.top, 4)
                 } else if fullScanCount < AnalysisConfidence.minScansForChange {
@@ -140,9 +155,22 @@ struct DashboardView: View {
 
     private var actionGrid: some View {
         VStack(spacing: 12) {
-            GlassActionCard(action: { appState.selectedTab = .catalog }) {
-                actionLabel("dashboard.action.analyzeProduct", "sparkles.rectangle.stack")
+            NavigationLink {
+                CatalogView()
+            } label: {
+                HStack {
+                    actionLabel("dashboard.action.analyzeProduct", "sparkles.rectangle.stack")
+                    Spacer(minLength: 8)
+                    Image(systemName: "chevron.right")
+                        .font(.footnote.weight(.semibold))
+                        .foregroundStyle(Theme.textSecondary)
+                }
+                .padding(18)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 22, style: .continuous))
+                .overlay(RoundedRectangle(cornerRadius: 22, style: .continuous).strokeBorder(Theme.strokeSubtle, lineWidth: 1))
             }
+            .buttonStyle(.plain)
             NavigationLink {
                 TestsListView()
             } label: {
