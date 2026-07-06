@@ -16,14 +16,14 @@ final class PurchaseManager {
     // nonisolated: only ever written from `init` (MainActor) and read
     // from `deinit`, which runs nonisolated — cancelling a Task is thread-safe.
     @ObservationIgnored
-    nonisolated private var updatesTask: Task<Void, Never>?
+    nonisolated private let updatesTask: Task<Void, Never>
 
     init() {
         updatesTask = listenForTransactions()
     }
 
     deinit {
-        updatesTask?.cancel()
+        updatesTask.cancel()
     }
 
     /// Load products + current entitlement. Call once when purchases are enabled.
