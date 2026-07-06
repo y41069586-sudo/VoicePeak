@@ -13,17 +13,13 @@ final class PurchaseManager {
     private(set) var isPro = false
     private(set) var isPurchasing = false
 
-    // nonisolated: only ever written from `init` (MainActor) and read
-    // from `deinit`, which runs nonisolated — cancelling a Task is thread-safe.
+    // Held in a separate class so its deinit can safely cancel the task
+    // without violating Swift 6 actor isolation rules.
     @ObservationIgnored
-    nonisolated private let updatesTask: Task<Void, Never>
+    private let taskHolder = TaskHolder()
 
     init() {
-        updatesTask = listenForTransactions()
-    }
-
-    deinit {
-        updatesTask.cancel()
+        taskHolder.task = listenForTransactions()
     }
 
     /// Load products + current entitlement. Call once when purchases are enabled.
@@ -79,4 +75,9 @@ final class PurchaseManager {
             }
         }
     }
+}
+
+private final class TaskHolder: @unchecked Sendable {
+    var task: Task<Void, Never>?
+    deinit { task?.cancel() }
 }
