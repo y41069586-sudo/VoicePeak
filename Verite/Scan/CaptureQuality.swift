@@ -17,8 +17,8 @@ struct CaptureQuality: Equatable {
     static let minFaceHeight = 0.70
     static let maxFaceHeight = 0.80
     static let maxCenterOffset = 0.14
-    static let minBrightness = 0.70
-    static let maxBrightness = 1.00
+    static let minBrightness = 0.25  // was 0.70 – most indoor lighting sits 0.30-0.55
+    static let maxBrightness = 0.97  // allow very bright environments
 
     var distanceOK: Bool {
         faceDetected && normalizedFaceHeight >= Self.minFaceHeight && normalizedFaceHeight <= Self.maxFaceHeight

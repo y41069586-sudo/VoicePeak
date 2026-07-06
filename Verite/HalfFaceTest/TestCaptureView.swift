@@ -3,8 +3,8 @@ import SwiftData
 import UIKit
 
 /// Camera capture for one half-face test round. Captures the whole face (both
-/// sides at once), analyzes each side, and stores a per-side `Scan`. Reuses the
-/// scan components so framing stays standardized across rounds.
+/// sides at once), analyzes each side, stores a per-side `Scan`, then shows
+/// the `HalfFaceResultView` split-face comparison screen.
 struct TestCaptureView: View {
     let test: HalfFaceTest
     let onCaptured: () -> Void
@@ -16,6 +16,14 @@ struct TestCaptureView: View {
     @State private var authStatus = CameraPermission.status
     @State private var isCapturing = false
     @State private var countdown: Int?
+
+    // Set after a successful capture to trigger the result sheet.
+    private struct CaptureResult: Identifiable {
+        let id = UUID()
+        let image: UIImage
+        let analysis: SideAnalysis
+    }
+    @State private var result: CaptureResult?
 
     var body: some View {
         ZStack {
@@ -47,18 +55,37 @@ struct TestCaptureView: View {
         }
         .onAppear { if authStatus == .authorized { camera.start() } }
         .onDisappear { camera.stop() }
+        // ── Split-face result pops up after capture ──
+        .fullScreenCover(item: $result) { cap in
+            HalfFaceResultView(
+                image: cap.image,
+                testSide: test.testSide,
+                sideAnalysis: cap.analysis
+            ) {
+                onCaptured()
+                dismiss()
+            }
+        }
     }
 
     private var scanner: some View {
         ZStack {
             Color.black.ignoresSafeArea()
-            CameraPreviewView(session: camera.session).ignoresSafeArea()
+            GeometryReader { geo in
+                let isPad = UIDevice.current.userInterfaceIdiom == .pad
+                let previewWidth  = isPad ? min(geo.size.width, geo.size.height * 9 / 16) : geo.size.width
+                let previewHeight = isPad ? min(geo.size.height, geo.size.width * 16 / 9) : geo.size.height
+                CameraPreviewView(session: camera.session)
+                    .frame(width: previewWidth, height: previewHeight)
+                    .position(x: geo.size.width / 2, y: geo.size.height / 2)
+                    .ignoresSafeArea()
+            }
             AlignmentGuideOverlay(quality: camera.quality)
 
             VStack {
                 Spacer()
                 VStack(spacing: 12) {
-                    Text("test.capture.instruction")
+                    Text("Align your full face in the oval")
                         .font(.footnote.weight(.semibold))
                         .foregroundStyle(Theme.textPrimary)
                         .padding(.horizontal, 14).padding(.vertical, 8)
@@ -115,7 +142,7 @@ struct TestCaptureView: View {
             in: modelContext
         )
         Haptics.fire(.verdictReveal)
-        onCaptured()
-        dismiss()
+        // Show the split-face result screen instead of immediately dismissing.
+        result = CaptureResult(image: image, analysis: sides)
     }
 }

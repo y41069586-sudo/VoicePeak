@@ -103,6 +103,15 @@ struct SettingsView: View {
                 Section("settings.section.about") {
                     LabeledContent("settings.about.version", value: appVersion)
                 }
+
+                // Sign out / reset
+                Section {
+                    Button(role: .destructive) {
+                        resetOnboarding()
+                    } label: {
+                        Label("settings.signOut", systemImage: "rectangle.portrait.and.arrow.right")
+                    }
+                }
             }
             .scrollContentBackground(.hidden)
             .background(GradientMeshBackground().ignoresSafeArea())
@@ -131,6 +140,18 @@ struct SettingsView: View {
         } else {
             NotificationManager.cancelRoutineReminders()
         }
+    }
+
+    private func resetOnboarding() {
+        // Fetch the profile directly from the context and reset it.
+        // RootView observes profiles, so setting onboardingComplete = false
+        // immediately transitions back to the onboarding flow.
+        let descriptor = FetchDescriptor<UserProfile>()
+        if let profile = try? modelContext.fetch(descriptor).first {
+            profile.onboardingComplete = false
+            try? modelContext.save()
+        }
+        dismiss()
     }
 
     private var appVersion: String {

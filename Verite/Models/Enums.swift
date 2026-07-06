@@ -4,13 +4,23 @@ import SwiftUI
 // Shared value types used across models, the analysis engine, and the UI.
 // Every user-facing case exposes a `localizationKey` so display strings live in
 // the String Catalog, never hardcoded.
+// NOTE: All localizationKey properties use explicit switch statements (not string
+// interpolation) so the .xcstrings runtime can resolve them correctly.
 
 // MARK: - Skin type
 
 enum SkinType: String, Codable, CaseIterable, Identifiable, Sendable {
     case normal, dry, oily, combination, sensitive
     var id: String { rawValue }
-    var localizationKey: LocalizedStringKey { "skinType.\(rawValue)" }
+    var localizationKey: LocalizedStringKey {
+        switch self {
+        case .normal:      return "skinType.normal"
+        case .dry:         return "skinType.dry"
+        case .oily:        return "skinType.oily"
+        case .combination: return "skinType.combination"
+        case .sensitive:   return "skinType.sensitive"
+        }
+    }
 }
 
 // MARK: - Concerns (declared by the user in onboarding)
@@ -18,7 +28,20 @@ enum SkinType: String, Codable, CaseIterable, Identifiable, Sendable {
 enum SkinConcern: String, Codable, CaseIterable, Identifiable, Sendable {
     case redness, acne, texture, pores, dryness, aging, oiliness, dullness, sensitivity, hyperpigmentation
     var id: String { rawValue }
-    var localizationKey: LocalizedStringKey { "concern.\(rawValue)" }
+    var localizationKey: LocalizedStringKey {
+        switch self {
+        case .redness:           return "concern.redness"
+        case .acne:              return "concern.acne"
+        case .texture:           return "concern.texture"
+        case .pores:             return "concern.pores"
+        case .dryness:           return "concern.dryness"
+        case .aging:             return "concern.aging"
+        case .oiliness:          return "concern.oiliness"
+        case .dullness:          return "concern.dullness"
+        case .sensitivity:       return "concern.sensitivity"
+        case .hyperpigmentation: return "concern.hyperpigmentation"
+        }
+    }
 }
 
 // MARK: - Measured attributes (produced by the analysis engine)
@@ -29,7 +52,17 @@ enum SkinConcern: String, Codable, CaseIterable, Identifiable, Sendable {
 enum SkinAttribute: String, Codable, CaseIterable, Identifiable, Sendable {
     case redness, oiliness, texture, pores, blemishes, hydration, sensitivity
     var id: String { rawValue }
-    var localizationKey: LocalizedStringKey { "attribute.\(rawValue)" }
+    var localizationKey: LocalizedStringKey {
+        switch self {
+        case .redness:     return "attribute.redness"
+        case .oiliness:    return "attribute.oiliness"
+        case .texture:     return "attribute.texture"
+        case .pores:       return "attribute.pores"
+        case .blemishes:   return "attribute.blemishes"
+        case .hydration:   return "attribute.hydration"
+        case .sensitivity: return "attribute.sensitivity"
+        }
+    }
 
     /// For most attributes a *lower* value is a better outcome; hydration is the
     /// exception (higher is better). Used when coloring change vs baseline.
@@ -41,7 +74,13 @@ enum SkinAttribute: String, Codable, CaseIterable, Identifiable, Sendable {
 enum FaceSide: String, Codable, CaseIterable, Identifiable, Sendable {
     case full, left, right
     var id: String { rawValue }
-    var localizationKey: LocalizedStringKey { "side.\(rawValue)" }
+    var localizationKey: LocalizedStringKey {
+        switch self {
+        case .full:  return "side.full"
+        case .left:  return "side.left"
+        case .right: return "side.right"
+        }
+    }
 
     var opposite: FaceSide {
         switch self {
@@ -59,7 +98,14 @@ enum ProductSource: String, Codable, Sendable {
     case openBeautyFacts   // open-licensed API
     case userContribution  // added by the user
     case affiliate         // only when the affiliate module is enabled
-    var localizationKey: LocalizedStringKey { "source.\(rawValue)" }
+    var localizationKey: LocalizedStringKey {
+        switch self {
+        case .seed:             return "source.seed"
+        case .openBeautyFacts:  return "source.openBeautyFacts"
+        case .userContribution: return "source.userContribution"
+        case .affiliate:        return "source.affiliate"
+        }
+    }
 }
 
 // MARK: - Half-face test lifecycle
@@ -70,7 +116,15 @@ enum TestStatus: String, Codable, Sendable {
     case verdictReady    // enough data + significance to show a verdict
     case passed          // promoted into the proven routine
     case failed          // money-saved +1
-    var localizationKey: LocalizedStringKey { "test.status.\(rawValue)" }
+    var localizationKey: LocalizedStringKey {
+        switch self {
+        case .queued:       return "test.status.queued"
+        case .running:      return "test.status.running"
+        case .verdictReady: return "test.status.verdictReady"
+        case .passed:       return "test.status.passed"
+        case .failed:       return "test.status.failed"
+        }
+    }
 }
 
 // MARK: - Routine timing
@@ -78,16 +132,43 @@ enum TestStatus: String, Codable, Sendable {
 enum TimeOfDay: String, Codable, CaseIterable, Identifiable, Sendable {
     case am, pm
     var id: String { rawValue }
-    var localizationKey: LocalizedStringKey { "timeOfDay.\(rawValue)" }
+    var localizationKey: LocalizedStringKey {
+        switch self {
+        case .am: return "timeOfDay.am"
+        case .pm: return "timeOfDay.pm"
+        }
+    }
 }
 
 // MARK: - Ingredient classification (INCI engine, Milestone 4)
 
 enum IngredientClass: String, Codable, CaseIterable, Sendable {
     case active, irritant, fragrance, alcohol, comedogenic, humectant, emollient, other
-    var localizationKey: LocalizedStringKey { "ingredient.class.\(rawValue)" }
+    var localizationKey: LocalizedStringKey {
+        switch self {
+        case .active:      return "ingredient.class.active"
+        case .irritant:    return "ingredient.class.irritant"
+        case .fragrance:   return "ingredient.class.fragrance"
+        case .alcohol:     return "ingredient.class.alcohol"
+        case .comedogenic: return "ingredient.class.comedogenic"
+        case .humectant:   return "ingredient.class.humectant"
+        case .emollient:   return "ingredient.class.emollient"
+        case .other:       return "ingredient.class.other"
+        }
+    }
     /// Localized plain-language "what this type does".
-    var descriptionKey: LocalizedStringKey { "ingredient.class.\(rawValue).desc" }
+    var descriptionKey: LocalizedStringKey {
+        switch self {
+        case .active:      return "ingredient.class.active.desc"
+        case .irritant:    return "ingredient.class.irritant.desc"
+        case .fragrance:   return "ingredient.class.fragrance.desc"
+        case .alcohol:     return "ingredient.class.alcohol.desc"
+        case .comedogenic: return "ingredient.class.comedogenic.desc"
+        case .humectant:   return "ingredient.class.humectant.desc"
+        case .emollient:   return "ingredient.class.emollient.desc"
+        case .other:       return "ingredient.class.other.desc"
+        }
+    }
 
     /// Whether this class is an honesty *flag* worth surfacing risk-first.
     var isRiskFlag: Bool {

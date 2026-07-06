@@ -79,12 +79,17 @@ struct ScanView: View {
     private var liveScanner: some View {
         ZStack {
             Color.black.ignoresSafeArea()
-            if UIDevice.current.userInterfaceIdiom == .pad {
+
+            // On iPad the screen is wider than 9:16; pin the preview to a 9:16
+            // portrait frame centered on screen so it looks like a phone camera.
+            GeometryReader { geo in
+                let isPad = UIDevice.current.userInterfaceIdiom == .pad
+                let previewWidth  = isPad ? min(geo.size.width, geo.size.height * 9 / 16) : geo.size.width
+                let previewHeight = isPad ? min(geo.size.height, geo.size.width * 16 / 9) : geo.size.height
+
                 CameraPreviewView(session: camera.session)
-                    .scaledToFit()
-                    .ignoresSafeArea()
-            } else {
-                CameraPreviewView(session: camera.session)
+                    .frame(width: previewWidth, height: previewHeight)
+                    .position(x: geo.size.width / 2, y: geo.size.height / 2)
                     .ignoresSafeArea()
             }
             

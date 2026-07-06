@@ -100,6 +100,10 @@ struct HalfFaceTestDetailView: View {
                 if test.status == .queued {
                     Label("halfface.queuedNote", systemImage: "clock")
                         .font(.subheadline).foregroundStyle(Theme.warning)
+                    // Still allow capturing – the scan will count once the test starts.
+                    PrimaryButton(titleKey: "halfface.scanNow", systemImage: "camera.viewfinder") {
+                        showCapture = true
+                    }
                 } else {
                     HStack {
                         Image(systemName: "calendar")
