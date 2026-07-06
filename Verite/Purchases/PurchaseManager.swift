@@ -15,6 +15,7 @@ final class PurchaseManager {
 
     // nonisolated: only ever written from `init` (MainActor) and read
     // from `deinit`, which runs nonisolated — cancelling a Task is thread-safe.
+    @ObservationIgnored
     nonisolated private var updatesTask: Task<Void, Never>?
 
     init() {

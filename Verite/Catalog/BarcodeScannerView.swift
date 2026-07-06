@@ -3,7 +3,7 @@ import AVFoundation
 
 /// Live barcode scanner (back camera) using `AVCaptureMetadataOutput`. Emits the
 /// first recognized code, then stops. Reuses the camera-permission flow.
-final class BarcodeScannerController: NSObject, ObservableObject, AVCaptureMetadataOutputObjectsDelegate {
+final class BarcodeScannerController: NSObject, ObservableObject, AVCaptureMetadataOutputObjectsDelegate, @unchecked Sendable {
     let session = AVCaptureSession()
 
     private let sessionQueue = DispatchQueue(label: "com.verite.barcode.session")
