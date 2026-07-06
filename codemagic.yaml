@@ -83,12 +83,12 @@ workflows:
       - name: Build & sign IPA
         script: |
           set -o pipefail
-          # $BUILD_NUMBER (Codemagic auto-increment) → a unique App Store build number.
+          # Version is controlled by project.yml (CURRENT_PROJECT_VERSION).
+          # We no longer override with $BUILD_NUMBER to avoid resetting to 1.
           xcode-project build-ipa \
             --project "$XCODE_PROJECT" \
             --scheme "$XCODE_SCHEME" \
-            --config Release \
-            --archive-xcargs "CURRENT_PROJECT_VERSION=$BUILD_NUMBER"
+            --config Release
     artifacts:
       - build/ios/ipa/*.ipa
       - /tmp/xcodebuild_logs/*.log
