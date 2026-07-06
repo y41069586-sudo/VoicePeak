@@ -83,7 +83,7 @@ workflows:
       - name: Stamp build version into Info.plist
         script: |
           PLIST="$CM_BUILD_DIR/Verite/Resources/Info.plist"
-          /usr/libexec/PlistBuddy -c "Set :CFBundleVersion 10" "$PLIST"
+          /usr/libexec/PlistBuddy -c "Set :CFBundleVersion 11" "$PLIST"
           /usr/libexec/PlistBuddy -c "Set :CFBundleShortVersionString 1.0.3" "$PLIST"
           echo "Stamped CFBundleVersion=$(/usr/libexec/PlistBuddy -c 'Print :CFBundleVersion' $PLIST)"
       - name: Build & sign IPA
@@ -93,7 +93,7 @@ workflows:
             --project "$XCODE_PROJECT" \
             --scheme "$XCODE_SCHEME" \
             --config Release \
-            --archive-xcargs "CURRENT_PROJECT_VERSION=10 MARKETING_VERSION=1.0.3"
+            --archive-xcargs "CURRENT_PROJECT_VERSION=11 MARKETING_VERSION=1.0.3"
     artifacts:
       - build/ios/ipa/*.ipa
       - /tmp/xcodebuild_logs/*.log
