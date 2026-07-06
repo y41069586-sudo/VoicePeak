@@ -14,11 +14,11 @@ struct CaptureQuality: Equatable {
     var brightness: Double = 0
 
     // Target bands. Forgiving on purpose — guidance, not a lab rig.
-    static let minFaceHeight = 0.42
-    static let maxFaceHeight = 0.82
+    static let minFaceHeight = 0.70
+    static let maxFaceHeight = 0.80
     static let maxCenterOffset = 0.14
-    static let minBrightness = 0.26
-    static let maxBrightness = 0.93
+    static let minBrightness = 0.70
+    static let maxBrightness = 1.00
 
     var distanceOK: Bool {
         faceDetected && normalizedFaceHeight >= Self.minFaceHeight && normalizedFaceHeight <= Self.maxFaceHeight
