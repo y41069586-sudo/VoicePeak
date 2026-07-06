@@ -13,6 +13,7 @@ struct ScanView: View {
 
     @StateObject private var camera = CameraController()
     @State private var engine = SkinAnalysisEngine()
+    @State private var monitor = RealtimeSkinMonitor()
 
     @State private var authStatus = CameraPermission.status
     @State private var phase: ScanPhase = .priming
@@ -79,6 +80,27 @@ struct ScanView: View {
         ZStack {
             Color.black.ignoresSafeArea()
             CameraPreviewView(session: camera.session).ignoresSafeArea()
+            
+            if camera.quality.faceDetected && monitor.isReady {
+                let liveMap = [
+                    FaceRegion.forehead: monitor.liveAttributes[.hydration] ?? 0.0,
+                    FaceRegion.leftCheek: monitor.liveAttributes[.redness] ?? 0.0,
+                    FaceRegion.rightCheek: monitor.liveAttributes[.redness] ?? 0.0,
+                    FaceRegion.nose: monitor.liveAttributes[.oiliness] ?? 0.0,
+                    FaceRegion.chin: monitor.liveAttributes[.hydration] ?? 0.0
+                ]
+                
+                GeometryReader { geo in
+                    let ovalWidth = geo.size.width * 0.70
+                    let ovalHeight = geo.size.height * 0.46
+                    
+                    RegionHeatmapOverlay(regionValues: liveMap, colorScheme: .concern, opacity: 0.35)
+                        .frame(width: ovalWidth, height: ovalHeight)
+                        .position(x: geo.size.width / 2, y: geo.size.height * 0.44)
+                }
+                .allowsHitTesting(false)
+            }
+            
             AlignmentGuideOverlay(quality: camera.quality)
 
             VStack {
@@ -103,8 +125,14 @@ struct ScanView: View {
         .animation(Motion.springSnappy, value: countdown)
         .animation(Motion.springSnappy, value: phase)
         .animation(.easeOut(duration: 0.18), value: flash)
-        .onAppear { startIfAuthorized() }
-        .onDisappear { camera.stop() }
+        .onAppear {
+            camera.onFrame = { monitor.didReceiveSampleBuffer($0) }
+            startIfAuthorized()
+        }
+        .onDisappear {
+            camera.onFrame = nil
+            camera.stop()
+        }
     }
 
     private var controls: some View {

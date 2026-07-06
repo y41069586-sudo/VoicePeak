@@ -16,6 +16,9 @@ final class CameraController: NSObject, ObservableObject,
     /// Live framing assessment for the UI (updated on the main thread, ~5 Hz).
     @Published private(set) var quality = CaptureQuality()
     @Published private(set) var isRunning = false
+    
+    /// Delegate callback for real-time frame consumers (e.g. RealtimeSkinMonitor)
+    var onFrame: ((CMSampleBuffer) -> Void)?
 
     let session = AVCaptureSession()
 
@@ -128,6 +131,8 @@ final class CameraController: NSObject, ObservableObject,
     func captureOutput(_ output: AVCaptureOutput,
                        didOutput sampleBuffer: CMSampleBuffer,
                        from connection: AVCaptureConnection) {
+        onFrame?(sampleBuffer)
+                       
         let now = CACurrentMediaTime()
         guard now - lastAnalysis >= analysisInterval else { return }
         lastAnalysis = now

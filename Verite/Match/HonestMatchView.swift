@@ -40,16 +40,19 @@ struct HonestMatchView: View {
 
     @ViewBuilder
     private func matchContent(_ context: SkinContext) -> some View {
-        let result = MatchEngine.evaluate(profile: productProfile, context: context)
+        let report = CompatibilityEngine.report(product: product, skinContext: context)
         let conflicts = conflicts(context)
         let dupes = DupeFinder.find(for: product, in: allProducts, context: context)
         let thumbnail = (BaselineTracker.latest(scans) ?? BaselineTracker.baseline(scans))?
             .thumbnailFilename.flatMap { ThumbnailStore.load($0) }
 
         VStack(spacing: 16) {
-            verdictHero(result)
-            if let thumbnail { heatmapCard(thumbnail, result.zones) }
-            reasonsCard(result)
+            verdictHero(report)
+            if let thumbnail { heatmapCard(thumbnail, report.matchResult.zones) }
+            reasonsCard(report.matchResult)
+            if !report.ingredientConflicts.isEmpty {
+                ingredientConflictsCard(report.ingredientConflicts)
+            }
             if !conflicts.isEmpty { conflictsCard(conflicts) }
             if !dupes.isEmpty { dupesCard(dupes) }
             testCTA
@@ -69,25 +72,155 @@ struct HonestMatchView: View {
         return IngredientConflicts.check(product: productProfile, routine: signals)
     }
 
-    // MARK: Sections
+    // MARK: - Sections
 
-    private func verdictHero(_ result: MatchResult) -> some View {
+    private func verdictHero(_ report: CompatibilityReport) -> some View {
         GlassCard {
-            VStack(spacing: 10) {
-                Image(systemName: result.verdict.systemImage)
-                    .font(.system(size: 40))
-                    .foregroundStyle(result.verdict.color)
-                    .blueGlow(result.verdict.color, radius: 20, opacity: 0.4)
-                Text(result.verdict.headlineKey)
-                    .font(Typography.display(26))
-                    .foregroundStyle(Theme.textPrimary)
-                    .multilineTextAlignment(.center)
-                Text(verbatim: product.name)
-                    .font(.subheadline)
-                    .foregroundStyle(Theme.textSecondary)
-                    .multilineTextAlignment(.center)
+            VStack(spacing: 18) {
+                // Top header: score orb + product metadata
+                HStack(spacing: 20) {
+                    // Circular progress score gauge
+                    ZStack {
+                        Circle()
+                            .stroke(report.riskLevel.color.opacity(0.15), lineWidth: 8)
+                            .frame(width: 80, height: 80)
+                        
+                        Circle()
+                            .trim(from: 0.0, to: CGFloat(report.compatibilityScore) / 100.0)
+                            .stroke(
+                                AngularGradient(
+                                    colors: [report.riskLevel.color.opacity(0.7), report.riskLevel.color],
+                                    center: .center
+                                ),
+                                style: StrokeStyle(lineWidth: 8, lineCap: .round)
+                            )
+                            .frame(width: 80, height: 80)
+                            .rotationEffect(.degrees(-90))
+                        
+                        VStack(spacing: 2) {
+                            Text("\(report.compatibilityScore)")
+                                .font(Typography.number(26))
+                                .foregroundStyle(Theme.textPrimary)
+                            Text("score")
+                                .font(VType.micro)
+                                .foregroundStyle(Theme.textSecondary)
+                        }
+                    }
+                    .blueGlow(report.riskLevel.color, radius: 15, opacity: 0.3)
+                    
+                    VStack(alignment: .leading, spacing: 6) {
+                        HStack(spacing: 6) {
+                            Image(systemName: report.riskLevel.systemImage)
+                                .font(.footnote)
+                            Text(report.riskLevel.localizationKey)
+                                .font(VType.bodyMedium.weight(.bold))
+                        }
+                        .foregroundStyle(report.riskLevel.color)
+                        
+                        Text(verbatim: product.name)
+                            .font(Typography.display(20))
+                            .foregroundStyle(Theme.textPrimary)
+                            .lineLimit(2)
+                            
+                        // Skin type recommendation badges
+                        FlexWrap(spacing: 4, lineSpacing: 4) {
+                            ForEach(report.recommendedFor) { skinType in
+                                Text(skinType.localizationKey)
+                                    .font(.system(size: 10, weight: .bold))
+                                    .foregroundStyle(Theme.accent)
+                                    .padding(.horizontal, 8).padding(.vertical, 3)
+                                    .background(Theme.accent.opacity(0.1), in: Capsule())
+                            }
+                        }
+                    }
+                    Spacer()
+                }
+                
+                Divider().background(VColor.strokeSubtle)
+                
+                // Benefits & Concerns lists
+                VStack(alignment: .leading, spacing: 14) {
+                    if !report.benefits.isEmpty {
+                        VStack(alignment: .leading, spacing: 8) {
+                            Text("Hydration & Skin Support")
+                                .font(VType.captionBold)
+                                .foregroundStyle(Theme.success)
+                            
+                            ForEach(report.benefits, id: \.self) { benefit in
+                                HStack(alignment: .top, spacing: 6) {
+                                    Image(systemName: "checkmark")
+                                        .font(.caption2.weight(.bold))
+                                        .foregroundStyle(Theme.success)
+                                        .padding(.top, 2)
+                                    Text(benefit)
+                                        .font(.footnote)
+                                        .foregroundStyle(Theme.textPrimary)
+                                }
+                            }
+                        }
+                    }
+                    
+                    if !report.concerns.isEmpty {
+                        VStack(alignment: .leading, spacing: 8) {
+                            Text("Potential Risks & Concerns")
+                                .font(VType.captionBold)
+                                .foregroundStyle(Theme.danger)
+                            
+                            ForEach(report.concerns, id: \.self) { concern in
+                                HStack(alignment: .top, spacing: 6) {
+                                    Image(systemName: "exclamationmark.triangle")
+                                        .font(.caption2.weight(.bold))
+                                        .foregroundStyle(Theme.danger)
+                                        .padding(.top, 2)
+                                    Text(concern)
+                                        .font(.footnote)
+                                        .foregroundStyle(Theme.textPrimary)
+                                }
+                            }
+                        }
+                    }
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
             }
-            .frame(maxWidth: .infinity)
+            .padding(4)
+        }
+    }
+
+    private func ingredientConflictsCard(_ conflicts: [IngredientConflict]) -> some View {
+        GlassCard {
+            VStack(alignment: .leading, spacing: 12) {
+                Label {
+                    Text("Potential Active Interactions")
+                        .font(.subheadline.weight(.semibold))
+                        .foregroundStyle(Theme.danger)
+                } icon: {
+                    Image(systemName: "circle.badge.exclamationmark")
+                        .foregroundStyle(Theme.danger)
+                }
+                
+                ForEach(conflicts) { conflict in
+                    VStack(alignment: .leading, spacing: 6) {
+                        HStack(spacing: 6) {
+                            Text(verbatim: conflict.ingredientA.capitalized)
+                            Image(systemName: "arrow.left.and.right.righttriangle.left.righttriangle.right")
+                                .font(.caption2)
+                                .foregroundStyle(Theme.textSecondary)
+                            Text(verbatim: conflict.ingredientB.capitalized)
+                        }
+                        .font(VType.bodyMedium.weight(.bold))
+                        .foregroundStyle(Theme.textPrimary)
+                        
+                        Text(conflict.reasonKey)
+                            .font(.footnote)
+                            .foregroundStyle(Theme.textSecondary)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
+                    .padding(.vertical, 4)
+                    if conflict.id != conflicts.last?.id {
+                        Divider().background(VColor.strokeSubtle)
+                    }
+                }
+            }
         }
     }
 

@@ -6,15 +6,28 @@ import CoreGraphics
 /// Observable façade over the analysis pipeline, so the UI can show an
 /// "analyzing…" state. The heavy work runs on a background task via
 /// `SkinAnalysisCore` (pure, testable, no main-thread contact).
+///
+/// Also holds a shared `TemporalSmoother` so repeated captures of the same
+/// person accumulate a stable running average rather than jumping on each scan.
 @Observable
 final class SkinAnalysisEngine {
     private(set) var isAnalyzing = false
+    private let smoother = TemporalSmoother()
 
     func analyze(cgImage: CGImage, captureQuality: Double) async -> ScanAnalysis {
         isAnalyzing = true
         defer { isAnalyzing = false }
+        let smoother = smoother   // capture for detached task
         return await Task.detached(priority: .userInitiated) {
-            SkinAnalysisCore.analyze(cgImage: cgImage, captureQuality: captureQuality)
+            // Lighting normalisation pre-pass: reject unusable frames early.
+            let (normalized, acceptable) = LightingNormalizer.normalize(cgImage)
+            guard acceptable else { return ScanAnalysis.empty }
+            var result = SkinAnalysisCore.analyze(cgImage: normalized, captureQuality: captureQuality)
+            // Apply temporal smoothing across consecutive scans.
+            if result.faceFound {
+                result.attributes = await smoother.smooth(attributes: result.attributes)
+            }
+            return result
         }.value
     }
 
@@ -23,8 +36,15 @@ final class SkinAnalysisEngine {
         isAnalyzing = true
         defer { isAnalyzing = false }
         return await Task.detached(priority: .userInitiated) {
-            SkinAnalysisCore.analyzeSides(cgImage: cgImage)
+            let (normalized, acceptable) = LightingNormalizer.normalize(cgImage)
+            guard acceptable else { return SideAnalysis.empty }
+            return SkinAnalysisCore.analyzeSides(cgImage: normalized)
         }.value
+    }
+
+    /// Reset the temporal smoother (call when the user changes device / lighting significantly).
+    func resetSmoother() async {
+        await smoother.reset()
     }
 }
 
@@ -46,9 +66,9 @@ enum SkinAnalysisCore {
 
         let faceRect = Sampling.pixelRect(fromVision: face.boundingBox, imageWidth: w, imageHeight: h)
 
-        // 2. Sample each region.
+        // 2. Sample each region (standard regions only — underEye is handled separately below).
         var regions: [FaceRegion: RegionMetrics] = [:]
-        for region in FaceRegion.allCases {
+        for region in FaceRegion.allCases where region.isStandardRegion {
             let rect = Sampling.regionRect(in: faceRect, region.fractionalRect)
             if let buffer = Sampling.readPixels(cgImage, rect: rect) {
                 regions[region] = SkinMetrics.metrics(for: buffer)
@@ -56,14 +76,33 @@ enum SkinAnalysisCore {
         }
         guard !regions.isEmpty else { return .empty }
 
-        // 3. Aggregate region metrics → per-attribute estimates.
-        let attributes = aggregate(regions)
+        // 2b. Under-eye region for dark-circle estimate.
+        let underEyeBuffer: PixelBuffer? = {
+            let rect = Sampling.regionRect(in: faceRect, FaceRegion.underEye.fractionalRect)
+            return Sampling.readPixels(cgImage, rect: rect)
+        }()
+
+        // 3. Aggregate standard region metrics → per-attribute estimates.
+        var attributes = aggregate(regions)
+
+        // 3b. Extended metrics: glow, dark circles, barrier.
+        let ext = ExtendedSkinMetrics.compute(regions: regions, underEyeBuffer: underEyeBuffer)
+        // Store as informal extra keys — UI can read these via ScanAnalysis.regions.
+        // (SkinAttribute only has 7 cases; extended values live in the regions dict.)
+        var stringKeyed = Dictionary(uniqueKeysWithValues: regions.map { ($0.key.rawValue, $0.value) })
 
         // 4. Left/right midline from eye landmarks (for the half-face test).
         let midlineX = eyeMidlineX(of: face)
 
-        let stringKeyed = Dictionary(uniqueKeysWithValues: regions.map { ($0.key.rawValue, $0.value) })
-        return ScanAnalysis(attributes: attributes, regions: stringKeyed, faceFound: true, midlineX: midlineX)
+        return ScanAnalysis(
+            attributes: attributes,
+            regions: stringKeyed,
+            faceFound: true,
+            midlineX: midlineX,
+            glow: ext.glow,
+            darkCircles: ext.darkCircles,
+            barrierScore: ext.barrierScore
+        )
     }
 
     // MARK: Per-side analysis (half-face test)

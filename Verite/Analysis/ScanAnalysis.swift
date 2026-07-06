@@ -11,7 +11,19 @@ struct ScanAnalysis: Sendable {
     /// half-face test. Nil when landmarks were unavailable.
     var midlineX: Double?
 
-    static let empty = ScanAnalysis(attributes: [:], regions: [:], faceFound: false, midlineX: nil)
+    // MARK: Extended metrics (from ExtendedSkinMetrics)
+
+    /// 0…1 glow estimate (radiance × smoothness × calm). 0 = dull, 1 = radiant.
+    var glow: Double = 0
+    /// 0…1 dark-circle appearance from the under-eye region.
+    var darkCircles: Double = 0
+    /// 0…1 barrier health heuristic (low redness unevenness + adequate hydration proxy).
+    var barrierScore: Double = 0
+
+    static let empty = ScanAnalysis(
+        attributes: [:], regions: [:], faceFound: false, midlineX: nil,
+        glow: 0, darkCircles: 0, barrierScore: 0
+    )
 
     /// Storage shape for `Scan.attributeScores`.
     var attributeScores: [String: Double] {

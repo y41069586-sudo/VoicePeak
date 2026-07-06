@@ -25,6 +25,12 @@ struct HalfFaceTestDetailView: View {
         HalfFaceTestScoring.progress(for: test, scans: scans, product: product, context: context)
     }
 
+    private var latestScanImage: UIImage? {
+        let testScans = HalfFaceTestScoring.testScans(test, in: scans)
+        guard let latest = testScans.sorted(by: { $0.date < $1.date }).last else { return nil }
+        return latest.thumbnailFilename.flatMap { ThumbnailStore.load($0) }
+    }
+
     var body: some View {
         ScrollView {
             VStack(spacing: 16) {
@@ -40,6 +46,7 @@ struct HalfFaceTestDetailView: View {
                         verdictCard
                     }
                 }
+                simulationCard
                 hygieneCard
                 DisclaimerBanner(style: .short)
             }
@@ -248,5 +255,31 @@ struct HalfFaceTestDetailView: View {
             in: modelContext
         )
         Haptics.fire(passed ? .verdictReveal : .milestone)
+    }
+
+    @ViewBuilder
+    private var simulationCard: some View {
+        if let originalImage = latestScanImage {
+            VStack(alignment: .leading, spacing: 12) {
+                Text("Predictive Cosmetic Simulation")
+                    .font(VType.sectionTitle)
+                    .foregroundStyle(VColor.textPrimary)
+                
+                Text("Swipe the slider to preview potential skin appearance changes on the treated side under ideal product consistency.")
+                    .font(.footnote)
+                    .foregroundStyle(Theme.textSecondary)
+                    .fixedSize(horizontal: false, vertical: true)
+                
+                HalfFaceSimulationLoader(
+                    original: originalImage,
+                    side: test.testSide,
+                    intensity: 0.70,
+                    midlineX: nil
+                )
+                .aspectRatio(3/4, contentMode: .fit)
+                .frame(maxWidth: .infinity)
+                .blueGlow(Theme.accent, radius: 12, opacity: 0.15)
+            }
+        }
     }
 }
