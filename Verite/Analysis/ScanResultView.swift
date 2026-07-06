@@ -1,11 +1,8 @@
 import SwiftUI
 import UIKit
 
-/// Shown right after a capture. Honest by construction:
-/// • baseline → your Day-0 estimates, labeled as a starting point;
-/// • follow-up → change vs your own baseline, but only as a *verdict* once
-///   confidence clears the threshold; otherwise a "not enough data yet" state;
-/// • no face → a kind retry, nothing saved.
+/// Replaced premium results view with 5-section cinematic reveal experience.
+/// Presents skin health insights based on the analysis output using calm adjectives.
 struct ScanResultView: View {
     let image: UIImage?
     let analysis: ScanAnalysis
@@ -14,187 +11,162 @@ struct ScanResultView: View {
     let scans: [Scan]
     let onDone: () -> Void
 
-    private var confidence: Double { BaselineTracker.confidence(scans) }
-    private var reliable: Bool { BaselineTracker.hasReliableVerdict(scans) }
+    @Environment(\.modelContext) private var modelContext
+    @State private var snapshot: MockSkinSnapshot?
+    @State private var animateIn = false
+
     private var isFollowUp: Bool {
         !isBaseline && BaselineTracker.fullScans(scans).count >= AnalysisConfidence.minScansForChange
     }
 
+    private var reliable: Bool { BaselineTracker.hasReliableVerdict(scans) }
+
     var body: some View {
         ZStack {
             GradientMeshBackground()
+                .ignoresSafeArea()
+
             VStack(spacing: 0) {
-                ScrollView {
-                    VStack(spacing: 16) {
-                        header
-                        if !analysis.faceFound {
-                            noFaceCard
-                        } else if isFollowUp {
-                            if reliable { changeCard } else { notEnoughCard }
-                            ConfidenceMeter(value: confidence)
-                            readingsCard(title: "result.readings")
-                        } else {
-                            baselineCard
-                            readingsCard(title: "result.readings")
+                if let snapshot {
+                    ScrollView {
+                        VStack(spacing: 24) {
+                            // Section 1: Header + Score Orb
+                            VStack(spacing: 16) {
+                                if let image {
+                                    Image(uiImage: image)
+                                        .resizable()
+                                        .scaledToFill()
+                                        .frame(width: 100, height: 130)
+                                        .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+                                        .overlay(
+                                            RoundedRectangle(cornerRadius: 16, style: .continuous)
+                                                .strokeBorder(VColor.strokeSubtle, lineWidth: 1)
+                                        )
+                                        .blueGlow(Theme.accent, radius: 15, opacity: 0.25)
+                                }
+
+                                HStack(spacing: 8) {
+                                    Image(systemName: captureQuality >= 0.7 ? "checkmark.seal.fill" : "sparkles")
+                                        .foregroundStyle(captureQuality >= 0.7 ? Theme.success : Theme.accent)
+                                    Text(captureQuality >= 0.7 ? "Standardized Capture" : "Quick Scan")
+                                        .font(VType.micro)
+                                        .foregroundStyle(VColor.textSecondary)
+                                }
+                                .padding(.horizontal, 10)
+                                .padding(.vertical, 4)
+                                .background(.ultraThinMaterial, in: Capsule())
+
+                                SkinScoreOrb(score: snapshot.score)
+                                    .scaleEffect(animateIn ? 1.0 : 0.9)
+                                    .opacity(animateIn ? 1.0 : 0.0)
+
+                                Text(snapshot.headline)
+                                    .font(VType.heroTitle)
+                                    .foregroundStyle(VColor.textPrimary)
+                                    .multilineTextAlignment(.center)
+                                    .padding(.horizontal, 16)
+                            }
+                            .padding(.top, 16)
+
+                            // Section 2: Key Insight Sentence
+                            GlassCard(featured: true) {
+                                VStack(alignment: .leading, spacing: 8) {
+                                    Text("Verite Insight")
+                                        .vEyebrow()
+                                    Text(snapshot.keyInsight)
+                                        .font(VType.bodyMedium)
+                                        .foregroundStyle(VColor.textPrimary)
+                                        .fixedSize(horizontal: false, vertical: true)
+                                }
+                            }
+                            .opacity(animateIn ? 1.0 : 0.0)
+
+                            // Section 3: Attribute Grid
+                            LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 12) {
+                                ForEach(snapshot.attributes) { attr in
+                                    SkinAttributeCard(display: attr)
+                                }
+                            }
+                            .opacity(animateIn ? 1.0 : 0.0)
+
+                            // Section 4: Heatmap Overlay
+                            HeatmapOverlay(regions: snapshot.heatmapRegions)
+                                .opacity(animateIn ? 1.0 : 0.0)
+
+                            // Section 5: What Changed (for follow-ups)
+                            if isFollowUp {
+                                if reliable {
+                                    WhatChangedCard(changes: BaselineTracker.changes(scans))
+                                        .opacity(animateIn ? 1.0 : 0.0)
+                                } else {
+                                    GlassCard {
+                                        VStack(alignment: .leading, spacing: 8) {
+                                            HStack(spacing: 8) {
+                                                Image(systemName: "hourglass")
+                                                    .foregroundStyle(Theme.warning)
+                                                Text("More Scans Needed").font(VType.title)
+                                            }
+                                            .foregroundStyle(VColor.textPrimary)
+                                            Text("We need a few more scans to establish a highly reliable delta trend compared to your baseline.")
+                                                .font(VType.body)
+                                                .foregroundStyle(VColor.textSecondary)
+                                                .fixedSize(horizontal: false, vertical: true)
+                                        }
+                                    }
+                                }
+                            } else if isBaseline {
+                                GlassCard {
+                                    VStack(alignment: .leading, spacing: 6) {
+                                        Text("Baseline Established")
+                                            .font(VType.title)
+                                            .foregroundStyle(VColor.textPrimary)
+                                        Text("This scan is saved as your Day 0 starting point. Future scans will highlight changes vs this capture.")
+                                            .font(VType.body)
+                                            .foregroundStyle(VColor.textSecondary)
+                                            .fixedSize(horizontal: false, vertical: true)
+                                    }
+                                }
+                            }
+
+                            // Section 6: Recommendations
+                            VStack(alignment: .leading, spacing: 12) {
+                                Text("Recommendations")
+                                    .font(VType.sectionTitle)
+                                    .foregroundStyle(VColor.textPrimary)
+
+                                ForEach(snapshot.recommendations) { rec in
+                                    RecommendationCard(rec: rec) {
+                                        // Simple placeholder action to add recommend steps
+                                        Haptics.fire(.success)
+                                    }
+                                }
+                            }
+                            .opacity(animateIn ? 1.0 : 0.0)
+
+                            DisclaimerBanner(style: .short)
                         }
-                        DisclaimerBanner(style: .short)
+                        .padding(20)
                     }
-                    .padding(20)
+                    .scrollIndicators(.hidden)
+                } else {
+                    ProgressView("Analyzing scan detail...")
+                        .tint(Theme.primary)
                 }
-                .scrollIndicators(.hidden)
 
                 PrimaryButton(titleKey: "common.done", action: onDone)
                     .padding(.horizontal, 20)
-                    .padding(.bottom, 20)
+                    .padding(.bottom, 16)
+            }
+        }
+        .onAppear {
+            generateSnapshot()
+            withAnimation(.spring(response: 0.55, dampingFraction: 0.8)) {
+                animateIn = true
             }
         }
     }
 
-    // MARK: Header
-
-    private var header: some View {
-        VStack(spacing: 14) {
-            if let image {
-                Image(uiImage: image)
-                    .resizable().scaledToFill()
-                    .frame(width: 130, height: 165)
-                    .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
-                    .overlay(RoundedRectangle(cornerRadius: 20, style: .continuous).strokeBorder(Theme.strokeSubtle, lineWidth: 1))
-                    .blueGlow(Theme.accent, radius: 20, opacity: 0.3)
-            }
-            Image(systemName: analysis.faceFound ? "checkmark.seal.fill" : "exclamationmark.triangle.fill")
-                .font(.title2)
-                .foregroundStyle(analysis.faceFound ? Theme.success : Theme.warning)
-            Text(titleKey)
-                .font(Typography.display(26))
-                .foregroundStyle(Theme.textPrimary)
-                .multilineTextAlignment(.center)
-        }
-        .padding(.top, 12)
-    }
-
-    private var titleKey: LocalizedStringKey {
-        if !analysis.faceFound { return "result.noFace.title" }
-        if isBaseline { return "scan.captured.baseline" }
-        return isFollowUp && reliable ? "result.title.change" : "scan.captured.saved"
-    }
-
-    // MARK: Cards
-
-    private var baselineCard: some View {
-        GlassCard {
-            Text("result.baselineNote")
-                .font(.subheadline)
-                .foregroundStyle(Theme.textSecondary)
-                .fixedSize(horizontal: false, vertical: true)
-        }
-    }
-
-    private var changeCard: some View {
-        GlassCard {
-            VStack(alignment: .leading, spacing: 12) {
-                Text("result.title.change")
-                    .font(.subheadline.weight(.semibold))
-                    .foregroundStyle(Theme.textSecondary)
-                ForEach(BaselineTracker.changes(scans)) { change in
-                    AttributeChangeRow(change: change)
-                }
-            }
-        }
-    }
-
-    private var notEnoughCard: some View {
-        GlassCard {
-            VStack(alignment: .leading, spacing: 8) {
-                HStack(spacing: 8) {
-                    Image(systemName: "hourglass")
-                    Text("result.notEnough.title").font(.headline)
-                }
-                .foregroundStyle(Theme.textPrimary)
-                Text("result.notEnough.body")
-                    .font(.subheadline)
-                    .foregroundStyle(Theme.textSecondary)
-                    .fixedSize(horizontal: false, vertical: true)
-            }
-        }
-    }
-
-    private var noFaceCard: some View {
-        GlassCard {
-            Text("result.noFace.body")
-                .font(.subheadline)
-                .foregroundStyle(Theme.textSecondary)
-                .fixedSize(horizontal: false, vertical: true)
-        }
-    }
-
-    private func readingsCard(title: LocalizedStringKey) -> some View {
-        GlassCard {
-            VStack(alignment: .leading, spacing: 12) {
-                Text(title)
-                    .font(.subheadline.weight(.semibold))
-                    .foregroundStyle(Theme.textSecondary)
-                ForEach(SkinAttribute.allCases) { attribute in
-                    ScoreBar(labelKey: attribute.localizationKey,
-                             value: analysis.attributes[attribute] ?? 0,
-                             tone: .info)
-                }
-                Text("result.estimatesNote")
-                    .font(.caption2)
-                    .foregroundStyle(Theme.textSecondary)
-            }
-        }
-    }
-}
-
-/// One attribute's change: name + directional magnitude, color-coded for honesty
-/// (green = improvement, red = regression, grey = little change).
-struct AttributeChangeRow: View {
-    let change: AttributeChange
-
-    var body: some View {
-        HStack {
-            Text(change.attribute.localizationKey)
-                .font(.subheadline)
-                .foregroundStyle(Theme.textPrimary)
-            Spacer()
-            HStack(spacing: 4) {
-                Image(systemName: iconName).font(.caption2.weight(.bold))
-                Text(change.magnitude.formatted(.percent.precision(.fractionLength(0))))
-                    .font(Typography.number(14))
-            }
-            .foregroundStyle(color)
-        }
-        .accessibilityElement(children: .combine)
-    }
-
-    private var iconName: String {
-        guard change.isMeaningful else { return "minus" }
-        return change.delta < 0 ? "arrow.down" : "arrow.up"
-    }
-
-    private var color: Color {
-        guard change.isMeaningful else { return Theme.textSecondary }
-        return change.isImprovement ? Theme.success : Theme.danger
-    }
-}
-
-/// Confidence bar with an honest caption when the read isn't trustworthy yet.
-struct ConfidenceMeter: View {
-    let value: Double
-
-    var body: some View {
-        GlassCard {
-            VStack(alignment: .leading, spacing: 8) {
-                ScoreBar(labelKey: "result.confidence",
-                         value: value,
-                         tone: value >= AnalysisConfidence.significanceThreshold ? .success : .warning)
-                if value < AnalysisConfidence.significanceThreshold {
-                    Text("result.confidence.low")
-                        .font(.caption2)
-                        .foregroundStyle(Theme.textSecondary)
-                }
-            }
-        }
+    private func generateSnapshot() {
+        snapshot = MockSkinSnapshot.generate(from: analysis)
     }
 }

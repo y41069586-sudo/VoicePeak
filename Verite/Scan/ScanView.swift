@@ -2,10 +2,9 @@ import SwiftUI
 import SwiftData
 import UIKit
 
-/// Milestone 2 — the guided face scan. Handles permission priming/denial, live
+/// The guided face scan. Handles permission priming/denial, live
 /// camera with the AR alignment guide, a hold-still countdown, standardized
-/// capture, and local (on-device) thumbnail + `Scan` persistence. Per-attribute
-/// analysis is layered on in Milestone 3.
+/// capture, and local thumbnail + Scan persistence.
 struct ScanView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(AppState.self) private var appState
@@ -16,11 +15,18 @@ struct ScanView: View {
     @State private var engine = SkinAnalysisEngine()
 
     @State private var authStatus = CameraPermission.status
-    @State private var isCapturing = false
+    @State private var phase: ScanPhase = .priming
     @State private var countdown: Int?
     @State private var flash = false
-    @State private var analyzing = false
     @State private var captured: CapturedScan?
+
+    enum ScanPhase {
+        case priming
+        case aligning
+        case capturing
+        case analyzing
+        case results
+    }
 
     struct CapturedScan: Identifiable {
         let id = UUID()
@@ -35,13 +41,17 @@ struct ScanView: View {
     var body: some View {
         NavigationStack {
             Group {
-                switch authStatus {
-                case .authorized:
-                    liveScanner
-                case .notDetermined:
-                    CameraPrimingView { Task { await requestAccess() } }
-                default:
+                if authStatus == .denied || authStatus == .restricted {
                     CameraDeniedView()
+                } else if authStatus == .notDetermined {
+                    CameraPrimingView { Task { await requestAccess() } }
+                } else {
+                    switch phase {
+                    case .priming:
+                        CameraPrimingView { Task { await requestAccess() } }
+                    case .aligning, .capturing, .analyzing, .results:
+                        liveScanner
+                    }
                 }
             }
             .navigationTitle("tab.scan")
@@ -56,12 +66,14 @@ struct ScanView: View {
                            scans: scans) {
                 let faceFound = cap.analysis.faceFound
                 captured = nil
+                phase = .aligning
                 if faceFound { appState.selectedTab = .home }
             }
         }
+        .onAppear { updatePhase() }
     }
 
-    // MARK: Live scanner
+    // MARK: - Live scanner
 
     private var liveScanner: some View {
         ZStack {
@@ -74,20 +86,22 @@ struct ScanView: View {
                 controls
             }
 
-            if let countdown {
+            if phase == .capturing, let countdown {
                 CountdownOverlay(value: countdown)
             }
-            if analyzing {
-                ScanAnalyzingOverlay()
+
+            if phase == .analyzing {
+                ScanningPhaseOverlay()
                     .transition(.opacity)
             }
+
             if flash {
                 Color.white.ignoresSafeArea()
                     .transition(.opacity)
             }
         }
         .animation(Motion.springSnappy, value: countdown)
-        .animation(Motion.springSnappy, value: analyzing)
+        .animation(Motion.springSnappy, value: phase)
         .animation(.easeOut(duration: 0.18), value: flash)
         .onAppear { startIfAuthorized() }
         .onDisappear { camera.stop() }
@@ -100,7 +114,7 @@ struct ScanView: View {
                     Image(systemName: "1.circle.fill")
                     Text("scan.baseline.hint")
                 }
-                .font(.footnote.weight(.semibold))
+                .font(VType.captionBold)
                 .foregroundStyle(Theme.textPrimary)
                 .padding(.horizontal, 14).padding(.vertical, 8)
                 .background(.ultraThinMaterial, in: Capsule())
@@ -113,29 +127,47 @@ struct ScanView: View {
                          systemImage: "sun.max")
             }
 
-            CaptureShutterButton(enabled: camera.quality.isStandardized && !isCapturing) {
+            CaptureShutterButton(enabled: camera.quality.isStandardized && phase == .aligning) {
                 startCountdown()
             }
         }
         .padding(.bottom, 28)
     }
 
-    // MARK: Actions
+    // MARK: - Actions
+
+    private func updatePhase() {
+        let status = CameraPermission.status
+        authStatus = status
+        if status == .authorized {
+            if phase == .priming || phase == .results {
+                phase = .aligning
+            }
+        } else if status == .notDetermined {
+            phase = .priming
+        }
+    }
 
     private func startIfAuthorized() {
         authStatus = CameraPermission.status
-        if authStatus == .authorized { camera.start() }
+        if authStatus == .authorized {
+            camera.start()
+            phase = .aligning
+        }
     }
 
     private func requestAccess() async {
         let granted = await CameraPermission.request()
         authStatus = CameraPermission.status
-        if granted { camera.start() }
+        if granted {
+            camera.start()
+            phase = .aligning
+        }
     }
 
     private func startCountdown() {
-        guard !isCapturing else { return }
-        isCapturing = true
+        guard phase == .aligning else { return }
+        phase = .capturing
         Task { @MainActor in
             for value in [3, 2, 1] {
                 countdown = value
@@ -150,8 +182,9 @@ struct ScanView: View {
             flash = false
             if let image = await camera.capture() {
                 await saveScan(image)
+            } else {
+                phase = .aligning
             }
-            isCapturing = false
         }
     }
 
@@ -159,16 +192,24 @@ struct ScanView: View {
         let quality = camera.quality.overall
         let baseline = isFirstBaseline
 
-        // Analyze the capture on a background task (Vision + CV metrics), showing
-        // an honest "analyzing" beat over the frozen frame while it runs.
-        analyzing = true
+        // Transition to cinematic scanning overlay phase
+        phase = .analyzing
+        
+        let startTime = Date()
         let analysis: ScanAnalysis
         if let cgImage = image.normalizedUp().cgImage {
             analysis = await engine.analyze(cgImage: cgImage, captureQuality: quality)
         } else {
             analysis = .empty
         }
-        analyzing = false
+
+        // To guarantee the user experiences the entire premium cinematic scan visual,
+        // we enforce a minimum duration of 4.8 seconds for the overlay cycle.
+        let elapsed = Date().timeIntervalSince(startTime)
+        let remaining = 4.8 - elapsed
+        if remaining > 0 {
+            try? await Task.sleep(for: .seconds(remaining))
+        }
 
         // Only persist a scan when a face was actually read.
         if analysis.faceFound {
@@ -188,6 +229,7 @@ struct ScanView: View {
             Haptics.fire(.riskFlagged)
         }
 
+        phase = .results
         captured = CapturedScan(image: image, isBaseline: baseline, quality: quality, analysis: analysis)
     }
 
