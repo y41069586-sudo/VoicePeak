@@ -137,7 +137,7 @@ struct ScanResultView: View {
                                 ForEach(snapshot.recommendations) { rec in
                                     RecommendationCard(rec: rec) {
                                         // Simple placeholder action to add recommend steps
-                                        Haptics.fire(.success)
+                                        Haptics.fire(.selection)
                                     }
                                 }
                             }

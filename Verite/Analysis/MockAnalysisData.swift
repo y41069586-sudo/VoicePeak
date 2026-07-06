@@ -55,8 +55,6 @@ struct MockSkinSnapshot: Sendable {
         let rednessAdj = redness < 0.25 ? "Calm" : (redness < 0.60 ? "Mild" : "Elevated")
         let sensitivityAdj = sensitivity < 0.30 ? "Resilient" : (sensitivity < 0.65 ? "Mild" : "Reactive")
         let textureAdj = texture < 0.30 ? "Smooth" : (texture < 0.65 ? "Moderate" : "Rough")
-        let poresAdj = pores < 0.30 ? "Refined" : (pores < 0.65 ? "Visible" : "Enlarged")
-        let blemishesAdj = blemishes < 0.15 ? "Clear" : (blemishes < 0.50 ? "Occasional" : "Active")
         let oilinessAdj = oiliness < 0.30 ? "Matte" : (oiliness < 0.70 ? "Balanced" : "Oily")
 
         // Deriving Barrier adjective from hydration and sensitivity
