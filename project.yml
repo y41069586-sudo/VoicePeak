@@ -34,6 +34,7 @@ targets:
         PRODUCT_BUNDLE_IDENTIFIER: com.verite.com
         ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
         SUPPORTS_MACCATALYST: NO
+        TARGETED_DEVICE_FAMILY: "1"
         # The two feature-flag SDKs (StoreKit/Supabase) are OFF by default and
         # require no linked frameworks until their milestones are enabled.
     info:

@@ -66,6 +66,14 @@
 		<string>UIInterfaceOrientationPortrait</string>
 	</array>
 
+	<key>UISupportedInterfaceOrientations~ipad</key>
+	<array>
+		<string>UIInterfaceOrientationPortrait</string>
+		<string>UIInterfaceOrientationPortraitUpsideDown</string>
+		<string>UIInterfaceOrientationLandscapeLeft</string>
+		<string>UIInterfaceOrientationLandscapeRight</string>
+	</array>
+
 	<!-- iPhone-only, portrait-only app: explicitly opt out of iPad Split View /
 	     Slide Over multitasking. Without this, App Store Connect validation
 	     (errors 90474/90475) requires a multitasking-ready launch screen and all
