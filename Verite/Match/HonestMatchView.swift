@@ -146,13 +146,13 @@ struct HonestMatchView: View {
                                 .font(VType.captionBold)
                                 .foregroundStyle(Theme.success)
                             
-                            ForEach(report.benefits, id: \.self) { benefit in
+                            ForEach(report.benefits) { benefit in
                                 HStack(alignment: .top, spacing: 6) {
                                     Image(systemName: "checkmark")
                                         .font(.caption2.weight(.bold))
                                         .foregroundStyle(Theme.success)
                                         .padding(.top, 2)
-                                    Text(benefit)
+                                    Text(benefit.key)
                                         .font(.footnote)
                                         .foregroundStyle(Theme.textPrimary)
                                 }
@@ -166,13 +166,13 @@ struct HonestMatchView: View {
                                 .font(VType.captionBold)
                                 .foregroundStyle(Theme.danger)
                             
-                            ForEach(report.concerns, id: \.self) { concern in
+                            ForEach(report.concerns) { concern in
                                 HStack(alignment: .top, spacing: 6) {
                                     Image(systemName: "exclamationmark.triangle")
                                         .font(.caption2.weight(.bold))
                                         .foregroundStyle(Theme.danger)
                                         .padding(.top, 2)
-                                    Text(concern)
+                                    Text(concern.key)
                                         .font(.footnote)
                                         .foregroundStyle(Theme.textPrimary)
                                 }

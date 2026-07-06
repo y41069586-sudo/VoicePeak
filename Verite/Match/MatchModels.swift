@@ -1,7 +1,7 @@
 import SwiftUI
 
 /// The overall verdict — and it is honestly allowed to be negative. Risk leads.
-enum MatchVerdict {
+enum MatchVerdict: Sendable {
     case avoid, caution, neutral, favorable
 
     var headlineKey: LocalizedStringKey { "match.verdict.\(raw)" }
@@ -35,7 +35,7 @@ enum MatchVerdict {
 
 /// A small chip that is either a localized token (concern/class) or a verbatim
 /// string (an INCI name, or the user's own typed sensitivity).
-struct MatchChip: Identifiable {
+struct MatchChip: Identifiable, @unchecked Sendable {
     enum Content {
         case localized(LocalizedStringKey)
         case verbatim(String)
@@ -45,7 +45,7 @@ struct MatchChip: Identifiable {
 }
 
 /// One reason behind the verdict. Reasons are ordered risk-first for display.
-struct MatchReason: Identifiable {
+struct MatchReason: Identifiable, @unchecked Sendable {
     enum Kind { case risk, benefit }
     let id = UUID()
     let kind: Kind
@@ -54,7 +54,7 @@ struct MatchReason: Identifiable {
 }
 
 /// Per-region risk/benefit level for the heatmap over the real scan.
-enum ZoneLevel {
+enum ZoneLevel: Sendable {
     case risk, benefit, neutral
     var color: Color? {
         switch self {
@@ -81,7 +81,7 @@ struct Dupe: Identifiable {
 }
 
 /// The full product × face result.
-struct MatchResult {
+struct MatchResult: @unchecked Sendable {
     let verdict: MatchVerdict
     let reasons: [MatchReason]      // risk-first
     let zones: [FaceRegion: ZoneLevel]

@@ -34,6 +34,21 @@ struct IngredientConflict: Identifiable, Sendable {
     let reasonKey: LocalizedStringKey
 }
 
+/// Sendable & Hashable wrapper around LocalizedStringKey for use in UI collections and Swift 6 Sendable models.
+struct LocalizedKeyWrapper: Hashable, Sendable, Identifiable {
+    let id = UUID()
+    let key: LocalizedStringKey
+
+    // Manually conform to Hashable since LocalizedStringKey is not Hashable
+    func hash(into hasher: inout Hasher) {
+        hasher.combine(id)
+    }
+
+    static func == (lhs: LocalizedKeyWrapper, rhs: LocalizedKeyWrapper) -> Bool {
+        lhs.id == rhs.id
+    }
+}
+
 /// Full structured compatibility output for a product × skin profile pair.
 /// Designed to be directly renderable by the UI without further transformation.
 struct CompatibilityReport: Sendable {
@@ -41,9 +56,9 @@ struct CompatibilityReport: Sendable {
     let compatibilityScore: Int
     let riskLevel: RiskLevel
     /// Short benefit strings, localisation-key ready.
-    let benefits: [LocalizedStringKey]
+    let benefits: [LocalizedKeyWrapper]
     /// Short concern strings, localisation-key ready.
-    let concerns: [LocalizedStringKey]
+    let concerns: [LocalizedKeyWrapper]
     /// Pairs of conflicting ingredients found in this product.
     let ingredientConflicts: [IngredientConflict]
     /// Which skin types this product is well-suited for, based on ingredients.
@@ -146,7 +161,7 @@ enum CompatibilityEngine {
 
     private static func buildBenefits(match: MatchResult,
                                       profile: ProductProfile,
-                                      context: SkinContext) -> [LocalizedStringKey] {
+                                      context: SkinContext) -> [LocalizedKeyWrapper] {
         var out: [LocalizedStringKey] = []
 
         // One line per benefit reason.
@@ -165,13 +180,13 @@ enum CompatibilityEngine {
             out.append("compatibility.benefit.calming")
         }
 
-        return Array(out.prefix(5))   // cap to avoid UI overflow
+        return Array(out.prefix(5)).map { LocalizedKeyWrapper(key: $0) }   // cap to avoid UI overflow
     }
 
     // MARK: Concerns
 
     private static func buildConcerns(match: MatchResult,
-                                      profile: ProductProfile) -> [LocalizedStringKey] {
+                                      profile: ProductProfile) -> [LocalizedKeyWrapper] {
         var out: [LocalizedStringKey] = []
 
         for reason in match.riskReasons {
@@ -185,7 +200,7 @@ enum CompatibilityEngine {
             out.append("compatibility.concern.interactions")
         }
 
-        return Array(out.prefix(4))
+        return Array(out.prefix(4)).map { LocalizedKeyWrapper(key: $0) }
     }
 
     // MARK: Conflict detection

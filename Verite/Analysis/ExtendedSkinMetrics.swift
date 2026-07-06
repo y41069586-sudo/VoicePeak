@@ -102,9 +102,12 @@ enum ExtendedSkinMetrics {
             let mean = rednessValues.reduce(0, +) / Double(rednessValues.count)
             let variance = rednessValues.reduce(0) { $0 + ($1 - mean) * ($1 - mean) } / Double(rednessValues.count)
             let sd = sqrt(variance)
-            let hydProxy = regions[.leftCheek].map { 0.6 * $0.radiance + 0.4 * (1 - $0.texture) }
-                        ?? regions[.rightCheek].map { 0.6 * $0.radiance + 0.4 * (1 - $0.texture) }
-                        ?? 0.5
+            var hydProxy = 0.5
+            if let left = regions[.leftCheek] {
+                hydProxy = 0.6 * left.radiance + 0.4 * (1.0 - left.texture)
+            } else if let right = regions[.rightCheek] {
+                hydProxy = 0.6 * right.radiance + 0.4 * (1.0 - right.texture)
+            }
             ext.barrierScore = barrierScore(rednessMean: mean, rednessSD: sd, hydrationProxy: hydProxy)
         }
 
