@@ -9,7 +9,7 @@ struct DashboardView: View {
     @State private var showSettings = false
     @Query private var scans: [Scan]
     @Query private var tests: [HalfFaceTest]
-    @Query private var streaks: [Streak]
+    @Query private var progresses: [UserProgress]
     @Query private var ledgers: [SavingsLedger]
 
     private var hasBaseline: Bool { scans.contains(where: { $0.isBaseline }) }
@@ -20,10 +20,18 @@ struct DashboardView: View {
     private var activeTest: HalfFaceTest? {
         tests.first(where: { $0.status == .running || $0.status == .verdictReady })
     }
-    private var latestPassedTest: HalfFaceTest? {
-        tests.filter { $0.status == .passed }.sorted { $0.createdAt > $1.createdAt }.first
+    private var progress: UserProgress? { progresses.first }
+    private var effectiveStreakCount: Int {
+        guard let p = progress, let last = p.lastScanDate else { return 0 }
+        let cal = Calendar.current
+        if cal.isDateInToday(last) || cal.isDateInYesterday(last) {
+            return p.currentStreak
+        }
+        return 0
     }
-    private var streak: Streak? { streaks.first }
+    private var totalFlames: Int { progress?.totalFlames ?? 0 }
+    
+    @State private var showTasksSheet = false
     private var ledger: SavingsLedger? { ledgers.first }
 
     var body: some View {
@@ -50,6 +58,9 @@ struct DashboardView: View {
             .sheet(isPresented: $showSettings) {
                 SettingsView()
             }
+            .sheet(isPresented: $showTasksSheet) {
+                TasksSheetView()
+            }
             .navigationTitle("tab.today")
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
@@ -64,17 +75,19 @@ struct DashboardView: View {
                     .accessibilityLabel("tab.settings")
                 }
                 ToolbarItem(placement: .topBarTrailing) {
-                    if let streak, streak.current > 0 {
+                    Button {
+                        Haptics.fire(.selection)
+                        showTasksSheet = true
+                    } label: {
                         Label {
-                            Text(verbatim: "\(streak.current)")
+                            Text(verbatim: "\(totalFlames)")
                         } icon: {
                             Image(systemName: "flame.fill")
                         }
                         .font(.subheadline.weight(.semibold))
                         .foregroundStyle(Theme.warning)
-                        .accessibilityLabel(Text("dashboard.streak.accessibility"))
-                        .accessibilityValue(Text(verbatim: "\(streak.current)"))
                     }
+                    .accessibilityLabel("Aufgaben und Flammen")
                 }
             }
             .toolbarBackground(.hidden, for: .navigationBar)

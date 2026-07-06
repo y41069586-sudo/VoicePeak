@@ -7,7 +7,7 @@ import Charts
 /// tracked as estimates vs the user's own history — never a beauty score.
 struct ProgressDashboardView: View {
     @Query private var scans: [Scan]
-    @Query private var streaks: [Streak]
+    @Query private var progresses: [UserProgress]
     @Query private var tests: [HalfFaceTest]
     @Query private var ledgers: [SavingsLedger]
 
@@ -17,6 +17,15 @@ struct ProgressDashboardView: View {
 
     private var fullScans: [Scan] {
         scans.filter { $0.side == .full }.sorted { $0.date < $1.date }
+    }
+
+    private var effectiveStreakCount: Int {
+        guard let p = progresses.first, let last = p.lastScanDate else { return 0 }
+        let cal = Calendar.current
+        if cal.isDateInToday(last) || cal.isDateInYesterday(last) {
+            return p.currentStreak
+        }
+        return 0
     }
 
     var body: some View {
@@ -48,7 +57,7 @@ struct ProgressDashboardView: View {
     private var milestones: some View {
         HStack(spacing: 10) {
             StatTile(value: "\(fullScans.count)", labelKey: "progress.stat.scans", tone: .info)
-            StatTile(value: "\(streaks.first?.current ?? 0)", labelKey: "progress.stat.streak", tone: .warning)
+            StatTile(value: "\(effectiveStreakCount)", labelKey: "progress.stat.streak", tone: .warning)
             StatTile(value: "\(tests.filter { $0.status == .passed }.count)", labelKey: "progress.stat.tested", tone: .success)
         }
     }

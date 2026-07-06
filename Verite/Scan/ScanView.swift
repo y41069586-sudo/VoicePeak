@@ -9,7 +9,7 @@ struct ScanView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(AppState.self) private var appState
     @Query private var scans: [Scan]
-    @Query private var streaks: [Streak]
+    @Query private var progresses: [UserProgress]
 
     @StateObject private var camera = CameraController()
     @State private var engine = SkinAnalysisEngine()
@@ -274,26 +274,42 @@ struct ScanView: View {
     }
 
     private func updateStreak() {
-        let streak: Streak
-        if let existing = streaks.first {
-            streak = existing
+        let progress: UserProgress
+        if let existing = progresses.first {
+            progress = existing
         } else {
-            streak = Streak()
-            modelContext.insert(streak)
+            progress = UserProgress()
+            modelContext.insert(progress)
         }
 
         let calendar = Calendar.current
-        if let last = streak.lastScanDate {
+        
+        // Reset daily tasks if it's a new day
+        if let last = progress.lastScanDate {
+            if !calendar.isDate(last, inSameDayAs: .now) {
+                progress.completedDailyTaskIDs.removeAll()
+            }
+        }
+
+        // Streak logic
+        if let last = progress.lastScanDate {
             if !calendar.isDate(last, inSameDayAs: .now) {
                 let days = calendar.dateComponents([.day],
                                                    from: calendar.startOfDay(for: last),
                                                    to: calendar.startOfDay(for: .now)).day ?? 0
-                streak.current = (days == 1) ? streak.current + 1 : 1
+                progress.currentStreak = (days == 1) ? progress.currentStreak + 1 : 1
             }
         } else {
-            streak.current = 1
+            progress.currentStreak = 1
         }
-        streak.longest = max(streak.longest, streak.current)
-        streak.lastScanDate = .now
+        progress.longestStreak = max(progress.longestStreak, progress.currentStreak)
+        progress.lastScanDate = .now
+        
+        // Award flames
+        let task = FlameTask.dailyScan
+        if !progress.completedDailyTaskIDs.contains(task.id) {
+            progress.totalFlames += task.reward
+            progress.completedDailyTaskIDs.append(task.id)
+        }
     }
 }
