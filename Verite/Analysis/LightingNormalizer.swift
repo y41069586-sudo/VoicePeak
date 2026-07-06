@@ -1,6 +1,14 @@
 import CoreImage
 import CoreGraphics
 
+/// Quality tiers for evaluation during the image pre-pass
+enum FrameQuality: String, Sendable {
+    case excellent
+    case acceptable
+    case poor
+    case reject
+}
+
 /// Pre-pass lighting normalization applied to captured frames before pixel analysis.
 ///
 /// Purpose: make per-attribute estimates consistent across different lighting
@@ -18,9 +26,9 @@ enum LightingNormalizer {
     /// Max EV adjustment we allow (±1.5 stops). Beyond this, reject the frame.
     private static let maxEVAdjust: Float = 1.5
     /// Frames brighter than this are overexposed — reject.
-    private static let overexposureThreshold: Double = 0.93
+    private static let overexposureThreshold: Double = 0.92
     /// Frames darker than this are underexposed — reject.
-    private static let underexposureThreshold: Double = 0.10
+    private static let underexposureThreshold: Double = 0.15
     /// Laplacian-variance threshold below which the frame is too blurry to use.
     private static let blurThreshold: Double = 4.0
     /// Shared CI context — reused across calls to avoid repeated GPU context setup.
@@ -31,28 +39,56 @@ enum LightingNormalizer {
 
     // MARK: Public API
 
+    /// Classify frame quality based on exposure, blur, and lighting evenness.
+    ///
+    /// - Parameters:
+    ///   - image: The raw CGImage source frame.
+    ///   - faceRect: The face bounding box in normalized/vision space, if known.
+    /// - Returns: The classified FrameQuality.
+    static func classify(image: CGImage, faceRect: CGRect? = nil) -> FrameQuality {
+        let luma = meanLuma(image)
+
+        // Rule 1: Reject if extreme underexposure or overexposure.
+        if luma < underexposureThreshold || luma > overexposureThreshold {
+            return .reject
+        }
+
+        // Rule 2: Reject if significant motion blur.
+        if isBlurry(image) {
+            return .reject
+        }
+
+        // Rule 3: Downgrade to poor if uneven lighting is detected across the face.
+        if let face = faceRect {
+            if isLightingUneven(image, faceRect: face) {
+                return .poor
+            }
+        }
+
+        // Rule 4: Mark excellent if close to our ideal 0.48 target luma.
+        if abs(luma - targetLuma) <= 0.12 {
+            return .excellent
+        }
+
+        return .acceptable
+    }
+
     /// Normalize `image` for analysis and evaluate whether it is usable.
     ///
     /// - Returns: A tuple of the normalized `CGImage` and an `isAcceptable` flag.
     ///   When `isAcceptable` is false the image should be discarded and the scan
     ///   retried (typically because of extreme lighting or motion blur).
     static func normalize(_ image: CGImage) -> (image: CGImage, isAcceptable: Bool) {
+        let quality = classify(image: image)
+        guard quality != .reject else {
+            return (image, isAcceptable: false)
+        }
+
         let luma = meanLuma(image)
-
-        // Hard reject: dark room or direct sunlight glare.
-        guard luma >= underexposureThreshold, luma <= overexposureThreshold else {
-            return (image, isAcceptable: false)
-        }
-
-        // Soft reject: motion blur.
-        if isBlurry(image) {
-            return (image, isAcceptable: false)
-        }
 
         // Apply exposure correction to bring luma toward target.
         let evShift = evAdjustment(currentLuma: luma)
         guard let adjusted = applyExposure(image, ev: evShift) else {
-            // CoreImage failed — use original but mark acceptable.
             return (image, isAcceptable: true)
         }
 
@@ -93,17 +129,51 @@ enum LightingNormalizer {
         return variance < blurThreshold
     }
 
+    // MARK: Lighting evenness check
+
+    /// Returns true if the difference in lighting between the left and right halves of the face exceeds 20%.
+    static func isLightingUneven(_ image: CGImage, faceRect: CGRect) -> Bool {
+        let w = Double(image.width)
+        let h = Double(image.height)
+        let pixelRect = Sampling.pixelRect(fromVision: faceRect, imageWidth: Int(w), imageHeight: Int(h))
+
+        let halfWidth = pixelRect.width / 2
+        let leftRect = CGRect(x: pixelRect.minX, y: pixelRect.minY, width: halfWidth, height: pixelRect.height)
+        let rightRect = CGRect(x: pixelRect.minX + halfWidth, y: pixelRect.minY, width: halfWidth, height: pixelRect.height)
+
+        guard let leftBuffer = Sampling.readPixels(image, rect: leftRect, maxDim: 32),
+              let rightBuffer = Sampling.readPixels(image, rect: rightRect, maxDim: 32) else {
+            return false
+        }
+
+        let leftLuma = bufferMeanLuma(leftBuffer)
+        let rightLuma = bufferMeanLuma(rightBuffer)
+
+        return abs(leftLuma - rightLuma) > 0.20
+    }
+
+    private static func bufferMeanLuma(_ buffer: PixelBuffer) -> Double {
+        var sum = 0.0
+        let n = buffer.count
+        for y in 0..<buffer.height {
+            for x in 0..<buffer.width {
+                let (r, g, b) = buffer.rgb(x, y)
+                sum += 0.299 * r + 0.587 * g + 0.114 * b
+            }
+        }
+        return sum / Double(n) / 255.0
+    }
+
     // MARK: Private helpers
 
     private static func evAdjustment(currentLuma: Double) -> Float {
         guard currentLuma > 0 else { return 0 }
-        // log2(target / current) gives the EV shift needed.
         let ev = log2(targetLuma / currentLuma)
         return Float(ev.clamped(to: -Double(maxEVAdjust) ... Double(maxEVAdjust)))
     }
 
     private static func applyExposure(_ image: CGImage, ev: Float) -> CGImage? {
-        guard abs(ev) > 0.05 else { return image }  // nothing meaningful to do
+        guard abs(ev) > 0.05 else { return image }
         let ci = CIImage(cgImage: image)
         guard let filter = CIFilter(name: "CIExposureAdjust", parameters: [
             kCIInputImageKey: ci,
@@ -113,7 +183,6 @@ enum LightingNormalizer {
     }
 
     private static func applyWhiteBalance(_ image: CGImage) -> CGImage? {
-        // A neutral-temperature shift: move slightly toward D65 (6500 K neutral).
         let ci = CIImage(cgImage: image)
         guard let filter = CIFilter(name: "CITemperatureAndTint", parameters: [
             kCIInputImageKey: ci,
@@ -148,11 +217,9 @@ enum LightingNormalizer {
         }
         guard count > 0 else { return 0 }
         let mean = sum / Double(count)
-        return sumSq / Double(count) - mean * mean   // variance
+        return sumSq / Double(count) - mean * mean
     }
 }
-
-// MARK: - Double clamping helper (private scope)
 
 private extension Double {
     func clamped(to range: ClosedRange<Double>) -> Double {

@@ -13,19 +13,27 @@ import CoreGraphics
 final class SkinAnalysisEngine {
     private(set) var isAnalyzing = false
     private let smoother = TemporalSmoother()
+    private let gatekeeper = AnalysisGatekeeper()
 
     func analyze(cgImage: CGImage, captureQuality: Double) async -> ScanAnalysis {
         isAnalyzing = true
         defer { isAnalyzing = false }
-        let smoother = smoother   // capture for detached task
+        let smoother = smoother
+        let gatekeeper = gatekeeper
         return await Task.detached(priority: .userInitiated) {
-            // Lighting normalisation pre-pass: reject unusable frames early.
+            // Pipeline Flow: AnalysisGatekeeper -> LightingNormalizer -> Core Analysis -> TemporalSmoother
+            let gateResult = await gatekeeper.checkFrame(cgImage)
+            guard gateResult.isValidFrame else { return ScanAnalysis.empty }
+
             let (normalized, acceptable) = LightingNormalizer.normalize(cgImage)
             guard acceptable else { return ScanAnalysis.empty }
-            var result = SkinAnalysisCore.analyze(cgImage: normalized, captureQuality: captureQuality)
-            // Apply temporal smoothing across consecutive scans.
+            
+            var result = SkinAnalysisCore.analyze(cgImage: normalized, captureQuality: captureQuality, baseConfidence: gateResult.confidence)
+            
             if result.faceFound {
-                result.attributes = await smoother.smooth(attributes: result.attributes)
+                // Apply confidence-weighted, outlier-rejected temporal smoothing on both attributes and regions
+                result.attributes = await smoother.smooth(attributes: result.attributes, confidence: gateResult.confidence)
+                result.regions = await smoother.smooth(regions: result.regions, confidence: gateResult.confidence)
             }
             return result
         }.value
@@ -35,7 +43,11 @@ final class SkinAnalysisEngine {
     func analyzeSides(cgImage: CGImage) async -> SideAnalysis {
         isAnalyzing = true
         defer { isAnalyzing = false }
+        let gatekeeper = gatekeeper
         return await Task.detached(priority: .userInitiated) {
+            let gateResult = await gatekeeper.checkFrame(cgImage)
+            guard gateResult.isValidFrame else { return SideAnalysis.empty }
+            
             let (normalized, acceptable) = LightingNormalizer.normalize(cgImage)
             guard acceptable else { return SideAnalysis.empty }
             return SkinAnalysisCore.analyzeSides(cgImage: normalized)
@@ -45,6 +57,7 @@ final class SkinAnalysisEngine {
     /// Reset the temporal smoother (call when the user changes device / lighting significantly).
     func resetSmoother() async {
         await smoother.reset()
+        await gatekeeper.resetHistory()
     }
 }
 
@@ -53,7 +66,7 @@ final class SkinAnalysisEngine {
 /// output is an estimate, tracked as change vs the user's own baseline.
 enum SkinAnalysisCore {
 
-    static func analyze(cgImage: CGImage, captureQuality: Double) -> ScanAnalysis {
+    static func analyze(cgImage: CGImage, captureQuality: Double, baseConfidence: Double) -> ScanAnalysis {
         let w = cgImage.width, h = cgImage.height
 
         // 1. Face + landmarks (largest face).
@@ -83,7 +96,7 @@ enum SkinAnalysisCore {
         }()
 
         // 3. Aggregate standard region metrics → per-attribute estimates.
-        var attributes = aggregate(regions)
+        var attributes = aggregate(regions, baseConfidence: baseConfidence)
 
         // 3b. Extended metrics: glow, dark circles, barrier.
         let ext = ExtendedSkinMetrics.compute(regions: regions, underEyeBuffer: underEyeBuffer)
@@ -170,31 +183,41 @@ enum SkinAnalysisCore {
 
     // MARK: Aggregation
 
-    private static func aggregate(_ r: [FaceRegion: RegionMetrics]) -> [SkinAttribute: Double] {
-        func value(_ region: FaceRegion, _ keyPath: KeyPath<RegionMetrics, Double>) -> Double {
-            r[region]?[keyPath: keyPath] ?? 0
+    private static func aggregate(_ r: [FaceRegion: RegionMetrics], baseConfidence: Double) -> [SkinAttribute: Double] {
+        let overallLuma = r.values.map(\.meanLuma).reduce(0.0, +) / max(1.0, Double(r.count))
+        
+        func regionConfidence(_ region: FaceRegion) -> Double {
+            guard let metrics = r[region] else { return 0.1 }
+            return ConfidencePropagationEngine.computeRegionConfidence(
+                baseConfidence: baseConfidence,
+                regionLuma: metrics.meanLuma,
+                overallLuma: overallLuma,
+                textureVariance: metrics.texture
+            )
         }
+        
         func weighted(_ pairs: [(FaceRegion, Double)], _ keyPath: KeyPath<RegionMetrics, Double>) -> Double {
-            var sum = 0.0, weight = 0.0
-            for (region, w) in pairs where r[region] != nil {
-                sum += value(region, keyPath) * w
-                weight += w
+            let metricsWithConfidence = pairs.compactMap { (region, weight) -> SkinMetricWithConfidence? in
+                guard let metrics = r[region] else { return nil }
+                let val = metrics[keyPath: keyPath]
+                let confidence = regionConfidence(region) * weight
+                return SkinMetricWithConfidence(value: val, confidence: confidence)
             }
-            return weight > 0 ? (sum / weight).clamped01 : 0
+            return ConfidencePropagationEngine.propagate(metrics: metricsWithConfidence)
         }
 
         let redness = weighted([(.leftCheek, 0.4), (.rightCheek, 0.4), (.chin, 0.1), (.forehead, 0.1)], \.redness)
         let oiliness = weighted([(.forehead, 0.5), (.nose, 0.5)], \.shine)
         let texture = weighted([(.leftCheek, 0.35), (.rightCheek, 0.35), (.forehead, 0.30)], \.texture)
         let pores = weighted([(.nose, 0.5), (.leftCheek, 0.25), (.rightCheek, 0.25)], \.pores)
-        let blemishes = weighted(FaceRegion.allCases.map { ($0, 1.0) }, \.spots)
+        let blemishes = weighted(FaceRegion.allCases.filter { $0.isStandardRegion }.map { ($0, 1.0) }, \.spots)
         let radiance = weighted([(.leftCheek, 0.4), (.rightCheek, 0.4), (.forehead, 0.2)], \.radiance)
 
         // Hydration proxy: bright + smooth reads as more hydrated (higher = better).
         let hydration = (0.6 * radiance + 0.4 * (1 - texture)).clamped01
 
         // Sensitivity: overall redness plus how *uneven* redness is across regions.
-        let rednessValues = FaceRegion.allCases.compactMap { r[$0]?.redness }
+        let rednessValues = FaceRegion.allCases.filter { $0.isStandardRegion }.compactMap { r[$0]?.redness }
         let sensitivity = (0.6 * redness + 0.4 * unevenness(rednessValues)).clamped01
 
         return [
