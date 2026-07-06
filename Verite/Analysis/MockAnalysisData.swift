@@ -38,7 +38,6 @@ struct MockSkinSnapshot: Sendable {
         let redness = analysis.attributes[.redness] ?? 0.28
         let sensitivity = analysis.attributes[.sensitivity] ?? 0.24
         let texture = analysis.attributes[.texture] ?? 0.32
-        let pores = analysis.attributes[.pores] ?? 0.35
         let blemishes = analysis.attributes[.blemishes] ?? 0.18
         let oiliness = analysis.attributes[.oiliness] ?? 0.45
 

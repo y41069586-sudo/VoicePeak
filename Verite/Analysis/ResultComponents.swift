@@ -334,3 +334,35 @@ struct WhatChangedCard: View {
         return change.isImprovement ? Theme.success : Theme.danger
     }
 }
+
+/// One attribute's change: name + directional magnitude, color-coded for honesty
+/// (green = improvement, red = regression, grey = little change).
+struct AttributeChangeRow: View {
+    let change: AttributeChange
+
+    var body: some View {
+        HStack {
+            Text(change.attribute.localizationKey)
+                .font(VType.body)
+                .foregroundStyle(VColor.textPrimary)
+            Spacer()
+            HStack(spacing: 4) {
+                Image(systemName: iconName).font(.caption2.weight(.bold))
+                Text(change.magnitude.formatted(.percent.precision(.fractionLength(0))))
+                    .font(VType.bodyMedium)
+            }
+            .foregroundStyle(color)
+        }
+        .accessibilityElement(children: .combine)
+    }
+
+    private var iconName: String {
+        guard change.isMeaningful else { return "minus" }
+        return change.delta < 0 ? "arrow.down" : "arrow.up"
+    }
+
+    private var color: Color {
+        guard change.isMeaningful else { return VColor.textSecondary }
+        return change.isImprovement ? Theme.success : Theme.danger
+    }
+}
