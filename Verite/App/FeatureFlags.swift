@@ -21,16 +21,23 @@ final class FeatureFlags: @unchecked Sendable {
     /// Community efficacy (opt-in, numbers only, no photos). OFF.
     var communityEnabled: Bool
 
+    /// Cloud skin analysis (DermIQ). OFF. The one deliberate exception to
+    /// "face photos never leave the device" — sends the captured face photo
+    /// to DermIQ's API for analysis. See CloudSkin/README.md before enabling.
+    var cloudSkinAnalysisEnabled: Bool
+
     init(
         affiliateEnabled: Bool = false,
         backendEnabled: Bool = false,
         purchasesEnabled: Bool = false,
-        communityEnabled: Bool = false
+        communityEnabled: Bool = false,
+        cloudSkinAnalysisEnabled: Bool = false
     ) {
         self.affiliateEnabled = affiliateEnabled
         self.backendEnabled = backendEnabled
         self.purchasesEnabled = purchasesEnabled
         self.communityEnabled = communityEnabled
+        self.cloudSkinAnalysisEnabled = cloudSkinAnalysisEnabled
     }
 
     /// Production defaults — everything optional stays off.

@@ -34,6 +34,11 @@ final class AppState {
     /// Optional affiliate enrichment. OFF by default → `DisabledAffiliate`.
     let affiliate: AffiliateService
 
+    /// Optional cloud skin analysis (DermIQ). OFF by default → sends nothing
+    /// anywhere; the on-device engine remains the only analysis path unless
+    /// this is explicitly enabled and configured. See CloudSkin/README.md.
+    let cloudSkin: CloudSkinAnalysisService
+
     init(featureFlags: FeatureFlags = .default) {
         self.featureFlags = featureFlags
         self.backend = (featureFlags.backendEnabled && BackendConfig.shared.isConfigured)
@@ -42,6 +47,9 @@ final class AppState {
         self.affiliate = (featureFlags.affiliateEnabled && AffiliateConfig.shared.isConfigured)
             ? ConfiguredAffiliateProvider(config: .shared)
             : DisabledAffiliate()
+        self.cloudSkin = (featureFlags.cloudSkinAnalysisEnabled && DermIQConfig.shared.isConfigured)
+            ? DermIQClient(config: .shared)
+            : DisabledCloudSkinAnalysis()
     }
 }
 

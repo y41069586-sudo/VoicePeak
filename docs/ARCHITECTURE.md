@@ -13,7 +13,9 @@ These are load-bearing. Every feature is built to respect them:
 1. **Face photos never leave the device.** Only local thumbnail *filenames* are
    persisted (`Scan.thumbnailFilename`). Nothing in the data model holds a remote
    URL for a face image. The backend module (off by default) syncs numeric
-   metrics + routine only.
+   metrics + routine only. The one deliberate, explicit exception is the
+   `CloudSkin` module (off by default): when enabled *and* configured, it
+   uploads the captured photo to DermIQ for analysis — see `CloudSkin/README.md`.
 2. **No fake "after."** There is no "render predicted result" path anywhere. The
    Match screen overlays a risk/benefit *heatmap* on the user's real scan; proof
    comes only from the half-face test.
@@ -49,6 +51,7 @@ These are load-bearing. Every feature is built to respect them:
 | `Community/` | Opt-in aggregate efficacy (off by default) | 12 |
 | `Purchases/` | StoreKit 2 (off by default) | 12 |
 | `Backend/` | `BackendService` protocol, `LocalOnly` + Supabase (off by default) | 12 |
+| `CloudSkin/` | `CloudSkinAnalysisService` protocol, `DermIQClient` (off by default) — uploads the photo, unlike every other module | 12 |
 | `Settings/` | Language, data export/delete, purchases, legal | 1 (shell), 10 |
 | `Legal/` | Impressum, Datenschutz, AGB, Disclaimer (localized) | 1 (shell), 10 |
 | `Shared/` | Cross-cutting views (`ComingSoonView`, `DisclaimerBanner`) | 1 |
