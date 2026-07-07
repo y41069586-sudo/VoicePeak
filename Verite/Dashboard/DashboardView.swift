@@ -125,7 +125,7 @@ struct DashboardView: View {
                         .font(.subheadline)
                         .foregroundStyle(Theme.textSecondary)
                     PrimaryButton(titleKey: "dashboard.action.scanNow", systemImage: "camera.viewfinder") {
-                        appState.selectedTab = .analyze
+                        startScanFlow()
                     }
                     .padding(.top, 4)
                 } else if fullScanCount < AnalysisConfidence.minScansForChange {
@@ -212,7 +212,7 @@ struct DashboardView: View {
         switch stage {
         case .scan:
             PrimaryButton(titleKey: "dashboard.action.scanNow", systemImage: "camera.viewfinder") {
-                appState.selectedTab = .analyze
+                startScanFlow()
             }
         case .match:
             NavigationLink {
@@ -231,6 +231,13 @@ struct DashboardView: View {
                 .buttonStyle(.plain)
             }
         }
+    }
+
+    /// Enter the scanner as step 1 of the guided flow; `ScanView` then carries the
+    /// user straight into product selection once the scan succeeds.
+    private func startScanFlow() {
+        appState.continueFlowAfterScan = true
+        appState.selectedTab = .analyze
     }
 
     /// A hero-gradient pill styled like `PrimaryButton`, but usable as the label

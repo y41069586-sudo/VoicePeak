@@ -8,6 +8,18 @@ final class AppState {
     /// Currently selected main tab.
     var selectedTab: AppTab = .home
 
+    // MARK: Guided flow coordination (scan → match → prove)
+
+    /// Set when the user enters the scan as step 1 of the guided flow. `ScanView`
+    /// reads it to carry them straight into product selection after a successful
+    /// scan, instead of dropping back to the dashboard.
+    var continueFlowAfterScan = false
+
+    /// Drives the product-selection → match → test leg presented over the scanner.
+    /// `ScanView` owns the cover; setting this `false` (e.g. when a test starts)
+    /// tears the whole flow down and returns to the dashboard.
+    var flowSelectingProduct = false
+
     /// Language override chosen in Settings (nil = follow the system locale).
     /// Persisted separately via `@AppStorage("languageOverride")` in Settings.
     var languageOverride: String?

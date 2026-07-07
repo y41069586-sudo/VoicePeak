@@ -40,7 +40,8 @@ struct ScanView: View {
     private var isFirstBaseline: Bool { !scans.contains { $0.isBaseline } }
 
     var body: some View {
-        NavigationStack {
+        @Bindable var appState = appState
+        return NavigationStack {
             Group {
                 if authStatus == .denied || authStatus == .restricted {
                     CameraDeniedView()
@@ -66,10 +67,33 @@ struct ScanView: View {
                            captureQuality: cap.quality,
                            scans: scans) {
                 let faceFound = cap.analysis.faceFound
+                let continueFlow = faceFound && appState.continueFlowAfterScan
                 captured = nil
                 phase = .aligning
-                if faceFound { appState.selectedTab = .home }
+                if continueFlow {
+                    // Carry the user straight into product selection. Deferred a
+                    // beat so this cover fully dismisses before the next presents.
+                    appState.continueFlowAfterScan = false
+                    Task { @MainActor in
+                        try? await Task.sleep(for: .seconds(0.35))
+                        appState.flowSelectingProduct = true
+                    }
+                } else if faceFound {
+                    // A plain (non-flow) scan returns to the dashboard.
+                    appState.continueFlowAfterScan = false
+                    appState.selectedTab = .home
+                }
+                // No face found: keep the flow intent so a retry can still continue.
             }
+        }
+        // The product-selection → match → test leg of the guided flow, presented
+        // over the scanner. A started test (or Close) sets the flag false and
+        // returns to the dashboard.
+        .fullScreenCover(isPresented: $appState.flowSelectingProduct) {
+            CatalogView(onClose: {
+                appState.flowSelectingProduct = false
+                appState.selectedTab = .home
+            })
         }
         .onAppear { updatePhase() }
     }

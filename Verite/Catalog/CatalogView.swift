@@ -5,6 +5,10 @@ import SwiftData
 /// Open Beauty Facts database. Saved/seeded products are searchable offline;
 /// submitting a query fetches more from OBF and caches them locally.
 struct CatalogView: View {
+    /// When set, the view is being shown as a step of the guided flow and gets a
+    /// Close affordance that hands control back to the coordinator.
+    var onClose: (() -> Void)? = nil
+
     @Environment(\.modelContext) private var modelContext
     @Query(sort: \Product.name) private var products: [Product]
 
@@ -36,6 +40,14 @@ struct CatalogView: View {
             .searchable(text: $searchText, prompt: Text("catalog.search.prompt"))
             .onSubmit(of: .search) { Task { await searchOnline() } }
             .toolbar {
+                if let onClose {
+                    ToolbarItem(placement: .cancellationAction) {
+                        Button { onClose() } label: {
+                            Image(systemName: "xmark")
+                        }
+                        .accessibilityLabel("common.cancel")
+                    }
+                }
                 ToolbarItem(placement: .topBarTrailing) {
                     Button { showScanner = true } label: {
                         Image(systemName: "barcode.viewfinder")

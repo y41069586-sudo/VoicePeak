@@ -107,6 +107,9 @@ struct HalfFaceTestSetupView: View {
         )
         Haptics.fire(.milestone)
         dismiss()
+        // Tear down the guided flow (if we came through it) and land on the
+        // dashboard, where the new active test is now the highlighted step.
+        appState.flowSelectingProduct = false
         appState.selectedTab = .home
     }
 }
