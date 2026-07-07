@@ -111,6 +111,9 @@ struct TestCaptureView: View {
     private func startCountdown() {
         guard !isCapturing else { return }
         isCapturing = true
+        // Freeze exposure + white balance so both sides are captured under the
+        // same conditions — essential for a fair treated-vs-control comparison.
+        camera.lockStandardizedSettings()
         Task { @MainActor in
             for value in [3, 2, 1] {
                 countdown = value
@@ -122,6 +125,7 @@ struct TestCaptureView: View {
             if let image = await camera.capture() {
                 await saveRound(image)
             }
+            camera.unlockStandardizedSettings()
             isCapturing = false
         }
     }

@@ -232,6 +232,9 @@ struct ScanView: View {
     private func startCountdown() {
         guard phase == .aligning else { return }
         phase = .capturing
+        // Freeze exposure + white balance for the hold-still moment so the scan
+        // is captured under stable, repeatable conditions.
+        camera.lockStandardizedSettings()
         Task { @MainActor in
             for value in [3, 2, 1] {
                 countdown = value
@@ -249,6 +252,7 @@ struct ScanView: View {
             } else {
                 phase = .aligning
             }
+            camera.unlockStandardizedSettings()
         }
     }
 

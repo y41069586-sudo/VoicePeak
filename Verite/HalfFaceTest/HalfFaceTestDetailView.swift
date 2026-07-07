@@ -25,10 +25,18 @@ struct HalfFaceTestDetailView: View {
         HalfFaceTestScoring.progress(for: test, scans: scans, product: product, context: context)
     }
 
-    private var latestScanImage: UIImage? {
+    /// The earliest and most recent **real** scans of this test — for an honest
+    /// before/after comparison (both are the user's own photos, never generated).
+    /// nil until there are at least two scans to compare.
+    private var comparisonImages: (before: UIImage, after: UIImage)? {
         let testScans = HalfFaceTestScoring.testScans(test, in: scans)
-        guard let latest = testScans.sorted(by: { $0.date < $1.date }).last else { return nil }
-        return latest.thumbnailFilename.flatMap { ThumbnailStore.load($0) }
+            .sorted { $0.date < $1.date }
+        guard testScans.count >= 2,
+              let beforeFile = testScans.first?.thumbnailFilename,
+              let afterFile = testScans.last?.thumbnailFilename,
+              let before = ThumbnailStore.load(beforeFile),
+              let after = ThumbnailStore.load(afterFile) else { return nil }
+        return (before, after)
     }
 
     var body: some View {
@@ -46,7 +54,7 @@ struct HalfFaceTestDetailView: View {
                         verdictCard
                     }
                 }
-                simulationCard
+                comparisonCard
                 hygieneCard
                 DisclaimerBanner(style: .short)
             }
@@ -261,28 +269,26 @@ struct HalfFaceTestDetailView: View {
         Haptics.fire(passed ? .verdictReveal : .milestone)
     }
 
+    /// Honest before/after: the user's real Day-0 scan vs. their most recent
+    /// scan. No prediction, no generated imagery — only shown once two real
+    /// scans exist to compare.
     @ViewBuilder
-    private var simulationCard: some View {
-        if let originalImage = latestScanImage {
+    private var comparisonCard: some View {
+        if let images = comparisonImages {
             VStack(alignment: .leading, spacing: 12) {
-                Text("Predictive Cosmetic Simulation")
+                Text("halfface.compare.title")
                     .font(VType.sectionTitle)
                     .foregroundStyle(VColor.textPrimary)
-                
-                Text("Swipe the slider to preview potential skin appearance changes on the treated side under ideal product consistency.")
+
+                Text("halfface.compare.body")
                     .font(.footnote)
                     .foregroundStyle(Theme.textSecondary)
                     .fixedSize(horizontal: false, vertical: true)
-                
-                HalfFaceSimulationLoader(
-                    original: originalImage,
-                    side: test.testSide,
-                    intensity: 0.70,
-                    midlineX: nil
-                )
-                .aspectRatio(3/4, contentMode: .fit)
-                .frame(maxWidth: .infinity)
-                .blueGlow(Theme.accent, radius: 12, opacity: 0.15)
+
+                HalfFaceSimulationView(original: images.before, after: images.after)
+                    .aspectRatio(3/4, contentMode: .fit)
+                    .frame(maxWidth: .infinity)
+                    .blueGlow(Theme.accent, radius: 12, opacity: 0.15)
             }
         }
     }

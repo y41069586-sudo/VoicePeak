@@ -1,15 +1,14 @@
 import SwiftUI
 
-/// A premium drag-to-reveal before/after comparison view for the half-face simulation.
+/// A drag-to-reveal comparison of two **real** scans of the treated side:
+/// the Day-0 baseline (left / "before") and the most recent scan (right /
+/// "after"). No predicted or generated imagery — both frames are the user's own
+/// photos, so the comparison is honest, per the app's "no fake after" invariant.
 ///
-/// - Left side: original scan image.
-/// - Right side: cosmetic simulation from `SimulationEngine`.
-/// - A drag handle the user slides left/right to reveal more or less of each side.
-///
-/// On appear the handle sweeps from 0 → 0.5 to demonstrate the feature.
+/// On appear the handle sweeps toward the left to reveal both sides.
 struct HalfFaceSimulationView: View {
     let original: UIImage
-    let simulation: UIImage
+    let after: UIImage
 
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
@@ -20,14 +19,14 @@ struct HalfFaceSimulationView: View {
     var body: some View {
         GeometryReader { geo in
             ZStack(alignment: .leading) {
-                // 1. Simulation (right / "after") — full width, clipped on left.
-                Image(uiImage: simulation)
+                // 1. Latest real scan (right / "after") — full width, clipped on left.
+                Image(uiImage: after)
                     .resizable()
                     .scaledToFill()
                     .frame(width: geo.size.width, height: geo.size.height)
                     .clipped()
 
-                // 2. Original (left / "before") — clipped to divider position.
+                // 2. Baseline scan (left / "before") — clipped to divider position.
                 Image(uiImage: original)
                     .resizable()
                     .scaledToFill()
@@ -96,7 +95,7 @@ struct HalfFaceSimulationView: View {
 
     private var labels: some View {
         HStack {
-            Label("Before", systemImage: "circle.lefthalf.filled")
+            Label("halfface.compare.before", systemImage: "clock")
                 .font(VType.captionBold)
                 .foregroundStyle(.white)
                 .padding(.horizontal, 12).padding(.vertical, 6)
@@ -104,7 +103,7 @@ struct HalfFaceSimulationView: View {
 
             Spacer()
 
-            Label("After", systemImage: "sparkles")
+            Label("halfface.compare.after", systemImage: "clock.badge.checkmark")
                 .font(VType.captionBold)
                 .foregroundStyle(.white)
                 .padding(.horizontal, 12).padding(.vertical, 6)
@@ -144,62 +143,5 @@ struct HalfFaceSimulationView: View {
         withAnimation(.spring(response: 0.8, dampingFraction: 0.75).delay(1.3)) {
             dividerFraction = 0.50
         }
-    }
-}
-
-// MARK: - Wrapper with async simulation loading
-
-/// Convenience wrapper that loads the simulation asynchronously and shows a
-/// placeholder during processing.
-struct HalfFaceSimulationLoader: View {
-    let original: UIImage
-    let side: FaceSide
-    let intensity: Double
-    let midlineX: Double?
-
-    @State private var simulation: UIImage?
-    @State private var isLoading = true
-
-    var body: some View {
-        ZStack {
-            if let sim = simulation {
-                HalfFaceSimulationView(original: original, simulation: sim)
-                    .transition(.opacity)
-            } else {
-                simulationPlaceholder
-            }
-        }
-        .animation(.easeInOut(duration: 0.4), value: simulation != nil)
-        .task { await loadSimulation() }
-    }
-
-    private var simulationPlaceholder: some View {
-        ZStack {
-            Image(uiImage: original)
-                .resizable()
-                .scaledToFill()
-                .overlay(Color.black.opacity(0.35))
-
-            VStack(spacing: 12) {
-                ProgressView()
-                    .tint(.white)
-                    .scaleEffect(1.2)
-                Text("Generating preview…")
-                    .font(VType.body)
-                    .foregroundStyle(.white.opacity(0.8))
-            }
-        }
-        .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
-    }
-
-    private func loadSimulation() async {
-        let result = await SimulationEngine.simulate(
-            image: original,
-            side: side,
-            intensity: intensity,
-            midlineX: midlineX
-        )
-        simulation = result ?? original
-        isLoading = false
     }
 }

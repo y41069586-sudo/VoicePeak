@@ -29,6 +29,9 @@ final class CameraController: NSObject, ObservableObject, @unchecked Sendable,
 
     private let ciContext = CIContext(options: [.workingColorSpace: NSNull()])
     private var isConfigured = false
+    /// The active capture device — kept so exposure/white-balance can be locked
+    /// for a standardized, repeatable capture.
+    private var device: AVCaptureDevice?
     private var lastAnalysis: CFTimeInterval = 0
     private let analysisInterval: CFTimeInterval = 0.2 // 5 Hz
 
@@ -68,6 +71,7 @@ final class CameraController: NSObject, ObservableObject, @unchecked Sendable,
             return
         }
         session.addInput(input)
+        self.device = device
 
         if session.canAddOutput(photoOutput) {
             session.addOutput(photoOutput)
@@ -93,6 +97,39 @@ final class CameraController: NSObject, ObservableObject, @unchecked Sendable,
 
         session.commitConfiguration()
         isConfigured = true
+    }
+
+    // MARK: Standardized capture
+
+    /// Freeze exposure + white balance so a scan isn't re-metered differently
+    /// each time — the first step toward a repeatable, instrument-like capture
+    /// (call at the start of the hold-still countdown). Focus stays automatic to
+    /// avoid blur. Every guard is capability-checked, so it's a no-op where the
+    /// device doesn't support locking.
+    func lockStandardizedSettings() {
+        sessionQueue.async { [weak self] in
+            guard let device = self?.device,
+                  (try? device.lockForConfiguration()) != nil else { return }
+            if device.isExposureModeSupported(.locked) { device.exposureMode = .locked }
+            if device.isWhiteBalanceModeSupported(.locked) { device.whiteBalanceMode = .locked }
+            device.unlockForConfiguration()
+        }
+    }
+
+    /// Return exposure + white balance to continuous auto (call after capture or
+    /// when leaving the scanner) so the live preview meters normally again.
+    func unlockStandardizedSettings() {
+        sessionQueue.async { [weak self] in
+            guard let device = self?.device,
+                  (try? device.lockForConfiguration()) != nil else { return }
+            if device.isExposureModeSupported(.continuousAutoExposure) {
+                device.exposureMode = .continuousAutoExposure
+            }
+            if device.isWhiteBalanceModeSupported(.continuousAutoWhiteBalance) {
+                device.whiteBalanceMode = .continuousAutoWhiteBalance
+            }
+            device.unlockForConfiguration()
+        }
     }
 
     // MARK: Still capture
@@ -123,7 +160,10 @@ final class CameraController: NSObject, ObservableObject, @unchecked Sendable,
             continuation?.resume(returning: nil)
             return
         }
-        continuation?.resume(returning: image)
+        // Bake the capture orientation into upright pixels so every consumer
+        // (thumbnail store, split-face result, before/after) shows the face the
+        // right way up — fixes sideways thumbnails across all capture paths.
+        continuation?.resume(returning: image.normalizedUp())
     }
 
     // MARK: Live analysis (video frames)
