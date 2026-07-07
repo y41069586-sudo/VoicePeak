@@ -1,34 +1,39 @@
-# Cloud skin analysis module (optional, feature-flagged OFF)
+# Cloud skin analysis module (feature-flagged ON, inert until configured)
 
 The app's face scan is fully functional without this module — the on-device
-`SkinAnalysisEngine` never leaves the device. This module adds an **opt-in**
-cloud analysis via [DermIQ](https://dev.dermiq.cloud), a hosted, pre-trained
-skin-analysis API (overall score, estimated skin age, and per-concern heatmap
-masks).
+`SkinAnalysisEngine` never leaves the device. This module adds cloud analysis
+via [DermIQ](https://dev.dermiq.cloud), a hosted, pre-trained skin-analysis API
+(overall score, estimated skin age, and per-concern heatmap masks), surfaced as
+the "Cloud Analysis" card on the scan result screen.
 
 **This is the one path in the app where a face photo leaves the device.**
-Enabling it is a deliberate exception to the "face photos never leave the
-device" invariant in `docs/ARCHITECTURE.md` — keep the in-app disclosure (and
-`NSCameraUsageDescription` / legal copy) accurate if you turn it on for real
-users.
+That's a deliberate exception to the "face photos never leave the device"
+invariant in `docs/ARCHITECTURE.md` — keep the in-app disclosure (and
+`NSCameraUsageDescription` / legal copy) accurate for real users.
 
-## Enable it
+`FeatureFlags.cloudSkinAnalysisEnabled` defaults to **true**, but that alone
+sends nothing anywhere: `AppState` only builds a real `DermIQClient` — instead
+of `DisabledCloudSkinAnalysis` — when the flag is on **and**
+`DermIQConfig.isConfigured` is true (a real key resolved at build time). No key
+is committed anywhere in this repo, so out of the box the card silently never
+appears.
 
-1. Get an API key from your DermIQ dashboard.
-2. Provide the connection values to the app via Info.plist keys — populate them
-   from a **git-ignored** `Secrets.xcconfig` (never commit keys):
-   ```
-   DERMIQ_API_KEY = diq_sk_...
-   DERMIQ_BASE_URL = https://dev.dermiq.cloud
-   ```
-3. Add matching `$(DERMIQ_API_KEY)` / `$(DERMIQ_BASE_URL)` keys to
-   `Verite/Resources/Info.plist`, and reference `Secrets.xcconfig` from
-   `project.yml`'s `configFiles:` for your target — this repo intentionally
-   ships **without** either wired in, so `xcodegen generate` and the CI compile
-   check never depend on a secrets file that doesn't exist in the repo.
-4. Turn on `FeatureFlags.cloudSkinAnalysisEnabled`. `AppState` switches from
-   `DisabledCloudSkinAnalysis` to `DermIQClient` when the flag is on *and*
-   `DermIQConfig.isConfigured` is true.
+## Supply the real key
+
+Info.plist's `DERMIQ_API_KEY` / `DERMIQ_BASE_URL` resolve from
+`Secrets.xcconfig`, which `project.yml` references via `configFiles:`. That
+file is **git-ignored** — never commit it — so populate it per environment:
+
+- **Local Xcode builds:** copy `Secrets.xcconfig.example` (repo root) to
+  `Secrets.xcconfig` and fill in your real key, then `xcodegen generate`.
+- **Codemagic CI:** the "Write Secrets.xcconfig" step in `codemagic.yaml` writes
+  the file from a `DERMIQ_API_KEY` environment variable before every
+  `xcodegen generate` — defaulting to blank (safe/unconfigured) if unset. To
+  bake a real key into `ios-release` TestFlight builds, add `DERMIQ_API_KEY` to
+  a Codemagic environment variable group (e.g. `verite_secrets`) in the
+  Codemagic dashboard, then uncomment the `groups:` line under `ios-release`'s
+  `environment:` in `codemagic.yaml` — that dashboard step is the one thing
+  only you can do; nothing else here depends on it.
 
 ## What it does
 

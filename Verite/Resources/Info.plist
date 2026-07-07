@@ -79,5 +79,14 @@
 		<string>PlayfairDisplay.ttf</string>
 		<string>PlayfairDisplay-Italic.ttf</string>
 	</array>
+
+	<!-- DermIQ cloud skin analysis (CloudSkin module, off unless configured).
+	     Resolved at build time from Secrets.xcconfig via project.yml's
+	     configFiles — codemagic.yaml writes that file from a Codemagic secret
+	     (or blank) before every build, so these never fail to resolve. -->
+	<key>DERMIQ_API_KEY</key>
+	<string>$(DERMIQ_API_KEY)</string>
+	<key>DERMIQ_BASE_URL</key>
+	<string>$(DERMIQ_BASE_URL)</string>
 </dict>
 </plist>

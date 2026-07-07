@@ -40,6 +40,11 @@ final class FeatureFlags: @unchecked Sendable {
         self.cloudSkinAnalysisEnabled = cloudSkinAnalysisEnabled
     }
 
-    /// Production defaults — everything optional stays off.
-    static let `default` = FeatureFlags()
+    /// Production defaults. Everything stays off *except* `cloudSkinAnalysisEnabled`
+    /// — turned on here per an explicit decision to wire up DermIQ end-to-end.
+    /// This alone still sends nothing anywhere: `AppState` only builds a real
+    /// `DermIQClient` when this flag is on *and* `DermIQConfig.isConfigured` is
+    /// true (a real `DERMIQ_API_KEY` present at build time) — see
+    /// CloudSkin/README.md.
+    static let `default` = FeatureFlags(cloudSkinAnalysisEnabled: true)
 }

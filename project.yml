@@ -29,6 +29,12 @@ targets:
       - path: Verite
         excludes:
           - "**/*.md"
+    # Git-ignored locally; codemagic.yaml writes this file (from a Codemagic
+    # secret, or blank) before every `xcodegen generate`, so this reference
+    # never fails to resolve in CI even when no real secret is configured.
+    configFiles:
+      Debug: Secrets.xcconfig
+      Release: Secrets.xcconfig
     settings:
       base:
         INFOPLIST_FILE: Verite/Resources/Info.plist

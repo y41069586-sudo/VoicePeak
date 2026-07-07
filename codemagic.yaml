@@ -33,6 +33,19 @@ workflows:
     scripts:
       - name: Install XcodeGen
         script: brew install xcodegen
+      - name: Write Secrets.xcconfig
+        script: |
+          # project.yml references this file unconditionally (configFiles).
+          # It's git-ignored, so always (re)create it here — from a Codemagic
+          # env var/secret group if one is configured, blank otherwise. Either
+          # way `xcodegen generate` below never fails for a missing file, and
+          # an unset DERMIQ_API_KEY keeps CloudSkin's DermIQConfig unconfigured
+          # (safe default: cloudSkinAnalysisEnabled alone never sends a photo
+          # anywhere without a real key present).
+          cat > Secrets.xcconfig <<XCCONFIG
+          DERMIQ_API_KEY = ${DERMIQ_API_KEY:-}
+          DERMIQ_BASE_URL = ${DERMIQ_BASE_URL:-https://dev.dermiq.cloud}
+          XCCONFIG
       - name: Generate Xcode project
         script: xcodegen generate --spec project.yml
       - name: Build for iOS Simulator (no code signing)
@@ -76,6 +89,19 @@ workflows:
     scripts:
       - name: Install XcodeGen
         script: brew install xcodegen
+      - name: Write Secrets.xcconfig
+        script: |
+          # project.yml references this file unconditionally (configFiles).
+          # It's git-ignored, so always (re)create it here — from a Codemagic
+          # env var/secret group if one is configured, blank otherwise. Either
+          # way `xcodegen generate` below never fails for a missing file, and
+          # an unset DERMIQ_API_KEY keeps CloudSkin's DermIQConfig unconfigured
+          # (safe default: cloudSkinAnalysisEnabled alone never sends a photo
+          # anywhere without a real key present).
+          cat > Secrets.xcconfig <<XCCONFIG
+          DERMIQ_API_KEY = ${DERMIQ_API_KEY:-}
+          DERMIQ_BASE_URL = ${DERMIQ_BASE_URL:-https://dev.dermiq.cloud}
+          XCCONFIG
       - name: Generate Xcode project
         script: xcodegen generate --spec project.yml
       - name: Set up signing
