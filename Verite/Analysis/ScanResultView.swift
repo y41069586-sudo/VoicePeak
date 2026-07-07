@@ -12,8 +12,15 @@ struct ScanResultView: View {
     let onDone: () -> Void
 
     @Environment(\.modelContext) private var modelContext
+    @Environment(AppState.self) private var appState
     @State private var snapshot: MockSkinSnapshot?
     @State private var animateIn = false
+
+    // Cloud analysis (DermIQ) — optional, only ever attempted when the
+    // feature is explicitly enabled and configured (see CloudSkin/README.md).
+    @State private var cloudResult: CloudSkinAnalysis?
+    @State private var cloudLoading = false
+    @State private var cloudFailed = false
 
     private var isFollowUp: Bool {
         !isBaseline && BaselineTracker.fullScans(scans).count >= AnalysisConfidence.minScansForChange
@@ -93,6 +100,12 @@ struct ScanResultView: View {
                             HeatmapOverlay(regions: snapshot.heatmapRegions)
                                 .opacity(animateIn ? 1.0 : 0.0)
 
+                            // Section 4b: Cloud analysis (DermIQ) — only when enabled + configured.
+                            if appState.cloudSkin.isEnabled {
+                                cloudAnalysisCard
+                                    .opacity(animateIn ? 1.0 : 0.0)
+                            }
+
                             // Section 5: What Changed (for follow-ups)
                             if isFollowUp {
                                 if reliable {
@@ -168,5 +181,86 @@ struct ScanResultView: View {
 
     private func generateSnapshot() {
         snapshot = MockSkinSnapshot.generate(from: analysis)
+    }
+
+    // MARK: Cloud analysis (DermIQ)
+
+    private var cloudAnalysisCard: some View {
+        GlassCard {
+            VStack(alignment: .leading, spacing: 12) {
+                HStack(spacing: 8) {
+                    Image(systemName: "cloud.fill").foregroundStyle(Theme.accent)
+                    Text(verbatim: "Cloud Analysis")
+                        .font(VType.sectionTitle)
+                        .foregroundStyle(VColor.textPrimary)
+                    Spacer()
+                    if cloudLoading { ProgressView() }
+                }
+
+                if let cloud = cloudResult {
+                    HStack(spacing: 28) {
+                        if let score = cloud.overallScore {
+                            cloudStat(value: "\(Int(score.rounded()))", label: "Score")
+                        }
+                        if let age = cloud.skinAge {
+                            cloudStat(value: "\(age)", label: "Skin Age")
+                        }
+                    }
+                    if !cloud.masks.isEmpty {
+                        ScrollView(.horizontal, showsIndicators: false) {
+                            HStack(spacing: 10) {
+                                ForEach(cloud.masks.sorted(by: { $0.key < $1.key }), id: \.key) { name, maskImage in
+                                    VStack(spacing: 4) {
+                                        Image(uiImage: maskImage)
+                                            .resizable()
+                                            .scaledToFill()
+                                            .frame(width: 90, height: 90)
+                                            .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+                                        Text(verbatim: name.capitalized)
+                                            .font(VType.micro)
+                                            .foregroundStyle(Theme.textSecondary)
+                                    }
+                                }
+                            }
+                        }
+                    }
+                } else if cloudFailed {
+                    Text(verbatim: "Cloud analysis unavailable right now.")
+                        .font(.footnote)
+                        .foregroundStyle(Theme.textSecondary)
+                } else if !cloudLoading {
+                    Text(verbatim: "Analyzing with cloud AI…")
+                        .font(.footnote)
+                        .foregroundStyle(Theme.textSecondary)
+                }
+            }
+        }
+        .task { await loadCloudAnalysis() }
+    }
+
+    private func cloudStat(value: String, label: String) -> some View {
+        VStack(spacing: 2) {
+            Text(value)
+                .font(Typography.number(26))
+                .foregroundStyle(Theme.textPrimary)
+            Text(label)
+                .font(VType.micro)
+                .foregroundStyle(Theme.textSecondary)
+        }
+    }
+
+    /// Fires once per screen: submits the captured photo to DermIQ (full mode
+    /// — this is a saved scan, not a live preview) and shows whatever comes
+    /// back. Best-effort: a failure here never blocks the on-device result
+    /// above, it only leaves this card showing an unavailable message.
+    private func loadCloudAnalysis() async {
+        guard let image, cloudResult == nil, !cloudLoading else { return }
+        cloudLoading = true
+        defer { cloudLoading = false }
+        do {
+            cloudResult = try await appState.cloudSkin.analyze(image: image, quick: false)
+        } catch {
+            cloudFailed = true
+        }
     }
 }
