@@ -25,11 +25,10 @@ workflows:
         XCODE_PROJECT: "Verite.xcodeproj"
         XCODE_SCHEME: "Verite"
       # Codemagic dashboard → this app → Environment variables → add
-      # DERMIQ_API_KEY, mark it Secure, and put it in a group named exactly
-      # "verite_secrets" (create the group if it doesn't exist yet). The
+      # DERMIQ_API_KEY to the existing "Verite" group (mark it Secure). The
       # "Write Secrets.xcconfig" step below then bakes it in for this build.
       groups:
-        - verite_secrets
+        - Verite
     triggering:
       events:
         - push
@@ -84,11 +83,10 @@ workflows:
       vars:
         XCODE_PROJECT: "Verite.xcodeproj"
         XCODE_SCHEME: "Verite"
-      # Same "verite_secrets" group as ios-compile-check (see there for how to
-      # create it) — needed here so DERMIQ_API_KEY reaches the signed
-      # TestFlight build too.
+      # Same "Verite" group as ios-compile-check — needed here so
+      # DERMIQ_API_KEY reaches the signed TestFlight build too.
       groups:
-        - verite_secrets
+        - Verite
     triggering:
       events:
         - tag
