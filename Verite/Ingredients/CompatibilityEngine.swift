@@ -157,8 +157,9 @@ enum CompatibilityEngine {
         if profile.comedogenicMax >= 4 { score -= 10 }
         else if profile.comedogenicMax == 3 { score -= 5 }
 
-        // Actives bonus (product actually does something).
-        if !profile.actives.isEmpty { score += 4 }
+        // Actives bonus — only actives at a meaningful concentration count.
+        if !profile.prominentActives.isEmpty { score += 4 }
+        else if profile.hasOnlyTraceActives { score -= 4 } // present but likely under-dosed
 
         // Conflict penalty.
         let conflicts = detectConflicts(in: profile)
@@ -185,14 +186,14 @@ enum CompatibilityEngine {
             out.append(reason.titleKey)
         }
 
-        // Active bonus lines.
-        if profile.actives.contains(where: { IngredientKnowledgeBase.normalizeKey($0.name) == "niacinamide" }) {
+        // Active bonus lines — only when present at a meaningful concentration.
+        if profile.prominentActives.contains(where: { IngredientKnowledgeBase.normalizeKey($0.name) == "niacinamide" }) {
             out.append("compatibility.benefit.niacinamide")
         }
         if profile.ingredients.contains(where: { $0.classes.contains(.humectant) }) {
             out.append("compatibility.benefit.hydrating")
         }
-        if profile.actives.contains(where: { IngredientKnowledgeBase.normalizeKey($0.name) == "centella asiatica" }) {
+        if profile.prominentActives.contains(where: { IngredientKnowledgeBase.normalizeKey($0.name) == "centella asiatica" }) {
             out.append("compatibility.benefit.calming")
         }
 
@@ -210,6 +211,9 @@ enum CompatibilityEngine {
         }
         if profile.comedogenicMax >= 3 {
             out.append("compatibility.concern.comedogenic")
+        }
+        if profile.hasOnlyTraceActives {
+            out.append("compatibility.concern.traceActives")
         }
         let conflicts = detectConflicts(in: profile)
         if !conflicts.isEmpty {
@@ -243,11 +247,11 @@ enum CompatibilityEngine {
 
         let hasHumectants = profile.ingredients.contains { $0.classes.contains(.humectant) }
         let hasEmollients = profile.ingredients.contains { $0.classes.contains(.emollient) }
-        let hasSoothing = profile.actives.contains {
+        let hasSoothing = profile.prominentActives.contains {
             let k = IngredientKnowledgeBase.normalizeKey($0.name)
             return ["centella asiatica", "allantoin", "panthenol", "niacinamide"].contains(k)
         }
-        let hasOilControl = profile.actives.contains {
+        let hasOilControl = profile.prominentActives.contains {
             let k = IngredientKnowledgeBase.normalizeKey($0.name)
             return ["niacinamide", "salicylic acid"].contains(k)
         }

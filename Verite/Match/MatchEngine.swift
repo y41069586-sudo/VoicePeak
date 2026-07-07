@@ -63,7 +63,9 @@ enum MatchEngine {
     private static let oilControlActives: Set<String> = ["niacinamide", "salicylic acid"]
 
     static func evaluate(profile: ProductProfile, context: SkinContext) -> MatchResult {
-        let activeKeys = Set(profile.actives.map { IngredientKnowledgeBase.normalizeKey($0.name) })
+        // Only actives above the ~1% line count as real benefit — a trace active
+        // listed near the end ("fairy dusting") shouldn't earn credit.
+        let activeKeys = Set(profile.prominentActives.map { IngredientKnowledgeBase.normalizeKey($0.name) })
 
         var reasons: [MatchReason] = []
         var risk = 0
@@ -105,7 +107,7 @@ enum MatchEngine {
 
         // --- BENEFIT ---
         var matchedConcerns = Set<SkinConcern>()
-        for ingredient in profile.actives {
+        for ingredient in profile.prominentActives {
             let key = IngredientKnowledgeBase.normalizeKey(ingredient.name)
             if let helps = activeBenefits[key] {
                 matchedConcerns.formUnion(helps.intersection(context.concerns))
