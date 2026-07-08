@@ -38,8 +38,12 @@ targets:
         TARGETED_DEVICE_FAMILY: "1" # iPhone only
         # The two feature-flag SDKs (StoreKit/Supabase) are OFF by default and
         # require no linked frameworks until their milestones are enabled.
-    info:
-      path: Verite/Resources/Info.plist
+    # DO NOT add an `info:` block here. XcodeGen REGENERATES the plist at
+    # `info.path` on every `xcodegen generate` (CI runs it every build),
+    # overwriting the hand-written Verite/Resources/Info.plist with 8 boiler-
+    # plate keys — silently dropping UILaunchStoryboardName (=> tiny legacy
+    # compatibility window on iPad), NSCameraUsageDescription, UIAppFonts,
+    # orientations, and everything else. INFOPLIST_FILE above is sufficient.
 
 schemes:
   Verite:
