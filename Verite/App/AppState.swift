@@ -39,6 +39,10 @@ final class AppState {
     /// this is explicitly enabled and configured. See CloudSkin/README.md.
     let cloudSkin: CloudSkinAnalysisService
 
+    /// Vérité AI advisor (Claude). Inert (`DisabledAdvisor`) until enabled *and*
+    /// an ANTHROPIC_API_KEY is present. Sends only numbers + text. See Advisor/.
+    let advisor: VeriteAdvisorService
+
     init(featureFlags: FeatureFlags = .default) {
         self.featureFlags = featureFlags
         self.backend = (featureFlags.backendEnabled && BackendConfig.shared.isConfigured)
@@ -50,6 +54,9 @@ final class AppState {
         self.cloudSkin = (featureFlags.cloudSkinAnalysisEnabled && DermIQConfig.shared.isConfigured)
             ? DermIQClient(config: .shared)
             : DisabledCloudSkinAnalysis()
+        self.advisor = (featureFlags.advisorEnabled && ClaudeConfig.shared.isConfigured)
+            ? ClaudeAdvisor(client: ClaudeClient(config: .shared))
+            : DisabledAdvisor()
     }
 }
 

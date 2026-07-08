@@ -57,6 +57,10 @@ struct DashboardView: View {
                         .vStaggeredAppear(index: 0)
                     journeyCard
                         .vStaggeredAppear(index: 1)
+                    if appState.advisor.isEnabled {
+                        advisorCard
+                            .vStaggeredAppear(index: 1)
+                    }
                     if let activeTest, activeTest.status == .verdictReady {
                         activeTestCard(activeTest)
                             .vStaggeredAppear(index: 2)
@@ -231,6 +235,38 @@ struct DashboardView: View {
                 .buttonStyle(.plain)
             }
         }
+    }
+
+    /// Entry point to the Vérité AI advisor (only shown when it's configured).
+    private var advisorCard: some View {
+        NavigationLink {
+            GoalAdvisorView()
+        } label: {
+            HStack(spacing: 12) {
+                Image(systemName: "sparkles")
+                    .font(.title3)
+                    .foregroundStyle(.white)
+                    .frame(width: 40, height: 40)
+                    .background(VColor.heroGradient, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("advisor.dashboard.cta")
+                        .font(.headline)
+                        .foregroundStyle(Theme.textPrimary)
+                    Text("advisor.dashboard.subtitle")
+                        .font(.caption)
+                        .foregroundStyle(Theme.textSecondary)
+                }
+                Spacer(minLength: 8)
+                Image(systemName: "chevron.right")
+                    .font(.footnote.weight(.semibold))
+                    .foregroundStyle(Theme.textSecondary)
+            }
+            .padding(18)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 22, style: .continuous))
+            .overlay(RoundedRectangle(cornerRadius: 22, style: .continuous).strokeBorder(Theme.strokeSubtle, lineWidth: 1))
+        }
+        .buttonStyle(.plain)
     }
 
     /// Enter the scanner as step 1 of the guided flow; `ScanView` then carries the

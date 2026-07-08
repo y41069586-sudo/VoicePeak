@@ -26,18 +26,25 @@ final class FeatureFlags: @unchecked Sendable {
     /// to DermIQ's API for analysis. See CloudSkin/README.md before enabling.
     var cloudSkinAnalysisEnabled: Bool
 
+    /// Vérité AI advisor (Claude). Sends only numeric skin metrics + goal text
+    /// + product ingredient lists (never a photo) to recommend products. Inert
+    /// until an ANTHROPIC_API_KEY is configured. See Advisor/README.md.
+    var advisorEnabled: Bool
+
     init(
         affiliateEnabled: Bool = false,
         backendEnabled: Bool = false,
         purchasesEnabled: Bool = false,
         communityEnabled: Bool = false,
-        cloudSkinAnalysisEnabled: Bool = false
+        cloudSkinAnalysisEnabled: Bool = false,
+        advisorEnabled: Bool = false
     ) {
         self.affiliateEnabled = affiliateEnabled
         self.backendEnabled = backendEnabled
         self.purchasesEnabled = purchasesEnabled
         self.communityEnabled = communityEnabled
         self.cloudSkinAnalysisEnabled = cloudSkinAnalysisEnabled
+        self.advisorEnabled = advisorEnabled
     }
 
     /// Production defaults. Everything stays off *except* `cloudSkinAnalysisEnabled`
@@ -46,5 +53,5 @@ final class FeatureFlags: @unchecked Sendable {
     /// `DermIQClient` when this flag is on *and* `DermIQConfig.isConfigured` is
     /// true (a real `DERMIQ_API_KEY` present at build time) — see
     /// CloudSkin/README.md.
-    static let `default` = FeatureFlags(cloudSkinAnalysisEnabled: true)
+    static let `default` = FeatureFlags(cloudSkinAnalysisEnabled: true, advisorEnabled: true)
 }

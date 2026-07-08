@@ -11,10 +11,10 @@ struct DermIQConfig: Sendable {
 
     var isConfigured: Bool { !apiKey.isEmpty }
 
+    // Base URL is hardcoded (not read from Info.plist/xcconfig): xcconfig treats
+    // "//" as a comment, so a URL stored there would be mangled to "https:".
     static let shared = DermIQConfig(
-        baseURL: (Bundle.main.object(forInfoDictionaryKey: "DERMIQ_BASE_URL") as? String)
-            .flatMap { $0.isEmpty ? nil : URL(string: $0) }
-            ?? URL(string: "https://dev.dermiq.cloud")!,
+        baseURL: URL(string: "https://dev.dermiq.cloud")!,
         apiKey: (Bundle.main.object(forInfoDictionaryKey: "DERMIQ_API_KEY") as? String) ?? ""
     )
 }
