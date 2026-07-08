@@ -100,31 +100,42 @@ enum HeadMesh {
     // MARK: Head shaping
 
     /// Deforms a unit-sphere direction into an androgynous head.
-    /// Purely aesthetic — tuned by eye for the wireframe look.
+    /// The silhouette was validated visually (side + front profile renders)
+    /// before porting: round cranium, full occiput, flat face plane with a
+    /// soft nose/brow, late jaw taper into a ROUNDED chin — never a spike.
     private static func shape(_ dir: SIMD3<Float>) -> SIMD3<Float> {
-        var p = dir * SIMD3<Float>(0.78, 1.0, 0.90) // narrower than deep, deep < tall
-        p.y *= 1.12                                  // elongate the skull
+        var p = dir * SIMD3<Float>(0.74, 1.0, 0.88)
+        p.y *= 1.14
 
-        // Jaw taper below the brow line; chin narrows most.
-        let lower = 1 - smoothstep(-0.95, 0.12, dir.y)
-        p.x *= 1 - 0.36 * lower * lower
-        p.z *= 1 - 0.16 * lower * lower
+        // Skull width: wide through temples/cheeks, tapering late into a
+        // rounded chin (cubic taper + a small bulge right at the chin tip).
+        let t = min(max((0.30 - dir.y) / 1.30, 0), 1)
+        var w = 1 - 0.34 * t * t * t * 2.2
+        w = max(w, 0.60)
+        w += 0.05 * gauss((dir.y + 0.92) / 0.22)
+        w *= 1 - 0.05 * smoothstep(0.55, 1.0, dir.y)
+        p.x *= w
+        p.z *= w
 
         let front = max(0, dir.z)
+        let back = smoothstep(0.15, -0.25, dir.z)
 
-        // Chin nudged forward; back of the skull stays full.
+        // Full back of the skull, flatter face plane, slanted forehead.
+        p.z *= 0.93 + 0.17 * back
+        p.z *= 1 - 0.07 * smoothstep(0.25, 0.85, dir.y) * front
+
+        // Chin mass, pulled slightly forward and down.
         if dir.z > 0 {
-            p.z += 0.08 * lower * lower * gauss(dir.x / 0.30)
-        } else {
-            p.z *= 1.05
+            p.z += 0.10 * gauss(dir.x / 0.30) * gauss((dir.y + 0.80) / 0.30)
         }
+        p.y -= 0.04 * gauss(dir.x / 0.35) * gauss((dir.y + 0.85) / 0.25)
 
-        // Brow ridge, eye sockets, nose, lips — subtle, wireframe-legible.
-        p.z += 0.05 * gauss((dir.y - 0.28) / 0.10) * gauss(dir.x / 0.50) * front
-        p.z -= 0.055 * (gauss((dir.x - 0.30) / 0.14) + gauss((dir.x + 0.30) / 0.14))
-                     * gauss((dir.y - 0.10) / 0.10) * front
-        p.z += 0.16 * gauss(dir.x / 0.14) * gauss((dir.y + 0.16) / 0.13) * front
-        p.z += 0.035 * gauss(dir.x / 0.24) * gauss((dir.y + 0.42) / 0.07) * front
+        // Nose: a soft, wide ridge. Brow, eye sockets, lips — subtle.
+        p.z += 0.12 * gauss(dir.x / 0.20) * gauss((dir.y + 0.10) / 0.20) * front
+        p.z += 0.05 * gauss((dir.y - 0.32) / 0.16) * gauss(dir.x / 0.55) * front
+        p.z -= 0.05 * (gauss((dir.x - 0.28) / 0.16) + gauss((dir.x + 0.28) / 0.16))
+                    * gauss((dir.y - 0.05) / 0.13) * front
+        p.z += 0.02 * gauss(dir.x / 0.25) * gauss((dir.y + 0.45) / 0.10) * front
 
         return p
     }
