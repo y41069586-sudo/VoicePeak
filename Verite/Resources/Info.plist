@@ -55,11 +55,13 @@
 	<key>UIUserInterfaceStyle</key>
 	<string>Dark</string>
 
-	<key>UILaunchScreen</key>
-	<dict>
-		<key>UIColorName</key>
-		<string>LaunchBackground</string>
-	</dict>
+	<!-- A compiled launch storyboard is the decisive "supports every screen
+	     size" signal. The previous UILaunchScreen dict (asset-color reference)
+	     is the known-flaky path with manual plists — when iOS fails to resolve
+	     it at snapshot time, the app is letterboxed into the small legacy
+	     canvas (the shrunken 3:4-ish iPad compatibility window). -->
+	<key>UILaunchStoryboardName</key>
+	<string>LaunchScreen</string>
 
 	<!-- Opt into the modern scene lifecycle. Without this, a manually-managed
 	     Info.plist makes iOS treat the app as legacy and render it in a small
