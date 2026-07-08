@@ -53,7 +53,7 @@
 
 	<!-- Light-first white-and-blue committed look. -->
 	<key>UIUserInterfaceStyle</key>
-	<string>Light</string>
+	<string>Dark</string>
 
 	<key>UILaunchScreen</key>
 	<dict>
