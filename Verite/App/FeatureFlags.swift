@@ -21,16 +21,22 @@ final class FeatureFlags: @unchecked Sendable {
     /// Community efficacy (opt-in, numbers only, no photos). OFF.
     var communityEnabled: Bool
 
+    /// Native rating ask on the onboarding social-proof screen. OFF — the
+    /// hook is built, intended for later versions once ratings justify it.
+    var onboardingRatingAskEnabled: Bool
+
     init(
         affiliateEnabled: Bool = false,
         backendEnabled: Bool = false,
         purchasesEnabled: Bool = false,
-        communityEnabled: Bool = false
+        communityEnabled: Bool = false,
+        onboardingRatingAskEnabled: Bool = false
     ) {
         self.affiliateEnabled = affiliateEnabled
         self.backendEnabled = backendEnabled
         self.purchasesEnabled = purchasesEnabled
         self.communityEnabled = communityEnabled
+        self.onboardingRatingAskEnabled = onboardingRatingAskEnabled
     }
 
     /// Production defaults — everything optional stays off.

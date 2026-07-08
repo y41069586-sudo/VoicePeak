@@ -20,12 +20,15 @@ struct RootView: View {
                 MainTabView()
                     .transition(.opacity)
             } else {
-                OnboardingFlowView()
+                OnboardingRampFlow()
                     .transition(.opacity)
             }
         }
         .veriteAnimation(value: onboardingComplete)
         .tint(Theme.primary)
+        // Dark system chrome over the cinematic onboarding stage; the committed
+        // light-first white-and-blue look everywhere else.
+        .preferredColorScheme(onboardingComplete ? .light : .dark)
         .task { SeedData.seedCatalogIfNeeded(modelContext) }
     }
 }

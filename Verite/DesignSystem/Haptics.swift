@@ -13,6 +13,7 @@ enum Haptics {
         case riskFlagged    // a product is flagged as risky (heavier, warning)
         case milestone      // test milestone / streak
         case selection      // light UI selection
+        case transition     // soft tick on onboarding screen transitions
     }
 
     @MainActor
@@ -29,6 +30,8 @@ enum Haptics {
             UIImpactFeedbackGenerator(style: .medium).impactOccurred()
         case .selection:
             UISelectionFeedbackGenerator().selectionChanged()
+        case .transition:
+            UIImpactFeedbackGenerator(style: .soft).impactOccurred()
         }
         #endif
     }

@@ -20,10 +20,11 @@ struct VeriteApp: App {
 
     var body: some Scene {
         WindowGroup {
+            // Color scheme lives in RootView: dark for the cinematic onboarding
+            // stage, then the committed light-first white-and-blue look.
             RootView()
                 .environment(appState)
                 .environment(purchases)
-                .preferredColorScheme(.light) // light-first white-and-blue, committed look
                 .applyLanguageOverride(languageOverride)
                 .task {
                     if appState.featureFlags.purchasesEnabled { await purchases.load() }
