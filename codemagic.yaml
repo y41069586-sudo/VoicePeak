@@ -91,11 +91,22 @@ workflows:
         script: |
           set -e
           # Ask App Store Connect for the highest build number it has already
-          # seen (across TestFlight + App Store) and use the next one. This is
-          # what used to be a hardcoded number here — every hardcoded value
-          # eventually collides with whatever was last uploaded (see git log).
-          # Uses the same "Verite 1" integration credentials as signing/publishing.
-          LATEST_BUILD_NUMBER=$(app-store-connect get-latest-build-number "$BUNDLE_ID" || echo 0)
+          # seen and use the next one. get-latest-build-number needs the
+          # NUMERIC Apple app id, not the bundle id — resolve it first.
+          # No silent fallbacks: a wrong/low number here is exactly the 409
+          # ENTITY_ERROR that already broke three uploads (see git log), so
+          # fail the build loudly instead of uploading a colliding version.
+          APP_ID=$(app-store-connect list-apps \
+            --bundle-id-identifier "$BUNDLE_ID" --json | jq -r '.[0].id')
+          if ! [[ "$APP_ID" =~ ^[0-9]+$ ]]; then
+            echo "ERROR: could not resolve numeric app id for $BUNDLE_ID (got: '$APP_ID')"
+            exit 1
+          fi
+          LATEST_BUILD_NUMBER=$(app-store-connect get-latest-build-number "$APP_ID" | tr -d '[:space:]')
+          if ! [[ "$LATEST_BUILD_NUMBER" =~ ^[0-9]+$ ]]; then
+            echo "ERROR: could not read latest build number from App Store Connect (got: '$LATEST_BUILD_NUMBER')"
+            exit 1
+          fi
           NEXT_BUILD_NUMBER=$((LATEST_BUILD_NUMBER + 1))
           echo "Latest build on App Store Connect: $LATEST_BUILD_NUMBER → using $NEXT_BUILD_NUMBER"
           echo "NEXT_BUILD_NUMBER=$NEXT_BUILD_NUMBER" >> $CM_ENV
