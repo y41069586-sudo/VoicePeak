@@ -125,9 +125,11 @@ struct DermiqProgressTab: View {
 
                 if scans.isEmpty {
                     emptyState
+                    DermiqBadgesSection()
                 } else {
                     chartCard
                     timelineSection
+                    DermiqBadgesSection()
                     subScoreHistory
                 }
             }

@@ -238,6 +238,7 @@ struct DermiqRoutineTab: View {
             // Block just finished → the day tile fills. Commit-grade haptic.
             Haptics.fire(.capture)
             RampAnalytics.track("routine_block_complete", ["day": String(day), "block": block.rawValue])
+            BadgeCenter.shared.evaluateRoutineMilestones(plan: plan, day: day)
         }
     }
 

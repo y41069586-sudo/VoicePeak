@@ -1,6 +1,7 @@
 import UIKit
 import CoreImage
 import CoreImage.CIFilterBuiltins
+import Vision
 
 // ============================================================
 // MARK: — Config (MASTER PROMPT §2)
@@ -149,48 +150,109 @@ final class PotentialImageEngine: FaceEnhancementEngine {
     }
 }
 
-/// Mock enhancement: a Core Image "optimal skin" grade of the user's own
-/// photo (noise-smoothed, warmed, subtly brightened). Identity is trivially
-/// preserved because it IS the same photo.
+/// On-device enhancement (used as the mock AND as the fallback): a real skin
+/// retouch of the user's own photo, not just a brightness bump.
+///
+/// Pipeline: Vision finds the face → a radial mask limits the effect to the
+/// face → heavy noise-reduction + blur smooths skin inside the mask (pores,
+/// blemishes, texture) → edges/eyes are re-sharpened → bloom adds the
+/// "glass skin" glow → gentle warm grade. Identity is trivially preserved
+/// because it IS the same photo — only skin changes, which is exactly the
+/// product's identity rule.
 final class MockEnhancementEngine: FaceEnhancementEngine {
 
     func enhance(image: UIImage) async throws -> UIImage {
-        try? await Task.sleep(for: .seconds(3)) // it's the slowest call — simulate that
+        try? await Task.sleep(for: .milliseconds(2200)) // it's the "slowest call" — keep the drama
         return await Task.detached(priority: .userInitiated) {
-            Self.grade(image)
+            Self.retouch(image)
         }.value
     }
 
-    private static func grade(_ image: UIImage) -> UIImage {
+    private static func retouch(_ image: UIImage) -> UIImage {
         guard let input = CIImage(image: image) else { return image }
+        let extent = input.extent
 
-        let smooth = CIFilter.noiseReduction()
-        smooth.inputImage = input
-        smooth.noiseLevel = 0.06
-        smooth.sharpness = 0.45
+        // 1 — Skin-smoothing layer: strong noise reduction + soft blur.
+        let noise = CIFilter.noiseReduction()
+        noise.inputImage = input
+        noise.noiseLevel = 0.08
+        noise.sharpness = 0.2
+
+        let blur = CIFilter.gaussianBlur()
+        blur.inputImage = (noise.outputImage ?? input).clampedToExtent()
+        blur.radius = Float(max(extent.width, extent.height) / 220) // scale-invariant
+        let smoothed = (blur.outputImage ?? input).cropped(to: extent)
+
+        // 2 — Apply the smoothing through a face-shaped mask so hair,
+        //     eyes-region edges and background stay crisp.
+        let mask = faceMask(for: input)
+        let masked = CIFilter.blendWithMask()
+        masked.inputImage = smoothed
+        masked.backgroundImage = input
+        masked.maskImage = mask
+        var result = masked.outputImage ?? input
+
+        // 3 — Restore edge definition lost to the smoothing.
+        let sharpen = CIFilter.sharpenLuminance()
+        sharpen.inputImage = result
+        sharpen.sharpness = 0.28
+        result = sharpen.outputImage ?? result
+
+        // 4 — "Glass skin" glow.
+        let bloom = CIFilter.bloom()
+        bloom.inputImage = result.clampedToExtent()
+        bloom.intensity = 0.38
+        bloom.radius = 9
+        result = (bloom.outputImage ?? result).cropped(to: extent)
+
+        // 5 — Gentle warm, even grade.
+        let warmth = CIFilter.temperatureAndTint()
+        warmth.inputImage = result
+        warmth.neutral = CIVector(x: 6500, y: 0)
+        warmth.targetNeutral = CIVector(x: 6100, y: 3)
 
         let tone = CIFilter.colorControls()
-        tone.inputImage = smooth.outputImage ?? input
-        tone.brightness = 0.03
-        tone.saturation = 1.06
+        tone.inputImage = warmth.outputImage ?? result
+        tone.brightness = 0.02
+        tone.saturation = 1.05
         tone.contrast = 1.01
-
-        let warmth = CIFilter.temperatureAndTint()
-        warmth.inputImage = tone.outputImage ?? input
-        warmth.neutral = CIVector(x: 6500, y: 0)
-        warmth.targetNeutral = CIVector(x: 6050, y: 4)
-
-        let highlight = CIFilter.highlightShadowAdjust()
-        highlight.inputImage = warmth.outputImage ?? input
-        highlight.highlightAmount = 0.95
-        highlight.shadowAmount = 0.25
+        result = tone.outputImage ?? result
 
         let context = CIContext()
-        guard let output = highlight.outputImage,
-              let cgImage = context.createCGImage(output, from: input.extent) else {
-            return image
-        }
+        guard let cgImage = context.createCGImage(result, from: extent) else { return image }
         return UIImage(cgImage: cgImage, scale: image.scale, orientation: image.imageOrientation)
+    }
+
+    /// Soft radial mask over the detected face (white = smooth here).
+    /// Both Vision and Core Image use lower-left-origin normalized/pixel
+    /// coordinates, so the box converts directly. Falls back to a centered
+    /// oval when no face is found.
+    private static func faceMask(for image: CIImage) -> CIImage {
+        let extent = image.extent
+
+        var faceBox = CGRect(x: 0.25, y: 0.3, width: 0.5, height: 0.45) // fallback
+        let request = VNDetectFaceRectanglesRequest()
+        let handler = VNImageRequestHandler(ciImage: image, options: [:])
+        try? handler.perform([request])
+        if let face = request.results?.max(by: { $0.boundingBox.height < $1.boundingBox.height }) {
+            faceBox = face.boundingBox
+        }
+
+        let center = CIVector(
+            x: extent.origin.x + (faceBox.midX * extent.width),
+            y: extent.origin.y + (faceBox.midY * extent.height)
+        )
+        let faceRadius = max(faceBox.width * extent.width, faceBox.height * extent.height) / 2
+
+        let gradient = CIFilter.radialGradient()
+        gradient.center = CGPoint(x: center.x, y: center.y)
+        gradient.radius0 = Float(faceRadius * 0.55)
+        gradient.radius1 = Float(faceRadius * 1.15)
+        // 0.7 alpha peak = ~70% smoothing strength; never a plastic 100%.
+        gradient.color0 = CIColor(red: 1, green: 1, blue: 1, alpha: 0.7)
+        gradient.color1 = CIColor(red: 0, green: 0, blue: 0, alpha: 0)
+        return (gradient.outputImage ?? CIImage(color: CIColor(red: 0.4, green: 0.4, blue: 0.4)))
+            .cropped(to: extent)
     }
 }
 
@@ -238,5 +300,14 @@ enum DermiqImageStore {
     static func load(_ filename: String?) -> UIImage? {
         guard let filename else { return nil }
         return UIImage(contentsOfFile: directory.appendingPathComponent(filename).path)
+    }
+
+    /// Delete-account support: removes every stored scan/potential image.
+    static func wipeAll() {
+        guard let files = try? FileManager.default.contentsOfDirectory(
+            at: directory, includingPropertiesForKeys: nil) else { return }
+        for file in files {
+            try? FileManager.default.removeItem(at: file)
+        }
     }
 }

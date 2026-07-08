@@ -145,6 +145,7 @@ struct DermiqPaywallCard: View {
     private enum PlanChoice { case weekly, annual }
     @State private var choice: PlanChoice = .annual
     @State private var purchasing = false
+    @State private var legalDocument: LegalDocument?
 
     var body: some View {
         VStack {
@@ -190,15 +191,31 @@ struct DermiqPaywallCard: View {
             }
             .padding(.horizontal, 20)
 
-            Button("Restore purchases") {
-                Task {
-                    await purchases.restore()
-                    if purchases.isPro { onUnlocked() }
+            // Required subscription disclosure (App Review 3.1.2): renewal
+            // terms + Terms of Use + Privacy Policy reachable from the paywall.
+            VStack(spacing: 8) {
+                Text("Auto-renewing subscription. Renews until cancelled; cancel anytime in your App Store settings.")
+                    .font(DQFont.micro)
+                    .foregroundStyle(DQColor.textSecondary)
+                    .multilineTextAlignment(.center)
+                    .padding(.horizontal, 28)
+                HStack(spacing: 14) {
+                    Button("Terms of Use") { legalDocument = .terms }
+                    Button("Privacy Policy") { legalDocument = .privacy }
+                    Button("Restore") {
+                        Task {
+                            await purchases.restore()
+                            if purchases.isPro { onUnlocked() }
+                        }
+                    }
                 }
+                .font(DQFont.caption)
+                .foregroundStyle(DQColor.textSecondary)
             }
-            .font(DQFont.caption)
-            .foregroundStyle(DQColor.textSecondary)
-            .padding(.bottom, 34)
+            .padding(.bottom, 30)
+        }
+        .sheet(item: $legalDocument) { document in
+            DermiqLegalView(document: document)
         }
         .frame(maxWidth: .infinity)
         .background(

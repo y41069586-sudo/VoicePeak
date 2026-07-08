@@ -26,10 +26,12 @@ struct DermiqTabShell: View {
         }
     }
 
+    @Environment(\.modelContext) private var modelContext
     @Query(sort: \ScanRecord.date, order: .reverse) private var scans: [ScanRecord]
 
     @State private var tab: Tab = .scan
     @State private var showFlow = false
+    @State private var showSettings = false
     @State private var autoLaunched = false
 
     var body: some View {
@@ -37,7 +39,11 @@ struct DermiqTabShell: View {
             Group {
                 switch tab {
                 case .scan:
-                    DermiqScanHome(scans: scans) { startScan() }
+                    DermiqScanHome(
+                        scans: scans,
+                        onScan: { startScan() },
+                        onSettings: { showSettings = true }
+                    )
                 case .routine:
                     DermiqRoutineTab { startScan() }
                 case .progress:
@@ -49,10 +55,20 @@ struct DermiqTabShell: View {
             tabBar
         }
         .background(DQColor.background.ignoresSafeArea())
+        .dermiqBadgeAwards()
+        .sheet(isPresented: $showSettings) {
+            DermiqSettingsView()
+        }
         .fullScreenCover(isPresented: $showFlow) {
             DermiqScanFlowView(previousScan: scans.first) { planCreated in
                 showFlow = false
                 if planCreated { tab = .routine }
+                // Award scan badges once the cover is gone, so the popup
+                // lands on the shell — never on top of the paywall.
+                Task {
+                    try? await Task.sleep(for: .milliseconds(700))
+                    BadgeCenter.shared.evaluateScanMilestones(context: modelContext)
+                }
             }
         }
         .task {
@@ -115,10 +131,11 @@ struct DermiqTabShell: View {
 struct DermiqScanHome: View {
     let scans: [ScanRecord]
     let onScan: () -> Void
+    let onSettings: () -> Void
 
     var body: some View {
         VStack(spacing: 0) {
-            HStack {
+            HStack(spacing: 14) {
                 Text("VÉRITÉ")
                     .font(.system(size: 15, weight: .semibold, design: .monospaced))
                     .tracking(5)
@@ -135,6 +152,18 @@ struct DermiqScanHome: View {
                             .foregroundStyle(DQColor.accentBright)
                     }
                 }
+                Button {
+                    Haptics.fire(.selection)
+                    onSettings()
+                } label: {
+                    Image(systemName: "gearshape")
+                        .font(.system(size: 16, weight: .medium))
+                        .foregroundStyle(DQColor.textSecondary)
+                        .frame(width: 34, height: 34)
+                        .background(DQColor.surface, in: Circle())
+                        .overlay(Circle().strokeBorder(DQColor.stroke, lineWidth: 1))
+                }
+                .accessibilityLabel("Settings")
             }
             .padding(.horizontal, 24)
             .padding(.top, 14)
