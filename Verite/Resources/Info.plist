@@ -51,7 +51,7 @@
 	<key>NSCameraUsageDescription</key>
 	<string>Vérité uses the camera to analyze your skin and scan product barcodes. Photos are processed on your device and never uploaded.</string>
 
-	<!-- Light-first white-and-blue committed look. -->
+	<!-- Dark, clinical-premium committed look. -->
 	<key>UIUserInterfaceStyle</key>
 	<string>Dark</string>
 
@@ -61,14 +61,26 @@
 		<string>LaunchBackground</string>
 	</dict>
 
+	<!-- Opt into the modern scene lifecycle. Without this, a manually-managed
+	     Info.plist makes iOS treat the app as legacy and render it in a small
+	     letterboxed compatibility window on iPad instead of full native size.
+	     SwiftUI's App lifecycle supplies the scene; single-window app. -->
+	<key>UIApplicationSceneManifest</key>
+	<dict>
+		<key>UIApplicationSupportsMultipleScenes</key>
+		<false/>
+	</dict>
+
 	<key>UISupportedInterfaceOrientations</key>
 	<array>
 		<string>UIInterfaceOrientationPortrait</string>
 	</array>
 
+	<!-- arm64 is the only architecture on every supported device; the old
+	     armv7 (32-bit) value is legacy and also flags the app as pre-modern. -->
 	<key>UIRequiredDeviceCapabilities</key>
 	<array>
-		<string>armv7</string>
+		<string>arm64</string>
 	</array>
 
 	<!-- Display font: Playfair Display (SIL OFL), two variable TTFs (upright +
