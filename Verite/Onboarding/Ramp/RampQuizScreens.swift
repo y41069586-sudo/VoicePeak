@@ -122,7 +122,7 @@ struct RampCalibratingScreen: View {
                         HStack(spacing: 4) {
                             Image(systemName: "checkmark")
                                 .font(.caption2.weight(.bold))
-                                .foregroundStyle(VColor.success)
+                                .foregroundStyle(DQColor.deltaUp)
                             Text(statusLines[index])
                                 .font(VType.captionBold)
                                 .foregroundStyle(RampStage.textPrimary)

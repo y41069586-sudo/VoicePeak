@@ -12,6 +12,9 @@ struct CaptureQuality: Equatable {
     var faceCenterOffset: Double = 1
     /// Average frame luminance, 0...1.
     var brightness: Double = 0
+    /// Both eyes read as open (landmark aspect-ratio heuristic). Used by the
+    /// v2 guided capture checklist; not part of `isStandardized` (v1 semantics).
+    var eyesOpen: Bool = false
 
     // Target bands. Forgiving on purpose — guidance, not a lab rig.
     static let minFaceHeight = 0.70
@@ -25,6 +28,7 @@ struct CaptureQuality: Equatable {
     }
     var centeredOK: Bool { faceDetected && faceCenterOffset <= Self.maxCenterOffset }
     var lightingOK: Bool { brightness >= Self.minBrightness && brightness <= Self.maxBrightness }
+    var eyesOK: Bool { faceDetected && eyesOpen }
     var isStandardized: Bool { distanceOK && centeredOK && lightingOK }
 
     /// Continuous 0...1 quality, persisted as `Scan.captureQuality`.

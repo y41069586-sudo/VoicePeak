@@ -15,6 +15,9 @@ enum Persistence {
         RoutineItem.self,
         Streak.self,
         SavingsLedger.self,
+        // v2 (Dermiq) experience
+        ScanRecord.self,
+        RoutinePlan.self,
     ])
 
     /// The on-disk container the live app uses.

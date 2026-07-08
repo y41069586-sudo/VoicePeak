@@ -14,10 +14,10 @@ struct RootView: View {
 
     var body: some View {
         ZStack {
-            GradientMeshBackground()
+            DQColor.background.ignoresSafeArea()
 
             if onboardingComplete {
-                MainTabView()
+                DermiqTabShell()
                     .transition(.opacity)
             } else {
                 OnboardingRampFlow()
@@ -25,10 +25,8 @@ struct RootView: View {
             }
         }
         .veriteAnimation(value: onboardingComplete)
-        .tint(Theme.primary)
-        // Dark system chrome over the cinematic onboarding stage; the committed
-        // light-first white-and-blue look everywhere else.
-        .preferredColorScheme(onboardingComplete ? .light : .dark)
+        .tint(DQColor.accent)
+        .preferredColorScheme(.dark) // dark, clinical-premium throughout
         .task { SeedData.seedCatalogIfNeeded(modelContext) }
     }
 }

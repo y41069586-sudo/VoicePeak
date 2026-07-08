@@ -5,7 +5,9 @@ import Foundation
 enum VeriteProducts {
     static let proYearly = "com.verite.app.pro.yearly"
     static let proMonthly = "com.verite.app.pro.monthly"
+    /// v2 paywall: weekly + annual (annual pre-selected).
+    static let proWeekly = "com.verite.app.pro.weekly"
 
     /// All subscription product IDs that grant Pro.
-    static let proIDs: Set<String> = [proYearly, proMonthly]
+    static let proIDs: Set<String> = [proYearly, proMonthly, proWeekly]
 }

@@ -59,7 +59,7 @@ struct RampSocialProofScreen: View {
 
             Spacer()
 
-            PrimaryButton(titleKey: "Continue") { onAdvance() }
+            DQPrimaryButton(title: "Continue") { onAdvance() }
                 .padding(.horizontal, VSpace.lg)
             Spacer().frame(height: VSpace.xxl)
         }
@@ -128,7 +128,7 @@ struct RampNotificationScreen: View {
             Spacer()
 
             VStack(spacing: VSpace.sm) {
-                PrimaryButton(titleKey: "Enable reminders", isEnabled: !requesting) {
+                DQPrimaryButton(title: "Enable reminders", isEnabled: !requesting) {
                     guard !requesting else { return }
                     requesting = true
                     Task {
@@ -184,7 +184,7 @@ struct RampScanRampScreen: View {
 
             Spacer().frame(height: VSpace.xl)
 
-            PrimaryButton(titleKey: "Start my scan", systemImage: "camera.fill") {
+            DQPrimaryButton(title: "Start my scan", systemImage: "camera.fill") {
                 guard !starting else { return }
                 starting = true
                 Task {

@@ -4,17 +4,16 @@ import SwiftUI
 // MARK: — The dark onboarding stage
 // ============================================================
 //
-// The ramp onboarding is a cinematic *dark* sequence (cold open on black,
-// glowing wireframe head) while the app proper is white-blue. Nothing here
-// redefines a design token — this enum only *maps* the committed VColor
-// tokens onto the dark stage (deep-navy glow = `textPrimary`, accent glow =
-// `primaryBright`) so there stays a single source of truth for color.
+// The ramp onboarding runs on the same dark, clinical-premium stage as the
+// v2 app it hands off to. Nothing here redefines a design token — this enum
+// only *maps* the DQ tokens (DQTheme.swift, the single source of truth) onto
+// the onboarding's named roles.
 
 enum RampStage {
-    /// Deep-navy bloom behind the head — the token, used as a surface.
-    static let backdropGlow = VColor.textPrimary
+    /// Bloom behind the head.
+    static let backdropGlow = DQColor.accent
     /// Accent used for glows, progress fill and selected states on dark.
-    static let accent = VColor.primaryBright
+    static let accent = DQColor.accentBright
 
     // Text ladder on the dark stage.
     static let textPrimary   = Color.white
@@ -29,13 +28,14 @@ enum RampStage {
     static let screenCount = 10
 }
 
-/// Full-bleed backdrop: black with a deep-navy radial bloom behind the head.
+/// Full-bleed backdrop: the v2 background with a soft accent bloom behind
+/// the head. No pure black (design-system rule).
 struct RampBackdrop: View {
     var body: some View {
         ZStack {
-            Color.black
+            DQColor.background
             RadialGradient(
-                colors: [RampStage.backdropGlow.opacity(0.85), .clear],
+                colors: [RampStage.backdropGlow.opacity(0.22), .clear],
                 center: UnitPoint(x: 0.5, y: 0.34),
                 startRadius: 10,
                 endRadius: 480
@@ -162,7 +162,7 @@ struct RampOptionCard: View {
             .padding(.horizontal, VSpace.md)
             .frame(maxWidth: .infinity, minHeight: 58, alignment: .leading)
             .background(
-                selected ? AnyShapeStyle(VColor.heroGradient) : AnyShapeStyle(RampStage.card),
+                selected ? AnyShapeStyle(DQColor.accentGradient) : AnyShapeStyle(RampStage.card),
                 in: RoundedRectangle(cornerRadius: VRadius.md, style: .continuous)
             )
             .overlay(
@@ -170,7 +170,7 @@ struct RampOptionCard: View {
                     .strokeBorder(selected ? RampStage.accent.opacity(0.9) : RampStage.hairline,
                                   lineWidth: 1)
             )
-            .vGlow(VColor.primary, radius: 18, opacity: selected ? 0.35 : 0)
+            .vGlow(DQColor.accent, radius: 18, opacity: selected ? 0.35 : 0)
         }
         .buttonStyle(PressableStyle())
         .animation(VMotion.snappy, value: selected)

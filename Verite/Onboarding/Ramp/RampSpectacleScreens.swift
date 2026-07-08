@@ -70,7 +70,7 @@ struct RampClaimScreen: View {
             .padding(.horizontal, VSpace.xl)
             .vStaggeredAppear(index: 0)
             Spacer()
-            PrimaryButton(titleKey: "Find out mine") { onAdvance() }
+            DQPrimaryButton(title: "Find out mine") { onAdvance() }
                 .padding(.horizontal, VSpace.lg)
             Spacer().frame(height: VSpace.xxl)
         }
@@ -122,7 +122,7 @@ struct RampProofScreen: View {
 
             Spacer()
 
-            PrimaryButton(titleKey: "How it works") { onAdvance() }
+            DQPrimaryButton(title: "How it works") { onAdvance() }
                 .padding(.horizontal, VSpace.lg)
             Spacer().frame(height: VSpace.xxl)
         }
@@ -267,7 +267,7 @@ private struct RampSamplePortrait: View {
                         let redness = Double.random(in: 0.18...0.4, using: &rng)
                         context.fill(
                             Path(ellipseIn: CGRect(x: x, y: y, width: r, height: r)),
-                            with: .color(VColor.danger.opacity(redness))
+                            with: .color(DQColor.deltaDown.opacity(redness))
                         )
                         _ = size
                     }
@@ -349,7 +349,7 @@ struct RampHowItWorksScreen: View {
 
             Spacer()
 
-            PrimaryButton(titleKey: "Let's build my profile") { onAdvance() }
+            DQPrimaryButton(title: "Let's build my profile") { onAdvance() }
                 .padding(.horizontal, VSpace.lg)
                 .opacity(showCTA ? 1 : 0)
                 .disabled(!showCTA)
