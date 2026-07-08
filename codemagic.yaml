@@ -116,6 +116,22 @@ workflows:
             --scheme "$XCODE_SCHEME" \
             --config Release \
             --archive-xcargs "CURRENT_PROJECT_VERSION=$NEXT_BUILD_NUMBER MARKETING_VERSION=1.0.3"
+      - name: Verify IPA packaging (launch screen + head meshes)
+        script: |
+          set -e
+          IPA=$(ls build/ios/ipa/*.ipa | head -1)
+          echo "Checking $IPA"
+          # The compiled launch storyboard MUST be in the bundle — without it
+          # iOS letterboxes the app into the tiny legacy canvas on iPad.
+          unzip -l "$IPA" | grep -q "LaunchScreen.storyboardc" \
+            || { echo "ERROR: LaunchScreen.storyboardc missing from the app bundle"; exit 1; }
+          # The authored head meshes must ship, or the onboarding falls back
+          # to the rough procedural head.
+          unzip -l "$IPA" | grep -q "HeadGridLow.json" \
+            || { echo "ERROR: HeadGridLow.json missing from the app bundle"; exit 1; }
+          unzip -l "$IPA" | grep -q "HeadGridDense.json" \
+            || { echo "ERROR: HeadGridDense.json missing from the app bundle"; exit 1; }
+          echo "Packaging OK: launch storyboard + head meshes present"
     artifacts:
       - build/ios/ipa/*.ipa
       - /tmp/xcodebuild_logs/*.log
