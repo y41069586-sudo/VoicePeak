@@ -10,7 +10,11 @@ import simd
 /// requires TrueDepth hardware). Both meshes are computed once and cached.
 enum HeadMesh {
 
-    struct Mesh {
+    /// Value type wrapping fully immutable data: `SCNGeometrySource` is
+    /// created once from a fixed vertex buffer and never mutated afterwards,
+    /// so sharing the cached mesh across isolation domains is safe — hence
+    /// `@unchecked Sendable` (SceneKit classes carry no Sendable annotation).
+    struct Mesh: @unchecked Sendable {
         let vertexSource: SCNGeometrySource
         let normalSource: SCNGeometrySource
         let lineIndices: [Int32]
