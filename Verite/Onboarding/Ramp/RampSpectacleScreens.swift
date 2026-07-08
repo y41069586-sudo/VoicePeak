@@ -90,7 +90,7 @@ struct RampProofScreen: View {
     var body: some View {
         VStack(spacing: 0) {
             Spacer().frame(height: VSpace.xxl)
-            Text("Real users. Real numbers.")
+            Text("What 14 days can move.")
                 .font(VType.hero(28))
                 .foregroundStyle(RampStage.textPrimary)
                 .multilineTextAlignment(.center)
@@ -115,7 +115,7 @@ struct RampProofScreen: View {
             }
             .padding(.top, VSpace.md)
 
-            Text("Results from Vérité users. Individual results vary.")
+            Text("Illustrative example. Individual results vary.")
                 .font(VType.micro)
                 .foregroundStyle(RampStage.textTertiary)
                 .padding(.top, VSpace.sm)
@@ -169,24 +169,43 @@ private struct RampBeforeAfterCard: View {
 
     var body: some View {
         VStack(spacing: VSpace.md) {
-            ZStack {
-                // "Before" underneath; "after" wipes over it left → right.
-                RampSamplePortrait(clear: false, tone: proofCase.skinTone, seed: proofCase.seed)
-                RampSamplePortrait(clear: true, tone: proofCase.skinTone, seed: proofCase.seed)
-                    .mask(alignment: .leading) {
-                        Rectangle().frame(width: portraitSize.width * wipe)
+            // Illustrative metric bars that climb from "before" to "after"
+            // as `wipe` animates 0→1. No fabricated faces or claimed people —
+            // a clean visualization of what the 14-day plan targets.
+            VStack(spacing: VSpace.md) {
+                HStack {
+                    Text("BEFORE")
+                        .font(VType.micro)
+                        .foregroundStyle(RampStage.textTertiary)
+                        .tracking(1.5)
+                    Spacer()
+                    Text("DAY \(proofCase.days)")
+                        .font(VType.micro)
+                        .foregroundStyle(RampStage.accent)
+                        .tracking(1.5)
+                }
+                ForEach(RampProofMetric.samples.indices, id: \.self) { i in
+                    let metric = RampProofMetric.samples[i]
+                    VStack(alignment: .leading, spacing: 5) {
+                        Text(metric.label)
+                            .font(VType.caption)
+                            .foregroundStyle(RampStage.textSecondary)
+                        GeometryReader { proxy in
+                            ZStack(alignment: .leading) {
+                                Capsule().fill(Color.white.opacity(0.08))
+                                Capsule()
+                                    .fill(DQColor.accentGradient)
+                                    .frame(width: proxy.size.width *
+                                           (metric.before + (metric.after - metric.before) * wipe))
+                            }
+                        }
+                        .frame(height: 7)
                     }
-                // The divider light
-                Rectangle()
-                    .fill(RampStage.accent)
-                    .frame(width: 2)
-                    .blur(radius: 0.5)
-                    .vGlow(RampStage.accent, radius: 10, opacity: 0.9)
-                    .offset(x: portraitSize.width * (wipe - 0.5))
-                    .opacity(wipe > 0.01 && wipe < 0.99 ? 1 : 0)
+                }
             }
+            .padding(VSpace.lg)
             .frame(width: portraitSize.width, height: portraitSize.height)
-            .clipShape(RoundedRectangle(cornerRadius: VRadius.lg, style: .continuous))
+            .background(RampStage.card, in: RoundedRectangle(cornerRadius: VRadius.lg, style: .continuous))
             .overlay(
                 RoundedRectangle(cornerRadius: VRadius.lg, style: .continuous)
                     .strokeBorder(RampStage.hairline, lineWidth: 1)
@@ -231,67 +250,18 @@ private struct RampBeforeAfterCard: View {
     }
 }
 
-/// Stylized sample portrait, drawn in code.
-///
-/// PRODUCTION ASSETS: replace this placeholder with real, licensed
-/// before/after photography bundled in Assets.xcassets (`proof.1.before`,
-/// `proof.1.after`, …) and swap this view for `Image(...)`. The wipe/score
-/// choreography above stays unchanged.
-private struct RampSamplePortrait: View {
-    let clear: Bool
-    let tone: Color
-    let seed: UInt64
+/// Illustrative sub-metric levels shown climbing on the proof screen.
+private struct RampProofMetric {
+    let label: String
+    let before: Double  // 0...1 track fill
+    let after: Double
 
-    var body: some View {
-        ZStack {
-            LinearGradient(colors: [RampStage.backdropGlow.opacity(0.9), Color.black],
-                           startPoint: .top, endPoint: .bottom)
-            // Face
-            Ellipse()
-                .fill(
-                    LinearGradient(
-                        colors: [tone.opacity(clear ? 1.0 : 0.88), tone.opacity(clear ? 0.85 : 0.62)],
-                        startPoint: .topLeading, endPoint: .bottomTrailing
-                    )
-                )
-                .frame(width: 150, height: 200)
-                .offset(y: 10)
-            // Blemish speckles on the "before" side only.
-            if !clear {
-                Canvas { context, size in
-                    var rng = RampSeededGenerator(seed: seed)
-                    for _ in 0..<26 {
-                        let x = 50 + CGFloat.random(in: 0...150, using: &rng)
-                        let y = 60 + CGFloat.random(in: 0...180, using: &rng)
-                        let r = CGFloat.random(in: 1.5...4, using: &rng)
-                        let redness = Double.random(in: 0.18...0.4, using: &rng)
-                        context.fill(
-                            Path(ellipseIn: CGRect(x: x, y: y, width: r, height: r)),
-                            with: .color(DQColor.deltaDown.opacity(redness))
-                        )
-                        _ = size
-                    }
-                }
-            } else {
-                // Soft highlight sheen on the "after" side.
-                Ellipse()
-                    .fill(Color.white.opacity(0.14))
-                    .frame(width: 60, height: 100)
-                    .blur(radius: 18)
-                    .offset(x: -30, y: -20)
-            }
-        }
-    }
-}
-
-/// Deterministic RNG so the sample "before" speckles are stable per case.
-private struct RampSeededGenerator: RandomNumberGenerator {
-    private var state: UInt64
-    init(seed: UInt64) { state = seed &+ 0x9E3779B97F4A7C15 }
-    mutating func next() -> UInt64 {
-        state = state &* 6364136223846793005 &+ 1442695040888963407
-        return state
-    }
+    static let samples: [RampProofMetric] = [
+        RampProofMetric(label: "Texture",   before: 0.42, after: 0.82),
+        RampProofMetric(label: "Redness",   before: 0.50, after: 0.78),
+        RampProofMetric(label: "Evenness",  before: 0.46, after: 0.80),
+        RampProofMetric(label: "Glow",      before: 0.38, after: 0.86),
+    ]
 }
 
 // ============================================================

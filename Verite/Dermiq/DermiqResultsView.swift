@@ -11,6 +11,10 @@ import StoreKit
 struct DermiqResultsView: View {
     let model: ScanFlowModel
     let onContinue: () -> Void
+    /// Leave the paywall without buying — the scan is already saved, results
+    /// stay locked until they subscribe. Required so the paywall is never a
+    /// dead end (App Review 3.1.1 / basic UX).
+    let onClose: () -> Void
 
     @Environment(PurchaseManager.self) private var purchases
 
@@ -37,11 +41,34 @@ struct DermiqResultsView: View {
                     DermiqPaywallCard {
                         unlockAndReveal()
                     }
+                    closeButton
                 }
             }
         }
         .onAppear {
             if unlocked { unlockAndReveal() }
+        }
+    }
+
+    private var closeButton: some View {
+        VStack {
+            HStack {
+                Button {
+                    Haptics.fire(.selection)
+                    onClose()
+                } label: {
+                    Image(systemName: "xmark")
+                        .font(.system(size: 15, weight: .semibold))
+                        .foregroundStyle(DQColor.textPrimary)
+                        .frame(width: 38, height: 38)
+                        .background(DQColor.surface.opacity(0.7), in: Circle())
+                }
+                .accessibilityLabel("Close")
+                Spacer()
+            }
+            .padding(.horizontal, 20)
+            .padding(.top, 8)
+            Spacer()
         }
     }
 

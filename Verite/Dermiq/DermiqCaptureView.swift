@@ -17,6 +17,7 @@ struct DermiqCaptureView: View {
     @State private var permissionDenied = false
     @State private var frozenFrame: UIImage?
     @State private var capturing = false
+    @State private var flash = false
 
     private var quality: CaptureQuality { camera.quality }
     private var allPass: Bool { quality.isStandardized && quality.eyesOK }
@@ -38,9 +39,31 @@ struct DermiqCaptureView: View {
                 faceOval
                 overlayChrome
             }
+
+            // Front-fill flash: a bright white sheet on capture that lights the
+            // face like a ring light (helps low-light scans) and reads as a
+            // camera "snap".
+            Color.white
+                .opacity(flash ? 0.92 : 0)
+                .ignoresSafeArea()
+                .allowsHitTesting(false)
         }
         .task { await startCamera() }
-        .onDisappear { camera.stop() }
+        .onDisappear {
+            camera.stop()
+            restoreBrightness()
+        }
+    }
+
+    /// Screen brightness before the front-fill boost — nil until we boost, so
+    /// disappearing without a capture never changes the user's brightness.
+    @State private var savedBrightness: CGFloat?
+
+    private func restoreBrightness() {
+        if let savedBrightness {
+            UIScreen.main.brightness = savedBrightness
+        }
+        savedBrightness = nil
     }
 
     // MARK: Camera lifecycle
@@ -149,15 +172,27 @@ struct DermiqCaptureView: View {
     private func capture() {
         guard !capturing else { return }
         capturing = true
+
+        // Raise the screen to full brightness and flash white so the front
+        // "fill light" actually reaches the face before the shutter fires.
+        savedBrightness = UIScreen.main.brightness
+        UIScreen.main.brightness = 1.0
+        withAnimation(.easeIn(duration: 0.12)) { flash = true }
+        Haptics.fire(.capture) // .rigid
+
         Task {
-            guard let image = await camera.capture() else {
+            try? await Task.sleep(for: .milliseconds(200)) // let the fill land
+            let image = await camera.capture()
+            withAnimation(.easeOut(duration: 0.28)) { flash = false }
+            restoreBrightness()
+
+            guard let image else {
                 capturing = false
                 return
             }
-            frozenFrame = image           // freeze frame
-            Haptics.fire(.capture)        // .rigid
+            frozenFrame = image // freeze frame
             camera.stop()
-            try? await Task.sleep(for: .milliseconds(450))
+            try? await Task.sleep(for: .milliseconds(350))
             onCaptured(image)
         }
     }

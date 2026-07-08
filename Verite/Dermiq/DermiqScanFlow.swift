@@ -157,10 +157,14 @@ struct DermiqScanFlowView: View {
                     model.theaterFinished(context: modelContext)
                 }
             case .results:
-                DermiqResultsView(model: model) {
-                    Haptics.fire(.transition)
-                    model.stage = .potential
-                }
+                DermiqResultsView(
+                    model: model,
+                    onContinue: {
+                        Haptics.fire(.transition)
+                        model.stage = .potential
+                    },
+                    onClose: { onFinished(false) }
+                )
             case .delta:
                 DermiqDeltaView(model: model) {
                     advanceToRoutineGen()

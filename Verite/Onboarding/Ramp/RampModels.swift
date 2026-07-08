@@ -223,12 +223,21 @@ struct RampQuizAnswers {
 // MARK: — Funnel analytics
 // ============================================================
 
+/// Destination for analytics events. Register a production provider at launch
+/// (`RampAnalytics.sink = AmplitudeSink()`); os_log always runs alongside it.
+protocol AnalyticsSink: Sendable {
+    func send(event: String, properties: [String: String])
+}
+
 /// Funnel measurement from day one: every screen advance and every quiz answer.
-/// Currently emits structured os_log events (visible in Console/Instruments).
-/// TODO(analytics): forward `track` to the production analytics provider once
-/// one is wired up — the event vocabulary below is final.
+/// Always emits structured os_log events (visible in Console/Instruments) and
+/// forwards to `sink` when a production provider is registered.
 enum RampAnalytics {
     private static let logger = Logger(subsystem: "com.verite.com", category: "onboarding.funnel")
+
+    /// Set once at app launch. `nonisolated(unsafe)` is the documented escape
+    /// hatch for a write-once global — it is assigned before any event fires.
+    nonisolated(unsafe) static var sink: AnalyticsSink?
 
     static func screen(_ step: RampStep) {
         track("onboarding_screen", ["screen": step.analyticsName,
@@ -244,5 +253,6 @@ enum RampAnalytics {
             .map { "\($0.key)=\($0.value)" }
             .joined(separator: " ")
         logger.info("\(event, privacy: .public) \(payload, privacy: .public)")
+        sink?.send(event: event, properties: properties)
     }
 }

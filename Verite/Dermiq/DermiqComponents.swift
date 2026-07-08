@@ -52,6 +52,8 @@ struct DQCountUpScore: View {
             .font(DQFont.score(size))
             .foregroundStyle(DQColor.textPrimary)
             .contentTransition(.numericText(value: Double(value)))
+            .accessibilityLabel("Skin score")
+            .accessibilityValue(Text(verbatim: "\(target)"))
             .task(id: play) {
                 guard play else { return }
                 if reduceMotion {

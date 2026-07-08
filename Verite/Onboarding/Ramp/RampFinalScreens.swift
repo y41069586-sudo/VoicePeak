@@ -5,55 +5,51 @@ import StoreKit
 // MARK: — Screen 7: Social Proof + Rating Ask
 // ============================================================
 
+/// Honest differentiators — no invented ratings or testimonials (there are no
+/// real users pre-launch; fabricated social proof is an App Review 2.3.1 risk).
+/// The native rating prompt hook stays, gated OFF until organic ratings exist.
 struct RampSocialProofScreen: View {
     let onAdvance: () -> Void
 
     @Environment(AppState.self) private var appState
-    // Native StoreKit review request (the SKStoreReviewController hook).
     @Environment(\.requestReview) private var requestReview
+
+    private struct Claim { let icon: String; let title: String; let sub: String }
+    private let claims: [Claim] = [
+        Claim(icon: "iphone.gen3", title: "100% on-device",
+              sub: "Your photos never leave your phone. No cloud, no upload."),
+        Claim(icon: "square.grid.3x3.fill", title: "7 skin metrics",
+              sub: "Texture, redness, pores, evenness, glow, hydration, blemishes."),
+        Claim(icon: "gauge.with.dots.needle.bottom.50percent", title: "Honest 0–100",
+              sub: "No sugarcoating. A real number and the levers to move it."),
+    ]
 
     var body: some View {
         VStack(spacing: 0) {
             Spacer()
 
-            // Laurels + rating
             HStack(spacing: VSpace.md) {
                 Image(systemName: "laurel.leading")
-                    .font(.system(size: 52, weight: .light))
+                    .font(.system(size: 44, weight: .light))
                     .foregroundStyle(RampStage.accent)
-                VStack(spacing: VSpace.xs) {
-                    Text(verbatim: "4.8")
-                        .font(VType.number(52))
-                        .foregroundStyle(RampStage.textPrimary)
-                    HStack(spacing: 3) {
-                        ForEach(0..<5, id: \.self) { _ in
-                            Image(systemName: "star.fill")
-                                .font(.system(size: 13))
-                                .foregroundStyle(RampStage.accent)
-                        }
-                    }
-                }
+                Text("Built to be\nhonest.")
+                    .font(VType.hero(26))
+                    .foregroundStyle(RampStage.textPrimary)
+                    .multilineTextAlignment(.center)
                 Image(systemName: "laurel.trailing")
-                    .font(.system(size: 52, weight: .light))
+                    .font(.system(size: 44, weight: .light))
                     .foregroundStyle(RampStage.accent)
             }
-            .vGlow(RampStage.accent, radius: 26, opacity: 0.25)
+            .vGlow(RampStage.accent, radius: 26, opacity: 0.22)
             .vStaggeredAppear(index: 0)
 
             Spacer().frame(height: VSpace.xl)
 
-            // SAMPLE COPY: replace with real, permissioned user reviews before ship.
             VStack(spacing: VSpace.sm) {
-                RampReviewCard(
-                    quote: "Finally an app that doesn't flatter me. 58 → 81 in three weeks.",
-                    author: "Maya · scanning for 6 weeks"
-                )
-                .vStaggeredAppear(index: 1)
-                RampReviewCard(
-                    quote: "The ceiling view is addictive. I actually stuck to the plan.",
-                    author: "Jonas · scanning for 2 months"
-                )
-                .vStaggeredAppear(index: 2)
+                ForEach(Array(claims.enumerated()), id: \.offset) { index, claim in
+                    RampClaimCard(icon: claim.icon, title: claim.title, sub: claim.sub)
+                        .vStaggeredAppear(index: index + 1)
+                }
             }
             .padding(.horizontal, VSpace.lg)
 
@@ -64,8 +60,6 @@ struct RampSocialProofScreen: View {
             Spacer().frame(height: VSpace.xxl)
         }
         .onAppear {
-            // Rating-prompt hook — gated behind a config flag, default OFF.
-            // Intended for later app versions once organic ratings justify it.
             if appState.featureFlags.onboardingRatingAskEnabled {
                 requestReview()
             }
@@ -73,19 +67,27 @@ struct RampSocialProofScreen: View {
     }
 }
 
-private struct RampReviewCard: View {
-    let quote: String
-    let author: String
+private struct RampClaimCard: View {
+    let icon: String
+    let title: String
+    let sub: String
 
     var body: some View {
-        VStack(alignment: .leading, spacing: VSpace.xs) {
-            Text(verbatim: "“\(quote)”")
-                .font(VType.body)
-                .foregroundStyle(RampStage.textPrimary)
-                .fixedSize(horizontal: false, vertical: true)
-            Text(verbatim: author)
-                .font(VType.micro)
-                .foregroundStyle(RampStage.textTertiary)
+        HStack(spacing: VSpace.md) {
+            Image(systemName: icon)
+                .font(.system(size: 20, weight: .medium))
+                .foregroundStyle(RampStage.accent)
+                .frame(width: 34)
+            VStack(alignment: .leading, spacing: 2) {
+                Text(title)
+                    .font(VType.bodyLarge.weight(.semibold))
+                    .foregroundStyle(RampStage.textPrimary)
+                Text(sub)
+                    .font(VType.caption)
+                    .foregroundStyle(RampStage.textSecondary)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+            Spacer(minLength: 0)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(VSpace.md)

@@ -173,6 +173,8 @@ struct DermiqScanHome: View {
             DQScanPortal()
                 .frame(width: 280, height: 280)
                 .onTapGesture { onScan() }
+                .accessibilityAddTraits(.isButton)
+                .accessibilityLabel("Scan your skin")
 
             Spacer()
 
