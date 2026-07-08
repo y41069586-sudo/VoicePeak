@@ -14,9 +14,10 @@
 # this file. The `Verite` env-var group only needs the 3 API values used to
 # UPLOAD to TestFlight (see the publishing block).
 #
-# BUILD NUMBER: ios-release asks App Store Connect for the highest build
-# number it has already seen and uploads the next one ("Determine next build
-# number" step) — no hardcoded CFBundleVersion to bump before every release.
+# BUILD NUMBER: ios-release stamps a Unix timestamp as the CFBundleVersion
+# ("Determine next build number" step) — always numeric, always increasing,
+# always higher than anything already uploaded, and needs no App Store Connect
+# query that could fail. No hardcoded version to bump before every release.
 # project.yml's CURRENT_PROJECT_VERSION is only a local-dev/compile-check
 # fallback; the release workflow always overrides it at archive time.
 
@@ -90,25 +91,16 @@ workflows:
       - name: Determine next build number
         script: |
           set -e
-          # Ask App Store Connect for the highest build number it has already
-          # seen and use the next one. get-latest-build-number needs the
-          # NUMERIC Apple app id, not the bundle id — resolve it first.
-          # No silent fallbacks: a wrong/low number here is exactly the 409
-          # ENTITY_ERROR that already broke three uploads (see git log), so
-          # fail the build loudly instead of uploading a colliding version.
-          APP_ID=$(app-store-connect list-apps \
-            --bundle-id-identifier "$BUNDLE_ID" --json | jq -r '.[0].id')
-          if ! [[ "$APP_ID" =~ ^[0-9]+$ ]]; then
-            echo "ERROR: could not resolve numeric app id for $BUNDLE_ID (got: '$APP_ID')"
-            exit 1
-          fi
-          LATEST_BUILD_NUMBER=$(app-store-connect get-latest-build-number "$APP_ID" | tr -d '[:space:]')
-          if ! [[ "$LATEST_BUILD_NUMBER" =~ ^[0-9]+$ ]]; then
-            echo "ERROR: could not read latest build number from App Store Connect (got: '$LATEST_BUILD_NUMBER')"
-            exit 1
-          fi
-          NEXT_BUILD_NUMBER=$((LATEST_BUILD_NUMBER + 1))
-          echo "Latest build on App Store Connect: $LATEST_BUILD_NUMBER → using $NEXT_BUILD_NUMBER"
+          # Use a Unix timestamp as the build number. It is numeric, strictly
+          # increasing on every build, and always far higher than anything
+          # already uploaded (previous uploads were single/double digits).
+          # This needs NO App Store Connect query, so it cannot fail on API
+          # or CLI quirks — the class of error that broke every prior upload
+          # (hardcoded 11, then a fallback 1, then an unsupported list-apps
+          # call). A timestamp (~1.7e9) stays well under the CFBundleVersion
+          # numeric limit, so it is always a valid, accepted build number.
+          NEXT_BUILD_NUMBER=$(date +%s)
+          echo "Using timestamp build number: $NEXT_BUILD_NUMBER"
           echo "NEXT_BUILD_NUMBER=$NEXT_BUILD_NUMBER" >> $CM_ENV
       - name: Stamp build version into Info.plist
         script: |
