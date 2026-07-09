@@ -125,10 +125,6 @@ workflows:
           # iOS letterboxes the app into the tiny legacy canvas on iPad.
           unzip -l "$IPA" | grep -q "LaunchScreen.storyboardc" \
             || { echo "ERROR: LaunchScreen.storyboardc missing from the app bundle"; exit 1; }
-          # The porcelain-bust mesh must ship, or onboarding falls back to
-          # the plain orb.
-          unzip -l "$IPA" | grep -q "HeadMeshLow.json" \
-            || { echo "ERROR: HeadMeshLow.json missing from the app bundle"; exit 1; }
           # Ground truth: inspect the BUILT Info.plist. XcodeGen used to
           # regenerate/clobber the source plist during `xcodegen generate`
           # (see project.yml), which silently stripped these keys from every

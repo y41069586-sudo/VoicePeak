@@ -121,52 +121,6 @@ struct RampGrain: View {
 }
 
 // ============================================================
-// MARK: — The Teint-Orb (the soft, luminous hero)
-// ============================================================
-
-/// The reimagined "head": a soft, luminous complexion-orb. Pearlescent radial
-/// light, a champagne halo, a gentle breath. Beautiful on the light ground
-/// where the old additive neon wireframe never could be.
-struct TeintOrb: View {
-    var haloed: Bool = true
-
-    @Environment(\.accessibilityReduceMotion) private var reduceMotion
-    @State private var breathe = false
-
-    var body: some View {
-        ZStack {
-            if haloed {
-                Circle()
-                    .fill(RadialGradient(colors: [RampStage.glow.opacity(0.55), .clear],
-                                         center: .center, startRadius: 0, endRadius: 150))
-                    .frame(width: 300, height: 300)
-                    .blur(radius: 10)
-            }
-            Circle()
-                .fill(RadialGradient(
-                    colors: [Color(hex: "FDF3E9"), Color(hex: "F1D6BF"),
-                             Color(hex: "E4B7A9"), Color(hex: "C98F92")],
-                    center: UnitPoint(x: 0.38, y: 0.32), startRadius: 2, endRadius: 150))
-                .overlay(
-                    Circle().fill(RadialGradient(
-                        colors: [.white.opacity(0.85), .clear],
-                        center: UnitPoint(x: 0.34, y: 0.28), startRadius: 0, endRadius: 46))
-                )
-                .frame(width: 176, height: 176)
-                .shadow(color: RampStage.accent.opacity(0.4), radius: 30, y: 16)
-                .scaleEffect(breathe && !reduceMotion ? 1.035 : 1.0)
-        }
-        .onAppear {
-            guard !reduceMotion else { return }
-            withAnimation(.easeInOut(duration: 7).repeatForever(autoreverses: true)) {
-                breathe = true
-            }
-        }
-        .accessibilityHidden(true)
-    }
-}
-
-// ============================================================
 // MARK: — Progress (one thin filling hairline)
 // ============================================================
 
@@ -311,7 +265,7 @@ struct RampOptionCard: View {
                 }
                 VStack(alignment: .leading, spacing: 2) {
                     Text(label)
-                        .font(RampStage.serif(18))
+                        .font(VType.bodyLarge.weight(.medium))
                         .foregroundStyle(selected ? RampStage.accentDeep : RampStage.ink)
                     if let sub {
                         Text(sub)
@@ -410,7 +364,7 @@ struct RampDistributionCurve: View {
                     Path(ellipseIn: CGRect(x: mx * w - 5, y: my - 5, width: 10, height: 10)),
                     with: .color(RampStage.accent))
                 context.draw(
-                    Text(verbatim: "?").font(RampStage.serif(13, italic: true)).foregroundColor(RampStage.accentDeep),
+                    Text(verbatim: "?").font(RampStage.serif(13)).foregroundColor(RampStage.accentDeep),
                     at: CGPoint(x: mx * w, y: my - 22))
             }
         }

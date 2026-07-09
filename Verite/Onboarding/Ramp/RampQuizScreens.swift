@@ -36,7 +36,7 @@ struct RampQuizScreen: View {
             }
 
             Text(question)
-                .font(RampStage.serif(27, italic: true))
+                .font(RampStage.serif(25))
                 .foregroundStyle(RampStage.ink)
                 .lineSpacing(2)
                 .padding(.horizontal, VSpace.lg)
@@ -81,7 +81,7 @@ struct RampNameScreen: View {
             Spacer().frame(height: VSpace.xxl * 2)
 
             Text("What should\nwe call you?")
-                .font(RampStage.serif(27, italic: true))
+                .font(RampStage.serif(25))
                 .foregroundStyle(RampStage.ink)
                 .lineSpacing(2)
                 .padding(.horizontal, VSpace.lg)
@@ -89,7 +89,7 @@ struct RampNameScreen: View {
             Spacer().frame(height: VSpace.xl)
 
             TextField("Your first name", text: $name)
-                .font(RampStage.serif(22))
+                .font(VType.bodyLarge)
                 .foregroundStyle(RampStage.ink)
                 .tint(RampStage.accentDeep)
                 .textContentType(.givenName)
@@ -148,7 +148,7 @@ struct RampInsightScreen: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            Spacer() // bust leans in above (staged by the container)
+            Spacer()
 
             // Editorial pull-quote: hairline rules, an ornament, the insight
             // set like a magazine deck — the engine "speaks" in print.
@@ -163,7 +163,7 @@ struct RampInsightScreen: View {
                     .frame(width: 48, height: 1)
 
                 Text(insight)
-                    .font(RampStage.serif(23, italic: true))
+                    .font(RampStage.serif(22))
                     .foregroundStyle(RampStage.ink)
                     .multilineTextAlignment(.center)
                     .lineSpacing(5)
@@ -224,7 +224,7 @@ struct RampRevealScreen: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            Spacer() // orb warms here (staged by the container)
+            Spacer()
 
             Group {
                 if showRange {
@@ -291,7 +291,7 @@ struct RampRevealScreen: View {
                 .font(RampStage.serif(60))
                 .foregroundStyle(RampStage.ink)
 
-            Text("Based on your \(answers.answeredCount) answers — your ceiling sits higher than your floor suggests. Only a scan narrows this to your real number.")
+            Text("Built from your \(answers.answeredCount) answers.\nOnly a scan narrows it to your real number.")
                 .font(VType.body)
                 .foregroundStyle(RampStage.textSecondary)
                 .multilineTextAlignment(.center)

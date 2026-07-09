@@ -1,11 +1,11 @@
 import SwiftUI
 import SwiftData
 
-/// Vérité onboarding — "Lumière". A soft, editorial ritual: warm porcelain and
-/// dawn light, a slowly turning porcelain bust (the real head mesh, lit like a
-/// sculpture) behind every screen, serif questions and quiet answer tiles.
-/// Same honest mechanic (score, range, 14-day plan) in a calm, beautiful
-/// shell. Hands off to Guided Capture.
+/// Vérité onboarding — "Lumière". A soft, editorial ritual: warm porcelain,
+/// dawn light and film grain, restrained serif headlines, quiet answer tiles.
+/// No mascot, no hero object — the content carries every screen. Same honest
+/// mechanic (score, range, 14-day plan) in a calm shell. Hands off to Guided
+/// Capture.
 struct OnboardingRampFlow: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(AppState.self) private var appState
@@ -18,18 +18,6 @@ struct OnboardingRampFlow: View {
     var body: some View {
         ZStack {
             RampBackdrop()
-
-            // The porcelain bust — staged behind every screen, never recreated.
-            GeometryReader { geo in
-                PorcelainHeadView(haloed: step.orbStage.haloed)
-                    .scaleEffect(step.orbStage.scale)
-                    .opacity(step.orbStage.opacity)
-                    .offset(y: step.orbStage.yFraction * geo.size.height)
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
-            }
-            .allowsHitTesting(false)
-            .ignoresSafeArea()
-            .animation(reduceMotion ? nil : .easeInOut(duration: 0.9), value: step)
 
             currentScreen
                 .id(step)

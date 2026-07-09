@@ -19,7 +19,7 @@ struct RampCurveScreen: View {
 
             VStack(spacing: VSpace.md) {
                 Text("Where do\nyou land?")
-                    .font(RampStage.serif(30, italic: true))
+                    .font(RampStage.serif(28))
                     .foregroundStyle(RampStage.ink)
                     .multilineTextAlignment(.center)
                     .lineSpacing(2)
@@ -104,11 +104,11 @@ struct RampDailyReportScreen: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            Spacer() // orb sits small at the top (staged by the container)
+            Spacer()
 
             VStack(spacing: VSpace.md) {
                 Text("A gentle note,\nonce a day.")
-                    .font(RampStage.serif(30, italic: true))
+                    .font(RampStage.serif(28))
                     .foregroundStyle(RampStage.ink)
                     .multilineTextAlignment(.center)
                     .lineSpacing(2)
@@ -171,7 +171,7 @@ struct RampDailyReportScreen: View {
                     .font(.system(size: 18, weight: .regular))
                     .foregroundStyle(selected ? RampStage.accentDeep : RampStage.textTertiary)
                 Text(option.label)
-                    .font(RampStage.serif(17))
+                    .font(VType.bodyMedium)
                     .foregroundStyle(selected ? RampStage.accentDeep : RampStage.ink)
                 Text(option.sub)
                     .font(VType.micro)
@@ -199,9 +199,9 @@ struct RampDailyReportScreen: View {
 // MARK: — Screen 11: Handoff (the real you)
 // ============================================================
 
-/// The resolution: the orb glows full and calm, and the invitation is simple —
-/// the estimate is done, now the real reading. Camera permission is requested
-/// HERE, on tap, at peak motivation. No brackets, no sonar — just an open door.
+/// The resolution: the estimate is done, now the real reading. Camera
+/// permission is requested HERE, on tap, at peak motivation — an open door,
+/// not a gate.
 struct RampHandoffScreen: View {
     let onComplete: () -> Void
 
@@ -212,27 +212,23 @@ struct RampHandoffScreen: View {
     var body: some View {
         VStack(spacing: 0) {
             Spacer()
-            Spacer() // orb, full and calm (staged by the container)
 
-            Text(verbatim: "READY WHEN YOU ARE")
-                .font(VType.micro)
-                .tracking(3)
-                .foregroundStyle(RampStage.accentDeep)
-                .opacity(shown ? 1 : 0)
-
-            VStack(spacing: VSpace.sm) {
+            VStack(spacing: VSpace.md) {
+                Text(verbatim: "READY WHEN YOU ARE")
+                    .font(VType.micro)
+                    .tracking(3)
+                    .foregroundStyle(RampStage.accentDeep)
                 Text("Now, the\nreal you.")
-                    .font(RampStage.serif(34, italic: true))
+                    .font(RampStage.serif(32))
                     .foregroundStyle(RampStage.ink)
                     .multilineTextAlignment(.center)
-                    .lineSpacing(2)
+                    .lineSpacing(3)
                 Text("Good light, no filter. One photo, and the estimate becomes your number.")
                     .font(VType.body)
                     .foregroundStyle(RampStage.textSecondary)
                     .multilineTextAlignment(.center)
             }
             .padding(.horizontal, VSpace.xl)
-            .padding(.top, VSpace.sm)
             .opacity(shown ? 1 : 0)
             .offset(y: shown ? 0 : 12)
 

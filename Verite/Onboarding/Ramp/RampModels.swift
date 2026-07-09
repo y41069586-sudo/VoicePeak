@@ -72,47 +72,6 @@ enum RampStep: Int, CaseIterable {
         }
     }
 
-    /// Where the luminous Teint-Orb sits on this step (screen space). It is the
-    /// calm hero that lives behind every screen and only re-stages between them.
-    var orbStage: RampOrbStage {
-        switch self {
-        case .boot:
-            return RampOrbStage(yFraction: -0.06, scale: 1.0, opacity: 1.0)
-        case .sampleReading:
-            // The card is the hero; the orb recedes to a faint glow.
-            return RampOrbStage(yFraction: -0.38, scale: 0.34, opacity: 0.45, haloed: false)
-        case .theNumber:
-            return RampOrbStage(yFraction: -0.30, scale: 0.52, opacity: 0.9)
-        case .theSplit:
-            return RampOrbStage(yFraction: -0.08, scale: 1.0, opacity: 1.0)
-        case .name:
-            return RampOrbStage(yFraction: -0.30, scale: 0.46, opacity: 0.9)
-        case .quizSelfRating, .quizConcern, .quizAge, .quizRoutine, .quizSleep, .quizSPF:
-            // A small, calm presence near the top while questions are answered.
-            return RampOrbStage(yFraction: -0.34, scale: 0.42, opacity: 0.85)
-        case .insightSkin, .insightLife:
-            // The insight is "spoken" by the engine — the orb leans in a little.
-            return RampOrbStage(yFraction: -0.26, scale: 0.56, opacity: 1.0)
-        case .theReading:
-            return RampOrbStage(yFraction: -0.16, scale: 0.72, opacity: 1.0)
-        case .theCurve:
-            return RampOrbStage(yFraction: -0.36, scale: 0.4, opacity: 0.5, haloed: false)
-        case .dailyRitual:
-            return RampOrbStage(yFraction: -0.33, scale: 0.44, opacity: 0.75)
-        case .handoff:
-            return RampOrbStage(yFraction: -0.04, scale: 1.15, opacity: 1.0)
-        }
-    }
-}
-
-/// Screen-space placement of the Teint-Orb for one step. `yFraction` is an
-/// offset from the vertical centre as a fraction of the container height
-/// (negative = up).
-struct RampOrbStage {
-    var yFraction: CGFloat = 0
-    var scale: CGFloat = 1
-    var opacity: CGFloat = 1
-    var haloed: Bool = true
 }
 
 // ============================================================

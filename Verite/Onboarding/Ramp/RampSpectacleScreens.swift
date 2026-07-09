@@ -4,9 +4,8 @@ import SwiftUI
 // MARK: — Screen 0: Opening
 // ============================================================
 
-/// A quiet cold open. The orb glows into place (staged by the container), the
-/// wordmark and a serif promise fade up, and a single calm CTA waits. No
-/// terminal, no sweep — stillness is the first impression.
+/// A quiet cold open: wordmark, one serif promise, one CTA. No terminal, no
+/// hero object — stillness and confidence are the first impression.
 struct RampBootScreen: View {
     let onAdvance: () -> Void
 
@@ -14,25 +13,24 @@ struct RampBootScreen: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            Spacer().frame(height: VSpace.xxl)
-            Text(verbatim: "VÉRITÉ")
-                .font(VType.micro)
-                .tracking(6)
-                .foregroundStyle(RampStage.accentDeep)
-                .opacity(shown ? 1 : 0)
+            Spacer()
 
-            Spacer() // orb occupies the upper-middle (staged by the container)
-
-            VStack(spacing: VSpace.md) {
-                Text("Your skin,\ntold honestly.")
-                    .font(RampStage.serif(34, italic: true))
-                    .foregroundStyle(RampStage.ink)
-                    .multilineTextAlignment(.center)
-                    .lineSpacing(2)
-                Text("A quiet, on-device reading of your complexion.")
-                    .font(VType.body)
-                    .foregroundStyle(RampStage.textSecondary)
-                    .multilineTextAlignment(.center)
+            VStack(spacing: VSpace.lg) {
+                Text(verbatim: "VÉRITÉ")
+                    .font(VType.micro)
+                    .tracking(6)
+                    .foregroundStyle(RampStage.accentDeep)
+                VStack(spacing: VSpace.md) {
+                    Text("Your skin,\ntold honestly.")
+                        .font(RampStage.serif(32))
+                        .foregroundStyle(RampStage.ink)
+                        .multilineTextAlignment(.center)
+                        .lineSpacing(3)
+                    Text("A quiet, on-device reading of your complexion.")
+                        .font(VType.body)
+                        .foregroundStyle(RampStage.textSecondary)
+                        .multilineTextAlignment(.center)
+                }
             }
             .padding(.horizontal, VSpace.xl)
             .opacity(shown ? 1 : 0)
@@ -77,7 +75,7 @@ struct RampSampleReadingScreen: View {
             Spacer().frame(height: VSpace.xxl * 1.6)
 
             Text("Your skin, as a\nsingle honest page.")
-                .font(RampStage.serif(27, italic: true))
+                .font(RampStage.serif(25))
                 .foregroundStyle(RampStage.ink)
                 .multilineTextAlignment(.center)
                 .lineSpacing(2)
@@ -224,12 +222,12 @@ struct RampNumberScreen: View {
                 RampCalmFigure()
                     .vStaggeredAppear(index: 0)
                 Text("Every complexion\nhas a number.")
-                    .font(RampStage.serif(32, italic: true))
+                    .font(RampStage.serif(29))
                     .foregroundStyle(RampStage.ink)
                     .multilineTextAlignment(.center)
                     .lineSpacing(2)
                     .vStaggeredAppear(index: 0)
-                Text("Most people never learn theirs. Let's find yours — honestly, and only for you.")
+                Text("Most people never learn theirs.\nYours takes one honest scan.")
                     .font(VType.bodyLarge)
                     .foregroundStyle(RampStage.textSecondary)
                     .multilineTextAlignment(.center)
@@ -286,9 +284,8 @@ private struct RampCalmFigure: View {
 // MARK: — Screen 2: The Split (what 14 days moves)
 // ============================================================
 
-/// Proof you make with your own thumb — but calm. Dragging the slider climbs
-/// the metric bars from "day 1" to "day 14"; the orb glows a touch brighter as
-/// you go. Interactive, quiet, no morphing wireframe.
+/// Proof you make with your own thumb: dragging the slider climbs the metric
+/// bars from "day 1" to "day 14" in lockstep. Interactive, quiet.
 struct RampSplitScreen: View {
     let onAdvance: () -> Void
 
@@ -300,12 +297,12 @@ struct RampSplitScreen: View {
             Spacer().frame(height: VSpace.xxl * 1.2)
 
             Text("What fourteen\ndays can move.")
-                .font(RampStage.serif(28, italic: true))
+                .font(RampStage.serif(26))
                 .foregroundStyle(RampStage.ink)
                 .multilineTextAlignment(.center)
                 .lineSpacing(2)
 
-            Spacer() // orb glows here (staged by the container)
+            Spacer().frame(height: VSpace.xxl * 1.4)
 
             VStack(spacing: VSpace.md) {
                 ForEach(RampSplitMetric.samples.indices, id: \.self) { i in
