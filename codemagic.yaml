@@ -127,7 +127,7 @@ workflows:
             || { echo "ERROR: LaunchScreen.storyboardc missing from the app bundle"; exit 1; }
           # The authored head meshes must ship, or the onboarding falls back
           # to the rough procedural head.
-          for f in HeadGridLow.json HeadGridDense.json; do
+          for f in HeadMeshLow.json HeadMeshDense.json; do
             unzip -l "$IPA" | grep -q "$f" \
               || { echo "ERROR: $f missing from the app bundle"; exit 1; }
           done

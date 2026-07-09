@@ -4,14 +4,15 @@ import simd
 
 /// The onboarding scan-head mesh.
 ///
-/// The head geometry is AUTHORED OFFLINE: lofted from anatomical horizontal
-/// cross-sections (superellipse rings + a mid-sagittal face profile with
-/// forehead, nose-root dip, nose, lips, chin) and visually validated from
-/// four angles before being exported as bundled JSON grids
-/// (`HeadGridLow.json` ~2.1k vertices, `HeadGridDense.json` ~8.4k). The app
-/// only loads vertices and builds wire/point/fill geometry from them — no
-/// runtime shape math to get wrong. A simple procedural head remains as a
-/// fallback if a resource ever fails to load.
+/// The geometry is a REAL human head: extracted offline from the MakeHuman
+/// base mesh (explicitly released as CC0 — license header ships in the
+/// source file), head + neck cut from the body group, internal geometry
+/// (mouth bag, eye backing) removed via a multi-view z-buffer visibility
+/// pass, normalized and exported as bundled JSON with explicit topology:
+/// `HeadMeshLow.json` (~3.9k verts, quad wireframe) and `HeadMeshDense.json`
+/// (~15k verts, one subdivision + smoothing, for the "Ceiling" crossfade).
+/// The app only loads vertices + indices — no runtime shape math.
+/// A simple procedural head remains as a fallback if a resource fails.
 enum HeadMesh {
 
     /// Value type wrapping fully immutable data: `SCNGeometrySource` is
@@ -23,8 +24,7 @@ enum HeadMesh {
         let normalSource: SCNGeometrySource
         let lineIndices: [Int32]
         let triangleIndices: [Int32]
-        /// All vertices except the tiny crown/chin cap rings (dozens of near-
-        /// coincident points would stack additively into a hot glow dot).
+        /// Subsampled vertices used for the glowing point cloud.
         let pointIndices: [Int32]
 
         /// Solid dark occluder (keeps back-side wires from reading through).
@@ -33,7 +33,7 @@ enum HeadMesh {
                         elements: [SCNGeometryElement(indices: triangleIndices, primitiveType: .triangles)])
         }
 
-        /// Lat/long wireframe.
+        /// Quad-edge wireframe.
         func wireGeometry() -> SCNGeometry {
             SCNGeometry(sources: [vertexSource],
                         elements: [SCNGeometryElement(indices: lineIndices, primitiveType: .line)])
@@ -50,70 +50,63 @@ enum HeadMesh {
     }
 
     /// Hero mesh — wireframe + points.
-    static let lowPoly: Mesh = loadGrid("HeadGridLow") ?? build(stacks: 40, slices: 44)
+    static let lowPoly: Mesh = loadMesh("HeadMeshLow") ?? build(stacks: 40, slices: 44)
 
     /// Denser, calmer mesh the "Ceiling" beat crossfades to.
-    static let dense: Mesh = loadGrid("HeadGridDense") ?? build(stacks: 80, slices: 88)
+    static let dense: Mesh = loadMesh("HeadMeshDense") ?? build(stacks: 80, slices: 88)
 
-    // MARK: Bundled grid loading
+    // MARK: Bundled mesh loading (explicit topology)
 
-    private struct GridFile: Decodable {
-        let rows: Int
-        let cols: Int
-        let positions: [Float] // x,y,z flattened, row-major, columns wrap
+    private struct MeshFile: Decodable {
+        let positions: [Float]   // x,y,z flattened
+        let lines: [Int32]       // index pairs
+        let triangles: [Int32]   // index triples
+        let points: [Int32]      // vertex subsample for the point cloud
     }
 
-    private static func loadGrid(_ name: String) -> Mesh? {
+    private static func loadMesh(_ name: String) -> Mesh? {
         guard let url = Bundle.main.url(forResource: name, withExtension: "json"),
               let data = try? Data(contentsOf: url),
-              let file = try? JSONDecoder().decode(GridFile.self, from: data),
-              file.rows > 2, file.cols > 2,
-              file.positions.count == file.rows * file.cols * 3
+              let file = try? JSONDecoder().decode(MeshFile.self, from: data),
+              file.positions.count % 3 == 0
+        else { return nil }
+
+        let count = Int32(file.positions.count / 3)
+        guard count > 3,
+              file.lines.count % 2 == 0, !file.lines.isEmpty,
+              file.triangles.count % 3 == 0, !file.triangles.isEmpty,
+              !file.points.isEmpty,
+              (file.lines.max() ?? 0) < count,
+              (file.triangles.max() ?? 0) < count,
+              (file.points.max() ?? 0) < count
         else { return nil }
 
         var positions: [SCNVector3] = []
-        positions.reserveCapacity(file.rows * file.cols)
+        positions.reserveCapacity(Int(count))
         for k in stride(from: 0, to: file.positions.count, by: 3) {
             positions.append(SCNVector3(file.positions[k], file.positions[k + 1], file.positions[k + 2]))
-        }
-        return makeMesh(rows: file.rows, cols: file.cols, positions: positions)
-    }
-
-    // MARK: Shared geometry construction (grid topology, columns wrap)
-
-    private static func makeMesh(rows: Int, cols: Int, positions: [SCNVector3]) -> Mesh {
-        let normals = positions.map { p -> SCNVector3 in
-            let v = SIMD3<Float>(Float(p.x), Float(p.y), Float(p.z))
-            let n = simd_length(v) > 0 ? simd_normalize(v) : SIMD3<Float>(0, 1, 0)
-            return SCNVector3(n.x, n.y, n.z)
-        }
-
-        func index(_ i: Int, _ j: Int) -> Int32 { Int32(i * cols + (j % cols)) }
-
-        var lines: [Int32] = []
-        var triangles: [Int32] = []
-        for i in 0..<(rows - 1) {
-            for j in 0..<cols {
-                let a = index(i, j)
-                let b = index(i, j + 1)
-                let c = index(i + 1, j)
-                let d = index(i + 1, j + 1)
-                lines.append(contentsOf: [a, c])                 // meridian segment
-                if i > 0 { lines.append(contentsOf: [a, b]) }    // ring (skip cap)
-                triangles.append(contentsOf: [a, c, b, b, c, d])
-            }
         }
 
         return Mesh(
             vertexSource: SCNGeometrySource(vertices: positions),
-            normalSource: SCNGeometrySource(normals: normals),
-            lineIndices: lines,
-            triangleIndices: triangles,
-            pointIndices: Array(Int32(cols)..<Int32((rows - 1) * cols))
+            normalSource: SCNGeometrySource(normals: approximateNormals(positions)),
+            lineIndices: file.lines,
+            triangleIndices: file.triangles,
+            pointIndices: file.points
         )
     }
 
-    // MARK: Procedural fallback (only if a bundled grid fails to load)
+    /// Radial approximation is fine: the fill renders with constant lighting,
+    /// so normals only need to be plausible, not exact.
+    private static func approximateNormals(_ positions: [SCNVector3]) -> [SCNVector3] {
+        positions.map { p in
+            let v = SIMD3<Float>(Float(p.x), Float(p.y) * 0.25, Float(p.z))
+            let n = simd_length(v) > 0 ? simd_normalize(v) : SIMD3<Float>(0, 1, 0)
+            return SCNVector3(n.x, n.y, n.z)
+        }
+    }
+
+    // MARK: Procedural fallback (only if a bundled mesh fails to load)
 
     private static func build(stacks: Int, slices: Int) -> Mesh {
         var positions: [SCNVector3] = []
@@ -127,7 +120,30 @@ enum HeadMesh {
                 positions.append(SCNVector3(p.x, p.y, p.z))
             }
         }
-        return makeMesh(rows: stacks + 1, cols: slices, positions: positions)
+
+        let rows = stacks + 1
+        let cols = slices
+        func index(_ i: Int, _ j: Int) -> Int32 { Int32(i * cols + (j % cols)) }
+
+        var lines: [Int32] = []
+        var triangles: [Int32] = []
+        for i in 0..<(rows - 1) {
+            for j in 0..<cols {
+                let a = index(i, j), b = index(i, j + 1)
+                let c = index(i + 1, j), d = index(i + 1, j + 1)
+                lines.append(contentsOf: [a, c])
+                if i > 0 { lines.append(contentsOf: [a, b]) }
+                triangles.append(contentsOf: [a, c, b, b, c, d])
+            }
+        }
+
+        return Mesh(
+            vertexSource: SCNGeometrySource(vertices: positions),
+            normalSource: SCNGeometrySource(normals: approximateNormals(positions)),
+            lineIndices: lines,
+            triangleIndices: triangles,
+            pointIndices: Array(Int32(cols)..<Int32((rows - 1) * cols))
+        )
     }
 
     /// Rough head deformation for the fallback path.

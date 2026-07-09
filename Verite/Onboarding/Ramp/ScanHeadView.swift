@@ -37,12 +37,13 @@ final class ScanHeadController {
     enum Cluster: CaseIterable {
         case forehead, leftCheek, rightCheek, chin
 
+        // Anchored to the real head mesh's surface (queried from the data).
         var position: SCNVector3 {
             switch self {
-            case .forehead:   return SCNVector3(0, 0.62, 0.72)
-            case .leftCheek:  return SCNVector3(0.42, -0.12, 0.58)
-            case .rightCheek: return SCNVector3(-0.42, -0.12, 0.58)
-            case .chin:       return SCNVector3(0, -0.78, 0.48)
+            case .forehead:   return SCNVector3(0, 0.38, 0.74)
+            case .leftCheek:  return SCNVector3(0.30, -0.08, 0.62)
+            case .rightCheek: return SCNVector3(-0.30, -0.08, 0.62)
+            case .chin:       return SCNVector3(0, -0.48, 0.72)
             }
         }
     }
