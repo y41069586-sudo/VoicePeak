@@ -5,19 +5,20 @@ import os
 // MARK: — Flow steps
 // ============================================================
 
-/// Vérité onboarding v3 — "The Twin". One story: the engine builds your
-/// digital twin from a scatter of points, each answer materializes it further,
-/// and the final scan replaces the twin with the real you.
+/// Vérité onboarding — "Lumière". A calm ritual: a soft opening, a serif
+/// promise, a personalized score range, and a handoff to the real scan. The
+/// luminous Teint-Orb lives behind every screen and only re-stages between
+/// them.
 ///
-///   boot → number → split → 5-question interrogation → twin complete
-///   → the curve → daily report → handoff (the scan).
+///   opening → number → split → 5 questions → the reading → the curve
+///   → daily ritual → handoff (the scan).
 ///
-/// Quiz selection IS the advance; every answer raises twin integrity, which
-/// visibly densifies the head (see `ScanHeadController.setTwinIntegrity`).
+/// Quiz selection IS the advance. (Case names are kept stable so analytics and
+/// the routing stay compatible with earlier builds.)
 enum RampStep: Int, CaseIterable {
-    case boot            // 0 — terminal boot + point-cloud assembly
-    case theNumber       // 1 — scrambling score + foreign ticker + hold-to-begin
-    case theSplit        // 2 — interactive day1 ↔ day14 slider through the head
+    case boot            // 0 — opening
+    case theNumber       // 1 — the number, calmly
+    case theSplit        // 2 — what 14 days moves (interactive bars)
     case quizSelfRating  // 3 — Q1
     case quizConcern     // 4 — Q2
     case quizRoutine     // 5 — Q3
@@ -60,58 +61,39 @@ enum RampStep: Int, CaseIterable {
         }
     }
 
-    /// Steps where the user may grab the head and spin it with a horizontal
-    /// drag. Disabled where a dedicated gesture owns the touch (hold-to-begin,
-    /// the split slider) or choreography is running.
-    var allowsHeadDrag: Bool {
-        switch self {
-        case .quizSelfRating, .quizConcern, .quizRoutine, .quizSleep, .quizSPF,
-             .dailyReport, .handoff:
-            return true
-        case .boot, .theNumber, .theSplit, .twinComplete, .theCurve:
-            return false
-        }
-    }
-
-    /// Twin integrity (0…1) for this step given how many questions are
-    /// answered. Drives both the HUD percentage and the head's densification.
-    func twinIntegrity(answeredCount: Int) -> Double {
-        switch self {
-        case .boot:       return 0.06
-        case .theNumber:  return 0.10
-        case .theSplit:   return 0.14
-        case .quizSelfRating, .quizConcern, .quizRoutine, .quizSleep, .quizSPF:
-            return min(0.14 + 0.14 * Double(answeredCount), 0.86)
-        case .twinComplete, .theCurve, .dailyReport, .handoff:
-            return 1.0
-        }
-    }
-
-    /// How the persistent head is staged on this step.
-    var headStage: HeadStage {
+    /// Where the luminous Teint-Orb sits on this step (screen space). It is the
+    /// calm hero that lives behind every screen and only re-stages between them.
+    var orbStage: RampOrbStage {
         switch self {
         case .boot:
-            return HeadStage(y: 0.05, scale: 1.0, spinDuration: 16, transitionDuration: 1.0)
+            return RampOrbStage(yFraction: -0.06, scale: 1.0, opacity: 1.0)
         case .theNumber:
-            // Faint behind the giant number.
-            return HeadStage(y: 0.9, z: -0.6, scale: 0.6, opacity: 0.7, spinDuration: 18)
+            return RampOrbStage(yFraction: -0.30, scale: 0.52, opacity: 0.9)
         case .theSplit:
-            // Front and centre, held facing the camera so the two halves read.
-            return HeadStage(y: 0.0, scale: 1.15, spinDuration: nil, transitionDuration: 1.0)
+            return RampOrbStage(yFraction: -0.08, scale: 1.0, opacity: 1.0)
         case .quizSelfRating, .quizConcern, .quizRoutine, .quizSleep, .quizSPF:
-            // Upper-right, present enough to watch it densify with each answer.
-            return HeadStage(x: 0.52, y: 1.34, scale: 0.4, opacity: 0.85, spinDuration: 10)
+            // A small, calm presence near the top while questions are answered.
+            return RampOrbStage(yFraction: -0.34, scale: 0.42, opacity: 0.85)
         case .twinComplete:
-            return HeadStage(y: 0.15, scale: 1.05, spinDuration: 3.5)
+            return RampOrbStage(yFraction: -0.16, scale: 0.72, opacity: 1.0)
         case .theCurve:
-            return HeadStage(x: 0.5, y: 1.5, scale: 0.32, opacity: 0.5, spinDuration: 20)
+            return RampOrbStage(yFraction: -0.36, scale: 0.4, opacity: 0.5, haloed: false)
         case .dailyReport:
-            return HeadStage(x: 0.58, y: 1.4, scale: 0.34, opacity: 0.65, spinDuration: 14)
+            return RampOrbStage(yFraction: -0.33, scale: 0.44, opacity: 0.75)
         case .handoff:
-            // Full screen; rotation decelerates and holds facing the user.
-            return HeadStage(y: -0.05, z: 0.8, scale: 1.5, spinDuration: nil, transitionDuration: 1.2)
+            return RampOrbStage(yFraction: -0.04, scale: 1.15, opacity: 1.0)
         }
     }
+}
+
+/// Screen-space placement of the Teint-Orb for one step. `yFraction` is an
+/// offset from the vertical centre as a fraction of the container height
+/// (negative = up).
+struct RampOrbStage {
+    var yFraction: CGFloat = 0
+    var scale: CGFloat = 1
+    var opacity: CGFloat = 1
+    var haloed: Bool = true
 }
 
 // ============================================================
