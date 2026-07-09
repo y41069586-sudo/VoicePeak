@@ -59,6 +59,20 @@ enum RampStep: Int, CaseIterable {
         }
     }
 
+    /// Steps where the user may grab the head and spin it with a horizontal
+    /// drag (interactive delight; disabled where it would fight choreography
+    /// or the head is invisible).
+    var allowsHeadDrag: Bool {
+        switch self {
+        case .claim, .howItWorks,
+             .quizSelfRating, .quizConcern, .quizRoutine, .quizSleep, .quizSPF,
+             .notifications, .scanRamp:
+            return true
+        case .coldOpen, .proof, .calibrating, .socialProof:
+            return false
+        }
+    }
+
     /// How the persistent head is staged on this step.
     var headStage: HeadStage {
         switch self {

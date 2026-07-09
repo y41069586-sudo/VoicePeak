@@ -16,6 +16,8 @@ struct OnboardingRampFlow: View {
     @State private var step: RampStep = .coldOpen
     @State private var answers = RampQuizAnswers()
     @State private var controller = ScanHeadController()
+    @State private var dragActive = false
+    @State private var hasDraggedHead = false
 
     var body: some View {
         ZStack {
@@ -30,6 +32,17 @@ struct OnboardingRampFlow: View {
                 .id(step)
                 .transition(pageTransition)
 
+            // "You can touch this" — shown once, until the first grab.
+            if step == .claim && !hasDraggedHead {
+                VStack {
+                    RampDragHint()
+                        .padding(.top, 150)
+                    Spacer()
+                }
+                .allowsHitTesting(false)
+                .transition(.opacity)
+            }
+
             VStack {
                 if step != .coldOpen {
                     RampProgressBar(screenIndex: step.screenIndex)
@@ -40,10 +53,14 @@ struct OnboardingRampFlow: View {
                 Spacer()
             }
         }
+        // The head is grabbable: a horizontal drag anywhere spins it, with
+        // fling inertia on release. Simultaneous, so buttons still tap fine.
+        .simultaneousGesture(headDragGesture)
         .animation(
             reduceMotion ? VMotion.crossfade : .spring(response: 0.42, dampingFraction: 0.88),
             value: step
         )
+        .animation(VMotion.gentle, value: hasDraggedHead)
         .onAppear {
             controller.apply(step.headStage, reduceMotion: reduceMotion)
             RampAnalytics.screen(step)
@@ -55,11 +72,37 @@ struct OnboardingRampFlow: View {
         }
     }
 
+    // MARK: Head drag (interactive spin)
+
+    private var headDragGesture: some Gesture {
+        DragGesture(minimumDistance: 16)
+            .onChanged { value in
+                guard step.allowsHeadDrag, !reduceMotion else { return }
+                if !dragActive {
+                    dragActive = true
+                    hasDraggedHead = true
+                    controller.beginDrag()
+                    Haptics.fire(.selection)
+                }
+                controller.dragBy(radians: Float(value.translation.width / 190))
+            }
+            .onEnded { value in
+                guard dragActive else { return }
+                dragActive = false
+                let remainder = value.predictedEndTranslation.width - value.translation.width
+                controller.endDrag(velocity: Float(remainder / 190) * 2.4)
+            }
+    }
+
     private var pageTransition: AnyTransition {
         guard !reduceMotion else { return .opacity }
+        let depth = AnyTransition.modifier(
+            active: RampPageEffect(active: true),
+            identity: RampPageEffect(active: false)
+        )
         return .asymmetric(
-            insertion: .move(edge: .trailing).combined(with: .opacity),
-            removal: .move(edge: .leading).combined(with: .opacity)
+            insertion: .move(edge: .trailing).combined(with: .opacity).combined(with: depth),
+            removal: .move(edge: .leading).combined(with: .opacity).combined(with: depth)
         )
     }
 
@@ -145,9 +188,11 @@ struct OnboardingRampFlow: View {
 
     // MARK: Navigation
 
-    /// Quiz mechanic: card fills, rigid haptic, auto-advance after 400ms.
+    /// Quiz mechanic: card fills, rigid haptic, the head absorbs the answer
+    /// with an immediate cluster flash, auto-advance after 400ms.
     private func recordAnswer(question: String, answer: String) {
         Haptics.fire(.capture) // .rigid impact
+        controller.flash(ScanHeadController.Cluster.allCases.randomElement() ?? .forehead)
         RampAnalytics.quizAnswer(question: question, answer: answer)
         let current = step
         Task {
@@ -177,6 +222,18 @@ struct OnboardingRampFlow: View {
         appState.selectedTab = .analyze
         Haptics.fire(.verdictReveal)
         RampAnalytics.track("onboarding_complete")
+    }
+}
+
+/// Depth cue on page changes: incoming/outgoing screens blur and sink
+/// slightly, so steps feel like planes moving in z — not flat slides.
+private struct RampPageEffect: ViewModifier {
+    let active: Bool
+
+    func body(content: Content) -> some View {
+        content
+            .blur(radius: active ? 8 : 0)
+            .scaleEffect(active ? 0.96 : 1)
     }
 }
 

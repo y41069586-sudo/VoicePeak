@@ -64,6 +64,10 @@ final class ScanHeadController {
 
     private var currentSpinDuration: Double?
 
+    /// Bumped on every user grab; stale fling-resume tasks check it.
+    private var dragGeneration = 0
+    private var dragStartAngle: Float = 0
+
     private let accent: UIColor
 
     // MARK: Init
@@ -187,7 +191,11 @@ final class ScanHeadController {
     }
 
     private func setSpin(duration: Double?, animatedStop: Bool) {
-        guard duration != currentSpinDuration || spin.action(forKey: "spin") == nil else { return }
+        applySpin(duration: duration, animatedStop: animatedStop, force: false)
+    }
+
+    private func applySpin(duration: Double?, animatedStop: Bool, force: Bool) {
+        guard force || duration != currentSpinDuration || spin.action(forKey: "spin") == nil else { return }
         currentSpinDuration = duration
 
         // Freeze at the currently *presented* angle before changing pace.
@@ -204,6 +212,38 @@ final class ScanHeadController {
             let turn = SCNAction.rotateTo(x: 0, y: target, z: 0, duration: 1.6)
             turn.timingMode = .easeOut
             spin.runAction(turn, forKey: "spin")
+        }
+    }
+
+    // MARK: User interaction (drag to spin)
+
+    /// Grab the head: freeze the ambient spin at its presented angle so the
+    /// finger takes over seamlessly mid-rotation.
+    func beginDrag() {
+        dragGeneration += 1
+        let angle = spin.presentation.eulerAngles.y
+        spin.removeAction(forKey: "spin")
+        spin.eulerAngles.y = angle
+        dragStartAngle = angle
+    }
+
+    /// Live drag: rotate by the finger's horizontal travel.
+    func dragBy(radians: Float) {
+        spin.eulerAngles.y = dragStartAngle + radians
+    }
+
+    /// Release: fling with the remaining velocity, decelerate, then hand
+    /// control back to the ambient spin of the current stage.
+    func endDrag(velocity radiansPerSecond: Float) {
+        let generation = dragGeneration
+        let clamped = max(-14, min(14, radiansPerSecond))
+        let fling = SCNAction.rotateBy(x: 0, y: CGFloat(clamped) * 0.32, z: 0, duration: 0.85)
+        fling.timingMode = .easeOut
+        spin.runAction(fling, forKey: "spin")
+        Task { [weak self] in
+            try? await Task.sleep(for: .milliseconds(880))
+            guard let self, self.dragGeneration == generation else { return }
+            self.applySpin(duration: self.currentSpinDuration, animatedStop: true, force: true)
         }
     }
 

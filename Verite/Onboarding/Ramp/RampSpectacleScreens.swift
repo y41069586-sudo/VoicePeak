@@ -12,33 +12,51 @@ struct RampColdOpenScreen: View {
 
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var showTagline = false
+    @State private var ping = false
 
     var body: some View {
-        VStack {
-            Spacer()
-            Spacer()
-            VStack(spacing: VSpace.md) {
-                TypewriterText(
-                    text: "VÉRITÉ",
-                    perCharacter: .milliseconds(80),
-                    startDelay: .milliseconds(900),
-                    font: .system(size: 32, weight: .semibold, design: .monospaced),
-                    tracking: 8
-                )
-                Text("The honest skin rating.")
-                    .font(VType.body)
-                    .foregroundStyle(RampStage.textSecondary)
-                    .opacity(showTagline ? 1 : 0)
+        ZStack {
+            // Sonar ping when the first sweep completes — the machine "sees" you.
+            if ping {
+                RampShockwave(maxScale: 2.4, lineWidth: 1.2, duration: 1.0)
+                    .frame(width: 230, height: 230)
+                    .offset(y: -40)
+                RampShockwave(maxScale: 1.8, lineWidth: 2, duration: 0.8)
+                    .frame(width: 160, height: 160)
+                    .offset(y: -40)
             }
-            .padding(.bottom, VSpace.xxl * 2)
+
+            VStack {
+                Spacer()
+                Spacer()
+                VStack(spacing: VSpace.md) {
+                    TypewriterText(
+                        text: "VÉRITÉ",
+                        perCharacter: .milliseconds(80),
+                        startDelay: .milliseconds(900),
+                        font: .system(size: 32, weight: .semibold, design: .monospaced),
+                        tracking: 8
+                    )
+                    Text("The honest skin rating.")
+                        .font(VType.body)
+                        .foregroundStyle(RampStage.textSecondary)
+                        .opacity(showTagline ? 1 : 0)
+                }
+                .padding(.bottom, VSpace.xxl * 2)
+            }
+            .frame(maxWidth: .infinity)
         }
-        .frame(maxWidth: .infinity)
         .task {
             if !reduceMotion {
                 controller.sweep(duration: 1.4, delay: 0.6)
             }
             try? await Task.sleep(for: .milliseconds(1700))
+            guard !Task.isCancelled else { return }
             withAnimation(VMotion.gentle) { showTagline = true }
+            if !reduceMotion {
+                ping = true
+                Haptics.fire(.tick)
+            }
             try? await Task.sleep(for: .milliseconds(1400))
             guard !Task.isCancelled else { return }
             onAdvance()
@@ -58,6 +76,9 @@ struct RampClaimScreen: View {
             Spacer() // head rotates in the upper third (staged by the container)
             Spacer()
             VStack(spacing: VSpace.md) {
+                // The number that never settles — you don't know yours yet.
+                RampScrambleFigure()
+                    .vStaggeredAppear(index: 0)
                 Text("Your skin has a score.\nMost people never learn it.")
                     .font(VType.hero(32))
                     .foregroundStyle(RampStage.textPrimary)

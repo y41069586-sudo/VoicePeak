@@ -166,51 +166,180 @@ struct RampScanRampScreen: View {
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var pulsing = false
     @State private var starting = false
+    @State private var locked = false
 
     var body: some View {
-        VStack(spacing: 0) {
-            Spacer()
-            Spacer()
-
-            VStack(spacing: VSpace.sm) {
-                Text("Your turn.")
-                    .font(VType.hero(36))
-                    .foregroundStyle(RampStage.textPrimary)
-                Text("Good light. No filter. The engine sees everything anyway.")
-                    .font(VType.body)
-                    .foregroundStyle(RampStage.textSecondary)
-                    .multilineTextAlignment(.center)
-            }
-            .padding(.horizontal, VSpace.xl)
-            .vStaggeredAppear(index: 0)
-
-            Spacer().frame(height: VSpace.xl)
-
-            DQPrimaryButton(title: "Start my scan", systemImage: "camera.fill") {
-                guard !starting else { return }
-                starting = true
-                Task {
-                    let granted = await CameraPermission.request()
-                    RampAnalytics.track("onboarding_camera_permission",
-                                        ["granted": String(granted)])
-                    onComplete()
+        ZStack {
+            // Camera-HUD: pulse rings radiate from the head while corner
+            // brackets draw themselves around the target and lock on.
+            VStack {
+                Spacer()
+                ZStack {
+                    if !reduceMotion {
+                        RampPulseRings()
+                    }
+                    RampViewfinderBrackets(locked: locked)
+                        .frame(width: 272, height: 330)
                 }
+                .frame(maxHeight: .infinity)
+                Spacer().frame(height: 260)
             }
-            .scaleEffect(pulsing && !reduceMotion ? 1.03 : 1.0)
-            .animation(
-                reduceMotion ? nil : .easeInOut(duration: 1.1).repeatForever(autoreverses: true),
-                value: pulsing
-            )
-            .padding(.horizontal, VSpace.lg)
+            .allowsHitTesting(false)
 
-            Spacer().frame(height: VSpace.xxl)
+            VStack(spacing: 0) {
+                Spacer()
+                Spacer()
+
+                VStack(spacing: VSpace.sm) {
+                    Text("Your turn.")
+                        .font(VType.hero(36))
+                        .foregroundStyle(RampStage.textPrimary)
+                    Text("Good light. No filter. The engine sees everything anyway.")
+                        .font(VType.body)
+                        .foregroundStyle(RampStage.textSecondary)
+                        .multilineTextAlignment(.center)
+                }
+                .padding(.horizontal, VSpace.xl)
+                .vStaggeredAppear(index: 0)
+
+                Spacer().frame(height: VSpace.xl)
+
+                DQPrimaryButton(title: "Start my scan", systemImage: "camera.fill") {
+                    guard !starting else { return }
+                    starting = true
+                    Task {
+                        let granted = await CameraPermission.request()
+                        RampAnalytics.track("onboarding_camera_permission",
+                                            ["granted": String(granted)])
+                        onComplete()
+                    }
+                }
+                .scaleEffect(pulsing && !reduceMotion ? 1.03 : 1.0)
+                .animation(
+                    reduceMotion ? nil : .easeInOut(duration: 1.1).repeatForever(autoreverses: true),
+                    value: pulsing
+                )
+                .padding(.horizontal, VSpace.lg)
+
+                Spacer().frame(height: VSpace.xxl)
+            }
         }
         .task {
             // One slow, deliberate sweep once the head has settled facing forward.
             try? await Task.sleep(for: .milliseconds(1800))
             guard !Task.isCancelled else { return }
             if !reduceMotion { controller.sweep(duration: 2.4) }
+            withAnimation(VMotion.gentle) { locked = true }
+            Haptics.fire(.tick)
             pulsing = true
         }
+    }
+}
+
+// ============================================================
+// MARK: — Scan-ramp HUD pieces
+// ============================================================
+
+/// Four corner brackets that draw themselves around the head, then breathe.
+/// `locked` lights them up with a "SCAN READY" tag once the head has settled.
+private struct RampViewfinderBrackets: View {
+    let locked: Bool
+
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @State private var drawn = false
+    @State private var breathing = false
+
+    var body: some View {
+        ZStack(alignment: .top) {
+            RampCornerBrackets()
+                .trim(from: 0, to: drawn ? 1 : 0)
+                .stroke(
+                    RampStage.accent.opacity(locked ? 0.85 : 0.4),
+                    style: StrokeStyle(lineWidth: 2, lineCap: .round)
+                )
+                .vGlow(RampStage.accent, radius: 14, opacity: locked ? 0.5 : 0)
+
+            Text(verbatim: "SCAN READY")
+                .font(DQFont.mono(11, weight: .semibold))
+                .tracking(3)
+                .foregroundStyle(RampStage.accent)
+                .opacity(locked ? 1 : 0)
+                .offset(y: -26)
+        }
+        .scaleEffect(breathing && !reduceMotion ? 1.015 : 1)
+        .animation(VMotion.gentle, value: locked)
+        .onAppear {
+            if reduceMotion {
+                drawn = true
+                return
+            }
+            withAnimation(.easeInOut(duration: 1.1).delay(0.5)) { drawn = true }
+            withAnimation(.easeInOut(duration: 1.6).repeatForever(autoreverses: true)) {
+                breathing = true
+            }
+        }
+        .accessibilityHidden(true)
+    }
+}
+
+/// The four L-shaped viewfinder corners as one trimmable path.
+private struct RampCornerBrackets: Shape {
+    func path(in rect: CGRect) -> Path {
+        let l = min(rect.width, rect.height) * 0.11
+        var p = Path()
+        // Top-left
+        p.move(to: CGPoint(x: rect.minX, y: rect.minY + l))
+        p.addLine(to: CGPoint(x: rect.minX, y: rect.minY))
+        p.addLine(to: CGPoint(x: rect.minX + l, y: rect.minY))
+        // Top-right
+        p.move(to: CGPoint(x: rect.maxX - l, y: rect.minY))
+        p.addLine(to: CGPoint(x: rect.maxX, y: rect.minY))
+        p.addLine(to: CGPoint(x: rect.maxX, y: rect.minY + l))
+        // Bottom-right
+        p.move(to: CGPoint(x: rect.maxX, y: rect.maxY - l))
+        p.addLine(to: CGPoint(x: rect.maxX, y: rect.maxY))
+        p.addLine(to: CGPoint(x: rect.maxX - l, y: rect.maxY))
+        // Bottom-left
+        p.move(to: CGPoint(x: rect.minX + l, y: rect.maxY))
+        p.addLine(to: CGPoint(x: rect.minX, y: rect.maxY))
+        p.addLine(to: CGPoint(x: rect.minX, y: rect.maxY - l))
+        return p
+    }
+}
+
+/// Slow concentric rings radiating from the head — sonar, not alarm.
+private struct RampPulseRings: View {
+    var body: some View {
+        ZStack {
+            ring(delay: 0)
+            ring(delay: 1.4)
+        }
+    }
+
+    private func ring(delay: Double) -> some View {
+        RampPulseRing(delay: delay)
+            .frame(width: 210, height: 210)
+    }
+}
+
+private struct RampPulseRing: View {
+    let delay: Double
+    @State private var expanded = false
+
+    var body: some View {
+        Circle()
+            .strokeBorder(RampStage.accent.opacity(0.35), lineWidth: 1)
+            .scaleEffect(expanded ? 1.55 : 0.85)
+            .opacity(expanded ? 0 : 0.7)
+            .onAppear {
+                withAnimation(
+                    .easeOut(duration: 2.8)
+                    .repeatForever(autoreverses: false)
+                    .delay(delay)
+                ) {
+                    expanded = true
+                }
+            }
+            .accessibilityHidden(true)
     }
 }

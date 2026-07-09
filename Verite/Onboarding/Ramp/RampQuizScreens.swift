@@ -87,6 +87,8 @@ struct RampCalibratingScreen: View {
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var absorbedCount = 0
     @State private var statusCount = 0
+    @State private var percent = 0
+    @State private var burst = false
 
     private let statusLines = ["Profile built", "Metrics weighted", "Engine ready"]
     private let clusters: [ScanHeadController.Cluster] = [
@@ -97,25 +99,46 @@ struct RampCalibratingScreen: View {
         VStack(spacing: 0) {
             Spacer()
 
-            // Chips orbit the head and get absorbed one by one.
+            // Chips orbit the head on visible guide rings and get pulled in
+            // one by one; the finale discharges an energy ring outward.
             ZStack {
+                Ellipse()
+                    .strokeBorder(Color.white.opacity(0.07), lineWidth: 1)
+                    .frame(width: 306, height: 348)
+                Ellipse()
+                    .strokeBorder(Color.white.opacity(0.045), lineWidth: 1)
+                    .frame(width: 244, height: 282)
+
                 let chips = answers.chipLabels
-                ForEach(Array(chips.enumerated()), id: \.offset) { index, label in
-                    RampAnswerChip(
-                        label: label,
-                        angle: .degrees(Double(index) / Double(max(chips.count, 1)) * 360 - 90),
-                        absorbed: index < absorbedCount
-                    )
+                if reduceMotion {
+                    orbitingChips(chips: chips, time: 0)
+                } else {
+                    TimelineView(.animation(minimumInterval: 1.0 / 40)) { timeline in
+                        orbitingChips(
+                            chips: chips,
+                            time: timeline.date.timeIntervalSinceReferenceDate
+                        )
+                    }
+                }
+
+                if burst {
+                    RampShockwave(maxScale: 2.8, lineWidth: 1.5, duration: 0.9)
+                        .frame(width: 190, height: 190)
+                    RampShockwave(maxScale: 2.1, lineWidth: 2.5, duration: 0.7)
+                        .frame(width: 130, height: 130)
                 }
             }
-            .frame(height: 320)
+            .frame(height: 340)
 
             Spacer()
 
             VStack(spacing: VSpace.sm) {
-                Text("Calibrating your baseline…")
-                    .font(VType.body)
+                Text(verbatim: "CALIBRATING \(percent)%")
+                    .font(DQFont.mono(12, weight: .semibold))
+                    .tracking(2)
                     .foregroundStyle(RampStage.textSecondary)
+                    .contentTransition(.numericText(value: Double(percent)))
+                    .animation(VMotion.snappy, value: percent)
 
                 HStack(spacing: VSpace.sm) {
                     ForEach(0..<statusCount, id: \.self) { index in
@@ -138,8 +161,26 @@ struct RampCalibratingScreen: View {
         .task { await run() }
     }
 
+    /// The chip ring at a given wall-clock time — chips drift slowly around
+    /// their orbit until absorbed, so the system feels alive, not posed.
+    private func orbitingChips(chips: [String], time: TimeInterval) -> some View {
+        ZStack {
+            ForEach(Array(chips.enumerated()), id: \.offset) { index, label in
+                RampAnswerChip(
+                    label: label,
+                    angle: .degrees(
+                        Double(index) / Double(max(chips.count, 1)) * 360 - 90
+                        + time.truncatingRemainder(dividingBy: 360) * 9
+                    ),
+                    absorbed: index < absorbedCount
+                )
+            }
+        }
+    }
+
     private func run() async {
         let chips = answers.chipLabels
+        let chipShare = 68 / max(chips.count, 1)
         try? await Task.sleep(for: .milliseconds(reduceMotion ? 200 : 700))
 
         for index in chips.indices {
@@ -147,6 +188,7 @@ struct RampCalibratingScreen: View {
             withAnimation(reduceMotion ? VMotion.crossfade : VMotion.standard) {
                 absorbedCount = index + 1
             }
+            percent = min(percent + chipShare, 68)
             controller.flash(clusters[index % clusters.count])
             Haptics.fire(.selection) // light tick per absorption
             try? await Task.sleep(for: .milliseconds(reduceMotion ? 120 : 380))
@@ -156,11 +198,15 @@ struct RampCalibratingScreen: View {
         for index in statusLines.indices {
             guard !Task.isCancelled else { return }
             statusCount = index + 1
+            percent = index == statusLines.indices.last ? 100 : percent + 12
             Haptics.fire(.selection)
             try? await Task.sleep(for: .milliseconds(reduceMotion ? 150 : 450))
         }
 
-        try? await Task.sleep(for: .milliseconds(700))
+        // Finale: the engine locks in — energy discharge + milestone haptic.
+        if !reduceMotion { burst = true }
+        Haptics.fire(.milestone)
+        try? await Task.sleep(for: .milliseconds(800))
         guard !Task.isCancelled else { return }
         onAdvance()
     }
