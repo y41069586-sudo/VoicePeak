@@ -2,9 +2,10 @@ import SwiftUI
 import SwiftData
 
 /// Vérité onboarding — "Lumière". A soft, editorial ritual: warm porcelain and
-/// dawn light, a luminous complexion-orb that lives behind every screen, serif
-/// questions and quiet answer tiles. Same honest mechanic (score, range,
-/// 14-day plan) in a calm, beautiful shell. Hands off to Guided Capture.
+/// dawn light, a slowly turning porcelain bust (the real head mesh, lit like a
+/// sculpture) behind every screen, serif questions and quiet answer tiles.
+/// Same honest mechanic (score, range, 14-day plan) in a calm, beautiful
+/// shell. Hands off to Guided Capture.
 struct OnboardingRampFlow: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(AppState.self) private var appState
@@ -18,9 +19,9 @@ struct OnboardingRampFlow: View {
         ZStack {
             RampBackdrop()
 
-            // The luminous orb — staged behind every screen, never recreated.
+            // The porcelain bust — staged behind every screen, never recreated.
             GeometryReader { geo in
-                TeintOrb(haloed: step.orbStage.haloed)
+                PorcelainHeadView(haloed: step.orbStage.haloed)
                     .scaleEffect(step.orbStage.scale)
                     .opacity(step.orbStage.opacity)
                     .offset(y: step.orbStage.yFraction * geo.size.height)
@@ -74,6 +75,7 @@ struct OnboardingRampFlow: View {
             RampNameScreen(name: nameBinding) { advance() }
         case .quizSelfRating:
             RampQuizScreen(
+                chapter: "YOUR SKIN · ONE OF THREE",
                 question: personalized("How does your skin feel lately?",
                                        named: "%@, how does your skin feel lately?"),
                 options: RampQuizAnswers.SelfRating.allCases.map {
@@ -86,6 +88,7 @@ struct OnboardingRampFlow: View {
             }
         case .quizConcern:
             RampQuizScreen(
+                chapter: "YOUR SKIN · TWO OF THREE",
                 question: "What draws your eye in the mirror?",
                 options: RampQuizAnswers.MirrorConcern.allCases.map {
                     RampQuizOption(id: $0.rawValue, label: $0.label, icon: $0.icon)
@@ -97,6 +100,7 @@ struct OnboardingRampFlow: View {
             }
         case .quizAge:
             RampQuizScreen(
+                chapter: "YOUR SKIN · THREE OF THREE",
                 question: "Your age group?",
                 options: RampQuizAnswers.AgeBand.allCases.map {
                     RampQuizOption(id: $0.rawValue, label: $0.label)
@@ -113,6 +117,7 @@ struct OnboardingRampFlow: View {
             ) { advance() }
         case .quizRoutine:
             RampQuizScreen(
+                chapter: "YOUR LIFE · ONE OF THREE",
                 question: "Your routine, honestly?",
                 options: RampQuizAnswers.RoutineLevel.allCases.map {
                     RampQuizOption(id: $0.rawValue, label: $0.label)
@@ -124,6 +129,7 @@ struct OnboardingRampFlow: View {
             }
         case .quizSleep:
             RampQuizScreen(
+                chapter: "YOUR LIFE · TWO OF THREE",
                 question: "Sleep, on an average night?",
                 options: RampQuizAnswers.SleepBucket.allCases.map {
                     RampQuizOption(id: $0.rawValue, label: $0.label)
@@ -135,6 +141,7 @@ struct OnboardingRampFlow: View {
             }
         case .quizSPF:
             RampQuizScreen(
+                chapter: "YOUR LIFE · THREE OF THREE",
                 question: "Sun protection?",
                 options: RampQuizAnswers.SunProtection.allCases.map {
                     RampQuizOption(id: $0.rawValue, label: $0.label)

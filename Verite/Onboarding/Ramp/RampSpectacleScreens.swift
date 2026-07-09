@@ -221,6 +221,8 @@ struct RampNumberScreen: View {
             Spacer()
 
             VStack(spacing: VSpace.md) {
+                RampCalmFigure()
+                    .vStaggeredAppear(index: 0)
                 Text("Every complexion\nhas a number.")
                     .font(RampStage.serif(32, italic: true))
                     .foregroundStyle(RampStage.ink)
@@ -241,6 +243,42 @@ struct RampNumberScreen: View {
                 .padding(.horizontal, VSpace.lg)
             Spacer().frame(height: VSpace.xxl)
         }
+    }
+}
+
+/// A serif figure that never settles — it drifts through plausible scores
+/// every couple of seconds, ending nowhere. Calm cousin of the slot-machine:
+/// the number exists, it just isn't yours yet. Reduce Motion pins "· · ·".
+private struct RampCalmFigure: View {
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
+    var body: some View {
+        Group {
+            if reduceMotion {
+                figure("· · ·")
+            } else {
+                TimelineView(.periodic(from: .now, by: 1.6)) { timeline in
+                    let tick = Int(timeline.date.timeIntervalSinceReferenceDate / 1.6)
+                    figure(String(44 + Int(Self.hash(tick) * 51)))
+                        .contentTransition(.numericText())
+                        .animation(.easeInOut(duration: 0.7), value: tick)
+                }
+            }
+        }
+        .accessibilityHidden(true)
+    }
+
+    private func figure(_ text: String) -> some View {
+        Text(verbatim: text)
+            .font(RampStage.serif(58))
+            .foregroundStyle(RampStage.ink.opacity(0.85))
+            .monospacedDigit()
+            .frame(minWidth: 92)
+    }
+
+    private static func hash(_ i: Int) -> Double {
+        let v = sin(Double(i) * 127.1) * 43758.5453
+        return v - floor(v)
     }
 }
 

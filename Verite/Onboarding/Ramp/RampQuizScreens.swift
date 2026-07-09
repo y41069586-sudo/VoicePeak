@@ -11,10 +11,12 @@ struct RampQuizOption: Identifiable {
     var icon: String? = nil
 }
 
-/// Calm question layout: a small step label, a serif question, and a stack of
+/// Calm question layout: a chapter eyebrow, a serif question, and a stack of
 /// airy answer tiles. Selection is the advance — a gentle settle, a soft
 /// haptic, and the flow moves on. No "Next", no energy.
 struct RampQuizScreen: View {
+    /// Editorial chapter label, e.g. "YOUR SKIN · ONE OF THREE".
+    var chapter: String? = nil
     let question: String
     let options: [RampQuizOption]
     let selectedID: String?
@@ -23,6 +25,15 @@ struct RampQuizScreen: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             Spacer().frame(height: VSpace.xxl * 2)
+
+            if let chapter {
+                Text(verbatim: chapter)
+                    .font(VType.micro)
+                    .tracking(3)
+                    .foregroundStyle(RampStage.accentDeep)
+                    .padding(.horizontal, VSpace.lg)
+                    .padding(.bottom, VSpace.sm)
+            }
 
             Text(question)
                 .font(RampStage.serif(27, italic: true))
@@ -137,18 +148,31 @@ struct RampInsightScreen: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            Spacer() // orb leans in above (staged by the container)
+            Spacer() // bust leans in above (staged by the container)
 
-            VStack(spacing: VSpace.md) {
+            // Editorial pull-quote: hairline rules, an ornament, the insight
+            // set like a magazine deck — the engine "speaks" in print.
+            VStack(spacing: VSpace.lg) {
                 Text(verbatim: eyebrow)
                     .font(VType.micro)
                     .tracking(3)
                     .foregroundStyle(RampStage.accentDeep)
+
+                Rectangle()
+                    .fill(RampStage.hair)
+                    .frame(width: 48, height: 1)
+
                 Text(insight)
                     .font(RampStage.serif(23, italic: true))
                     .foregroundStyle(RampStage.ink)
                     .multilineTextAlignment(.center)
-                    .lineSpacing(4)
+                    .lineSpacing(5)
+
+                HStack(spacing: 10) {
+                    Rectangle().fill(RampStage.hair).frame(width: 26, height: 1)
+                    Circle().fill(RampStage.accent).frame(width: 4, height: 4)
+                    Rectangle().fill(RampStage.hair).frame(width: 26, height: 1)
+                }
             }
             .padding(.horizontal, VSpace.xl)
             .opacity(shown ? 1 : 0)
