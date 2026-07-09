@@ -42,7 +42,7 @@ enum RampStage {
     static let hairline = hair
 
     /// Total conceptual screens (for the progress hairline).
-    static let screenCount = 12
+    static let screenCount = 17
 
     /// Playfair Display at an arbitrary size (falls back to the system serif).
     static func serif(_ size: CGFloat, italic: Bool = false, weight: Font.Weight = .regular) -> Font {

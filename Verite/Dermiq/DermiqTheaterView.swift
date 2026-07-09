@@ -25,11 +25,13 @@ struct DermiqTheaterView: View {
     @State private var collapsed = false
     @State private var statusLabel = ""
 
+    // Honest, self-referential steps only — no invented corpus sizes (2.3.1).
+    // The lifestyle line ties the scan back to the onboarding answers.
     private let statusLabels = [
         "Mapping texture…",
         "Measuring redness…",
         "Analyzing pore density…",
-        "Calibrating against 2.1M scans…",
+        "Weighing your lifestyle answers…",
     ]
 
     var body: some View {

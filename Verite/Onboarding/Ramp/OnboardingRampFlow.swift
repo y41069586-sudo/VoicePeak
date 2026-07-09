@@ -64,13 +64,18 @@ struct OnboardingRampFlow: View {
         switch step {
         case .boot:
             RampBootScreen { advance() }
+        case .sampleReading:
+            RampSampleReadingScreen { advance() }
         case .theNumber:
             RampNumberScreen { advance() }
         case .theSplit:
             RampSplitScreen { advance() }
+        case .name:
+            RampNameScreen(name: nameBinding) { advance() }
         case .quizSelfRating:
             RampQuizScreen(
-                question: "How does your skin feel lately?",
+                question: personalized("How does your skin feel lately?",
+                                       named: "%@, how does your skin feel lately?"),
                 options: RampQuizAnswers.SelfRating.allCases.map {
                     RampQuizOption(id: $0.rawValue, label: $0.label, sub: selfRatingSub($0))
                 },
@@ -90,6 +95,22 @@ struct OnboardingRampFlow: View {
                 answers.concern = RampQuizAnswers.MirrorConcern(rawValue: id)
                 recordAnswer(question: "mirror_concern", answer: id)
             }
+        case .quizAge:
+            RampQuizScreen(
+                question: "Your age group?",
+                options: RampQuizAnswers.AgeBand.allCases.map {
+                    RampQuizOption(id: $0.rawValue, label: $0.label)
+                },
+                selectedID: answers.age?.rawValue
+            ) { id in
+                answers.age = RampQuizAnswers.AgeBand(rawValue: id)
+                recordAnswer(question: "age_band", answer: id)
+            }
+        case .insightSkin:
+            RampInsightScreen(
+                eyebrow: "WHAT WE HEAR SO FAR",
+                insight: answers.skinInsight
+            ) { advance() }
         case .quizRoutine:
             RampQuizScreen(
                 question: "Your routine, honestly?",
@@ -123,15 +144,30 @@ struct OnboardingRampFlow: View {
                 answers.spf = RampQuizAnswers.SunProtection(rawValue: id)
                 recordAnswer(question: "sun_protection", answer: id)
             }
-        case .twinComplete:
+        case .insightLife:
+            RampInsightScreen(
+                eyebrow: "THE LEVERS IN YOUR ANSWERS",
+                insight: answers.lifeInsight
+            ) { advance() }
+        case .theReading:
             RampRevealScreen(answers: answers) { advance() }
         case .theCurve:
             RampCurveScreen { advance() }
-        case .dailyReport:
+        case .dailyRitual:
             RampDailyReportScreen { advance() }
         case .handoff:
             RampHandoffScreen { complete() }
         }
+    }
+
+    private var nameBinding: Binding<String> {
+        Binding(get: { answers.name ?? "" }, set: { answers.name = $0 })
+    }
+
+    /// Swaps in the name-addressed variant once the user has given a name.
+    private func personalized(_ plain: String, named template: String) -> String {
+        guard let name = answers.displayName else { return plain }
+        return String(format: template, name)
     }
 
     private func selfRatingSub(_ rating: RampQuizAnswers.SelfRating) -> String {

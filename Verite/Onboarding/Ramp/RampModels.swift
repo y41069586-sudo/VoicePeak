@@ -16,47 +16,58 @@ import os
 /// Quiz selection IS the advance. (Case names are kept stable so analytics and
 /// the routing stay compatible with earlier builds.)
 enum RampStep: Int, CaseIterable {
-    case boot            // 0 — opening
-    case theNumber       // 1 — the number, calmly
-    case theSplit        // 2 — what 14 days moves (interactive bars)
-    case quizSelfRating  // 3 — Q1
-    case quizConcern     // 4 — Q2
-    case quizRoutine     // 5 — Q3
-    case quizSleep       // 6 — Q4
-    case quizSPF         // 7 — Q5
-    case twinComplete    // 8 — payoff + personalized prediction range
-    case theCurve        // 9 — where do you land?
-    case dailyReport     // 10 — notifications, reframed
-    case handoff         // 11 — "awaiting original" → the scan
+    case boot            // 0  — opening
+    case sampleReading   // 1  — an illustrative reading card (the outcome, first)
+    case theNumber       // 2  — the number, calmly
+    case theSplit        // 3  — what 14 days moves (interactive bars)
+    case name            // 4  — "what should we call you?" (optional)
+    case quizSelfRating  // 5  — Q1 · your skin
+    case quizConcern     // 6  — Q2 · your skin
+    case quizAge         // 7  — Q3 · your skin
+    case insightSkin     // 8  — mirrored insight, chapter 1
+    case quizRoutine     // 9  — Q4 · your life
+    case quizSleep       // 10 — Q5 · your life
+    case quizSPF         // 11 — Q6 · your life
+    case insightLife     // 12 — mirrored insight, chapter 2
+    case theReading      // 13 — visible processing + prediction range
+    case theCurve        // 14 — where do you land?
+    case dailyRitual     // 15 — time choice + notifications
+    case handoff         // 16 — "now, the real you" → the scan
 
     var next: RampStep? { RampStep(rawValue: rawValue + 1) }
 
-    /// True for the five interrogation questions.
+    /// True for the six interrogation questions.
     var isQuiz: Bool {
         switch self {
-        case .quizSelfRating, .quizConcern, .quizRoutine, .quizSleep, .quizSPF:
+        case .quizSelfRating, .quizConcern, .quizAge,
+             .quizRoutine, .quizSleep, .quizSPF:
             return true
         default:
             return false
         }
     }
 
-    /// Conceptual screen index (0…11) for the segmented progress bar.
+    /// Conceptual screen index (0…16) for the progress hairline.
     var screenIndex: Int { rawValue }
 
     var analyticsName: String {
         switch self {
         case .boot:           return "boot"
+        case .sampleReading:  return "sample_reading"
         case .theNumber:      return "the_number"
         case .theSplit:       return "the_split"
+        case .name:           return "name"
         case .quizSelfRating: return "quiz_self_rating"
         case .quizConcern:    return "quiz_concern"
+        case .quizAge:        return "quiz_age"
+        case .insightSkin:    return "insight_skin"
         case .quizRoutine:    return "quiz_routine"
         case .quizSleep:      return "quiz_sleep"
         case .quizSPF:        return "quiz_spf"
-        case .twinComplete:   return "twin_complete"
+        case .insightLife:    return "insight_life"
+        case .theReading:     return "the_reading"
         case .theCurve:       return "the_curve"
-        case .dailyReport:    return "daily_report"
+        case .dailyRitual:    return "daily_ritual"
         case .handoff:        return "handoff"
         }
     }
@@ -67,18 +78,26 @@ enum RampStep: Int, CaseIterable {
         switch self {
         case .boot:
             return RampOrbStage(yFraction: -0.06, scale: 1.0, opacity: 1.0)
+        case .sampleReading:
+            // The card is the hero; the orb recedes to a faint glow.
+            return RampOrbStage(yFraction: -0.38, scale: 0.34, opacity: 0.45, haloed: false)
         case .theNumber:
             return RampOrbStage(yFraction: -0.30, scale: 0.52, opacity: 0.9)
         case .theSplit:
             return RampOrbStage(yFraction: -0.08, scale: 1.0, opacity: 1.0)
-        case .quizSelfRating, .quizConcern, .quizRoutine, .quizSleep, .quizSPF:
+        case .name:
+            return RampOrbStage(yFraction: -0.30, scale: 0.46, opacity: 0.9)
+        case .quizSelfRating, .quizConcern, .quizAge, .quizRoutine, .quizSleep, .quizSPF:
             // A small, calm presence near the top while questions are answered.
             return RampOrbStage(yFraction: -0.34, scale: 0.42, opacity: 0.85)
-        case .twinComplete:
+        case .insightSkin, .insightLife:
+            // The insight is "spoken" by the engine — the orb leans in a little.
+            return RampOrbStage(yFraction: -0.26, scale: 0.56, opacity: 1.0)
+        case .theReading:
             return RampOrbStage(yFraction: -0.16, scale: 0.72, opacity: 1.0)
         case .theCurve:
             return RampOrbStage(yFraction: -0.36, scale: 0.4, opacity: 0.5, haloed: false)
-        case .dailyReport:
+        case .dailyRitual:
             return RampOrbStage(yFraction: -0.33, scale: 0.44, opacity: 0.75)
         case .handoff:
             return RampOrbStage(yFraction: -0.04, scale: 1.15, opacity: 1.0)
@@ -203,11 +222,35 @@ struct RampQuizAnswers {
         }
     }
 
+    enum AgeBand: String, CaseIterable, Identifiable {
+        case under25, from25to34, from35to44, over45
+        var id: String { rawValue }
+        var label: String {
+            switch self {
+            case .under25:    return "Under 25"
+            case .from25to34: return "25 – 34"
+            case .from35to44: return "35 – 44"
+            case .over45:     return "45+"
+            }
+        }
+        var chip: String { label }
+    }
+
+    /// Optional first name — personalizes copy from the quiz onward.
+    var name: String?
     var selfRating: SelfRating?
     var concern: MirrorConcern?
+    var age: AgeBand?
     var routine: RoutineLevel?
     var sleep: SleepBucket?
     var spf: SunProtection?
+
+    /// Trimmed display name, nil when empty/skipped.
+    var displayName: String? {
+        guard let trimmed = name?.trimmingCharacters(in: .whitespacesAndNewlines),
+              !trimmed.isEmpty else { return nil }
+        return trimmed
+    }
 
     /// Labels absorbed into the head on the "Twin complete" screen.
     var chipLabels: [String] {
@@ -217,8 +260,68 @@ struct RampQuizAnswers {
 
     /// How many of the five questions have been answered.
     var answeredCount: Int {
-        [selfRating != nil, concern != nil, routine != nil, sleep != nil, spf != nil]
+        [selfRating != nil, concern != nil, age != nil,
+         routine != nil, sleep != nil, spf != nil]
             .filter { $0 }.count
+    }
+
+    // MARK: Mirrored insights (the "we're listening" interstitials)
+
+    /// Chapter-1 insight: reflects the skin answers back in full sentences.
+    /// Pure template logic over the user's OWN answers — nothing fabricated.
+    var skinInsight: String {
+        var lines: [String] = []
+        switch concern {
+        case .redness?:
+            lines.append("Redness that comes and goes is usually barrier-related — and recoverable.")
+        case .breakouts?:
+            lines.append("Breakouts respond fastest of all seven metrics once the routine is consistent.")
+        case .pores?:
+            lines.append("Pore visibility is mostly texture and oil balance — both trainable within weeks.")
+        case .texture?:
+            lines.append("Texture is the slowest metric to move — but also the one that moves most reliably.")
+        case .dullness?:
+            lines.append("Dullness is typically surface buildup and hydration — the quickest win there is.")
+        case .nothing?, nil:
+            lines.append("No single flag from you — the scan usually finds headroom people don't feel.")
+        }
+        switch selfRating {
+        case .rough?:
+            lines.append("You rate it rough right now. Rough patches score low — and rebound hard.")
+        case .average?:
+            lines.append("You call it average. Average almost always hides 10+ points of ceiling.")
+        case .decent?, .honestlyGood?:
+            lines.append("You already rate it well — the reading will show what's left above that.")
+        case nil:
+            break
+        }
+        return lines.joined(separator: " ")
+    }
+
+    /// Chapter-2 insight: connects lifestyle answers to the score vocabulary.
+    var lifeInsight: String {
+        var lines: [String] = []
+        switch (sleep, spf) {
+        case (.under6?, .whatsSPF?), (.sixToSeven?, .whatsSPF?):
+            lines.append("Short sleep and no SPF typically cost 8–12 points combined — and they're the fastest to win back.")
+        case (_, .whatsSPF?):
+            lines.append("No SPF yet is the single biggest lever in your answers — worth several points on its own.")
+        case (.under6?, _), (.sixToSeven?, _):
+            lines.append("Sleep under 7h shows up in glow and redness first — both respond within days.")
+        default:
+            lines.append("Your habits already protect your baseline — the plan will aim above it.")
+        }
+        switch routine {
+        case .nothing?:
+            lines.append("Starting from zero routine is actually the steepest improvement curve there is.")
+        case .cleanserOnly?:
+            lines.append("Cleanser-only means every added step still pays full price in points.")
+        case .threePlus?, .fullStack?:
+            lines.append("With your routine depth, sequencing matters more than adding products.")
+        case nil:
+            break
+        }
+        return lines.joined(separator: " ")
     }
 
     /// A plausible, personalized score band derived from the answers — the
@@ -262,6 +365,13 @@ struct RampQuizAnswers {
         case .nothing?:                         center += 2
         case nil:                               break
         }
+        switch age {
+        case .under25?:    center += 2
+        case .from25to34?: center += 1
+        case .from35to44?: break
+        case .over45?:     center -= 2
+        case nil:          break
+        }
 
         let low  = max(30, min(90, Int((center - 13).rounded())))
         let high = max(low + 6, min(97, Int((center + 10).rounded())))
@@ -279,6 +389,8 @@ struct RampQuizAnswers {
         profile.routineLevel = routine?.rawValue
         profile.sleepBucket = sleep?.rawValue
         profile.sunProtection = spf?.rawValue
+        profile.displayName = displayName
+        profile.ageBand = age?.rawValue
     }
 }
 

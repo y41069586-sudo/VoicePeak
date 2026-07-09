@@ -1,13 +1,18 @@
 import SwiftUI
+import SwiftData
 import StoreKit
 
 // ============================================================
-// MARK: — Screen 4: Results (paywalled)
+// MARK: — Screen 4: Results (teased, then paywalled)
 // ============================================================
 
-/// Everything renders BLURRED under the paywall — the user sees the shape of
-/// their results but nothing readable. Post-purchase the blur dissolves
-/// (0.6s), THEN the count-up plays. The reveal happens after payment.
+/// The tease, not the wall: the OVERALL score and the two strongest metrics
+/// render clear for everyone — the honest number is never hostage. The five
+/// remaining metrics and the written read stay soft-blurred until unlock
+/// (documented genre pattern: a real taste converts harder than a blur-wall).
+/// Post-unlock the card becomes shareable (story-sized Reading Card) and —
+/// from the 3rd completed scan on, never during onboarding (5.6.3) — the
+/// native review ask may fire once.
 struct DermiqResultsView: View {
     let model: ScanFlowModel
     let onContinue: () -> Void
@@ -17,25 +22,38 @@ struct DermiqResultsView: View {
     let onClose: () -> Void
 
     @Environment(PurchaseManager.self) private var purchases
+    @Environment(\.requestReview) private var requestReview
+    @Query private var scans: [ScanRecord]
+    @Query private var profiles: [UserProfile]
 
     /// Simulated entitlement while StoreKit is disabled (mock/demo builds).
     @AppStorage("dermiq.unlocked") private var simulatedUnlock = false
+    /// The post-scan review ask fires at most once, ever (system throttles too).
+    @AppStorage("dermiq.reviewAsked") private var reviewAsked = false
 
     @State private var revealed = false
     @State private var playCountUp = false
     @State private var ringProgress: Double = 0
     @State private var countUpFinished = false
+    @State private var shareURL: URL?
 
     private var unlocked: Bool { purchases.isPro || simulatedUnlock }
+
+    /// Indices of the two strongest metrics — the free taste.
+    private func freeIndices(_ analysis: DermiqAnalysis) -> Set<Int> {
+        let ranked = analysis.subScores.enumerated()
+            .sorted { $0.element.value > $1.element.value }
+            .prefix(2)
+            .map(\.offset)
+        return Set(ranked)
+    }
 
     var body: some View {
         ZStack {
             DQColor.background.ignoresSafeArea()
 
             if let analysis = model.analysis {
-                results(analysis)
-                    .blur(radius: revealed ? 0 : 26)
-                    .allowsHitTesting(revealed)
+                results(analysis, locked: !revealed)
 
                 if !revealed {
                     DermiqPaywallCard {
@@ -46,7 +64,8 @@ struct DermiqResultsView: View {
             }
         }
         .onAppear {
-            if unlocked { unlockAndReveal() }
+            if unlocked { revealed = true }
+            startCountUp()
         }
     }
 
@@ -74,23 +93,49 @@ struct DermiqResultsView: View {
 
     // MARK: Results content
 
-    private func results(_ analysis: DermiqAnalysis) -> some View {
+    private func results(_ analysis: DermiqAnalysis, locked: Bool) -> some View {
         ScrollView {
             VStack(spacing: 28) {
                 scoreHeader(analysis)
-                subScoreGrid(analysis)
+                subScoreGrid(analysis, locked: locked)
                 summaryBlock(analysis)
-                if countUpFinished || !revealed {
-                    DQPrimaryButton(title: "See my potential") { onContinue() }
-                        .opacity(countUpFinished ? 1 : 0)
-                        .animation(VMotion.gentle, value: countUpFinished)
+                    .blur(radius: locked ? 14 : 0)
+                if !locked {
+                    shareRow
+                    if countUpFinished {
+                        DQPrimaryButton(title: "See my potential") { onContinue() }
+                            .animation(VMotion.gentle, value: countUpFinished)
+                    }
                 }
             }
             .padding(.horizontal, 24)
             .padding(.top, 48)
-            .padding(.bottom, 40)
+            .padding(.bottom, locked ? 300 : 40) // keep content clear of the paywall card
         }
         .scrollIndicators(.hidden)
+        .animation(.easeOut(duration: 0.6), value: locked)
+    }
+
+    /// Post-unlock: the story-sized Reading Card, rendered on-device.
+    @ViewBuilder
+    private var shareRow: some View {
+        if let shareURL {
+            ShareLink(item: shareURL) {
+                HStack(spacing: 8) {
+                    Image(systemName: "square.and.arrow.up")
+                    Text("Share my reading")
+                }
+                .font(DQFont.headline)
+                .foregroundStyle(DQColor.textPrimary)
+                .frame(maxWidth: .infinity, minHeight: 50)
+                .background(DQColor.surface, in: Capsule())
+                .overlay(Capsule().strokeBorder(DQColor.stroke, lineWidth: 1))
+            }
+            .buttonStyle(PressableStyle())
+            .simultaneousGesture(TapGesture().onEnded {
+                RampAnalytics.track("reading_card_share")
+            })
+        }
     }
 
     private func scoreHeader(_ analysis: DermiqAnalysis) -> some View {
@@ -114,11 +159,21 @@ struct DermiqResultsView: View {
         .padding(.top, 8)
     }
 
-    private func subScoreGrid(_ analysis: DermiqAnalysis) -> some View {
-        LazyVGrid(columns: [GridItem(.flexible(), spacing: 12), GridItem(.flexible(), spacing: 12)],
-                  spacing: 12) {
-            ForEach(analysis.subScores) { score in
+    private func subScoreGrid(_ analysis: DermiqAnalysis, locked: Bool) -> some View {
+        let free = freeIndices(analysis)
+        return LazyVGrid(columns: [GridItem(.flexible(), spacing: 12), GridItem(.flexible(), spacing: 12)],
+                         spacing: 12) {
+            ForEach(Array(analysis.subScores.enumerated()), id: \.element.id) { index, score in
+                let teased = locked && !free.contains(index)
                 DQSubScoreCard(score: score)
+                    .blur(radius: teased ? 12 : 0)
+                    .overlay {
+                        if teased {
+                            Image(systemName: "lock.fill")
+                                .font(.system(size: 13, weight: .semibold))
+                                .foregroundStyle(DQColor.textSecondary)
+                        }
+                    }
             }
         }
     }
@@ -141,16 +196,47 @@ struct DermiqResultsView: View {
 
     // MARK: Reveal choreography
 
-    private func unlockAndReveal() {
-        guard !revealed else { return }
-        guard let analysis = model.analysis else { return }
-        withAnimation(.easeOut(duration: 0.6)) { revealed = true }
+    /// The overall score is the free tease — the count-up plays immediately,
+    /// locked or not. (The paywall sells the *why*, not the number.)
+    private func startCountUp() {
+        guard !playCountUp, let analysis = model.analysis else { return }
         Task {
-            // Blur fully dissolves first; THEN the count-up plays.
-            try? await Task.sleep(for: .milliseconds(650))
+            try? await Task.sleep(for: .milliseconds(400))
             playCountUp = true
             withAnimation(.easeOut(duration: 1.9)) {
                 ringProgress = Double(analysis.overall) / 100
+            }
+            if revealed { afterUnlock() }
+        }
+    }
+
+    private func unlockAndReveal() {
+        guard !revealed else { return }
+        withAnimation(.easeOut(duration: 0.6)) { revealed = true }
+        afterUnlock()
+    }
+
+    /// Post-unlock side effects: render the shareable Reading Card, and — from
+    /// the 3rd completed scan, once ever — the native review ask (5.6.3-safe:
+    /// this is a real positive moment, far from onboarding).
+    private func afterUnlock() {
+        guard let analysis = model.analysis else { return }
+        if shareURL == nil {
+            let card = ReadingShareCard(
+                analysis: analysis,
+                date: .now,
+                displayName: profiles.first?.displayName
+            )
+            if let image = ShareRenderer.image(for: card, size: ReadingShareCard.size),
+               let url = ShareRenderer.pngURL(for: image, name: "verite-reading") {
+                shareURL = url
+            }
+        }
+        if !reviewAsked && scans.count >= 3 {
+            reviewAsked = true
+            Task {
+                try? await Task.sleep(for: .milliseconds(2200))
+                requestReview()
             }
         }
     }
@@ -190,10 +276,10 @@ struct DermiqPaywallCard: View {
                 .padding(.top, 12)
 
             VStack(spacing: 6) {
-                Text("Your score is ready.")
+                Text("That's your score. Now the why.")
                     .font(DQFont.title)
                     .foregroundStyle(DQColor.textPrimary)
-                Text("Unlock your rating, your potential, and the 14-day plan built from it.")
+                Text("Unlock all seven metrics, your written read, your potential, and the 14-day plan built from them.")
                     .font(DQFont.body)
                     .foregroundStyle(DQColor.textSecondary)
                     .multilineTextAlignment(.center)

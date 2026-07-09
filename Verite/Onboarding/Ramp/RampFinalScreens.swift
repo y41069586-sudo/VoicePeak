@@ -1,5 +1,4 @@
 import SwiftUI
-import StoreKit
 
 // ============================================================
 // MARK: — Screen 9: The Curve (where do you land?)
@@ -8,11 +7,11 @@ import StoreKit
 /// Social comparison without a single fabricated testimonial (App Review
 /// 2.3.1-safe): a soft population curve with a "?" that keeps searching for
 /// the user's spot and never finds it — because only a scan can place it.
+///
+/// NOTE: deliberately NO review prompt here — Apple 5.6.3 forbids rating asks
+/// during onboarding. The ask lives post-scan (results, 3rd+ completed scan).
 struct RampCurveScreen: View {
     let onAdvance: () -> Void
-
-    @Environment(AppState.self) private var appState
-    @Environment(\.requestReview) private var requestReview
 
     var body: some View {
         VStack(spacing: 0) {
@@ -53,11 +52,6 @@ struct RampCurveScreen: View {
                 .padding(.horizontal, VSpace.lg)
             Spacer().frame(height: VSpace.xxl)
         }
-        .onAppear {
-            if appState.featureFlags.onboardingRatingAskEnabled {
-                requestReview()
-            }
-        }
     }
 }
 
@@ -90,9 +84,22 @@ private struct RampMiniClaim: View {
 
 /// Custom screen BEFORE the system dialog — a denied system prompt is
 /// unrecoverable, so the real request only fires from the primary button.
+/// The user picks a concrete time FIRST (implementation intention: a chosen
+/// "when" measurably outperforms a generic "daily"), then grants permission.
 struct RampDailyReportScreen: View {
     let onAdvance: () -> Void
 
+    private enum RitualTime: String, CaseIterable {
+        case morning, evening
+        var label: String { self == .morning ? "Morning" : "Evening" }
+        var sub: String { self == .morning ? "With your routine, 8:00" : "Wind-down check, 21:00" }
+        var icon: String { self == .morning ? "sun.min" : "moon" }
+        /// PM-reminder time handed to the scheduler (the AM nudge is fixed at
+        /// 8:00) — earlier for morning people, later for evening people.
+        var pmHour: (hour: Int, minute: Int) { self == .morning ? (19, 0) : (21, 0) }
+    }
+
+    @State private var time: RitualTime = .evening
     @State private var requesting = false
 
     var body: some View {
@@ -105,7 +112,7 @@ struct RampDailyReportScreen: View {
                     .foregroundStyle(RampStage.ink)
                     .multilineTextAlignment(.center)
                     .lineSpacing(2)
-                Text("Your score shifts daily. One quiet reminder keeps your 14-day ritual on track.")
+                Text("Your score shifts daily. When should your ritual check in?")
                     .font(VType.bodyLarge)
                     .foregroundStyle(RampStage.textSecondary)
                     .multilineTextAlignment(.center)
@@ -113,17 +120,33 @@ struct RampDailyReportScreen: View {
             .padding(.horizontal, VSpace.xl)
             .vStaggeredAppear(index: 0)
 
+            Spacer().frame(height: VSpace.xl)
+
+            HStack(spacing: VSpace.sm) {
+                ForEach(RitualTime.allCases, id: \.self) { option in
+                    timeTile(option)
+                }
+            }
+            .padding(.horizontal, VSpace.lg)
+            .vStaggeredAppear(index: 1)
+
             Spacer()
 
             VStack(spacing: VSpace.sm) {
                 RampPrimaryButton(title: "Enable reminders", isEnabled: !requesting) {
                     guard !requesting else { return }
                     requesting = true
+                    let chosen = time
                     Task {
                         let granted = await NotificationManager.requestAuthorization()
-                        if granted { NotificationManager.scheduleRoutineReminders() }
+                        if granted {
+                            let pm = chosen.pmHour
+                            NotificationManager.scheduleRoutineReminders(hour: pm.hour, minute: pm.minute)
+                        }
                         RampAnalytics.track("onboarding_notifications",
-                                            ["choice": "enable", "granted": String(granted)])
+                                            ["choice": "enable",
+                                             "time": chosen.rawValue,
+                                             "granted": String(granted)])
                         onAdvance()
                     }
                 }
@@ -135,6 +158,40 @@ struct RampDailyReportScreen: View {
             .padding(.horizontal, VSpace.lg)
             Spacer().frame(height: VSpace.xxl)
         }
+    }
+
+    private func timeTile(_ option: RitualTime) -> some View {
+        let selected = time == option
+        return Button {
+            Haptics.fire(.selection)
+            time = option
+        } label: {
+            VStack(spacing: 6) {
+                Image(systemName: option.icon)
+                    .font(.system(size: 18, weight: .regular))
+                    .foregroundStyle(selected ? RampStage.accentDeep : RampStage.textTertiary)
+                Text(option.label)
+                    .font(RampStage.serif(17))
+                    .foregroundStyle(selected ? RampStage.accentDeep : RampStage.ink)
+                Text(option.sub)
+                    .font(VType.micro)
+                    .foregroundStyle(RampStage.textTertiary)
+            }
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, VSpace.md)
+            .background(
+                selected
+                    ? AnyShapeStyle(RampStage.accent.opacity(0.12))
+                    : AnyShapeStyle(RampStage.card),
+                in: RoundedRectangle(cornerRadius: 18, style: .continuous)
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: 18, style: .continuous)
+                    .strokeBorder(selected ? RampStage.accent : RampStage.hairline, lineWidth: 1)
+            )
+        }
+        .buttonStyle(PressableStyle())
+        .animation(VMotion.gentle, value: time)
     }
 }
 
@@ -181,15 +238,21 @@ struct RampHandoffScreen: View {
 
             Spacer()
 
-            RampPrimaryButton(title: "Scan my skin", systemImage: "camera.fill") {
-                guard !starting else { return }
-                starting = true
-                Task {
-                    let granted = await CameraPermission.request()
-                    RampAnalytics.track("onboarding_camera_permission",
-                                        ["granted": String(granted)])
-                    onComplete()
+            VStack(spacing: VSpace.sm) {
+                RampPrimaryButton(title: "Scan my skin", systemImage: "camera.fill") {
+                    guard !starting else { return }
+                    starting = true
+                    Task {
+                        let granted = await CameraPermission.request()
+                        RampAnalytics.track("onboarding_camera_permission",
+                                            ["granted": String(granted)])
+                        onComplete()
+                    }
                 }
+                Text("Your reading card and 14-day plan are built from this first scan.")
+                    .font(VType.micro)
+                    .foregroundStyle(RampStage.textTertiary)
+                    .multilineTextAlignment(.center)
             }
             .padding(.horizontal, VSpace.lg)
 

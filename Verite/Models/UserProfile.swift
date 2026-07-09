@@ -29,6 +29,10 @@ final class UserProfile {
     var sleepBucket: String?
     /// Q5 — SPF habit ("daily" / "sometimes" / "whatsSPF").
     var sunProtection: String?
+    /// Optional first name from onboarding — personalizes copy app-wide.
+    var displayName: String?
+    /// Age band ("under25" … "over45") — read by the plan generation.
+    var ageBand: String?
 
     init(
         id: UUID = UUID(),

@@ -53,42 +53,153 @@ struct RampQuizScreen: View {
 }
 
 // ============================================================
+// MARK: — The Name (optional, personalizes everything after)
+// ============================================================
+
+/// One optional text field. Cheapest proven personalization lever there is:
+/// from here on the engine addresses the user by name — honestly, because
+/// they gave it to us seconds ago.
+struct RampNameScreen: View {
+    @Binding var name: String
+    let onAdvance: () -> Void
+
+    @FocusState private var focused: Bool
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            Spacer().frame(height: VSpace.xxl * 2)
+
+            Text("What should\nwe call you?")
+                .font(RampStage.serif(27, italic: true))
+                .foregroundStyle(RampStage.ink)
+                .lineSpacing(2)
+                .padding(.horizontal, VSpace.lg)
+
+            Spacer().frame(height: VSpace.xl)
+
+            TextField("Your first name", text: $name)
+                .font(RampStage.serif(22))
+                .foregroundStyle(RampStage.ink)
+                .tint(RampStage.accentDeep)
+                .textContentType(.givenName)
+                .autocorrectionDisabled()
+                .submitLabel(.continue)
+                .focused($focused)
+                .onSubmit { onAdvance() }
+                .padding(.horizontal, 18)
+                .frame(minHeight: 62)
+                .background(RampStage.card, in: RoundedRectangle(cornerRadius: 18, style: .continuous))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 18, style: .continuous)
+                        .strokeBorder(focused ? RampStage.accent : RampStage.hairline, lineWidth: 1)
+                )
+                .padding(.horizontal, VSpace.lg)
+                .animation(VMotion.gentle, value: focused)
+
+            Text("Stays on your device, like everything else.")
+                .font(VType.micro)
+                .foregroundStyle(RampStage.textTertiary)
+                .padding(.horizontal, VSpace.lg)
+                .padding(.top, VSpace.sm)
+
+            Spacer()
+
+            VStack(spacing: VSpace.xs) {
+                RampPrimaryButton(title: "Continue") { onAdvance() }
+                RampGhostButton(title: "Skip") {
+                    name = ""
+                    onAdvance()
+                }
+            }
+            .padding(.horizontal, VSpace.lg)
+            Spacer().frame(height: VSpace.xxl)
+        }
+        .task {
+            try? await Task.sleep(for: .milliseconds(450))
+            focused = true
+        }
+    }
+}
+
+// ============================================================
+// MARK: — Insight interstitial (the engine talks back)
+// ============================================================
+
+/// The mid-quiz payoff: the engine reflects the user's own answers back in
+/// full sentences. Pure template logic over THEIR answers — the strongest
+/// documented conversion mechanic in this genre, with nothing fabricated.
+struct RampInsightScreen: View {
+    let eyebrow: String
+    let insight: String
+    let onAdvance: () -> Void
+
+    @State private var shown = false
+
+    var body: some View {
+        VStack(spacing: 0) {
+            Spacer() // orb leans in above (staged by the container)
+
+            VStack(spacing: VSpace.md) {
+                Text(verbatim: eyebrow)
+                    .font(VType.micro)
+                    .tracking(3)
+                    .foregroundStyle(RampStage.accentDeep)
+                Text(insight)
+                    .font(RampStage.serif(23, italic: true))
+                    .foregroundStyle(RampStage.ink)
+                    .multilineTextAlignment(.center)
+                    .lineSpacing(4)
+            }
+            .padding(.horizontal, VSpace.xl)
+            .opacity(shown ? 1 : 0)
+            .offset(y: shown ? 0 : 10)
+
+            Spacer()
+
+            RampPrimaryButton(title: "Continue") { onAdvance() }
+                .padding(.horizontal, VSpace.lg)
+                .opacity(shown ? 1 : 0)
+            Spacer().frame(height: VSpace.xxl)
+        }
+        .task {
+            try? await Task.sleep(for: .milliseconds(250))
+            withAnimation(.easeOut(duration: 0.9)) { shown = true }
+            Haptics.fire(.selection)
+        }
+    }
+}
+
+// ============================================================
 // MARK: — The Reading (calm payoff + prediction range)
 // ============================================================
 
-/// The reward for answering — but hushed. The answers settle into a soft line,
-/// the orb warms (staged by the container), and the engine reveals a
-/// personalized score *range*. A single number would answer the question; a
-/// range is a quiet open question only the scan can close.
+/// The reward for answering. The estimate is visibly EARNED: four processing
+/// steps tick through one by one (each referencing what the user actually
+/// gave us), and only then does the personalized score *range* appear. A
+/// single number would answer the question; a range is a quiet open question
+/// only the scan can close.
 struct RampRevealScreen: View {
     let answers: RampQuizAnswers
     let onAdvance: () -> Void
 
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
-    @State private var showChips = false
+    @State private var stepCount = 0
     @State private var showRange = false
 
     private var range: (low: Int, high: Int) { answers.predictedRange }
 
+    private var steps: [String] {
+        [
+            "Mapping your skin profile…",
+            "Weighing sleep & sun exposure…",
+            answers.age != nil ? "Comparing against your age group…"
+                               : "Comparing against typical profiles…",
+            "Setting your range…",
+        ]
+    }
+
     var body: some View {
         VStack(spacing: 0) {
-            Spacer()
-
-            Text(verbatim: "YOUR READING, SO FAR")
-                .font(VType.micro)
-                .tracking(3)
-                .foregroundStyle(RampStage.accentDeep)
-                .opacity(showChips ? 1 : 0)
-
-            Text(answers.chipLabels.joined(separator: "  ·  "))
-                .font(VType.caption)
-                .foregroundStyle(RampStage.textSecondary)
-                .multilineTextAlignment(.center)
-                .lineSpacing(4)
-                .padding(.horizontal, VSpace.xl)
-                .padding(.top, VSpace.sm)
-                .opacity(showChips ? 1 : 0)
-
             Spacer() // orb warms here (staged by the container)
 
             Group {
@@ -96,12 +207,10 @@ struct RampRevealScreen: View {
                     rangeReveal
                         .transition(.opacity.combined(with: .move(edge: .bottom)))
                 } else {
-                    Text("Reading your answers…")
-                        .font(VType.body)
-                        .foregroundStyle(RampStage.textSecondary)
+                    processingList
                 }
             }
-            .frame(minHeight: 150)
+            .frame(minHeight: 220)
             .padding(.horizontal, VSpace.xl)
             .animation(VMotion.gentle, value: showRange)
 
@@ -118,13 +227,47 @@ struct RampRevealScreen: View {
         .task { await run() }
     }
 
+    /// The visible work: steps appear one by one, each settling with a check.
+    private var processingList: some View {
+        VStack(alignment: .leading, spacing: VSpace.md) {
+            ForEach(0..<stepCount, id: \.self) { index in
+                HStack(spacing: 12) {
+                    Image(systemName: index < stepCount - 1 || showRange
+                          ? "checkmark.circle.fill" : "circle.dotted")
+                        .font(.system(size: 16, weight: .medium))
+                        .foregroundStyle(index < stepCount - 1 || showRange
+                                         ? RampStage.accent : RampStage.textTertiary)
+                    Text(steps[index])
+                        .font(VType.body)
+                        .foregroundStyle(index == stepCount - 1
+                                         ? RampStage.ink : RampStage.textSecondary)
+                }
+                .transition(.opacity.combined(with: .move(edge: .bottom)))
+            }
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .animation(VMotion.gentle, value: stepCount)
+    }
+
     private var rangeReveal: some View {
         VStack(spacing: VSpace.md) {
+            if let name = answers.displayName {
+                Text(verbatim: "\(name.uppercased())'S RANGE")
+                    .font(VType.micro)
+                    .tracking(3)
+                    .foregroundStyle(RampStage.accentDeep)
+            } else {
+                Text(verbatim: "YOUR RANGE")
+                    .font(VType.micro)
+                    .tracking(3)
+                    .foregroundStyle(RampStage.accentDeep)
+            }
+
             Text(verbatim: "\(range.low) – \(range.high)")
                 .font(RampStage.serif(60))
                 .foregroundStyle(RampStage.ink)
 
-            Text("The engine already has an estimate.\nOnly a scan narrows it to your real number.")
+            Text("Based on your \(answers.answeredCount) answers — your ceiling sits higher than your floor suggests. Only a scan narrows this to your real number.")
                 .font(VType.body)
                 .foregroundStyle(RampStage.textSecondary)
                 .multilineTextAlignment(.center)
@@ -133,11 +276,19 @@ struct RampRevealScreen: View {
     }
 
     private func run() async {
-        try? await Task.sleep(for: .milliseconds(reduceMotion ? 100 : 500))
-        withAnimation(.easeOut(duration: 0.9)) { showChips = true }
-        Haptics.fire(.selection)
-
-        try? await Task.sleep(for: .milliseconds(reduceMotion ? 200 : 1400))
+        if reduceMotion {
+            stepCount = steps.count
+            try? await Task.sleep(for: .milliseconds(400))
+            showRange = true
+            return
+        }
+        try? await Task.sleep(for: .milliseconds(400))
+        for index in steps.indices {
+            guard !Task.isCancelled else { return }
+            withAnimation(VMotion.gentle) { stepCount = index + 1 }
+            Haptics.fire(.tick)
+            try? await Task.sleep(for: .milliseconds(720))
+        }
         guard !Task.isCancelled else { return }
         withAnimation(VMotion.gentle) { showRange = true }
         Haptics.fire(.verdictReveal)

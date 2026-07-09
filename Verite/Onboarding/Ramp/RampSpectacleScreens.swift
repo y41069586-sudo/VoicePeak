@@ -40,15 +40,171 @@ struct RampBootScreen: View {
 
             Spacer()
 
-            RampPrimaryButton(title: "Begin") { onAdvance() }
-                .padding(.horizontal, VSpace.lg)
-                .opacity(shown ? 1 : 0)
+            VStack(spacing: VSpace.sm) {
+                RampPrimaryButton(title: "Begin") { onAdvance() }
+                Text("About a minute. No account needed.")
+                    .font(VType.micro)
+                    .foregroundStyle(RampStage.textTertiary)
+            }
+            .padding(.horizontal, VSpace.lg)
+            .opacity(shown ? 1 : 0)
             Spacer().frame(height: VSpace.xxl)
         }
         .task {
             try? await Task.sleep(for: .milliseconds(200))
             withAnimation(.easeOut(duration: 1.1)) { shown = true }
         }
+    }
+}
+
+// ============================================================
+// MARK: — Screen 1: A Reading (the outcome, shown first)
+// ============================================================
+
+/// The genre's strongest opener: show the artifact the user will own BEFORE
+/// asking for anything. An illustrative reading card — clearly labeled, no
+/// invented people, no faces — cycles through a few example scores.
+struct RampSampleReadingScreen: View {
+    let onAdvance: () -> Void
+
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @State private var index = 0
+
+    private let samples = RampSampleReading.samples
+
+    var body: some View {
+        VStack(spacing: 0) {
+            Spacer().frame(height: VSpace.xxl * 1.6)
+
+            Text("Your skin, as a\nsingle honest page.")
+                .font(RampStage.serif(27, italic: true))
+                .foregroundStyle(RampStage.ink)
+                .multilineTextAlignment(.center)
+                .lineSpacing(2)
+
+            Spacer()
+
+            RampSampleReadingCard(sample: samples[index])
+                .id(index)
+                .transition(.opacity)
+
+            // Cycle dots
+            HStack(spacing: 6) {
+                ForEach(samples.indices, id: \.self) { i in
+                    Capsule()
+                        .fill(i == index ? RampStage.accent : RampStage.hair)
+                        .frame(width: i == index ? 18 : 6, height: 4)
+                }
+            }
+            .padding(.top, VSpace.md)
+
+            Text("Illustrative reading. Yours is built from your scan.")
+                .font(VType.micro)
+                .foregroundStyle(RampStage.textTertiary)
+                .padding(.top, VSpace.xs)
+
+            Spacer()
+
+            RampPrimaryButton(title: "I want mine") { onAdvance() }
+                .padding(.horizontal, VSpace.lg)
+            Spacer().frame(height: VSpace.xxl)
+        }
+        .task {
+            guard !reduceMotion else { return }
+            while !Task.isCancelled {
+                try? await Task.sleep(for: .milliseconds(2600))
+                guard !Task.isCancelled else { return }
+                withAnimation(.easeInOut(duration: 0.5)) {
+                    index = (index + 1) % samples.count
+                }
+            }
+        }
+    }
+}
+
+/// One illustrative reading: an overall score + per-metric levels.
+struct RampSampleReading {
+    let overall: Int
+    let metrics: [(String, Double)] // label, 0…1
+
+    static let samples: [RampSampleReading] = [
+        RampSampleReading(overall: 74, metrics: [
+            ("Texture", 0.71), ("Redness", 0.66), ("Pores", 0.78),
+            ("Evenness", 0.73), ("Glow", 0.81), ("Hydration", 0.69), ("Blemishes", 0.84),
+        ]),
+        RampSampleReading(overall: 62, metrics: [
+            ("Texture", 0.55), ("Redness", 0.48), ("Pores", 0.66),
+            ("Evenness", 0.61), ("Glow", 0.58), ("Hydration", 0.72), ("Blemishes", 0.70),
+        ]),
+        RampSampleReading(overall: 86, metrics: [
+            ("Texture", 0.84), ("Redness", 0.88), ("Pores", 0.82),
+            ("Evenness", 0.87), ("Glow", 0.90), ("Hydration", 0.83), ("Blemishes", 0.89),
+        ]),
+    ]
+}
+
+/// The card itself — white paper on the porcelain stage, serif score,
+/// seven quiet metric rows. This exact layout returns as the user's own
+/// shareable Reading Card after the first scan.
+struct RampSampleReadingCard: View {
+    let sample: RampSampleReading
+
+    var body: some View {
+        VStack(spacing: 0) {
+            HStack {
+                Text(verbatim: "VÉRITÉ")
+                    .font(VType.micro).tracking(4)
+                    .foregroundStyle(RampStage.accentDeep)
+                Spacer()
+                Text(verbatim: "READING")
+                    .font(VType.micro).tracking(4)
+                    .foregroundStyle(RampStage.textTertiary)
+            }
+
+            HStack(alignment: .firstTextBaseline, spacing: 6) {
+                Text(verbatim: "\(sample.overall)")
+                    .font(RampStage.serif(56))
+                    .foregroundStyle(RampStage.ink)
+                    .contentTransition(.numericText())
+                Text(verbatim: "/ 100")
+                    .font(VType.caption)
+                    .foregroundStyle(RampStage.textTertiary)
+            }
+            .padding(.vertical, VSpace.sm)
+
+            VStack(spacing: 9) {
+                ForEach(sample.metrics, id: \.0) { metric in
+                    HStack(spacing: 10) {
+                        Text(metric.0)
+                            .font(VType.caption)
+                            .foregroundStyle(RampStage.textSecondary)
+                            .frame(width: 74, alignment: .leading)
+                        GeometryReader { proxy in
+                            ZStack(alignment: .leading) {
+                                Capsule().fill(RampStage.hair.opacity(0.55))
+                                Capsule()
+                                    .fill(RampStage.accent)
+                                    .frame(width: proxy.size.width * metric.1)
+                            }
+                        }
+                        .frame(height: 4)
+                        Text(verbatim: "\(Int(metric.1 * 100))")
+                            .font(VType.captionBold)
+                            .foregroundStyle(RampStage.accentDeep)
+                            .monospacedDigit()
+                            .frame(width: 24, alignment: .trailing)
+                    }
+                }
+            }
+        }
+        .padding(VSpace.lg)
+        .frame(width: 290)
+        .background(Color.white.opacity(0.72), in: RoundedRectangle(cornerRadius: 22, style: .continuous))
+        .overlay(
+            RoundedRectangle(cornerRadius: 22, style: .continuous)
+                .strokeBorder(RampStage.hairline, lineWidth: 1)
+        )
+        .shadow(color: RampStage.accent.opacity(0.18), radius: 26, y: 14)
     }
 }
 
