@@ -44,7 +44,7 @@ struct DermiqResultsView: View {
         let ranked = analysis.subScores.enumerated()
             .sorted { $0.element.value > $1.element.value }
             .prefix(2)
-            .map(\.offset)
+            .map { $0.offset }
         return Set(ranked)
     }
 
