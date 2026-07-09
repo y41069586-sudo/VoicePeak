@@ -1,7 +1,7 @@
 import SwiftUI
 
 // ============================================================
-// MARK: — Quiz screen (screens 4–5, one question per step)
+// MARK: — Quiz screen (the interrogation, one question per step)
 // ============================================================
 
 struct RampQuizOption: Identifiable {
@@ -11,9 +11,10 @@ struct RampQuizOption: Identifiable {
 }
 
 /// Shared quiz layout: question on top, large option cards, the head reduced
-/// to a corner watermark (staged by the container — it "listens").
-/// Selection IS the advance: card fills with accent, rigid haptic, and the
-/// container moves on after 400ms. No "Next" button — the pace is the point.
+/// to a top-corner presence that visibly densifies as answers come in.
+/// Selection IS the advance: card fills with accent, energy discharges, the
+/// head absorbs the answer, and the container moves on after 400ms. No "Next"
+/// button — the pace is the point.
 struct RampQuizScreen: View {
     let question: String
     let options: [RampQuizOption]
@@ -29,7 +30,7 @@ struct RampQuizScreen: View {
                 .font(VType.hero(28))
                 .foregroundStyle(RampStage.textPrimary)
                 .padding(.horizontal, VSpace.lg)
-                .padding(.trailing, VSpace.xxl) // clear of the corner watermark
+                .padding(.trailing, VSpace.xxl) // clear of the corner head
 
             Spacer().frame(height: VSpace.xl)
 
@@ -72,35 +73,34 @@ struct RampQuizScreen: View {
 }
 
 // ============================================================
-// MARK: — Screen 6: Calibrating (mid-flow payoff)
+// MARK: — Twin Complete (payoff + personalized prediction range)
 // ============================================================
 
-/// The reward for investing: quiz answers fly into the fast-spinning head as
-/// chips, each absorption flashes a vertex cluster, then the status lines
-/// tick in. Auto-advances — this screen converts form answers into perceived
-/// machine intelligence.
-struct RampCalibratingScreen: View {
+/// The reward for investing: the answer chips orbit the fast-spinning head on
+/// visible guide rings and get pulled in one by one, integrity locks to 100%,
+/// an energy burst fires — then the engine reveals a *personalized score
+/// range*. A single number would answer the question; a range is an open
+/// wound only the scan can close. This is the strongest conversion beat.
+struct RampTwinCompleteScreen: View {
     let controller: ScanHeadController
     let answers: RampQuizAnswers
     let onAdvance: () -> Void
 
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var absorbedCount = 0
-    @State private var statusCount = 0
-    @State private var percent = 0
     @State private var burst = false
+    @State private var showRange = false
 
-    private let statusLines = ["Profile built", "Metrics weighted", "Engine ready"]
     private let clusters: [ScanHeadController.Cluster] = [
         .forehead, .leftCheek, .rightCheek, .chin, .forehead,
     ]
+
+    private var range: (low: Int, high: Int) { answers.predictedRange }
 
     var body: some View {
         VStack(spacing: 0) {
             Spacer()
 
-            // Chips orbit the head on visible guide rings and get pulled in
-            // one by one; the finale discharges an energy ring outward.
             ZStack {
                 Ellipse()
                     .strokeBorder(Color.white.opacity(0.07), lineWidth: 1)
@@ -132,33 +132,59 @@ struct RampCalibratingScreen: View {
 
             Spacer()
 
-            VStack(spacing: VSpace.sm) {
-                Text(verbatim: "CALIBRATING \(percent)%")
-                    .font(DQFont.mono(12, weight: .semibold))
-                    .tracking(2)
-                    .foregroundStyle(RampStage.textSecondary)
-                    .contentTransition(.numericText(value: Double(percent)))
-                    .animation(VMotion.snappy, value: percent)
-
-                HStack(spacing: VSpace.sm) {
-                    ForEach(0..<statusCount, id: \.self) { index in
-                        HStack(spacing: 4) {
-                            Image(systemName: "checkmark")
-                                .font(.caption2.weight(.bold))
-                                .foregroundStyle(DQColor.deltaUp)
-                            Text(statusLines[index])
-                                .font(VType.captionBold)
-                                .foregroundStyle(RampStage.textPrimary)
-                        }
+            Group {
+                if showRange {
+                    rangeReveal
                         .transition(.opacity.combined(with: .move(edge: .bottom)))
-                    }
+                } else {
+                    Text("Assembling your twin…")
+                        .font(VType.body)
+                        .foregroundStyle(RampStage.textSecondary)
                 }
-                .animation(VMotion.snappy, value: statusCount)
-                .frame(height: 24)
             }
-            Spacer().frame(height: VSpace.xxl * 1.5)
+            .frame(maxWidth: .infinity)
+            .frame(minHeight: 170)
+            .padding(.horizontal, VSpace.xl)
+            .animation(VMotion.gentle, value: showRange)
+
+            Spacer()
+
+            if showRange {
+                DQPrimaryButton(title: "See where I land") { onAdvance() }
+                    .padding(.horizontal, VSpace.lg)
+                    .transition(.opacity)
+            }
+            Spacer().frame(height: VSpace.xxl)
         }
+        .animation(VMotion.standard, value: showRange)
         .task { await run() }
+    }
+
+    private var rangeReveal: some View {
+        VStack(spacing: VSpace.md) {
+            Text("ESTIMATED RANGE")
+                .font(DQFont.mono(11, weight: .semibold))
+                .tracking(3)
+                .foregroundStyle(RampStage.textTertiary)
+
+            HStack(alignment: .firstTextBaseline, spacing: VSpace.sm) {
+                Text(verbatim: "\(range.low)")
+                    .font(DQFont.score(56))
+                    .foregroundStyle(RampStage.textPrimary)
+                Text(verbatim: "–")
+                    .font(DQFont.score(36))
+                    .foregroundStyle(RampStage.textTertiary)
+                Text(verbatim: "\(range.high)")
+                    .font(DQFont.score(56))
+                    .foregroundStyle(DQColor.accentGradient)
+            }
+            .vGlow(RampStage.accent, radius: 28, opacity: 0.4)
+
+            Text("Our model already has an estimate.\nOnly a scan collapses it to your real number.")
+                .font(VType.body)
+                .foregroundStyle(RampStage.textSecondary)
+                .multilineTextAlignment(.center)
+        }
     }
 
     /// The chip ring at a given wall-clock time — chips drift slowly around
@@ -180,7 +206,6 @@ struct RampCalibratingScreen: View {
 
     private func run() async {
         let chips = answers.chipLabels
-        let chipShare = 68 / max(chips.count, 1)
         try? await Task.sleep(for: .milliseconds(reduceMotion ? 200 : 700))
 
         for index in chips.indices {
@@ -188,27 +213,20 @@ struct RampCalibratingScreen: View {
             withAnimation(reduceMotion ? VMotion.crossfade : VMotion.standard) {
                 absorbedCount = index + 1
             }
-            percent = min(percent + chipShare, 68)
             controller.flash(clusters[index % clusters.count])
-            Haptics.fire(.selection) // light tick per absorption
+            Haptics.fire(.selection)
             try? await Task.sleep(for: .milliseconds(reduceMotion ? 120 : 380))
         }
 
+        // The twin locks in — energy discharge + milestone haptic.
         try? await Task.sleep(for: .milliseconds(300))
-        for index in statusLines.indices {
-            guard !Task.isCancelled else { return }
-            statusCount = index + 1
-            percent = index == statusLines.indices.last ? 100 : percent + 12
-            Haptics.fire(.selection)
-            try? await Task.sleep(for: .milliseconds(reduceMotion ? 150 : 450))
-        }
-
-        // Finale: the engine locks in — energy discharge + milestone haptic.
         if !reduceMotion { burst = true }
         Haptics.fire(.milestone)
-        try? await Task.sleep(for: .milliseconds(800))
+
+        try? await Task.sleep(for: .milliseconds(600))
         guard !Task.isCancelled else { return }
-        onAdvance()
+        withAnimation(VMotion.gentle) { showRange = true }
+        Haptics.fire(.verdictReveal)
     }
 }
 

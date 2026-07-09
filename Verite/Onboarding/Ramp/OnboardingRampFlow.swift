@@ -1,23 +1,27 @@
 import SwiftUI
 import SwiftData
 
-/// Vérité ramp onboarding — spectacle first, identity investment in the
-/// middle, the scan as climax. Hands off to Guided Capture (the Scan tab).
+/// Vérité onboarding v3 — "The Twin". The engine builds your digital twin from
+/// a scatter of points; every answer materializes it further; the final scan
+/// replaces the twin with the real you. Hands off to Guided Capture.
 ///
 /// The SceneKit head lives *behind* every screen for the whole flow; steps
 /// only re-stage it (never recreate it), which is what makes the object feel
-/// continuous. Every advance is a single CTA or a tap-selection — never both.
+/// continuous. Twin integrity (top HUD) rises with each answer and drives the
+/// head's densification — the visual spine of the whole story.
 struct OnboardingRampFlow: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(AppState.self) private var appState
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @Query private var profiles: [UserProfile]
 
-    @State private var step: RampStep = .coldOpen
+    @State private var step: RampStep = .boot
     @State private var answers = RampQuizAnswers()
     @State private var controller = ScanHeadController()
     @State private var dragActive = false
     @State private var hasDraggedHead = false
+    /// Mirrors the twin's materialization for the HUD (0…1).
+    @State private var integrity: Double = 0
 
     var body: some View {
         ZStack {
@@ -32,20 +36,26 @@ struct OnboardingRampFlow: View {
                 .id(step)
                 .transition(pageTransition)
 
-            // "You can touch this" — shown once, until the first grab.
-            if step == .claim && !hasDraggedHead {
+            // "You can grab this" — shown once, on the first question.
+            if step == .quizSelfRating && !hasDraggedHead {
                 VStack {
-                    RampDragHint()
-                        .padding(.top, 150)
+                    HStack {
+                        Spacer()
+                        RampDragHint().padding(.trailing, VSpace.xl)
+                    }
+                    .padding(.top, 120)
                     Spacer()
                 }
                 .allowsHitTesting(false)
                 .transition(.opacity)
             }
 
+            // The twin-integrity HUD replaces the old segmented progress bar.
+            // Hidden on boot (pure spectacle) and on the Split screen (a full-
+            // render demo, not the user's own twin — a 14% readout would lie).
             VStack {
-                if step != .coldOpen {
-                    RampProgressBar(screenIndex: step.screenIndex)
+                if step != .boot && step != .theSplit {
+                    RampIntegrityHUD(integrity: integrity, verified: false)
                         .padding(.horizontal, VSpace.lg)
                         .padding(.top, VSpace.sm)
                         .transition(.opacity)
@@ -63,13 +73,25 @@ struct OnboardingRampFlow: View {
         .animation(VMotion.gentle, value: hasDraggedHead)
         .onAppear {
             controller.apply(step.headStage, reduceMotion: reduceMotion)
+            refreshTwin(animated: false)
             RampAnalytics.screen(step)
         }
         .onChange(of: step) { _, newStep in
             controller.apply(newStep.headStage, reduceMotion: reduceMotion)
+            refreshTwin(animated: true)
             Haptics.fire(.transition)
             RampAnalytics.screen(newStep)
         }
+    }
+
+    /// Recompute twin integrity from the current step + answered count, push it
+    /// to the HUD and the head. The Split screen owns the head directly, so we
+    /// skip it there (it restores integrity on the way out via this same call).
+    private func refreshTwin(animated: Bool) {
+        let target = step.twinIntegrity(answeredCount: answers.answeredCount)
+        integrity = target
+        guard step != .theSplit else { return }
+        controller.setTwinIntegrity(target, animated: animated)
     }
 
     // MARK: Head drag (interactive spin)
@@ -111,14 +133,12 @@ struct OnboardingRampFlow: View {
     @ViewBuilder
     private var currentScreen: some View {
         switch step {
-        case .coldOpen:
-            RampColdOpenScreen(controller: controller) { advance() }
-        case .claim:
-            RampClaimScreen { advance() }
-        case .proof:
-            RampProofScreen { advance() }
-        case .howItWorks:
-            RampHowItWorksScreen(controller: controller) { advance() }
+        case .boot:
+            RampBootScreen(controller: controller) { advance() }
+        case .theNumber:
+            RampNumberScreen { advance() }
+        case .theSplit:
+            RampSplitScreen(controller: controller) { advance() }
         case .quizSelfRating:
             RampQuizScreen(
                 question: "How would you rate your skin right now?",
@@ -175,24 +195,31 @@ struct OnboardingRampFlow: View {
                 answers.spf = RampQuizAnswers.SunProtection(rawValue: id)
                 recordAnswer(question: "sun_protection", answer: id)
             }
-        case .calibrating:
-            RampCalibratingScreen(controller: controller, answers: answers) { advance() }
-        case .socialProof:
-            RampSocialProofScreen { advance() }
-        case .notifications:
-            RampNotificationScreen { advance() }
-        case .scanRamp:
-            RampScanRampScreen(controller: controller) { complete() }
+        case .twinComplete:
+            RampTwinCompleteScreen(controller: controller, answers: answers) { advance() }
+        case .theCurve:
+            RampCurveScreen { advance() }
+        case .dailyReport:
+            RampDailyReportScreen(controller: controller) { advance() }
+        case .handoff:
+            RampHandoffScreen(controller: controller) { complete() }
         }
     }
 
     // MARK: Navigation
 
-    /// Quiz mechanic: card fills, rigid haptic, the head absorbs the answer
-    /// with an immediate cluster flash, auto-advance after 400ms.
+    /// Quiz mechanic: card fills, rigid haptic, the head leans in and absorbs
+    /// the answer (cluster flash), twin integrity jumps, auto-advance after
+    /// 400ms. `answers` is already updated by the caller, so `answeredCount`
+    /// reflects this tap.
     private func recordAnswer(question: String, answer: String) {
         Haptics.fire(.capture) // .rigid impact
         controller.flash(ScanHeadController.Cluster.allCases.randomElement() ?? .forehead)
+        controller.nudge(dx: 0.22)
+        // Immediate densification feedback — the twin gains integrity on tap.
+        let target = step.twinIntegrity(answeredCount: answers.answeredCount)
+        integrity = target
+        controller.setTwinIntegrity(target, animated: true, duration: 0.5)
         RampAnalytics.quizAnswer(question: question, answer: answer)
         let current = step
         Task {

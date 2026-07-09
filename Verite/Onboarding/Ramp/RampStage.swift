@@ -24,8 +24,8 @@ enum RampStage {
     static let card     = Color.white.opacity(0.06)
     static let hairline = Color.white.opacity(0.14)
 
-    /// Total number of conceptual screens (0–9) for the progress bar.
-    static let screenCount = 10
+    /// Total number of conceptual screens (0–11) for the progress bar.
+    static let screenCount = 12
 }
 
 /// Full-bleed backdrop: the v2 background with a soft accent bloom behind
@@ -93,51 +93,7 @@ struct RampParticleField: View {
 }
 
 // ============================================================
-// MARK: — Progress bar (thin, segmented, accent fill)
-// ============================================================
-
-struct RampProgressBar: View {
-    /// Index of the current conceptual screen (0-based).
-    let screenIndex: Int
-
-    @Environment(\.accessibilityReduceMotion) private var reduceMotion
-
-    var body: some View {
-        HStack(spacing: VSpace.xs) {
-            ForEach(0..<RampStage.screenCount, id: \.self) { index in
-                segment(index)
-            }
-        }
-        .animation(VMotion.standard, value: screenIndex)
-        .accessibilityElement()
-        .accessibilityLabel("onboarding.progress")
-        .accessibilityValue(Text(verbatim: "\(screenIndex + 1)/\(RampStage.screenCount)"))
-    }
-
-    @ViewBuilder
-    private func segment(_ index: Int) -> some View {
-        let base = Capsule()
-            .fill(index <= screenIndex
-                  ? AnyShapeStyle(RampStage.accent)
-                  : AnyShapeStyle(Color.white.opacity(0.12)))
-            .frame(height: 3)
-        if index == screenIndex && !reduceMotion {
-            // The live segment breathes and glows — a quiet heartbeat.
-            base
-                .shadow(color: RampStage.accent.opacity(0.9), radius: 4)
-                .phaseAnimator([0.55, 1.0]) { view, opacity in
-                    view.opacity(opacity)
-                } animation: { _ in
-                    .easeInOut(duration: 0.9)
-                }
-        } else {
-            base
-        }
-    }
-}
-
-// ============================================================
-// MARK: — Typewriter text (cold-open wordmark)
+// MARK: — Typewriter text (boot wordmark)
 // ============================================================
 
 struct TypewriterText: View {
@@ -364,5 +320,265 @@ struct RampDragHint: View {
             }
         }
         .accessibilityHidden(true)
+    }
+}
+
+// ============================================================
+// MARK: — Twin integrity HUD
+// ============================================================
+
+/// The permanent top-of-screen readout that turns the whole flow into "the
+/// engine is building your twin". A mono label, a live percentage, a glowing
+/// fill bar and a `SUBJECT · UNVERIFIED` status that only flips to VERIFIED
+/// after the real scan. Shown from The Number through the Handoff.
+struct RampIntegrityHUD: View {
+    /// 0…1.
+    let integrity: Double
+    var verified: Bool = false
+
+    private var pct: Int { Int((integrity * 100).rounded()) }
+
+    var body: some View {
+        VStack(spacing: 6) {
+            HStack {
+                Text(verbatim: "TWIN INTEGRITY")
+                    .font(DQFont.mono(10, weight: .semibold))
+                    .tracking(2)
+                    .foregroundStyle(RampStage.textTertiary)
+                Spacer()
+                Text(verbatim: "\(pct)%")
+                    .font(DQFont.mono(11, weight: .bold))
+                    .foregroundStyle(RampStage.accent)
+                    .contentTransition(.numericText(value: Double(pct)))
+            }
+            GeometryReader { geo in
+                ZStack(alignment: .leading) {
+                    Capsule().fill(Color.white.opacity(0.08))
+                    Capsule()
+                        .fill(DQColor.accentGradient)
+                        .frame(width: geo.size.width * CGFloat(max(0, min(1, integrity))))
+                        .vGlow(RampStage.accent, radius: 6, opacity: 0.7)
+                }
+            }
+            .frame(height: 3)
+            HStack(spacing: 5) {
+                Circle()
+                    .fill(verified ? DQColor.deltaUp : RampStage.accent)
+                    .frame(width: 5, height: 5)
+                Text(verbatim: verified ? "SUBJECT · VERIFIED" : "SUBJECT · UNVERIFIED")
+                    .font(DQFont.mono(9, weight: .medium))
+                    .tracking(1.5)
+                    .foregroundStyle(RampStage.textTertiary)
+                Spacer()
+            }
+        }
+        .animation(VMotion.standard, value: integrity)
+        .accessibilityElement()
+        .accessibilityLabel("onboarding.twin.integrity")
+        .accessibilityValue(Text(verbatim: "\(pct)%"))
+    }
+}
+
+// ============================================================
+// MARK: — Hold-to-begin button
+// ============================================================
+
+/// A commitment ritual instead of a tap: hold, a fill sweeps across, the
+/// haptics ramp, and it fires only when the ring completes. Physical intent
+/// converts far harder than a one-tap CTA. Reduce Motion degrades to a tap.
+struct RampHoldToBeginButton: View {
+    var title: String = "Hold to begin"
+    var duration: Double = 1.1
+    let action: () -> Void
+
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @State private var progress: CGFloat = 0
+    @State private var holding = false
+    @State private var holdTask: Task<Void, Never>?
+
+    var body: some View {
+        ZStack {
+            Capsule().fill(RampStage.card)
+            GeometryReader { geo in
+                Capsule()
+                    .fill(DQColor.accentGradient)
+                    .frame(width: geo.size.width * progress)
+            }
+            .clipShape(Capsule())
+            HStack(spacing: 8) {
+                Image(systemName: "hand.tap.fill")
+                Text(holding ? "Keep holding…" : title)
+            }
+            .font(.system(size: 17, weight: .semibold))
+            .foregroundStyle(DQColor.textPrimary)
+        }
+        .frame(maxWidth: .infinity, minHeight: 56)
+        .overlay(Capsule().strokeBorder(RampStage.accent.opacity(0.6), lineWidth: 1))
+        .vGlow(DQColor.accent, radius: 22, opacity: holding ? 0.45 : 0.2)
+        .contentShape(Capsule())
+        .scaleEffect(holding ? 0.98 : 1)
+        .animation(VMotion.press, value: holding)
+        .gesture(
+            DragGesture(minimumDistance: 0)
+                .onChanged { _ in begin() }
+                .onEnded { _ in release() }
+        )
+        .accessibilityAddTraits(.isButton)
+        .accessibilityLabel(Text(title))
+        .accessibilityAction { fire() }
+    }
+
+    private func begin() {
+        guard !holding else { return }
+        holding = true
+        Haptics.fire(.selection)
+        if reduceMotion { fire(); return }
+        withAnimation(.linear(duration: duration)) { progress = 1 }
+        holdTask = Task {
+            let ticks = 5
+            for _ in 1...ticks {
+                try? await Task.sleep(for: .seconds(duration / Double(ticks)))
+                if Task.isCancelled { return }
+                Haptics.fire(.tick)
+            }
+            if !Task.isCancelled { fire() }
+        }
+    }
+
+    private func release() {
+        holdTask?.cancel()
+        holdTask = nil
+        guard holding, progress < 1 else { return }
+        holding = false
+        withAnimation(VMotion.snappy) { progress = 0 }
+    }
+
+    private func fire() {
+        holdTask?.cancel()
+        holdTask = nil
+        holding = false
+        progress = 1
+        Haptics.fire(.capture)
+        action()
+    }
+}
+
+// ============================================================
+// MARK: — Foreign score ticker
+// ============================================================
+
+/// A blurred marquee of *other people's* scores drifting past — the social
+/// norm made visible ("everyone has a number; you've never seen yours").
+struct RampForeignScoreTicker: View {
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
+    private let scores = [73, 81, 58, 92, 64, 77, 49, 88, 61, 70, 84, 55, 79, 66, 90, 52]
+
+    var body: some View {
+        let row = scores.map(String.init).joined(separator: "   ·   ")
+        let long = Array(repeating: row, count: 10).joined(separator: "   ·   ")
+        Group {
+            if reduceMotion {
+                Text(verbatim: row).lineLimit(1)
+            } else {
+                TimelineView(.animation) { timeline in
+                    let t = timeline.date.timeIntervalSinceReferenceDate
+                    let shift = CGFloat((t * 28).truncatingRemainder(dividingBy: 6000))
+                    Text(verbatim: long)
+                        .lineLimit(1)
+                        .fixedSize()
+                        .offset(x: -shift)
+                }
+            }
+        }
+        .font(DQFont.mono(13, weight: .medium))
+        .foregroundStyle(RampStage.textTertiary)
+        .blur(radius: 1.2)
+        .frame(height: 20)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .clipped()
+        .mask(
+            LinearGradient(colors: [.clear, .black, .black, .clear],
+                           startPoint: .leading, endPoint: .trailing)
+        )
+        .allowsHitTesting(false)
+        .accessibilityHidden(true)
+    }
+}
+
+// ============================================================
+// MARK: — Distribution curve ("where do you land?")
+// ============================================================
+
+/// An animated population bell-curve with scattered peers and a glowing "?"
+/// marker that keeps sweeping without ever settling — your place is unknown
+/// until the scan. No fabricated testimonials; a pure abstract visualization.
+struct RampDistributionCurve: View {
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
+    var body: some View {
+        TimelineView(.animation(minimumInterval: 1.0 / 30)) { timeline in
+            let t = reduceMotion ? 0 : timeline.date.timeIntervalSinceReferenceDate
+            Canvas { context, size in
+                let w = size.width, h = size.height
+                func bell(_ x: CGFloat) -> CGFloat {
+                    let u = (x - 0.5) / 0.16
+                    return exp(-0.5 * u * u)
+                }
+                func y(_ fx: CGFloat) -> CGFloat { h - bell(fx) * h * 0.80 - 8 }
+
+                // Curve path.
+                var curve = Path()
+                let steps = 72
+                for i in 0...steps {
+                    let fx = CGFloat(i) / CGFloat(steps)
+                    let point = CGPoint(x: fx * w, y: y(fx))
+                    if i == 0 { curve.move(to: point) } else { curve.addLine(to: point) }
+                }
+                var fill = curve
+                fill.addLine(to: CGPoint(x: w, y: h))
+                fill.addLine(to: CGPoint(x: 0, y: h))
+                fill.closeSubpath()
+                context.fill(fill, with: .linearGradient(
+                    Gradient(colors: [RampStage.accent.opacity(0.28), .clear]),
+                    startPoint: CGPoint(x: 0, y: 0),
+                    endPoint: CGPoint(x: 0, y: h)))
+                context.stroke(curve, with: .color(RampStage.accent.opacity(0.75)), lineWidth: 1.5)
+
+                // Scattered peers clustered near the mean.
+                for i in 0..<44 {
+                    let n = Self.hash(i, 12.9898)
+                    let n2 = Self.hash(i, 78.233)
+                    let fx = min(max(0.5 + (n - 0.5) * 0.62, 0.04), 0.96)
+                    let py = y(fx) + (1 - n2) * (h - y(fx) - 6) * 0.9
+                    let r = 1.3 + Self.hash(i, 39.42) * 1.4
+                    context.fill(
+                        Path(ellipseIn: CGRect(x: fx * w - r, y: py - r, width: r * 2, height: r * 2)),
+                        with: .color(Color.white.opacity(0.16)))
+                }
+
+                // The searching "?" marker.
+                let mx = CGFloat(0.5 + 0.34 * sin(t * 0.8))
+                let my = y(mx)
+                context.fill(
+                    Path(ellipseIn: CGRect(x: mx * w - 16, y: my - 16, width: 32, height: 32)),
+                    with: .color(RampStage.accent.opacity(0.18)))
+                context.fill(
+                    Path(ellipseIn: CGRect(x: mx * w - 6, y: my - 6, width: 12, height: 12)),
+                    with: .color(RampStage.accent))
+                context.draw(
+                    Text(verbatim: "?")
+                        .font(DQFont.mono(13, weight: .bold))
+                        .foregroundColor(.white),
+                    at: CGPoint(x: mx * w, y: my - 22))
+            }
+        }
+        .frame(height: 176)
+        .accessibilityHidden(true)
+    }
+
+    private static func hash(_ i: Int, _ salt: Double) -> Double {
+        let v = sin(Double(i + 1) * salt) * 43758.5453
+        return v - floor(v)
     }
 }

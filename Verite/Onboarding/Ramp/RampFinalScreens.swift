@@ -2,60 +2,52 @@ import SwiftUI
 import StoreKit
 
 // ============================================================
-// MARK: — Screen 7: Social Proof + Rating Ask
+// MARK: — Screen 9: The Curve (where do you land?)
 // ============================================================
 
-/// Honest differentiators — no invented ratings or testimonials (there are no
-/// real users pre-launch; fabricated social proof is an App Review 2.3.1 risk).
-/// The native rating prompt hook stays, gated OFF until organic ratings exist.
-struct RampSocialProofScreen: View {
+/// Social comparison without a single fabricated testimonial (App Review
+/// 2.3.1-safe): an abstract population curve with a glowing "?" that keeps
+/// searching for the user's spot and never finds it — because only a scan can.
+struct RampCurveScreen: View {
     let onAdvance: () -> Void
 
     @Environment(AppState.self) private var appState
     @Environment(\.requestReview) private var requestReview
 
-    private struct Claim { let icon: String; let title: String; let sub: String }
-    private let claims: [Claim] = [
-        Claim(icon: "iphone.gen3", title: "100% on-device",
-              sub: "Your photos never leave your phone. No cloud, no upload."),
-        Claim(icon: "square.grid.3x3.fill", title: "7 skin metrics",
-              sub: "Texture, redness, pores, evenness, glow, hydration, blemishes."),
-        Claim(icon: "gauge.with.dots.needle.bottom.50percent", title: "Honest 0–100",
-              sub: "No sugarcoating. A real number and the levers to move it."),
-    ]
-
     var body: some View {
         VStack(spacing: 0) {
             Spacer()
 
-            HStack(spacing: VSpace.md) {
-                Image(systemName: "laurel.leading")
-                    .font(.system(size: 44, weight: .light))
-                    .foregroundStyle(RampStage.accent)
-                Text("Built to be\nhonest.")
-                    .font(VType.hero(26))
+            VStack(spacing: VSpace.md) {
+                Text("Where do you land?")
+                    .font(VType.hero(30))
                     .foregroundStyle(RampStage.textPrimary)
                     .multilineTextAlignment(.center)
-                Image(systemName: "laurel.trailing")
-                    .font(.system(size: 44, weight: .light))
-                    .foregroundStyle(RampStage.accent)
+                Text("Every score forms a curve.\nYours is the one point still missing.")
+                    .font(VType.bodyLarge)
+                    .foregroundStyle(RampStage.textSecondary)
+                    .multilineTextAlignment(.center)
             }
-            .vGlow(RampStage.accent, radius: 26, opacity: 0.22)
+            .padding(.horizontal, VSpace.xl)
             .vStaggeredAppear(index: 0)
 
-            Spacer().frame(height: VSpace.xl)
+            RampDistributionCurve()
+                .padding(.horizontal, VSpace.lg)
+                .padding(.top, VSpace.xl)
+                .vStaggeredAppear(index: 1)
 
-            VStack(spacing: VSpace.sm) {
-                ForEach(Array(claims.enumerated()), id: \.offset) { index, claim in
-                    RampClaimCard(icon: claim.icon, title: claim.title, sub: claim.sub)
-                        .vStaggeredAppear(index: index + 1)
-                }
+            // Honest differentiators — one compact line, no invented ratings.
+            HStack(spacing: VSpace.md) {
+                RampMiniClaim(icon: "iphone.gen3", text: "On-device")
+                RampMiniClaim(icon: "square.grid.3x3.fill", text: "7 metrics")
+                RampMiniClaim(icon: "gauge.with.dots.needle.bottom.50percent", text: "Honest 0–100")
             }
-            .padding(.horizontal, VSpace.lg)
+            .padding(.top, VSpace.lg)
+            .vStaggeredAppear(index: 2)
 
             Spacer()
 
-            DQPrimaryButton(title: "Continue") { onAdvance() }
+            DQPrimaryButton(title: "Find my spot") { onAdvance() }
                 .padding(.horizontal, VSpace.lg)
             Spacer().frame(height: VSpace.xxl)
         }
@@ -67,30 +59,21 @@ struct RampSocialProofScreen: View {
     }
 }
 
-private struct RampClaimCard: View {
+private struct RampMiniClaim: View {
     let icon: String
-    let title: String
-    let sub: String
+    let text: String
 
     var body: some View {
-        HStack(spacing: VSpace.md) {
+        VStack(spacing: 6) {
             Image(systemName: icon)
-                .font(.system(size: 20, weight: .medium))
+                .font(.system(size: 17, weight: .medium))
                 .foregroundStyle(RampStage.accent)
-                .frame(width: 34)
-            VStack(alignment: .leading, spacing: 2) {
-                Text(title)
-                    .font(VType.bodyLarge.weight(.semibold))
-                    .foregroundStyle(RampStage.textPrimary)
-                Text(sub)
-                    .font(VType.caption)
-                    .foregroundStyle(RampStage.textSecondary)
-                    .fixedSize(horizontal: false, vertical: true)
-            }
-            Spacer(minLength: 0)
+            Text(text)
+                .font(VType.micro)
+                .foregroundStyle(RampStage.textSecondary)
         }
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(VSpace.md)
+        .frame(maxWidth: .infinity)
+        .padding(.vertical, VSpace.sm)
         .background(RampStage.card, in: RoundedRectangle(cornerRadius: VRadius.md, style: .continuous))
         .overlay(
             RoundedRectangle(cornerRadius: VRadius.md, style: .continuous)
@@ -100,14 +83,17 @@ private struct RampClaimCard: View {
 }
 
 // ============================================================
-// MARK: — Screen 8: Notification pre-prompt
+// MARK: — Screen 10: Daily Report (notifications, reframed)
 // ============================================================
 
 /// Custom screen BEFORE the system dialog — a denied system prompt is
 /// unrecoverable, so the real request only fires from the accent button.
-struct RampNotificationScreen: View {
+/// Reframed around the twin: it updates daily and reports back.
+struct RampDailyReportScreen: View {
+    let controller: ScanHeadController
     let onAdvance: () -> Void
 
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var requesting = false
 
     var body: some View {
@@ -115,11 +101,11 @@ struct RampNotificationScreen: View {
             Spacer() // head sits small in the corner (staged by the container)
 
             VStack(spacing: VSpace.md) {
-                Text("Your score changes daily.")
+                Text("Your twin updates daily.")
                     .font(VType.hero(30))
                     .foregroundStyle(RampStage.textPrimary)
                     .multilineTextAlignment(.center)
-                Text("One reminder a day keeps your 14-day plan on track.")
+                Text("Let it report back. One nudge a day keeps your 14-day plan on track.")
                     .font(VType.bodyLarge)
                     .foregroundStyle(RampStage.textSecondary)
                     .multilineTextAlignment(.center)
@@ -130,7 +116,7 @@ struct RampNotificationScreen: View {
             Spacer()
 
             VStack(spacing: VSpace.sm) {
-                DQPrimaryButton(title: "Enable reminders", isEnabled: !requesting) {
+                DQPrimaryButton(title: "Enable daily report", isEnabled: !requesting) {
                     guard !requesting else { return }
                     requesting = true
                     Task {
@@ -149,17 +135,24 @@ struct RampNotificationScreen: View {
             .padding(.horizontal, VSpace.lg)
             Spacer().frame(height: VSpace.xxl)
         }
+        .task {
+            // The twin turns toward you — acknowledgement.
+            guard !reduceMotion else { return }
+            try? await Task.sleep(for: .milliseconds(500))
+            controller.nudge(dx: 0.28)
+        }
     }
 }
 
 // ============================================================
-// MARK: — Screen 9: Scan Ramp (the handoff)
+// MARK: — Screen 11: Handoff (awaiting the original)
 // ============================================================
 
-/// The climax: head full screen, rotation stops facing the user for the first
-/// time, one slow deliberate sweep, a single pulsing CTA. Camera permission is
-/// requested HERE, on tap — the moment of maximum motivation.
-struct RampScanRampScreen: View {
+/// The climax and the resolution of the story: the finished twin turns to
+/// face you, HUD brackets lock on — but instead of "scan ready" they read
+/// AWAITING ORIGINAL. The scan is not a feature; it is the end of the film.
+/// Camera permission is requested HERE, on tap — peak motivation.
+struct RampHandoffScreen: View {
     let controller: ScanHeadController
     let onComplete: () -> Void
 
@@ -170,8 +163,6 @@ struct RampScanRampScreen: View {
 
     var body: some View {
         ZStack {
-            // Camera-HUD: pulse rings radiate from the head while corner
-            // brackets draw themselves around the target and lock on.
             VStack {
                 Spacer()
                 ZStack {
@@ -191,10 +182,10 @@ struct RampScanRampScreen: View {
                 Spacer()
 
                 VStack(spacing: VSpace.sm) {
-                    Text("Your turn.")
-                        .font(VType.hero(36))
+                    Text("The twin is ready.")
+                        .font(VType.hero(34))
                         .foregroundStyle(RampStage.textPrimary)
-                    Text("Good light. No filter. The engine sees everything anyway.")
+                    Text("Now the original. Good light, no filter — the engine sees everything anyway.")
                         .font(VType.body)
                         .foregroundStyle(RampStage.textSecondary)
                         .multilineTextAlignment(.center)
@@ -204,7 +195,7 @@ struct RampScanRampScreen: View {
 
                 Spacer().frame(height: VSpace.xl)
 
-                DQPrimaryButton(title: "Start my scan", systemImage: "camera.fill") {
+                DQPrimaryButton(title: "Scan the original", systemImage: "camera.fill") {
                     guard !starting else { return }
                     starting = true
                     Task {
@@ -225,7 +216,6 @@ struct RampScanRampScreen: View {
             }
         }
         .task {
-            // One slow, deliberate sweep once the head has settled facing forward.
             try? await Task.sleep(for: .milliseconds(1800))
             guard !Task.isCancelled else { return }
             if !reduceMotion { controller.sweep(duration: 2.4) }
@@ -237,11 +227,11 @@ struct RampScanRampScreen: View {
 }
 
 // ============================================================
-// MARK: — Scan-ramp HUD pieces
+// MARK: — Handoff HUD pieces
 // ============================================================
 
 /// Four corner brackets that draw themselves around the head, then breathe.
-/// `locked` lights them up with a "SCAN READY" tag once the head has settled.
+/// `locked` lights them up with an AWAITING ORIGINAL tag once the head settles.
 private struct RampViewfinderBrackets: View {
     let locked: Bool
 
@@ -259,7 +249,7 @@ private struct RampViewfinderBrackets: View {
                 )
                 .vGlow(RampStage.accent, radius: 14, opacity: locked ? 0.5 : 0)
 
-            Text(verbatim: "SCAN READY")
+            Text(verbatim: "AWAITING ORIGINAL")
                 .font(DQFont.mono(11, weight: .semibold))
                 .tracking(3)
                 .foregroundStyle(RampStage.accent)
@@ -287,19 +277,15 @@ private struct RampCornerBrackets: Shape {
     func path(in rect: CGRect) -> Path {
         let l = min(rect.width, rect.height) * 0.11
         var p = Path()
-        // Top-left
         p.move(to: CGPoint(x: rect.minX, y: rect.minY + l))
         p.addLine(to: CGPoint(x: rect.minX, y: rect.minY))
         p.addLine(to: CGPoint(x: rect.minX + l, y: rect.minY))
-        // Top-right
         p.move(to: CGPoint(x: rect.maxX - l, y: rect.minY))
         p.addLine(to: CGPoint(x: rect.maxX, y: rect.minY))
         p.addLine(to: CGPoint(x: rect.maxX, y: rect.minY + l))
-        // Bottom-right
         p.move(to: CGPoint(x: rect.maxX, y: rect.maxY - l))
         p.addLine(to: CGPoint(x: rect.maxX, y: rect.maxY))
         p.addLine(to: CGPoint(x: rect.maxX - l, y: rect.maxY))
-        // Bottom-left
         p.move(to: CGPoint(x: rect.minX + l, y: rect.maxY))
         p.addLine(to: CGPoint(x: rect.minX, y: rect.maxY))
         p.addLine(to: CGPoint(x: rect.minX, y: rect.maxY - l))
@@ -311,14 +297,10 @@ private struct RampCornerBrackets: Shape {
 private struct RampPulseRings: View {
     var body: some View {
         ZStack {
-            ring(delay: 0)
-            ring(delay: 1.4)
+            RampPulseRing(delay: 0)
+            RampPulseRing(delay: 1.4)
         }
-    }
-
-    private func ring(delay: Double) -> some View {
-        RampPulseRing(delay: delay)
-            .frame(width: 210, height: 210)
+        .frame(width: 210, height: 210)
     }
 }
 

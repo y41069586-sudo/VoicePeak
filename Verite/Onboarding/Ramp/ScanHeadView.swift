@@ -62,7 +62,16 @@ final class ScanHeadController {
     /// Materials carrying the scan-line shader modifier (`u_scanY`).
     private let scanMaterials: [SCNMaterial]
 
+    /// Materials carrying the vertex-explosion `u_materialize` modifier
+    /// (fill + wire + points + dense) — driven by twin integrity.
+    private let materializeMaterials: [SCNMaterial]
+
     private var currentSpinDuration: Double?
+
+    /// Current `u_materialize` value (0 = exploded cloud, 1 = solid twin).
+    private var materializeValue: Float = 1
+    /// Last integrity target applied (0…1).
+    private var currentIntegrity: Double = 0
 
     /// Bumped on every user grab; stale fling-resume tasks check it.
     private var dragGeneration = 0
@@ -92,9 +101,13 @@ final class ScanHeadController {
             material.blendMode = .add
             material.writesToDepthBuffer = false
             material.isDoubleSided = true
-            material.shaderModifiers = [.fragment: ScanHeadController.scanFragmentModifier]
+            material.shaderModifiers = [
+                .geometry: ScanHeadController.materializeGeometryModifier,
+                .fragment: ScanHeadController.scanFragmentModifier,
+            ]
             material.setValue(NSNumber(value: -2.0), forKey: "u_scanY")
             material.setValue(scanColor, forKey: "u_scanColor")
+            material.setValue(NSNumber(value: 1.0), forKey: "u_materialize")
             return material
         }
 
@@ -102,12 +115,15 @@ final class ScanHeadController {
         let fillMaterial = SCNMaterial()
         fillMaterial.lightingModel = .constant
         fillMaterial.diffuse.contents = UIColor(red: 0.02, green: 0.035, blue: 0.08, alpha: 1)
+        fillMaterial.shaderModifiers = [.geometry: ScanHeadController.materializeGeometryModifier]
+        fillMaterial.setValue(NSNumber(value: 1.0), forKey: "u_materialize")
         let fillGeometry = low.fillGeometry()
         fillGeometry.materials = [fillMaterial]
         let fill = SCNNode(geometry: fillGeometry)
         // Slightly inset so wires sit cleanly on the surface.
         fill.scale = SCNVector3(0.995, 0.995, 0.995)
         fill.renderingOrder = 0
+        fill.opacity = 0 // twin integrity fades the solid in
 
         // Wireframe edges — accent at ~35% opacity (spec).
         let wireMaterial = glowMaterial(alpha: 0.35)
@@ -115,6 +131,7 @@ final class ScanHeadController {
         wireGeometry.materials = [wireMaterial]
         let wire = SCNNode(geometry: wireGeometry)
         wire.renderingOrder = 1
+        wire.opacity = 0 // twin integrity fades the wireframe in
 
         // Vertices as small glowing points, additive.
         let pointsMaterial = glowMaterial(alpha: 0.9)
@@ -122,6 +139,7 @@ final class ScanHeadController {
         pointsGeometry.materials = [pointsMaterial]
         let points = SCNNode(geometry: pointsGeometry)
         points.renderingOrder = 2
+        points.opacity = 0.9 // the persistent cloud skeleton — always present
 
         // Denser, calmer mesh for the "Ceiling" beat — starts invisible.
         let denseMaterial = glowMaterial(alpha: 0.16)
@@ -154,6 +172,7 @@ final class ScanHeadController {
         denseWireNode = denseWire
         sweepPlane = sweep
         scanMaterials = [wireMaterial, pointsMaterial, denseMaterial]
+        materializeMaterials = [fillMaterial, wireMaterial, pointsMaterial, denseMaterial]
 
         // Assemble.
         spin.addChildNode(fillNode)
@@ -303,19 +322,103 @@ final class ScanHeadController {
         ]))
     }
 
-    // MARK: Ceiling crossfade
+    // MARK: Twin integrity (the head materializes as the profile is built)
 
-    /// Crossfades the raw wireframe into the denser, calmer mesh ("your 10/10").
-    func setCeilingMode(_ on: Bool) {
+    /// The core of the "digital twin" story. `progress` (0…1) drives BOTH the
+    /// vertex-explosion collapse (scattered cloud → solid head) and a staged
+    /// layer crossfade (points → wireframe → solid fill → dense polish). Called
+    /// every time the user answers a question, so the head visibly densifies.
+    func setTwinIntegrity(_ progress: Double, animated: Bool = true, duration: Double = 0.9) {
+        let p = Float(max(0, min(1, progress)))
+        currentIntegrity = Double(p)
+
+        let target = materializeFor(p)
+        animateMaterialize(from: materializeValue, to: target,
+                           duration: animated ? duration : 0)
+        materializeValue = target
+
         SCNTransaction.begin()
-        SCNTransaction.animationDuration = 0.9
-        denseWireNode.opacity = on ? 0.9 : 0
-        wireNode.opacity = on ? 0.12 : 1
-        pointsNode.opacity = on ? 0.18 : 1
+        SCNTransaction.animationDuration = animated ? duration : 0
+        SCNTransaction.animationTimingFunction = CAMediaTimingFunction(name: .easeInEaseOut)
+        wireNode.opacity      = CGFloat(smooth(p, 0.18, 0.80))
+        fillNode.opacity      = CGFloat(smooth(p, 0.45, 1.00))
+        denseWireNode.opacity = CGFloat(smooth(p, 0.86, 1.00)) * 0.9
         SCNTransaction.commit()
     }
 
+    /// Boot spectacle: explode to a full scatter, then collapse into the head
+    /// at whatever integrity is currently set. Assumes `setTwinIntegrity` has
+    /// already staged the target look (call it with `animated: false` first).
+    func assembleFromCloud(duration: Double) {
+        animateMaterialize(from: 0, to: materializeValue, duration: duration)
+    }
+
+    /// Live, un-animated morph between "day 1" (rough wireframe) and "day 14"
+    /// (dense calm mesh) — driven directly by a drag on the Split screen.
+    func setSplit(_ t: Double) {
+        let clamped = CGFloat(max(0, min(1, t)))
+        SCNTransaction.begin()
+        SCNTransaction.animationDuration = 0
+        wireNode.opacity      = (1 - clamped) * 0.85 + 0.10
+        pointsNode.opacity    = (1 - clamped) * 0.80 + 0.15
+        fillNode.opacity      = 1
+        denseWireNode.opacity = clamped * 0.95
+        SCNTransaction.commit()
+    }
+
+    /// A brief "the head is listening" lean toward the tapped side, then relax.
+    /// Applied on the tilt node so it layers on top of the ambient spin.
+    func nudge(dx: Float) {
+        tilt.removeAction(forKey: "nudge")
+        let over = SCNAction.rotateBy(x: 0, y: CGFloat(dx), z: 0, duration: 0.18)
+        over.timingMode = .easeOut
+        let back = SCNAction.rotateBy(x: 0, y: CGFloat(-dx), z: 0, duration: 0.55)
+        back.timingMode = .easeInEaseOut
+        tilt.runAction(.sequence([over, back]), forKey: "nudge")
+    }
+
+    /// Maps integrity to a materialize amount. Even at 0 the head is loosely
+    /// recognizable (0.35), so it reads as a twin from the first question; the
+    /// remaining range tightens and densifies it toward a crisp 1.0.
+    private func materializeFor(_ p: Float) -> Float { 0.35 + 0.65 * p }
+
+    private func animateMaterialize(from: Float, to: Float, duration: Double) {
+        for material in materializeMaterials {
+            material.setValue(NSNumber(value: to), forKey: "u_materialize")
+            guard duration > 0 else { continue }
+            let animation = CABasicAnimation(keyPath: "u_materialize")
+            animation.fromValue = from
+            animation.toValue = to
+            animation.duration = duration
+            animation.timingFunction = CAMediaTimingFunction(name: .easeInEaseOut)
+            material.addAnimation(animation, forKey: "materialize")
+        }
+    }
+
+    private func smooth(_ x: Float, _ edge0: Float, _ edge1: Float) -> Float {
+        let t = min(max((x - edge0) / (edge1 - edge0), 0), 1)
+        return t * t * (3 - 2 * t)
+    }
+
     // MARK: Shader
+
+    /// Geometry shader modifier: displaces each vertex outward along a
+    /// per-vertex pseudo-random direction by `(1 - u_materialize)`. At 0 the
+    /// mesh is an exploded cloud; at 1 every vertex sits home. Because the
+    /// noise is a pure function of the vertex position, the fill/wire/points
+    /// layers explode and collapse in perfect lockstep.
+    private static let materializeGeometryModifier = """
+    #pragma arguments
+    float u_materialize;
+    #pragma body
+    float3 mp = _geometry.position.xyz;
+    float n1 = fract(sin(dot(mp.xy, float2(12.9898, 78.233))) * 43758.5453);
+    float n2 = fract(sin(dot(mp.yz, float2(39.346, 11.135))) * 24634.6345);
+    float n3 = fract(sin(dot(mp.zx, float2(53.174, 92.331))) * 13875.1234);
+    float3 dir = normalize(float3(n1, n2, n3) * 2.0 - 1.0);
+    float amt = 1.0 - clamp(u_materialize, 0.0, 1.0);
+    _geometry.position.xyz += dir * amt * 1.5;
+    """
 
     /// Fragment shader modifier: vertices/edges inside a horizontal band around
     /// `u_scanY` (model space) brighten as the sweep plane passes them.
