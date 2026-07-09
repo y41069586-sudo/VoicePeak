@@ -248,37 +248,37 @@ struct RampQuizAnswers {
         var center = 70.0
 
         switch selfRating {
-        case .rough:        center -= 11
-        case .average:      center -= 3
-        case .decent:       center += 4
-        case .honestlyGood: center += 9
-        case .none:         break
+        case .rough?:        center -= 11
+        case .average?:      center -= 3
+        case .decent?:       center += 4
+        case .honestlyGood?: center += 9
+        case nil:            break
         }
         switch routine {
-        case .nothing:      center -= 6
-        case .cleanserOnly: center -= 2
-        case .threePlus:    center += 3
-        case .fullStack:    center += 6
-        case .none:         break
+        case .nothing?:      center -= 6
+        case .cleanserOnly?: center -= 2
+        case .threePlus?:    center += 3
+        case .fullStack?:    center += 6
+        case nil:            break
         }
         switch sleep {
-        case .under6:       center -= 5
-        case .sixToSeven:   center -= 1
-        case .sevenToEight: center += 3
-        case .eightPlus:    center += 5
-        case .none:         break
+        case .under6?:       center -= 5
+        case .sixToSeven?:   center -= 1
+        case .sevenToEight?: center += 3
+        case .eightPlus?:    center += 5
+        case nil:            break
         }
         switch spf {
-        case .daily:        center += 7
-        case .sometimes:    center += 1
-        case .whatsSPF:     center -= 6
-        case .none:         break
+        case .daily?:        center += 7
+        case .sometimes?:    center += 1
+        case .whatsSPF?:     center -= 6
+        case nil:            break
         }
         switch concern {
-        case .breakouts, .redness, .texture: center -= 3
-        case .pores, .dullness:              center -= 2
-        case .nothing:                       center += 2
-        case .none:                          break
+        case .breakouts?, .redness?, .texture?: center -= 3
+        case .pores?, .dullness?:               center -= 2
+        case .nothing?:                         center += 2
+        case nil:                               break
         }
 
         let low  = max(30, min(90, Int((center - 13).rounded())))
