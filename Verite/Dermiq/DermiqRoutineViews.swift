@@ -14,6 +14,7 @@ struct DermiqRoutineGenView: View {
     @State private var stepCount = 0
     @State private var daysFilled = 0
     @State private var ready = false
+    @State private var appeared = false
 
     private var targets: [DermiqSubScore] { model.analysis?.weakestThree ?? [] }
 
@@ -48,6 +49,8 @@ struct DermiqRoutineGenView: View {
                     .fixedSize(horizontal: false, vertical: true)
                     .padding(.horizontal, 32)
             }
+            .opacity(appeared ? 1 : 0)
+            .offset(y: appeared ? 0 : 12)
 
             Spacer(minLength: 24)
 
@@ -111,6 +114,9 @@ struct DermiqRoutineGenView: View {
             )
             .shadow(color: DQColor.accent.opacity(0.10), radius: 22, y: 10)
             .padding(.horizontal, 24)
+            .opacity(appeared ? 1 : 0)
+            .scaleEffect(appeared ? 1 : 0.96)
+            .offset(y: appeared ? 0 : 18)
 
             Spacer(minLength: 24)
         }
@@ -160,6 +166,7 @@ struct DermiqRoutineGenView: View {
     }
 
     private func runBuild() async {
+        withAnimation(VMotion.gentle) { appeared = true }
         // Steps tick in, and the 14 days fill up alongside them.
         for index in 1...buildSteps.count {
             try? await Task.sleep(for: .milliseconds(520))
@@ -236,67 +243,122 @@ struct DermiqRoutineTab: View {
         let total = plan.steps(.am).count + plan.steps(.pm).count
         let done = plan.steps(.am).filter { plan.isDone(day: today, block: .am, step: $0) }.count
                  + plan.steps(.pm).filter { plan.isDone(day: today, block: .pm, step: $0) }.count
-        return VStack(alignment: .leading, spacing: 10) {
-        HStack(alignment: .firstTextBaseline) {
-            VStack(alignment: .leading, spacing: 3) {
+        return VStack(alignment: .leading, spacing: 14) {
+            HStack(alignment: .firstTextBaseline) {
                 Text("Day \(today) of 14")
-                    .font(DQFont.title)
+                    .font(.system(size: 28, weight: .heavy, design: .rounded))
                     .foregroundStyle(DQColor.textPrimary)
-                Text("Targeting " + plan.targets.map(\.category.displayName).joined(separator: " · "))
-                    .font(DQFont.caption)
-                    .foregroundStyle(DQColor.textSecondary)
+                Spacer()
+                // Streak counter (Screen 8)
+                HStack(spacing: 5) {
+                    Image(systemName: "flame.fill")
+                        .font(.system(size: 13))
+                        .foregroundStyle(plan.streak > 0 ? DQColor.deltaUp : DQColor.textSecondary)
+                    Text(verbatim: "\(plan.streak)")
+                        .font(DQFont.mono(15, weight: .semibold))
+                        .foregroundStyle(DQColor.textPrimary)
+                }
+                .padding(.horizontal, 11)
+                .padding(.vertical, 7)
+                .background(DQColor.surface, in: Capsule())
+                .overlay(Capsule().strokeBorder(DQColor.stroke, lineWidth: 1))
             }
-            Spacer()
-            // Streak counter (Screen 8)
-            HStack(spacing: 5) {
-                Image(systemName: "flame.fill")
-                    .font(.system(size: 13))
-                    .foregroundStyle(plan.streak > 0 ? DQColor.deltaUp : DQColor.textSecondary)
-                Text(verbatim: "\(plan.streak)")
-                    .font(DQFont.mono(15, weight: .semibold))
-                    .foregroundStyle(DQColor.textPrimary)
-            }
-            .padding(.horizontal, 11)
-            .padding(.vertical, 7)
-            .background(DQColor.surface, in: Capsule())
-            .overlay(Capsule().strokeBorder(DQColor.stroke, lineWidth: 1))
-        }
 
-        // Today at a glance: steps done + the honesty line.
-        VStack(alignment: .leading, spacing: 6) {
-            GeometryReader { proxy in
-                ZStack(alignment: .leading) {
-                    Capsule().fill(DQColor.stroke.opacity(0.6))
-                    Capsule()
-                        .fill(DQColor.accentGradient)
-                        .frame(width: proxy.size.width * CGFloat(done) / CGFloat(max(total, 1)))
+            // The three targets as chips — scannable, not a sentence.
+            HStack(spacing: 8) {
+                ForEach(plan.targets) { target in
+                    HStack(spacing: 5) {
+                        Image(systemName: "target")
+                            .font(.system(size: 10, weight: .semibold))
+                        Text(target.category.displayName)
+                            .font(.system(size: 12, weight: .semibold, design: .rounded))
+                            .lineLimit(1)
+                    }
+                    .foregroundStyle(DQColor.accentBright)
+                    .padding(.horizontal, 10)
+                    .padding(.vertical, 6)
+                    .background(DQColor.accentSoft, in: Capsule())
                 }
             }
-            .frame(height: 6)
-            .animation(VMotion.gentle, value: done)
-            HStack {
-                Text(verbatim: "\(done) of \(total) steps today")
-                    .font(DQFont.micro)
-                    .foregroundStyle(DQColor.textSecondary)
-                Spacer()
-                Text("Built from your scan — not a template")
-                    .font(DQFont.micro)
-                    .foregroundStyle(DQColor.accentBright)
+
+            // Today at a glance: steps done + the honesty line.
+            VStack(alignment: .leading, spacing: 6) {
+                GeometryReader { proxy in
+                    ZStack(alignment: .leading) {
+                        Capsule().fill(DQColor.stroke.opacity(0.6))
+                        Capsule()
+                            .fill(DQColor.accent)
+                            .frame(width: proxy.size.width * CGFloat(done) / CGFloat(max(total, 1)))
+                    }
+                }
+                .frame(height: 6)
+                .animation(VMotion.gentle, value: done)
+                HStack {
+                    Text(verbatim: "\(done) of \(total) steps today")
+                        .font(DQFont.micro)
+                        .foregroundStyle(DQColor.textSecondary)
+                    Spacer()
+                    Text("Built from your scan")
+                        .font(DQFont.micro)
+                        .foregroundStyle(DQColor.accentBright)
+                }
             }
-        }
         }
     }
 
+    /// One horizontal, scrollable strip of day pills — roomier than the old
+    /// squeezed 7-column grid, and it starts scrolled to today.
     private func dayGrid(_ plan: RoutinePlan, today: Int) -> some View {
-        LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 8), count: 7), spacing: 8) {
-            ForEach(1...14, id: \.self) { day in
-                DQDayTile(
-                    day: day,
-                    state: tileState(plan, day: day, today: today),
-                    isRescanTile: day == 14
-                )
+        ScrollViewReader { proxy in
+            ScrollView(.horizontal) {
+                HStack(spacing: 8) {
+                    ForEach(1...14, id: \.self) { day in
+                        dayPill(day: day, state: tileState(plan, day: day, today: today))
+                            .id(day)
+                    }
+                }
+                .padding(.horizontal, 2)
+                .padding(.vertical, 2)
             }
+            .scrollIndicators(.hidden)
+            .onAppear { proxy.scrollTo(max(today - 1, 1), anchor: .leading) }
         }
+    }
+
+    private func dayPill(day: Int, state: DQDayTile.TileState) -> some View {
+        let isToday = state == .today
+        let isDone = state == .completed
+        return VStack(spacing: 3) {
+            if day == 14 && state == .upcoming {
+                Image(systemName: "lock.fill")
+                    .font(.system(size: 12, weight: .semibold))
+                    .foregroundStyle(DQColor.textSecondary)
+            } else if isDone {
+                Image(systemName: "checkmark")
+                    .font(.system(size: 12, weight: .bold))
+                    .foregroundStyle(.white)
+            } else {
+                Text(verbatim: "\(day)")
+                    .font(.system(size: 15, weight: .bold, design: .rounded).monospacedDigit())
+                    .foregroundStyle(isToday ? DQColor.accentBright : DQColor.textSecondary)
+            }
+            Text(day == 14 ? "rescan" : "day")
+                .font(.system(size: 8, weight: .semibold, design: .rounded))
+                .foregroundStyle(isDone ? .white.opacity(0.85)
+                                        : (isToday ? DQColor.accentBright : DQColor.textSecondary.opacity(0.7)))
+        }
+        .frame(width: 46, height: 54)
+        .background(
+            isDone ? AnyShapeStyle(DQColor.accent)
+                   : (isToday ? AnyShapeStyle(DQColor.accentSoft) : AnyShapeStyle(DQColor.surface)),
+            in: RoundedRectangle(cornerRadius: 14, style: .continuous)
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 14, style: .continuous)
+                .strokeBorder(isToday ? DQColor.accent : DQColor.stroke,
+                              lineWidth: isToday ? 1.5 : 1)
+        )
+        .opacity(state == .missed ? 0.55 : 1)
     }
 
     private func tileState(_ plan: RoutinePlan, day: Int, today: Int) -> DQDayTile.TileState {
@@ -404,68 +466,83 @@ struct DermiqRoutineTab: View {
     }
 }
 
-/// One checkable routine step with the optional "examples" disclosure.
+/// One checkable routine step. Collapsed by default — just the check, the
+/// product name and its active — so the list scans in a second. The why-line
+/// and product examples live behind a chevron.
 private struct DermiqStepRow: View {
     let step: RoutineStep
     let done: Bool
     let onToggle: () -> Void
 
-    @State private var showExamples = false
+    @State private var expanded = false
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 6) {
-            Button(action: onToggle) {
-                HStack(alignment: .top, spacing: 12) {
-                    Image(systemName: done ? "checkmark.circle.fill" : "circle")
-                        .font(.system(size: 21))
-                        .foregroundStyle(done ? DQColor.deltaUp : DQColor.stroke)
-                        .contentTransition(.symbolEffect(.replace))
-                    VStack(alignment: .leading, spacing: 2) {
-                        Text(step.productType)
-                            .font(DQFont.headline)
-                            .foregroundStyle(done ? DQColor.textSecondary : DQColor.textPrimary)
-                            .strikethrough(done, color: DQColor.textSecondary)
-                        Text(step.active)
-                            .font(DQFont.mono(11))
-                            .foregroundStyle(DQColor.accentBright)
-                        Text(step.why)
-                            .font(DQFont.caption)
-                            .foregroundStyle(DQColor.textSecondary)
-                            .fixedSize(horizontal: false, vertical: true)
+        VStack(alignment: .leading, spacing: 0) {
+            HStack(spacing: 12) {
+                // Tapping the row is the main action: check it off.
+                Button(action: onToggle) {
+                    HStack(spacing: 12) {
+                        Image(systemName: done ? "checkmark.circle.fill" : "circle")
+                            .font(.system(size: 22))
+                            .foregroundStyle(done ? DQColor.deltaUp : DQColor.stroke)
+                            .contentTransition(.symbolEffect(.replace))
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text(step.productType)
+                                .font(DQFont.headline)
+                                .foregroundStyle(done ? DQColor.textSecondary : DQColor.textPrimary)
+                                .strikethrough(done, color: DQColor.textSecondary)
+                            Text(step.active)
+                                .font(DQFont.mono(11))
+                                .foregroundStyle(DQColor.accentBright)
+                                .lineLimit(1)
+                        }
+                        Spacer(minLength: 0)
                     }
-                    Spacer(minLength: 0)
                 }
-            }
-            .buttonStyle(.plain)
+                .buttonStyle(.plain)
 
-            if !step.examples.isEmpty {
+                // The chevron opens the detail (why + examples).
                 Button {
-                    withAnimation(VMotion.snappy) { showExamples.toggle() }
+                    Haptics.fire(.tick)
+                    withAnimation(VMotion.snappy) { expanded.toggle() }
                 } label: {
-                    HStack(spacing: 4) {
-                        Text("Examples")
-                        Image(systemName: "chevron.down")
-                            .rotationEffect(.degrees(showExamples ? 180 : 0))
-                    }
-                    .font(DQFont.micro)
-                    .foregroundStyle(DQColor.textSecondary)
+                    Image(systemName: "chevron.down")
+                        .font(.system(size: 13, weight: .semibold))
+                        .foregroundStyle(DQColor.textSecondary)
+                        .rotationEffect(.degrees(expanded ? 180 : 0))
+                        .frame(width: 32, height: 32)
+                        .background(DQColor.surfaceElevated, in: Circle())
                 }
-                .padding(.leading, 33)
+                .buttonStyle(.plain)
+                .accessibilityLabel(expanded ? "Hide details" : "Show details")
+            }
 
-                if showExamples {
-                    VStack(alignment: .leading, spacing: 3) {
-                        ForEach(step.examples, id: \.self) { example in
-                            Text(example)
-                                .font(DQFont.caption)
-                                .foregroundStyle(DQColor.textSecondary)
+            if expanded {
+                VStack(alignment: .leading, spacing: 8) {
+                    Text(step.why)
+                        .font(DQFont.caption)
+                        .foregroundStyle(DQColor.textSecondary)
+                        .fixedSize(horizontal: false, vertical: true)
+                    if !step.examples.isEmpty {
+                        VStack(alignment: .leading, spacing: 3) {
+                            Text("EXAMPLES")
+                                .font(DQFont.mono(9, weight: .bold))
+                                .foregroundStyle(DQColor.accentBright)
+                                .tracking(1.5)
+                            ForEach(step.examples, id: \.self) { example in
+                                Text(example)
+                                    .font(DQFont.caption)
+                                    .foregroundStyle(DQColor.textSecondary)
+                            }
                         }
                     }
-                    .padding(.leading, 33)
-                    .transition(.opacity)
                 }
+                .padding(.leading, 34)
+                .padding(.top, 8)
+                .transition(.opacity.combined(with: .move(edge: .top)))
             }
         }
-        .padding(.vertical, 8)
+        .padding(.vertical, 9)
         .animation(VMotion.snappy, value: done)
     }
 }

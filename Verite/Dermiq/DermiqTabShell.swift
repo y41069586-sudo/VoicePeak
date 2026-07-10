@@ -246,145 +246,213 @@ struct DermiqScanHome: View {
         ScrollView {
             VStack(spacing: 14) {
                 if let latest = scans.first {
-                    scoreCard(latest)
+                    heroCard(latest)
                 }
-                HStack(spacing: 14) {
-                    ritualCard
-                    progressCard
-                }
+                todaysPlanCard
+                curveCard
                 tipCard
                 DQPrimaryButton(title: "New scan", systemImage: "faceid") { onScan() }
                     .padding(.top, 4)
-
-                if scans.count > 1 {
-                    ScrollView(.horizontal) {
-                        HStack(spacing: 8) {
-                            ForEach(scans, id: \.id) { scan in
-                                DQHistoryChip(date: scan.date, overall: scan.overall)
-                            }
-                        }
-                    }
-                    .scrollIndicators(.hidden)
-                }
             }
             .padding(.horizontal, 24)
-            .padding(.top, 18)
+            .padding(.top, 16)
             .padding(.bottom, 110)
         }
         .scrollIndicators(.hidden)
     }
 
-    private func scoreCard(_ latest: ScanRecord) -> some View {
+    /// The hero: your photo + the score + the honest path to your potential —
+    /// the GlamUp/UMax pattern (one big personal card carries the screen).
+    private func heroCard(_ latest: ScanRecord) -> some View {
         let previous = scans.dropFirst().first
         let delta = previous.map { latest.overall - $0.overall }
-        return HStack(spacing: 18) {
-            ZStack {
-                DQScoreRing(progress: Double(latest.overall) / 100, lineWidth: 7)
-                    .frame(width: 92, height: 92)
-                Text(verbatim: "\(latest.overall)")
-                    .font(.system(size: 30, weight: .heavy, design: .rounded).monospacedDigit())
-                    .foregroundStyle(DQColor.textPrimary)
-            }
-            VStack(alignment: .leading, spacing: 4) {
-                Text("YOUR SCORE")
-                    .font(DQFont.mono(10, weight: .semibold))
-                    .foregroundStyle(DQColor.textSecondary)
-                    .tracking(1.5)
-                if let delta, delta != 0 {
-                    HStack(spacing: 5) {
-                        Image(systemName: delta > 0 ? "arrow.up.right" : "arrow.down.right")
-                            .font(.system(size: 12, weight: .bold))
-                        Text(verbatim: "\(delta > 0 ? "+" : "")\(delta) since last scan")
-                            .font(DQFont.caption)
-                    }
-                    .foregroundStyle(delta > 0 ? DQColor.deltaUp : DQColor.deltaDown)
-                } else {
-                    Text("Scan again to see your trend.")
-                        .font(DQFont.caption)
+        let potential = latest.analysis.map { DermiqProjection.project($0).overall }
+        let streak = plans.first?.streak ?? 0
+
+        return VStack(alignment: .leading, spacing: 16) {
+            HStack(spacing: 14) {
+                heroAvatar(latest)
+                VStack(alignment: .leading, spacing: 3) {
+                    Text("YOUR SKIN SCORE")
+                        .font(DQFont.mono(10, weight: .semibold))
                         .foregroundStyle(DQColor.textSecondary)
+                        .tracking(1.5)
+                    HStack(alignment: .firstTextBaseline, spacing: 8) {
+                        Text(verbatim: "\(latest.overall)")
+                            .font(.system(size: 44, weight: .heavy, design: .rounded).monospacedDigit())
+                            .foregroundStyle(DQColor.textPrimary)
+                        if let delta, delta != 0 {
+                            HStack(spacing: 3) {
+                                Image(systemName: delta > 0 ? "arrow.up" : "arrow.down")
+                                    .font(.system(size: 10, weight: .bold))
+                                Text(verbatim: "\(abs(delta))")
+                                    .font(.system(size: 13, weight: .bold, design: .rounded))
+                            }
+                            .foregroundStyle(delta > 0 ? DQColor.deltaUp : DQColor.deltaDown)
+                            .padding(.horizontal, 8)
+                            .padding(.vertical, 4)
+                            .background((delta > 0 ? DQColor.deltaUp : DQColor.deltaDown).opacity(0.12),
+                                        in: Capsule())
+                        }
+                    }
                 }
-                Text(latest.date.formatted(date: .abbreviated, time: .omitted))
-                    .font(DQFont.micro)
-                    .foregroundStyle(DQColor.textSecondary)
+                Spacer(minLength: 0)
+                if streak > 0 {
+                    VStack(spacing: 1) {
+                        Image(systemName: "flame.fill")
+                            .font(.system(size: 15))
+                            .foregroundStyle(DQColor.deltaUp)
+                        Text(verbatim: "\(streak)")
+                            .font(.system(size: 13, weight: .bold, design: .rounded))
+                            .foregroundStyle(DQColor.textPrimary)
+                    }
+                    .padding(10)
+                    .background(DQColor.surfaceElevated, in: Circle())
+                }
             }
-            Spacer(minLength: 0)
+
+            // The path to the projected potential — one honest bar.
+            if let potential, potential > latest.overall {
+                VStack(alignment: .leading, spacing: 6) {
+                    GeometryReader { proxy in
+                        ZStack(alignment: .leading) {
+                            Capsule().fill(DQColor.stroke.opacity(0.6))
+                            // Potential marker zone (soft) …
+                            Capsule().fill(DQColor.accentSoft)
+                                .frame(width: proxy.size.width * CGFloat(potential) / 100)
+                            // …and where you are today (solid).
+                            Capsule().fill(DQColor.accent)
+                                .frame(width: proxy.size.width * CGFloat(latest.overall) / 100)
+                        }
+                    }
+                    .frame(height: 8)
+                    HStack {
+                        Text(verbatim: "Now \(latest.overall)")
+                            .font(DQFont.micro)
+                            .foregroundStyle(DQColor.textSecondary)
+                        Spacer()
+                        Text(verbatim: "Potential \(potential) · 14d est.")
+                            .font(DQFont.micro.weight(.semibold))
+                            .foregroundStyle(DQColor.accentBright)
+                    }
+                }
+            }
         }
         .padding(18)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(DQColor.surface, in: RoundedRectangle(cornerRadius: DQRadius.card, style: .continuous))
+        .background(DQColor.surface, in: RoundedRectangle(cornerRadius: 24, style: .continuous))
         .overlay(
-            RoundedRectangle(cornerRadius: DQRadius.card, style: .continuous)
+            RoundedRectangle(cornerRadius: 24, style: .continuous)
                 .strokeBorder(DQColor.stroke, lineWidth: 1)
         )
+        .shadow(color: DQColor.accent.opacity(0.08), radius: 18, y: 8)
     }
 
-    /// Today's ritual at a glance — taps through to the Routine tab.
-    private var ritualCard: some View {
-        Button {
-            Haptics.fire(.selection)
-            onRoutine()
-        } label: {
-            VStack(alignment: .leading, spacing: 6) {
-                Image(systemName: "sparkles")
-                    .font(.system(size: 16, weight: .semibold))
-                    .foregroundStyle(DQColor.accentBright)
-                if let plan = plans.first {
-                    let day = plan.dayIndex()
-                    Text(verbatim: "Day \(day) of 14")
-                        .font(DQFont.headline)
-                        .foregroundStyle(DQColor.textPrimary)
-                    Text(ritualStatus(plan, day: day))
-                        .font(DQFont.micro)
-                        .foregroundStyle(DQColor.textSecondary)
-                } else {
-                    Text("Your ritual")
-                        .font(DQFont.headline)
-                        .foregroundStyle(DQColor.textPrimary)
-                    Text("Unlocks with your scan")
-                        .font(DQFont.micro)
-                        .foregroundStyle(DQColor.textSecondary)
+    @ViewBuilder
+    private func heroAvatar(_ latest: ScanRecord) -> some View {
+        Group {
+            if let image = DermiqImageStore.load(latest.photoFilename) {
+                Image(uiImage: image).resizable().scaledToFill()
+            } else {
+                ZStack {
+                    DQColor.accentSoft
+                    Image(systemName: "faceid")
+                        .font(.system(size: 22, weight: .light))
+                        .foregroundStyle(DQColor.accentBright)
                 }
             }
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .padding(14)
-            .background(DQColor.surface, in: RoundedRectangle(cornerRadius: DQRadius.card, style: .continuous))
-            .overlay(
-                RoundedRectangle(cornerRadius: DQRadius.card, style: .continuous)
-                    .strokeBorder(DQColor.stroke, lineWidth: 1)
-            )
         }
-        .buttonStyle(PressableStyle())
+        .frame(width: 64, height: 64)
+        .clipShape(Circle())
+        .overlay(Circle().strokeBorder(DQColor.accentSoft, lineWidth: 3))
     }
 
-    private func ritualStatus(_ plan: RoutinePlan, day: Int) -> String {
-        let am = plan.blockComplete(day: day, .am)
-        let pm = plan.blockComplete(day: day, .pm)
-        switch (am, pm) {
-        case (true, true):  return "Today complete ✓"
-        case (true, false): return "Evening still open"
-        case (false, _):    return "Morning still open"
+    /// Today's plan, previewed right on Home: the next steps with live checks
+    /// and one tap into the Routine tab — GlamUp's "today card" pattern.
+    @ViewBuilder
+    private var todaysPlanCard: some View {
+        if let plan = plans.first {
+            let day = plan.dayIndex()
+            let block: RoutineBlock = plan.blockComplete(day: day, .am) ? .pm : .am
+            let steps = Array(plan.steps(block).prefix(3))
+            Button {
+                Haptics.fire(.selection)
+                onRoutine()
+            } label: {
+                VStack(alignment: .leading, spacing: 12) {
+                    HStack {
+                        HStack(spacing: 6) {
+                            Image(systemName: block == .am ? "sun.max.fill" : "moon.stars.fill")
+                                .font(.system(size: 12, weight: .semibold))
+                                .foregroundStyle(DQColor.accentBright)
+                            Text(verbatim: "TODAY · DAY \(day) OF 14")
+                                .font(DQFont.mono(10, weight: .semibold))
+                                .foregroundStyle(DQColor.textSecondary)
+                                .tracking(1.5)
+                        }
+                        Spacer()
+                        HStack(spacing: 3) {
+                            Text(block == .am ? "Morning" : "Evening")
+                            Image(systemName: "chevron.right")
+                        }
+                        .font(.system(size: 12, weight: .semibold, design: .rounded))
+                        .foregroundStyle(DQColor.accentBright)
+                    }
+
+                    ForEach(steps) { step in
+                        HStack(spacing: 10) {
+                            let done = plan.isDone(day: day, block: block, step: step)
+                            Image(systemName: done ? "checkmark.circle.fill" : "circle")
+                                .font(.system(size: 18))
+                                .foregroundStyle(done ? DQColor.deltaUp : DQColor.stroke)
+                            Text(step.productType)
+                                .font(DQFont.headline)
+                                .foregroundStyle(done ? DQColor.textSecondary : DQColor.textPrimary)
+                                .strikethrough(done, color: DQColor.textSecondary)
+                                .lineLimit(1)
+                            Spacer(minLength: 0)
+                        }
+                    }
+                }
+                .padding(16)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .background(DQColor.surface, in: RoundedRectangle(cornerRadius: DQRadius.card, style: .continuous))
+                .overlay(
+                    RoundedRectangle(cornerRadius: DQRadius.card, style: .continuous)
+                        .strokeBorder(DQColor.stroke, lineWidth: 1)
+                )
+            }
+            .buttonStyle(PressableStyle())
         }
     }
 
-    /// Trend teaser — taps through to the Progress tab.
-    private var progressCard: some View {
+    /// Trend teaser — one slim row into the Progress tab.
+    private var curveCard: some View {
         Button {
             Haptics.fire(.selection)
             onProgress()
         } label: {
-            VStack(alignment: .leading, spacing: 6) {
+            HStack(spacing: 12) {
                 Image(systemName: "chart.line.uptrend.xyaxis")
-                    .font(.system(size: 16, weight: .semibold))
+                    .font(.system(size: 15, weight: .semibold))
                     .foregroundStyle(DQColor.accentBright)
-                Text(verbatim: "\(scans.count) \(scans.count == 1 ? "reading" : "readings")")
-                    .font(DQFont.headline)
-                    .foregroundStyle(DQColor.textPrimary)
-                Text("See your curve")
-                    .font(DQFont.micro)
+                    .frame(width: 34, height: 34)
+                    .background(DQColor.accentSoft, in: RoundedRectangle(cornerRadius: 11, style: .continuous))
+                VStack(alignment: .leading, spacing: 1) {
+                    Text(verbatim: "\(scans.count) \(scans.count == 1 ? "reading" : "readings")")
+                        .font(DQFont.headline)
+                        .foregroundStyle(DQColor.textPrimary)
+                    Text("See your curve")
+                        .font(DQFont.micro)
+                        .foregroundStyle(DQColor.textSecondary)
+                }
+                Spacer()
+                Image(systemName: "chevron.right")
+                    .font(.system(size: 12, weight: .semibold))
                     .foregroundStyle(DQColor.textSecondary)
             }
-            .frame(maxWidth: .infinity, alignment: .leading)
             .padding(14)
+            .frame(maxWidth: .infinity, alignment: .leading)
             .background(DQColor.surface, in: RoundedRectangle(cornerRadius: DQRadius.card, style: .continuous))
             .overlay(
                 RoundedRectangle(cornerRadius: DQRadius.card, style: .continuous)

@@ -21,7 +21,14 @@ struct OnboardingRampFlow: View {
 
             currentScreen
                 .id(step)
-                .transition(.opacity)
+                .transition(
+                    reduceMotion
+                        ? AnyTransition.opacity
+                        : AnyTransition.asymmetric(
+                            insertion: .opacity.combined(with: .offset(y: 14)),
+                            removal: .opacity
+                        )
+                )
 
             // One thin filling hairline — the whole progress language.
             VStack {
@@ -34,7 +41,10 @@ struct OnboardingRampFlow: View {
                 Spacer()
             }
         }
-        .animation(reduceMotion ? VMotion.crossfade : .easeInOut(duration: 0.55), value: step)
+        // One smooth spring for every step change — the new screen rises in
+        // while the old one dissolves, no hard easing.
+        .animation(reduceMotion ? VMotion.crossfade : .spring(response: 0.55, dampingFraction: 0.9),
+                   value: step)
         .onAppear { RampAnalytics.screen(step) }
         .onChange(of: step) { _, newStep in
             Haptics.fire(.transition)
