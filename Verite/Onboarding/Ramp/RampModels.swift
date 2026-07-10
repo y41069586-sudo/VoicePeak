@@ -230,61 +230,32 @@ struct RampQuizAnswers {
 
     // MARK: Mirrored insights (the "we're listening" interstitials)
 
-    /// Chapter-1 insight: reflects the skin answers back in full sentences.
+    /// Chapter-1 insight: reflects the skin answer back — one short line.
     /// Pure template logic over the user's OWN answers — nothing fabricated.
     var skinInsight: String {
-        var lines: [String] = []
         switch concern {
-        case .redness?:
-            lines.append("Redness that comes and goes is usually barrier-related — and recoverable.")
-        case .breakouts?:
-            lines.append("Breakouts respond fastest of all seven metrics once the routine is consistent.")
-        case .pores?:
-            lines.append("Pore visibility is mostly texture and oil balance — both trainable within weeks.")
-        case .texture?:
-            lines.append("Texture is the slowest metric to move — but also the one that moves most reliably.")
-        case .dullness?:
-            lines.append("Dullness is typically surface buildup and hydration — the quickest win there is.")
+        case .redness?:   return "Redness is usually barrier-related — and recoverable."
+        case .breakouts?: return "Breakouts respond fastest of all seven metrics."
+        case .pores?:     return "Pores are texture and oil — both trainable."
+        case .texture?:   return "Texture moves slowest, but most reliably."
+        case .dullness?:  return "Dullness is buildup and hydration — a quick win."
         case .nothing?, nil:
-            lines.append("No single flag from you — the scan usually finds headroom people don't feel.")
+            return "The scan usually finds headroom you don't feel."
         }
-        switch selfRating {
-        case .rough?:
-            lines.append("You rate it rough right now. Rough patches score low — and rebound hard.")
-        case .average?:
-            lines.append("You call it average. Average almost always hides 10+ points of ceiling.")
-        case .decent?, .honestlyGood?:
-            lines.append("You already rate it well — the reading will show what's left above that.")
-        case nil:
-            break
-        }
-        return lines.joined(separator: " ")
     }
 
-    /// Chapter-2 insight: connects lifestyle answers to the score vocabulary.
+    /// Chapter-2 insight: connects a lifestyle answer to the score — one line.
     var lifeInsight: String {
-        var lines: [String] = []
         switch (sleep, spf) {
         case (.under6?, .whatsSPF?), (.sixToSeven?, .whatsSPF?):
-            lines.append("Short sleep and no SPF typically cost 8–12 points combined — and they're the fastest to win back.")
+            return "Short sleep + no SPF cost the most — and win back fastest."
         case (_, .whatsSPF?):
-            lines.append("No SPF yet is the single biggest lever in your answers — worth several points on its own.")
+            return "No SPF is the biggest lever in your answers."
         case (.under6?, _), (.sixToSeven?, _):
-            lines.append("Sleep under 7h shows up in glow and redness first — both respond within days.")
+            return "Short sleep shows up in glow and redness first."
         default:
-            lines.append("Your habits already protect your baseline — the plan will aim above it.")
+            return "Your habits protect your baseline — we aim above it."
         }
-        switch routine {
-        case .nothing?:
-            lines.append("Starting from zero routine is actually the steepest improvement curve there is.")
-        case .cleanserOnly?:
-            lines.append("Cleanser-only means every added step still pays full price in points.")
-        case .threePlus?, .fullStack?:
-            lines.append("With your routine depth, sequencing matters more than adding products.")
-        case nil:
-            break
-        }
-        return lines.joined(separator: " ")
     }
 
     /// A plausible, personalized score band derived from the answers — the

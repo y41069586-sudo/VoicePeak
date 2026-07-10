@@ -424,33 +424,53 @@ private struct DeckScanVisual: View {
     }
 }
 
-/// A clean, friendly face for the pre-photo state — a soft head, two lively
-/// eyes with a catch-light, a hint of blush and a gentle smile. Proportional
-/// (GeometryReader) so it reads as designed, not doodled.
+/// A friendly girl mascot for the pre-photo state — long hair framing the
+/// face, a bangs cap, two lively eyes with a catch-light, a hint of blush and
+/// a gentle smile. Proportional (GeometryReader) so it reads as designed.
 private struct DeckFaceSketch: View {
     var body: some View {
         GeometryReader { geo in
             let w = geo.size.width, h = geo.size.height
             ZStack {
-                // Head — soft white fill with a rounded accent outline.
+                // Long side hair, behind the face, hanging past the chin.
+                Capsule()
+                    .fill(DQColor.accentBright)
+                    .frame(width: w * 0.22, height: h * 0.74)
+                    .position(x: w * 0.21, y: h * 0.54)
+                Capsule()
+                    .fill(DQColor.accentBright)
+                    .frame(width: w * 0.22, height: h * 0.74)
+                    .position(x: w * 0.79, y: h * 0.54)
+
+                // Face — soft white fill with a rounded accent outline.
                 DeckHeadShape()
                     .fill(DQColor.surface)
+                    .frame(width: w * 0.64, height: h * 0.80)
+                    .position(x: w * 0.5, y: h * 0.5)
                 DeckHeadShape()
-                    .stroke(DQColor.accentBright, style: StrokeStyle(lineWidth: 3, lineJoin: .round))
+                    .stroke(DQColor.accentBright, style: StrokeStyle(lineWidth: 2.5, lineJoin: .round))
+                    .frame(width: w * 0.64, height: h * 0.80)
+                    .position(x: w * 0.5, y: h * 0.5)
+
+                // Hair top + bangs, over the scalp and forehead.
+                DeckHairCap()
+                    .fill(DQColor.accentBright)
+                    .frame(width: w * 0.72, height: h * 0.40)
+                    .position(x: w * 0.5, y: h * 0.25)
 
                 // Blush, low on the cheeks.
-                blush(at: CGPoint(x: w * 0.29, y: h * 0.60), in: geo.size)
-                blush(at: CGPoint(x: w * 0.71, y: h * 0.60), in: geo.size)
+                blush(at: CGPoint(x: w * 0.34, y: h * 0.62), in: geo.size)
+                blush(at: CGPoint(x: w * 0.66, y: h * 0.62), in: geo.size)
 
                 // Eyes with a small catch-light.
-                eye(at: CGPoint(x: w * 0.38, y: h * 0.45), in: geo.size)
-                eye(at: CGPoint(x: w * 0.62, y: h * 0.45), in: geo.size)
+                eye(at: CGPoint(x: w * 0.40, y: h * 0.52), in: geo.size)
+                eye(at: CGPoint(x: w * 0.60, y: h * 0.52), in: geo.size)
 
                 // Gentle smile.
                 DeckSmile()
                     .stroke(DQColor.accentBright, style: StrokeStyle(lineWidth: 3, lineCap: .round))
-                    .frame(width: w * 0.34, height: h * 0.12)
-                    .position(x: w * 0.5, y: h * 0.68)
+                    .frame(width: w * 0.30, height: h * 0.10)
+                    .position(x: w * 0.5, y: h * 0.70)
             }
         }
     }
@@ -459,11 +479,11 @@ private struct DeckFaceSketch: View {
         ZStack {
             Ellipse()
                 .fill(DQColor.accentBright)
-                .frame(width: size.width * 0.085, height: size.height * 0.085)
+                .frame(width: size.width * 0.075, height: size.height * 0.08)
             Circle()
                 .fill(Color.white)
-                .frame(width: size.width * 0.03, height: size.width * 0.03)
-                .offset(x: size.width * 0.018, y: -size.height * 0.018)
+                .frame(width: size.width * 0.026, height: size.width * 0.026)
+                .offset(x: size.width * 0.016, y: -size.height * 0.016)
         }
         .position(point)
     }
@@ -471,7 +491,7 @@ private struct DeckFaceSketch: View {
     private func blush(at point: CGPoint, in size: CGSize) -> some View {
         Ellipse()
             .fill(DQColor.accent.opacity(0.20))
-            .frame(width: size.width * 0.15, height: size.height * 0.065)
+            .frame(width: size.width * 0.14, height: size.height * 0.06)
             .position(point)
     }
 }
@@ -490,6 +510,25 @@ private struct DeckHeadShape: Shape {
         p.addCurve(to: CGPoint(x: rect.midX, y: rect.minY),
                    control1: CGPoint(x: rect.minX + w * 0.18, y: rect.maxY),
                    control2: CGPoint(x: rect.minX - w * 0.06, y: rect.minY + h * 0.10))
+        p.closeSubpath()
+        return p
+    }
+}
+
+/// A hair cap: a rounded dome over the scalp with a soft fringe dipping onto
+/// the forehead (the bangs).
+private struct DeckHairCap: Shape {
+    func path(in rect: CGRect) -> Path {
+        let w = rect.width, h = rect.height
+        var p = Path()
+        p.move(to: CGPoint(x: rect.minX, y: rect.maxY))
+        // Dome across the top.
+        p.addCurve(to: CGPoint(x: rect.maxX, y: rect.maxY),
+                   control1: CGPoint(x: rect.minX - w * 0.05, y: rect.minY),
+                   control2: CGPoint(x: rect.maxX + w * 0.05, y: rect.minY))
+        // Fringe — a gentle downward dip across the forehead.
+        p.addQuadCurve(to: CGPoint(x: rect.minX, y: rect.maxY),
+                       control: CGPoint(x: rect.midX, y: rect.maxY + h * 0.32))
         p.closeSubpath()
         return p
     }
