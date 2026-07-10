@@ -101,7 +101,8 @@ struct OnboardingRampFlow: View {
         case .insightSkin:
             RampInsightScreen(
                 eyebrow: "WHAT WE HEAR SO FAR",
-                insight: answers.skinInsight
+                insight: answers.skinInsight,
+                photoName: "GlowTexture"
             ) { advance() }
         case .quizRoutine:
             RampQuizScreen(
@@ -142,7 +143,8 @@ struct OnboardingRampFlow: View {
         case .insightLife:
             RampInsightScreen(
                 eyebrow: "THE LEVERS IN YOUR ANSWERS",
-                insight: answers.lifeInsight
+                insight: answers.lifeInsight,
+                photoName: "GlowRitual"
             ) { advance() }
         case .theReading:
             RampRevealScreen(answers: answers) { advance() }

@@ -136,43 +136,42 @@ struct RampNameScreen: View {
 // MARK: — Insight interstitial (the engine talks back)
 // ============================================================
 
-/// The mid-quiz payoff: the engine reflects the user's own answers back in
-/// full sentences. Pure template logic over THEIR answers — the strongest
-/// documented conversion mechanic in this genre, with nothing fabricated.
+/// The mid-quiz payoff: a beautiful photo card + the engine reflecting the
+/// user's own answers back in full sentences. Pure template logic over THEIR
+/// answers — the strongest documented conversion mechanic in this genre,
+/// with nothing fabricated. Photo assets: "GlowTexture" / "GlowRitual".
 struct RampInsightScreen: View {
     let eyebrow: String
     let insight: String
+    var photoName: String = "GlowTexture"
     let onAdvance: () -> Void
 
     @State private var shown = false
 
     var body: some View {
         VStack(spacing: 0) {
+            Spacer().frame(height: VSpace.xxl * 1.4)
+
+            RampPhoto(name: photoName, cornerRadius: 24)
+                .frame(maxWidth: .infinity)
+                .frame(height: 240)
+                .padding(.horizontal, VSpace.lg)
+                .opacity(shown ? 1 : 0)
+                .scaleEffect(shown ? 1 : 0.97)
+
             Spacer()
 
-            // Editorial pull-quote: hairline rules, an ornament, the insight
-            // set like a magazine deck — the engine "speaks" in print.
-            VStack(spacing: VSpace.lg) {
+            VStack(spacing: VSpace.md) {
                 Text(verbatim: eyebrow)
                     .font(VType.micro)
                     .tracking(3)
                     .foregroundStyle(RampStage.accentDeep)
 
-                Rectangle()
-                    .fill(RampStage.hair)
-                    .frame(width: 48, height: 1)
-
                 Text(insight)
-                    .font(RampStage.serif(22))
+                    .font(RampStage.serif(21, weight: .semibold))
                     .foregroundStyle(RampStage.ink)
                     .multilineTextAlignment(.center)
-                    .lineSpacing(5)
-
-                HStack(spacing: 10) {
-                    Rectangle().fill(RampStage.hair).frame(width: 26, height: 1)
-                    Circle().fill(RampStage.accent).frame(width: 4, height: 4)
-                    Rectangle().fill(RampStage.hair).frame(width: 26, height: 1)
-                }
+                    .lineSpacing(4)
             }
             .padding(.horizontal, VSpace.xl)
             .opacity(shown ? 1 : 0)
@@ -186,8 +185,8 @@ struct RampInsightScreen: View {
             Spacer().frame(height: VSpace.xxl)
         }
         .task {
-            try? await Task.sleep(for: .milliseconds(250))
-            withAnimation(.easeOut(duration: 0.9)) { shown = true }
+            try? await Task.sleep(for: .milliseconds(200))
+            withAnimation(.easeOut(duration: 0.8)) { shown = true }
             Haptics.fire(.selection)
         }
     }

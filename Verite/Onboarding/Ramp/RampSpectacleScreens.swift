@@ -4,8 +4,9 @@ import SwiftUI
 // MARK: — Screen 0: Opening
 // ============================================================
 
-/// A quiet cold open: wordmark, one serif promise, one CTA. No terminal, no
-/// hero object — stillness and confidence are the first impression.
+/// The GlamUp opener: a big beautiful photo carries the first impression,
+/// a soft card below holds the promise and one coral CTA. Drop "GlowHero"
+/// into the asset catalog and the placeholder becomes the real photo.
 struct RampBootScreen: View {
     let onAdvance: () -> Void
 
@@ -13,24 +14,31 @@ struct RampBootScreen: View {
 
     var body: some View {
         VStack(spacing: 0) {
+            Spacer().frame(height: VSpace.xl)
+
+            RampPhoto(name: "GlowHero")
+                .frame(maxWidth: .infinity)
+                .frame(height: 380)
+                .padding(.horizontal, VSpace.lg)
+                .opacity(shown ? 1 : 0)
+                .scaleEffect(shown ? 1 : 0.97)
+
             Spacer()
 
-            VStack(spacing: VSpace.lg) {
+            VStack(spacing: VSpace.md) {
                 Text(verbatim: "VÉRITÉ")
                     .font(VType.micro)
-                    .tracking(6)
+                    .tracking(5)
                     .foregroundStyle(RampStage.accentDeep)
-                VStack(spacing: VSpace.md) {
-                    Text("Your skin,\ntold honestly.")
-                        .font(RampStage.serif(32))
-                        .foregroundStyle(RampStage.ink)
-                        .multilineTextAlignment(.center)
-                        .lineSpacing(3)
-                    Text("A quiet, on-device reading of your complexion.")
-                        .font(VType.body)
-                        .foregroundStyle(RampStage.textSecondary)
-                        .multilineTextAlignment(.center)
-                }
+                Text("Your glow,\ntold honestly.")
+                    .font(RampStage.serif(30))
+                    .foregroundStyle(RampStage.ink)
+                    .multilineTextAlignment(.center)
+                    .lineSpacing(2)
+                Text("A quiet, on-device reading of your skin.")
+                    .font(VType.body)
+                    .foregroundStyle(RampStage.textSecondary)
+                    .multilineTextAlignment(.center)
             }
             .padding(.horizontal, VSpace.xl)
             .opacity(shown ? 1 : 0)
@@ -39,7 +47,7 @@ struct RampBootScreen: View {
             Spacer()
 
             VStack(spacing: VSpace.sm) {
-                RampPrimaryButton(title: "Begin") { onAdvance() }
+                RampPrimaryButton(title: "Let's begin") { onAdvance() }
                 Text("About a minute. No account needed.")
                     .font(VType.micro)
                     .foregroundStyle(RampStage.textTertiary)
@@ -49,8 +57,8 @@ struct RampBootScreen: View {
             Spacer().frame(height: VSpace.xxl)
         }
         .task {
-            try? await Task.sleep(for: .milliseconds(200))
-            withAnimation(.easeOut(duration: 1.1)) { shown = true }
+            try? await Task.sleep(for: .milliseconds(150))
+            withAnimation(.easeOut(duration: 0.9)) { shown = true }
         }
     }
 }

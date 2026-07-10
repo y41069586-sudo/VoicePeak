@@ -4,33 +4,34 @@ import UIKit
 #endif
 
 // ============================================================
-// MARK: — "Lumière" — the soft, editorial onboarding stage
+// MARK: — "Glow" — the warm, image-led onboarding stage
 // ============================================================
 //
-// The onboarding no longer runs on the dark, clinical v2 stage. It is its own
-// committed light world: warm porcelain, dawn light, a single dusty-rose
-// accent, Playfair serif, generous whitespace. A calm beauty ritual, not a
-// scan terminal. (The rest of the v2 app keeps its dark system; the handoff
-// dissolves from this light world into the camera.)
+// GlamUp-style: warm cream/blush ground, cocoa ink, one coral-peach accent,
+// friendly rounded type, big soft cards — and PHOTOS carry the hero moments.
+// Imagery loads from the asset catalog by name (see `RampPhoto`); until real
+// photos are dropped in, an aesthetic warm-gradient placeholder stands in, so
+// the flow always ships whole.
 
 enum RampStage {
     // Ground & ink.
-    static let porcelain = Color(hex: "F4ECE6") // warm background
-    static let recess     = Color(hex: "EBE0D8") // recessed panel
-    static let ink        = Color(hex: "372E2A") // warm espresso, never black
-    static let inkSoft    = Color(hex: "8B7C73") // secondary text
-    static let inkFaint   = Color(hex: "A99C92") // tertiary text
-    static let hair       = Color(hex: "D8C9BE") // warm hairline
+    static let porcelain = Color(hex: "FFF6F0") // warm cream-blush background
+    static let recess     = Color(hex: "FBEAE1") // recessed panel
+    static let ink        = Color(hex: "43322B") // warm cocoa, never black
+    static let inkSoft    = Color(hex: "9A8378") // secondary text
+    static let inkFaint   = Color(hex: "B8A79D") // tertiary text
+    static let hair       = Color(hex: "EDDCD2") // warm hairline
 
-    // The single accent (dusty rose) + its champagne glow.
-    static let accent     = Color(hex: "B4808A")
-    static let accentDeep = Color(hex: "93606B")
-    static let glow       = Color(hex: "EBC9AE")
+    // The single accent (coral peach) + its warm glow.
+    static let accent     = Color(hex: "E98A70")
+    static let accentDeep = Color(hex: "D06B52")
+    static let glow       = Color(hex: "F6C8AE")
 
-    // Dawn-field tints layered behind the content.
-    static let dawnPeach  = Color(hex: "F8DFC9")
-    static let dawnLilac  = Color(hex: "ECD6E4")
-    static let dawnSky    = Color(hex: "DDE6E8")
+    // Warm light pools layered behind the content (no cool tints — GlamUp
+    // worlds are golden-hour warm throughout).
+    static let dawnPeach  = Color(hex: "FFE3D2")
+    static let dawnLilac  = Color(hex: "FFD9CF") // blush (name kept for call sites)
+    static let dawnSky    = Color(hex: "FFF0DE") // vanilla (name kept for call sites)
 
     // Named text roles.
     static let textPrimary   = ink
@@ -38,22 +39,67 @@ enum RampStage {
     static let textTertiary  = inkFaint
 
     // Surfaces.
-    static let card = Color.white.opacity(0.5)
+    static let card = Color.white.opacity(0.85)
     static let hairline = hair
 
     /// Total conceptual screens (for the progress hairline).
     static let screenCount = 17
 
-    /// Playfair Display at an arbitrary size (falls back to the system serif).
-    static func serif(_ size: CGFloat, italic: Bool = false, weight: Font.Weight = .regular) -> Font {
-        #if canImport(UIKit)
-        if UIFont(name: "Playfair Display", size: 12) != nil {
-            let face = Font.custom("Playfair Display", size: size).weight(weight)
-            return italic ? face.italic() : face
+    /// Friendly rounded display face — the GlamUp voice. (Name kept from the
+    /// serif era so every call site keeps working; the look is SF Rounded.)
+    static func serif(_ size: CGFloat, italic: Bool = false, weight: Font.Weight = .bold) -> Font {
+        Font.system(size: size, weight: weight, design: .rounded)
+    }
+}
+
+// ============================================================
+// MARK: — Photo slots (the images that carry the screens)
+// ============================================================
+
+/// A named photo from the asset catalog inside a soft rounded card. When the
+/// asset doesn't exist yet (pre-art builds), a warm aesthetic gradient stands
+/// in — the layout never breaks, and dropping the image in later needs zero
+/// code changes. Expected assets: "GlowHero", "GlowTexture", "GlowRitual".
+struct RampPhoto: View {
+    let name: String
+    var cornerRadius: CGFloat = 28
+
+    var body: some View {
+        Group {
+            #if canImport(UIKit)
+            if UIImage(named: name) != nil {
+                Image(name)
+                    .resizable()
+                    .scaledToFill()
+            } else {
+                placeholder
+            }
+            #else
+            placeholder
+            #endif
         }
-        #endif
-        let base = Font.system(size: size, weight: weight, design: .serif)
-        return italic ? base.italic() : base
+        .clipShape(RoundedRectangle(cornerRadius: cornerRadius, style: .continuous))
+        .overlay(
+            RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
+                .strokeBorder(Color.white.opacity(0.6), lineWidth: 1)
+        )
+        .shadow(color: RampStage.accent.opacity(0.22), radius: 24, y: 12)
+        .accessibilityHidden(true)
+    }
+
+    /// Golden-hour gradient placeholder — deliberately pretty on its own.
+    private var placeholder: some View {
+        ZStack {
+            LinearGradient(colors: [Color(hex: "FFE0C9"), Color(hex: "F8B99B"),
+                                    Color(hex: "EE9377")],
+                           startPoint: .topLeading, endPoint: .bottomTrailing)
+            RadialGradient(colors: [.white.opacity(0.55), .clear],
+                           center: UnitPoint(x: 0.25, y: 0.2),
+                           startRadius: 0, endRadius: 220)
+            RadialGradient(colors: [Color(hex: "FFD9CF").opacity(0.8), .clear],
+                           center: UnitPoint(x: 0.85, y: 0.85),
+                           startRadius: 0, endRadius: 260)
+        }
     }
 }
 
@@ -77,7 +123,7 @@ struct RampBackdrop: View {
             dawnPool(RampStage.dawnSky,   at: UnitPoint(x: 0.50, y: 1.02), radius: 560)
 
             RampGrain()
-                .opacity(0.30)
+                .opacity(0.14)
                 .blendMode(.multiply)
         }
         .ignoresSafeArea()
@@ -193,8 +239,8 @@ struct TypewriterText: View {
 // MARK: — Buttons
 // ============================================================
 
-/// Primary CTA: a calm solid espresso pill with porcelain text. No gradient,
-/// no glow — the quiet confidence of the whole aesthetic.
+/// Primary CTA: the GlamUp coral pill — warm, friendly, impossible to miss,
+/// with a soft matching shadow instead of a hard glow.
 struct RampPrimaryButton: View {
     let title: String
     var systemImage: String? = nil
@@ -210,10 +256,15 @@ struct RampPrimaryButton: View {
                 if let systemImage { Image(systemName: systemImage) }
                 Text(title)
             }
-            .font(VType.bodyMedium)
-            .foregroundStyle(RampStage.porcelain)
-            .frame(maxWidth: .infinity, minHeight: 54)
-            .background(RampStage.ink, in: Capsule())
+            .font(.system(size: 17, weight: .semibold, design: .rounded))
+            .foregroundStyle(.white)
+            .frame(maxWidth: .infinity, minHeight: 56)
+            .background(
+                LinearGradient(colors: [RampStage.accent, RampStage.accentDeep],
+                               startPoint: .top, endPoint: .bottom),
+                in: Capsule()
+            )
+            .shadow(color: RampStage.accent.opacity(isEnabled ? 0.45 : 0), radius: 16, y: 8)
             .opacity(isEnabled ? 1 : 0.4)
         }
         .buttonStyle(PressableStyle())
