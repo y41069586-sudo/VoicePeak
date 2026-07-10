@@ -15,10 +15,11 @@ import UIKit
 final class ScanFlowModel {
 
     enum Stage {
-        case capture, theater, results, delta, potential, routineGen
+        case guide, capture, theater, results, delta, potential, routineGen
     }
 
-    var stage: Stage = .capture
+    // The flow opens on the capture guide (Do's & Don'ts) before the camera.
+    var stage: Stage = .guide
     private(set) var capturedImage: UIImage?
     private(set) var analysis: DermiqAnalysis?
     private(set) var potentialImage: UIImage?
@@ -147,10 +148,15 @@ struct DermiqScanFlowView: View {
             DQColor.background.ignoresSafeArea()
 
             switch model.stage {
+            case .guide:
+                DermiqCaptureGuideView(
+                    onContinue: { model.stage = .capture },
+                    onCancel: { onFinished(false) }
+                )
             case .capture:
                 DermiqCaptureView(
                     onCaptured: { image in model.begin(with: image) },
-                    onCancel: { onFinished(false) }
+                    onCancel: { model.stage = .guide }
                 )
             case .theater:
                 DermiqTheaterView(model: model) {

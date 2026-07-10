@@ -13,7 +13,6 @@ struct DermiqDeltaView: View {
     let onContinue: () -> Void
 
     @State private var shownScore: Int = 0
-    @State private var ringProgress: Double = 0
     @State private var morphDone = false
 
     private var oldAnalysis: DermiqAnalysis? { model.previousScan?.analysis }
@@ -27,7 +26,7 @@ struct DermiqDeltaView: View {
                     .padding(.top, 40)
 
                 if let old = oldAnalysis, let new = model.analysis {
-                    scoreMorph(old: old.overall, new: new.overall)
+                    overallHero(old: old.overall, new: new.overall)
                     deltaList(old: old, new: new)
 
                     if let current = model.capturedImage {
@@ -53,26 +52,36 @@ struct DermiqDeltaView: View {
         .task { await playMorph() }
     }
 
-    private func scoreMorph(old: Int, new: Int) -> some View {
-        ZStack {
-            DQScoreRing(progress: ringProgress, lineWidth: 10)
-                .frame(width: 190, height: 190)
-            VStack(spacing: 2) {
-                Text(verbatim: "\(shownScore)")
-                    .font(DQFont.score(66))
-                    .foregroundStyle(DQColor.textPrimary)
-                    .contentTransition(.numericText(value: Double(shownScore)))
-                HStack(spacing: 4) {
-                    Image(systemName: new >= old ? "arrow.up" : "arrow.down")
-                        .font(.system(size: 11, weight: .bold))
-                    Text(verbatim: "\(abs(new - old)) from \(old)")
-                        .font(DQFont.mono(12, weight: .semibold))
-                }
-                .foregroundStyle(new >= old ? DQColor.deltaUp : DQColor.deltaDown)
-                .opacity(morphDone ? 1 : 0)
-                .animation(VMotion.gentle, value: morphDone)
+    /// Flat "hero" number (no ring) — the score counts up, then a delta pill
+    /// lands. Matches the UMax-style grid the rest of the results use.
+    private func overallHero(old: Int, new: Int) -> some View {
+        VStack(spacing: 10) {
+            Text("OVERALL")
+                .font(DQFont.mono(11, weight: .semibold))
+                .foregroundStyle(DQColor.textSecondary)
+                .tracking(3)
+            Text(verbatim: "\(shownScore)")
+                .font(.system(size: 80, weight: .heavy, design: .rounded).monospacedDigit())
+                .foregroundStyle(DQColor.textPrimary)
+                .contentTransition(.numericText(value: Double(shownScore)))
+            HStack(spacing: 5) {
+                Image(systemName: new >= old ? "arrow.up" : "arrow.down")
+                    .font(.system(size: 12, weight: .bold))
+                Text(verbatim: "\(abs(new - old)) from \(old)")
+                    .font(.system(size: 14, weight: .bold, design: .rounded))
             }
+            .foregroundStyle(new >= old ? DQColor.deltaUp : DQColor.deltaDown)
+            .padding(.horizontal, 13)
+            .padding(.vertical, 7)
+            .background((new >= old ? DQColor.deltaUp : DQColor.deltaDown).opacity(0.12), in: Capsule())
+            .opacity(morphDone ? 1 : 0)
+            .animation(VMotion.gentle, value: morphDone)
         }
+        .padding(.vertical, 20)
+        .frame(maxWidth: .infinity)
+        .background(DQColor.surface, in: RoundedRectangle(cornerRadius: 24, style: .continuous))
+        .overlay(RoundedRectangle(cornerRadius: 24, style: .continuous)
+            .strokeBorder(DQColor.stroke, lineWidth: 1))
     }
 
     private func deltaList(old: DermiqAnalysis, new: DermiqAnalysis) -> some View {
@@ -90,11 +99,9 @@ struct DermiqDeltaView: View {
     private func playMorph() async {
         guard let old = oldAnalysis?.overall, let new = model.analysis?.overall else { return }
         shownScore = old
-        ringProgress = Double(old) / 100
         try? await Task.sleep(for: .milliseconds(900))
 
         let range = stride(from: old, through: new, by: new >= old ? 1 : -1)
-        withAnimation(.easeOut(duration: 1.6)) { ringProgress = Double(new) / 100 }
         for value in range {
             withAnimation(.linear(duration: 0.04)) { shownScore = value }
             if value % 3 == 0 { Haptics.fire(.tick) }

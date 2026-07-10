@@ -73,14 +73,15 @@ struct DermiqTabShell: View {
                 }
             }
         }
-        .task {
-            // Onboarding hands off straight into Guided Capture: if the user
-            // arrives with zero scans, open the flow at the moment of maximum
-            // motivation instead of parking them on a home screen.
+        .onAppear {
+            // Onboarding hands off straight into the camera: with zero scans,
+            // open the capture flow IMMEDIATELY and without the cover's slide
+            // animation, so the home dashboard never flashes behind it.
             guard !autoLaunched, scans.isEmpty else { return }
             autoLaunched = true
-            try? await Task.sleep(for: .milliseconds(450))
-            showFlow = true
+            var transaction = Transaction()
+            transaction.disablesAnimations = true
+            withTransaction(transaction) { showFlow = true }
         }
     }
 
