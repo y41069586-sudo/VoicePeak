@@ -4,77 +4,281 @@ import SwiftUI
 // MARK: — Screen 0: Opening
 // ============================================================
 
-/// The GlamUp opener, full-bleed: the photo owns the top half of the screen
-/// (edge to edge, soft fade into the cream ground), the wordmark sits ON the
-/// image, and the promise + coral CTA breathe below. Drop "GlowHero" into
-/// Resources/Photos and the placeholder becomes the real photo.
+/// The GlamUp-style intro: three illustrated pages — mirror, scan, plan —
+/// with a big rounded title, a short line and one coral button. Paged
+/// VERTICALLY: swiping down (or tapping Continue) moves to the next page;
+/// the last page hands off into the flow. Pure-SwiftUI line-art in the
+/// brand's coral/blush palette — no assets needed.
 struct RampBootScreen: View {
     let onAdvance: () -> Void
 
-    @State private var shown = false
+    @State private var page: Int? = 0
+
+    private let titles = ["Your glow,\nmeasured.", "Discover\nyour skin.", "Glow in\n14 days."]
+    private let subs = [
+        "One scan. One honest score from 0 to 100 — no filter, no sugarcoating.",
+        "Seven metrics, clear insights and a plan made for your face.",
+        "A simple morning & evening ritual, rebuilt from every scan.",
+    ]
 
     var body: some View {
-        VStack(spacing: 0) {
-            // Full-bleed hero with the wordmark overlaid.
-            ZStack(alignment: .bottom) {
-                RampPhoto(name: "GlowHero", cornerRadius: 0)
-                    .frame(height: 400)
-                    .frame(maxWidth: .infinity)
-                    .clipped()
-                    .overlay(
-                        // Fade the photo into the cream ground — no hard edge.
-                        LinearGradient(colors: [.clear, .clear, RampStage.porcelain],
-                                       startPoint: .top, endPoint: .bottom)
-                    )
-                VStack(spacing: 6) {
-                    Text(verbatim: "VÉRITÉ")
-                        .font(.system(size: 24, weight: .bold, design: .rounded))
-                        .tracking(8)
-                        .foregroundStyle(RampStage.ink)
-                    Text(verbatim: "THE HONEST SKIN SCORE")
-                        .font(VType.micro)
-                        .tracking(3)
-                        .foregroundStyle(RampStage.accentDeep)
+        ScrollView(.vertical) {
+            LazyVStack(spacing: 0) {
+                ForEach(0..<3, id: \.self) { index in
+                    introPage(index)
+                        .containerRelativeFrame(.vertical)
+                        .id(index)
                 }
-                .padding(.bottom, 2)
             }
-            .ignoresSafeArea(edges: .top)
-            .opacity(shown ? 1 : 0)
+            .scrollTargetLayout()
+        }
+        .scrollTargetBehavior(.paging)
+        .scrollIndicators(.hidden)
+        .scrollPosition(id: $page)
+        .ignoresSafeArea()
+        .overlay(alignment: .top) {
+            Text(verbatim: "VÉRITÉ")
+                .font(VType.micro)
+                .tracking(6)
+                .foregroundStyle(RampStage.accentDeep)
+                .padding(.top, 62) // clear of the Dynamic Island (full-bleed pager)
+        }
+        .overlay(alignment: .bottom) {
+            VStack(spacing: VSpace.md) {
+                // Page dots — reflect the vertical position.
+                HStack(spacing: 6) {
+                    ForEach(0..<3, id: \.self) { index in
+                        Capsule()
+                            .fill(index == (page ?? 0) ? RampStage.accent : RampStage.hair)
+                            .frame(width: index == (page ?? 0) ? 18 : 6, height: 6)
+                    }
+                }
+                .animation(VMotion.snappy, value: page)
+
+                RampPrimaryButton(title: (page ?? 0) >= 2 ? "Get started" : "Continue") {
+                    let current = page ?? 0
+                    if current >= 2 {
+                        onAdvance()
+                    } else {
+                        withAnimation(.easeInOut(duration: 0.5)) { page = current + 1 }
+                    }
+                }
+                .padding(.horizontal, VSpace.lg)
+            }
+            .padding(.bottom, 44) // clear of the home indicator (full-bleed pager)
+        }
+    }
+
+    private func introPage(_ index: Int) -> some View {
+        VStack(spacing: 0) {
+            Spacer()
+
+            ZStack {
+                Circle()
+                    .fill(RampStage.dawnLilac.opacity(0.75))
+                    .frame(width: 270, height: 270)
+                switch index {
+                case 0:  RampMirrorArt()
+                case 1:  RampScanFaceArt()
+                default: RampPlanArt()
+                }
+            }
 
             Spacer()
 
             VStack(spacing: VSpace.md) {
-                Text("Your glow,\ntold honestly.")
-                    .font(RampStage.serif(32))
+                Text(titles[index])
+                    .font(RampStage.serif(34))
                     .foregroundStyle(RampStage.ink)
                     .multilineTextAlignment(.center)
                     .lineSpacing(2)
-                Text("A gentle reading of your skin — private, just for you.")
-                    .font(VType.body)
+                Text(subs[index])
+                    .font(VType.bodyLarge)
                     .foregroundStyle(RampStage.textSecondary)
                     .multilineTextAlignment(.center)
                     .fixedSize(horizontal: false, vertical: true)
+                    .padding(.horizontal, VSpace.xl)
             }
-            .padding(.horizontal, VSpace.xl)
-            .opacity(shown ? 1 : 0)
-            .offset(y: shown ? 0 : 12)
 
             Spacer()
+            // Room for the fixed dots + button overlay.
+            Spacer().frame(height: 150)
+        }
+        .frame(maxWidth: .infinity)
+    }
+}
 
-            VStack(spacing: VSpace.sm) {
-                RampPrimaryButton(title: "Let's begin") { onAdvance() }
-                Text("About a minute. No account needed.")
-                    .font(VType.micro)
-                    .foregroundStyle(RampStage.textTertiary)
+// MARK: Intro line-art (pure SwiftUI, coral/blush)
+
+/// Page 1 — the hand mirror with sparkles.
+private struct RampMirrorArt: View {
+    var body: some View {
+        ZStack {
+            // Handle.
+            VStack(spacing: 0) {
+                Spacer().frame(height: 150)
+                Capsule()
+                    .fill(RampStage.dawnPeach)
+                    .overlay(Capsule().strokeBorder(RampStage.accent, lineWidth: 4))
+                    .frame(width: 34, height: 86)
             }
-            .padding(.horizontal, VSpace.lg)
-            .opacity(shown ? 1 : 0)
-            Spacer().frame(height: VSpace.xxl)
+            // Frame + glass with a soft diagonal shine.
+            Ellipse()
+                .fill(Color.white)
+                .overlay(Ellipse().strokeBorder(RampStage.accent, lineWidth: 5))
+                .frame(width: 140, height: 168)
+                .offset(y: -32)
+            Ellipse()
+                .fill(RampStage.dawnPeach)
+                .frame(width: 108, height: 136)
+                .overlay(
+                    Rectangle()
+                        .fill(Color.white.opacity(0.75))
+                        .frame(width: 34, height: 200)
+                        .rotationEffect(.degrees(38))
+                        .offset(x: -16)
+                        .clipShape(Ellipse())
+                )
+                .clipShape(Ellipse())
+                .offset(y: -32)
+
+            Image(systemName: "sparkle")
+                .font(.system(size: 26, weight: .bold))
+                .foregroundStyle(RampStage.accent)
+                .offset(x: -98, y: -92)
+            Image(systemName: "sparkle")
+                .font(.system(size: 16, weight: .bold))
+                .foregroundStyle(RampStage.accent)
+                .offset(x: 96, y: -30)
+            Image(systemName: "sparkle")
+                .font(.system(size: 14, weight: .bold))
+                .foregroundStyle(RampStage.accent)
+                .offset(x: -86, y: 56)
         }
-        .task {
-            try? await Task.sleep(for: .milliseconds(120))
-            withAnimation(.easeOut(duration: 0.9)) { shown = true }
+        .accessibilityHidden(true)
+    }
+}
+
+/// Page 2 — the face inside a scan frame, check landed.
+private struct RampScanFaceArt: View {
+    var body: some View {
+        ZStack {
+            RampIntroBrackets()
+                .stroke(RampStage.accent, style: StrokeStyle(lineWidth: 7, lineCap: .round))
+                .frame(width: 190, height: 190)
+
+            // A friendly abstract face.
+            ZStack {
+                Circle()
+                    .fill(Color.white)
+                    .overlay(Circle().strokeBorder(RampStage.accent, lineWidth: 4))
+                    .frame(width: 96, height: 96)
+                HStack(spacing: 26) {
+                    Circle().fill(RampStage.accentDeep).frame(width: 7, height: 7)
+                    Circle().fill(RampStage.accentDeep).frame(width: 7, height: 7)
+                }
+                .offset(y: -8)
+                HStack(spacing: 52) {
+                    Circle().fill(RampStage.dawnPeach).frame(width: 12, height: 12)
+                    Circle().fill(RampStage.dawnPeach).frame(width: 12, height: 12)
+                }
+                .offset(y: 6)
+                RampIntroSmile()
+                    .stroke(RampStage.accentDeep, style: StrokeStyle(lineWidth: 3.5, lineCap: .round))
+                    .frame(width: 30, height: 14)
+                    .offset(y: 18)
+            }
+
+            // Check badge, bottom-right of the frame.
+            ZStack {
+                Circle()
+                    .fill(Color.white)
+                    .overlay(Circle().strokeBorder(RampStage.accent, lineWidth: 4))
+                Image(systemName: "checkmark")
+                    .font(.system(size: 26, weight: .bold))
+                    .foregroundStyle(RampStage.accent)
+            }
+            .frame(width: 62, height: 62)
+            .offset(x: 78, y: 66)
         }
+        .accessibilityHidden(true)
+    }
+}
+
+/// Page 3 — the 14-day plan calendar.
+private struct RampPlanArt: View {
+    var body: some View {
+        ZStack {
+            RoundedRectangle(cornerRadius: 22, style: .continuous)
+                .fill(Color.white)
+                .overlay(
+                    RoundedRectangle(cornerRadius: 22, style: .continuous)
+                        .strokeBorder(RampStage.accent, lineWidth: 5)
+                )
+                .frame(width: 170, height: 160)
+            UnevenRoundedRectangle(topLeadingRadius: 18, topTrailingRadius: 18)
+                .fill(RampStage.accent)
+                .frame(width: 170, height: 40)
+                .offset(y: -60)
+            Text(verbatim: "14 DAYS")
+                .font(.system(size: 15, weight: .heavy, design: .rounded))
+                .foregroundStyle(Color.white)
+                .tracking(1)
+                .offset(y: -60)
+
+            // Day dots: first row done, second underway.
+            VStack(spacing: 14) {
+                ForEach(0..<2, id: \.self) { row in
+                    HStack(spacing: 14) {
+                        ForEach(0..<5, id: \.self) { column in
+                            let done = row == 0 || column < 2
+                            Circle()
+                                .fill(done ? RampStage.accent : RampStage.dawnPeach)
+                                .frame(width: 16, height: 16)
+                        }
+                    }
+                }
+            }
+            .offset(y: 8)
+
+            Image(systemName: "sparkle")
+                .font(.system(size: 22, weight: .bold))
+                .foregroundStyle(RampStage.accent)
+                .offset(x: 96, y: -84)
+        }
+        .accessibilityHidden(true)
+    }
+}
+
+/// Four rounded viewfinder corners as one shape.
+private struct RampIntroBrackets: Shape {
+    func path(in rect: CGRect) -> Path {
+        let l = rect.width * 0.22
+        var p = Path()
+        p.move(to: CGPoint(x: rect.minX, y: rect.minY + l))
+        p.addLine(to: CGPoint(x: rect.minX, y: rect.minY))
+        p.addLine(to: CGPoint(x: rect.minX + l, y: rect.minY))
+        p.move(to: CGPoint(x: rect.maxX - l, y: rect.minY))
+        p.addLine(to: CGPoint(x: rect.maxX, y: rect.minY))
+        p.addLine(to: CGPoint(x: rect.maxX, y: rect.minY + l))
+        p.move(to: CGPoint(x: rect.maxX, y: rect.maxY - l))
+        p.addLine(to: CGPoint(x: rect.maxX, y: rect.maxY))
+        p.addLine(to: CGPoint(x: rect.maxX - l, y: rect.maxY))
+        p.move(to: CGPoint(x: rect.minX + l, y: rect.maxY))
+        p.addLine(to: CGPoint(x: rect.minX, y: rect.maxY))
+        p.addLine(to: CGPoint(x: rect.minX, y: rect.maxY - l))
+        return p
+    }
+}
+
+/// A gentle smile arc.
+private struct RampIntroSmile: Shape {
+    func path(in rect: CGRect) -> Path {
+        var p = Path()
+        p.move(to: CGPoint(x: rect.minX, y: rect.minY))
+        p.addQuadCurve(to: CGPoint(x: rect.maxX, y: rect.minY),
+                       control: CGPoint(x: rect.midX, y: rect.maxY + rect.height))
+        return p
     }
 }
 
