@@ -295,83 +295,175 @@ struct RampPlanPreviewScreen: View {
 // MARK: — Screen: Register (before the first scan)
 // ============================================================
 
-/// The registration moment right before the scan. Apple and Google appear as
-/// styled buttons WITHOUT real authentication for now (they simply continue —
-/// per product decision for TestFlight iteration).
+/// A dedicated, unhurried registration screen right before the scan — its own
+/// full canvas, only Apple + Google, plenty of breathing room. Apple keeps the
+/// black wordmark button; Google carries its authentic multicolor "G".
+///
+/// The buttons currently continue WITHOUT real authentication (per product
+/// decision for TestFlight iteration).
 /// TODO: PRODUCTION — before App Store submission these MUST either perform
 /// real auth (re-add the entitlement + SDK) or be removed; placebo login
-/// buttons are an App Review 2.1 rejection.
+/// buttons are an App Review 2.1 rejection. If real Google auth is added, swap
+/// GoogleGLogo for Google's official-brand asset per their sign-in guidelines.
 struct RampSignInScreen: View {
     /// Reports an optional given name (real auth will supply one later).
     let onSignedIn: (String?) -> Void
     let onSkip: () -> Void
 
+    @State private var shown = false
+
     var body: some View {
         VStack(spacing: 0) {
-            Spacer().frame(height: VSpace.xl)
-
-            RampPhoto(name: "GlowHero", cornerRadius: 24)
-                .frame(width: 216, height: 288) // 3:4, no crop
-
             Spacer()
 
-            VStack(spacing: VSpace.sm) {
-                Text(verbatim: "ONE LAST THING")
+            // Soft emblem — a blush disc with a single coral mark.
+            ZStack {
+                Circle()
+                    .fill(RampStage.dawnPeach)
+                    .frame(width: 108, height: 108)
+                Circle()
+                    .strokeBorder(RampStage.glow, lineWidth: 1)
+                    .frame(width: 108, height: 108)
+                Image(systemName: "sparkles")
+                    .font(.system(size: 40, weight: .light))
+                    .foregroundStyle(RampStage.accentDeep)
+            }
+            .opacity(shown ? 1 : 0)
+            .scaleEffect(shown ? 1 : 0.9)
+
+            Spacer().frame(height: VSpace.xl)
+
+            VStack(spacing: VSpace.md) {
+                Text(verbatim: "CREATE YOUR ACCOUNT")
                     .font(VType.micro)
                     .tracking(3)
                     .foregroundStyle(RampStage.accentDeep)
                 Text("Register before\nyour first scan.")
-                    .font(RampStage.serif(28))
+                    .font(RampStage.serif(30))
                     .foregroundStyle(RampStage.ink)
                     .multilineTextAlignment(.center)
-                    .lineSpacing(2)
-                Text("Keep your readings and your 14-day plan safe.")
+                    .lineSpacing(3)
+                Text("So your readings and your 14-day plan\nare always yours — on any device.")
                     .font(VType.body)
                     .foregroundStyle(RampStage.textSecondary)
                     .multilineTextAlignment(.center)
+                    .lineSpacing(2)
                     .fixedSize(horizontal: false, vertical: true)
             }
             .padding(.horizontal, VSpace.xl)
+            .opacity(shown ? 1 : 0)
+            .offset(y: shown ? 0 : 10)
 
             Spacer()
 
-            VStack(spacing: VSpace.sm) {
-                providerButton(icon: "apple.logo", title: "Continue with Apple",
-                               foreground: .white, background: Color.black) {
+            VStack(spacing: VSpace.md) {
+                // Apple — black button, white wordmark.
+                Button {
                     RampAnalytics.track("onboarding_sign_in", ["provider": "apple_mock"])
                     Haptics.fire(.milestone)
                     onSignedIn(nil)
+                } label: {
+                    HStack(spacing: 10) {
+                        Image(systemName: "apple.logo")
+                            .font(.system(size: 18, weight: .medium))
+                        Text("Continue with Apple")
+                    }
+                    .font(.system(size: 17, weight: .semibold, design: .rounded))
+                    .foregroundStyle(.white)
+                    .frame(maxWidth: .infinity, minHeight: 58)
+                    .background(Color.black, in: Capsule())
                 }
-                providerButton(icon: "g.circle.fill", title: "Continue with Google",
-                               foreground: RampStage.ink, background: Color.white) {
+                .buttonStyle(PressableStyle())
+
+                // Google — white button, authentic four-color "G".
+                Button {
                     RampAnalytics.track("onboarding_sign_in", ["provider": "google_mock"])
                     Haptics.fire(.milestone)
                     onSignedIn(nil)
+                } label: {
+                    HStack(spacing: 10) {
+                        GoogleGLogo()
+                            .frame(width: 20, height: 20)
+                        Text("Continue with Google")
+                    }
+                    .font(.system(size: 17, weight: .semibold, design: .rounded))
+                    .foregroundStyle(Color(red: 0.23, green: 0.23, blue: 0.24))
+                    .frame(maxWidth: .infinity, minHeight: 58)
+                    .background(Color.white, in: Capsule())
+                    .overlay(Capsule().strokeBorder(RampStage.hairline, lineWidth: 1))
                 }
+                .buttonStyle(PressableStyle())
+
                 RampGhostButton(title: "Not now") {
                     RampAnalytics.track("onboarding_sign_in", ["provider": "none"])
                     onSkip()
                 }
+                .padding(.top, VSpace.xs)
             }
             .padding(.horizontal, VSpace.lg)
+            .opacity(shown ? 1 : 0)
+
             Spacer().frame(height: VSpace.xxl)
+        }
+        .task {
+            try? await Task.sleep(for: .milliseconds(150))
+            withAnimation(.easeOut(duration: 0.7)) { shown = true }
+        }
+    }
+}
+
+// ============================================================
+// MARK: — Google "G" mark (authentic four colors)
+// ============================================================
+
+/// The recognizable Google "G" drawn as four arc segments in the brand palette
+/// (blue #4285F4, green #34A853, yellow #FBBC05, red #EA4335) plus the blue
+/// crossbar. This is a hand-built approximation for the mock button — if real
+/// Google Sign-In is wired up, replace it with Google's official asset to stay
+/// within their branding guidelines.
+struct GoogleGLogo: View {
+    private let blue   = Color(red: 0.259, green: 0.522, blue: 0.957) // #4285F4
+    private let green  = Color(red: 0.204, green: 0.659, blue: 0.325) // #34A853
+    private let yellow = Color(red: 0.984, green: 0.737, blue: 0.020) // #FBBC05
+    private let red    = Color(red: 0.918, green: 0.263, blue: 0.208) // #EA4335
+
+    var body: some View {
+        GeometryReader { geo in
+            let side = min(geo.size.width, geo.size.height)
+            let lw = side * 0.22
+            let center = CGPoint(x: geo.size.width / 2, y: geo.size.height / 2)
+            let radius = (side - lw) / 2
+
+            ZStack {
+                // Blue: right side, sweeping down into the crossbar area.
+                arc(from: -20, to: 90, radius: radius, lineWidth: lw, center: center)
+                    .foregroundStyle(blue)
+                // Green: bottom-left.
+                arc(from: 90, to: 160, radius: radius, lineWidth: lw, center: center)
+                    .foregroundStyle(green)
+                // Yellow: left.
+                arc(from: 160, to: 230, radius: radius, lineWidth: lw, center: center)
+                    .foregroundStyle(yellow)
+                // Red: top.
+                arc(from: 230, to: 340, radius: radius, lineWidth: lw, center: center)
+                    .foregroundStyle(red)
+                // The crossbar: blue bar from the center out to the right edge.
+                Rectangle()
+                    .fill(blue)
+                    .frame(width: radius + lw / 2, height: lw)
+                    .position(x: center.x + (radius + lw / 2) / 2, y: center.y)
+            }
         }
     }
 
-    private func providerButton(icon: String, title: String, foreground: Color,
-                                background: Color, action: @escaping () -> Void) -> some View {
-        Button(action: action) {
-            HStack(spacing: 8) {
-                Image(systemName: icon)
-                Text(title)
-            }
-            .font(.system(size: 17, weight: .semibold, design: .rounded))
-            .foregroundStyle(foreground)
-            .frame(maxWidth: .infinity, minHeight: 54)
-            .background(background, in: Capsule())
-            .overlay(Capsule().strokeBorder(RampStage.hairline, lineWidth: 1))
+    private func arc(from start: Double, to end: Double, radius: CGFloat,
+                     lineWidth: CGFloat, center: CGPoint) -> some View {
+        Path { path in
+            path.addArc(center: center, radius: radius,
+                        startAngle: .degrees(start), endAngle: .degrees(end),
+                        clockwise: false)
         }
-        .buttonStyle(PressableStyle())
+        .stroke(style: StrokeStyle(lineWidth: lineWidth, lineCap: .butt))
     }
 }
 
