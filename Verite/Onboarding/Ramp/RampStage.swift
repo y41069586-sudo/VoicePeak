@@ -43,7 +43,7 @@ enum RampStage {
     static let hairline = hair
 
     /// Total conceptual screens (for the progress hairline).
-    static let screenCount = 18
+    static let screenCount = 19
 
     /// Friendly rounded display face — the GlamUp voice. (Name kept from the
     /// serif era so every call site keeps working; the look is SF Rounded.)

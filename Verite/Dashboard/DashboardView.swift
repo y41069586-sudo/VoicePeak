@@ -270,5 +270,5 @@ struct DashboardView: View {
     DashboardView()
         .modelContainer(Persistence.previewContainer)
         .environment(AppState())
-        .preferredColorScheme(.dark)
+        .preferredColorScheme(.light)
 }

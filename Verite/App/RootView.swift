@@ -26,7 +26,7 @@ struct RootView: View {
         }
         .veriteAnimation(value: onboardingComplete)
         .tint(DQColor.accent)
-        .preferredColorScheme(.dark) // dark, clinical-premium throughout
+        .preferredColorScheme(.light) // warm GlamUp light, app-wide
         .task { SeedData.seedCatalogIfNeeded(modelContext) }
     }
 }

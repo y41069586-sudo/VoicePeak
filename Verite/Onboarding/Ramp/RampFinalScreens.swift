@@ -1,5 +1,4 @@
 import SwiftUI
-import AuthenticationServices
 
 // ============================================================
 // MARK: — Screen 9: The Curve (where do you land?)
@@ -29,6 +28,7 @@ struct RampCurveScreen: View {
                     .font(VType.bodyLarge)
                     .foregroundStyle(RampStage.textSecondary)
                     .multilineTextAlignment(.center)
+                    .fixedSize(horizontal: false, vertical: true)
                     .vStaggeredAppear(index: 1)
             }
             .padding(.horizontal, VSpace.xl)
@@ -117,6 +117,7 @@ struct RampDailyReportScreen: View {
                     .font(VType.bodyLarge)
                     .foregroundStyle(RampStage.textSecondary)
                     .multilineTextAlignment(.center)
+                    .fixedSize(horizontal: false, vertical: true)
             }
             .padding(.horizontal, VSpace.xl)
             .vStaggeredAppear(index: 0)
@@ -197,21 +198,113 @@ struct RampDailyReportScreen: View {
 }
 
 // ============================================================
-// MARK: — Screen 11: Sign in (Apple / Google, or neither)
+// MARK: — Screen: Your first plan (preview)
 // ============================================================
 
-/// Account step right before the scan. Sign in with Apple is real (native,
-/// no backend needed — the credential's given name personalizes the profile);
-/// Google appears once the SDK + client ID are configured (feature flag —
-/// a visible dead button would be an App Review 2.1 rejection). "Continue
-/// without an account" stays: the app is fully functional without one, and
-/// forcing registration for on-phone functionality violates 5.1.1(v).
+/// Shows the shape of the deliverable BEFORE the commitment screens: a Day-1
+/// preview of the 14-day plan. Illustrative, clearly labeled — the real one
+/// is built from the scan.
+struct RampPlanPreviewScreen: View {
+    let onAdvance: () -> Void
+
+    var body: some View {
+        VStack(spacing: 0) {
+            Spacer().frame(height: VSpace.xxl * 1.6)
+
+            VStack(spacing: VSpace.sm) {
+                Text(verbatim: "AFTER YOUR SCAN")
+                    .font(VType.micro)
+                    .tracking(3)
+                    .foregroundStyle(RampStage.accentDeep)
+                Text("Your first plan,\nready in seconds.")
+                    .font(RampStage.serif(28))
+                    .foregroundStyle(RampStage.ink)
+                    .multilineTextAlignment(.center)
+                    .lineSpacing(2)
+                Text("14 days, morning and evening — every step aimed at your three weakest scores.")
+                    .font(VType.body)
+                    .foregroundStyle(RampStage.textSecondary)
+                    .multilineTextAlignment(.center)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+            .padding(.horizontal, VSpace.xl)
+
+            Spacer()
+
+            // Day-1 sample card.
+            VStack(alignment: .leading, spacing: 12) {
+                HStack {
+                    Text(verbatim: "DAY 1 · PREVIEW")
+                        .font(VType.micro).tracking(3)
+                        .foregroundStyle(RampStage.accentDeep)
+                    Spacer()
+                    Text(verbatim: "ILLUSTRATIVE")
+                        .font(VType.micro).tracking(2)
+                        .foregroundStyle(RampStage.textTertiary)
+                }
+                previewRow(icon: "sun.max.fill", title: "Morning",
+                           steps: "Gentle cleanse · Hydrating serum · SPF 30+")
+                previewRow(icon: "moon.stars.fill", title: "Evening",
+                           steps: "Cleanse · Targeted active · Moisturizer")
+                HStack(spacing: 6) {
+                    Image(systemName: "checkmark.seal")
+                        .font(.system(size: 11, weight: .semibold))
+                    Text("Yours is built from your scan — not a template.")
+                        .font(VType.micro)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+                .foregroundStyle(RampStage.accentDeep)
+            }
+            .padding(VSpace.lg)
+            .background(Color.white.opacity(0.75), in: RoundedRectangle(cornerRadius: 22, style: .continuous))
+            .overlay(
+                RoundedRectangle(cornerRadius: 22, style: .continuous)
+                    .strokeBorder(RampStage.hairline, lineWidth: 1)
+            )
+            .shadow(color: RampStage.accent.opacity(0.16), radius: 20, y: 10)
+            .padding(.horizontal, VSpace.lg)
+
+            Spacer()
+
+            RampPrimaryButton(title: "Sounds good") { onAdvance() }
+                .padding(.horizontal, VSpace.lg)
+            Spacer().frame(height: VSpace.xxl)
+        }
+    }
+
+    private func previewRow(icon: String, title: String, steps: String) -> some View {
+        HStack(alignment: .top, spacing: 10) {
+            Image(systemName: icon)
+                .font(.system(size: 14, weight: .semibold))
+                .foregroundStyle(RampStage.accentDeep)
+                .frame(width: 22)
+            VStack(alignment: .leading, spacing: 2) {
+                Text(title)
+                    .font(VType.bodyMedium)
+                    .foregroundStyle(RampStage.ink)
+                Text(steps)
+                    .font(VType.caption)
+                    .foregroundStyle(RampStage.textSecondary)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+        }
+    }
+}
+
+// ============================================================
+// MARK: — Screen: Register (before the first scan)
+// ============================================================
+
+/// The registration moment right before the scan. Apple and Google appear as
+/// styled buttons WITHOUT real authentication for now (they simply continue —
+/// per product decision for TestFlight iteration).
+/// TODO: PRODUCTION — before App Store submission these MUST either perform
+/// real auth (re-add the entitlement + SDK) or be removed; placebo login
+/// buttons are an App Review 2.1 rejection.
 struct RampSignInScreen: View {
-    /// Reports the given name from Apple, if the user shared one.
+    /// Reports an optional given name (real auth will supply one later).
     let onSignedIn: (String?) -> Void
     let onSkip: () -> Void
-
-    @Environment(AppState.self) private var appState
 
     var body: some View {
         VStack(spacing: 0) {
@@ -222,69 +315,40 @@ struct RampSignInScreen: View {
 
             Spacer()
 
-            VStack(spacing: VSpace.md) {
-                Text("Save your glow.")
+            VStack(spacing: VSpace.sm) {
+                Text(verbatim: "ONE LAST THING")
+                    .font(VType.micro)
+                    .tracking(3)
+                    .foregroundStyle(RampStage.accentDeep)
+                Text("Register before\nyour first scan.")
                     .font(RampStage.serif(28))
                     .foregroundStyle(RampStage.ink)
                     .multilineTextAlignment(.center)
-                Text("Keep your readings and your 14-day plan safe across devices.")
+                    .lineSpacing(2)
+                Text("Keep your readings and your 14-day plan safe.")
                     .font(VType.body)
                     .foregroundStyle(RampStage.textSecondary)
                     .multilineTextAlignment(.center)
+                    .fixedSize(horizontal: false, vertical: true)
             }
             .padding(.horizontal, VSpace.xl)
 
             Spacer()
 
             VStack(spacing: VSpace.sm) {
-                // Only shown once the App ID has the Sign in with Apple
-                // capability and CODE_SIGN_ENTITLEMENTS is re-added — otherwise
-                // the archive can't be signed and the button can't authorize.
-                if appState.featureFlags.appleSignInEnabled {
-                    SignInWithAppleButton(.signIn) { request in
-                        request.requestedScopes = [.fullName]
-                    } onCompletion: { result in
-                        switch result {
-                        case .success(let authorization):
-                            let credential = authorization.credential as? ASAuthorizationAppleIDCredential
-                            let name = credential?.fullName?.givenName
-                            RampAnalytics.track("onboarding_sign_in",
-                                                ["provider": "apple", "result": "success"])
-                            Haptics.fire(.milestone)
-                            onSignedIn(name)
-                        case .failure:
-                            // Cancelled or failed — stay on the screen; the user
-                            // can retry or continue without an account.
-                            RampAnalytics.track("onboarding_sign_in",
-                                                ["provider": "apple", "result": "cancelled"])
-                        }
-                    }
-                    .signInWithAppleButtonStyle(.black)
-                    .frame(height: 54)
-                    .clipShape(Capsule())
+                providerButton(icon: "apple.logo", title: "Continue with Apple",
+                               foreground: .white, background: Color.black) {
+                    RampAnalytics.track("onboarding_sign_in", ["provider": "apple_mock"])
+                    Haptics.fire(.milestone)
+                    onSignedIn(nil)
                 }
-
-                if appState.featureFlags.googleSignInEnabled {
-                    Button {
-                        // TODO: PRODUCTION — wire GoogleSignIn SDK here once
-                        // the OAuth client ID exists; flag stays OFF until then.
-                        RampAnalytics.track("onboarding_sign_in",
-                                            ["provider": "google", "result": "tapped"])
-                    } label: {
-                        HStack(spacing: 8) {
-                            Image(systemName: "g.circle.fill")
-                            Text("Continue with Google")
-                        }
-                        .font(.system(size: 17, weight: .semibold, design: .rounded))
-                        .foregroundStyle(RampStage.ink)
-                        .frame(maxWidth: .infinity, minHeight: 54)
-                        .background(Color.white, in: Capsule())
-                        .overlay(Capsule().strokeBorder(RampStage.hairline, lineWidth: 1))
-                    }
-                    .buttonStyle(PressableStyle())
+                providerButton(icon: "g.circle.fill", title: "Continue with Google",
+                               foreground: RampStage.ink, background: Color.white) {
+                    RampAnalytics.track("onboarding_sign_in", ["provider": "google_mock"])
+                    Haptics.fire(.milestone)
+                    onSignedIn(nil)
                 }
-
-                RampGhostButton(title: "Continue without an account") {
+                RampGhostButton(title: "Not now") {
                     RampAnalytics.track("onboarding_sign_in", ["provider": "none"])
                     onSkip()
                 }
@@ -292,6 +356,22 @@ struct RampSignInScreen: View {
             .padding(.horizontal, VSpace.lg)
             Spacer().frame(height: VSpace.xxl)
         }
+    }
+
+    private func providerButton(icon: String, title: String, foreground: Color,
+                                background: Color, action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            HStack(spacing: 8) {
+                Image(systemName: icon)
+                Text(title)
+            }
+            .font(.system(size: 17, weight: .semibold, design: .rounded))
+            .foregroundStyle(foreground)
+            .frame(maxWidth: .infinity, minHeight: 54)
+            .background(background, in: Capsule())
+            .overlay(Capsule().strokeBorder(RampStage.hairline, lineWidth: 1))
+        }
+        .buttonStyle(PressableStyle())
     }
 }
 
@@ -327,6 +407,7 @@ struct RampHandoffScreen: View {
                     .font(VType.body)
                     .foregroundStyle(RampStage.textSecondary)
                     .multilineTextAlignment(.center)
+                    .fixedSize(horizontal: false, vertical: true)
             }
             .padding(.horizontal, VSpace.xl)
             .opacity(shown ? 1 : 0)

@@ -3,15 +3,21 @@ import SwiftData
 import StoreKit
 
 // ============================================================
-// MARK: — Screen 4: Results (teased, then paywalled)
+// MARK: — Screen 4: Results (Now ⇄ After 14 days)
 // ============================================================
 
-/// The classic gate: the WHOLE reading — score, metrics, written read —
-/// renders blurred under the paywall; the shape is visible, nothing is
-/// readable. Unlock dissolves the blur, THEN the count-up plays (the reveal
-/// is the reward for paying). Post-unlock the card becomes shareable
-/// (story-sized Reading Card) and — from the 3rd completed scan on, never
-/// during onboarding (5.6.3) — the native review ask may fire once.
+/// The reveal, rebuilt around honesty-with-hope:
+/// - YOUR photo sits at the top — this is a reading of you, not a template.
+/// - A Now / After-14-days switch above the score flips every number between
+///   the real result and a conservative, rule-based projection
+///   (`DermiqProjection`) — always labeled as a projection, never a promise.
+/// - A soft down-arrow invites the scroll to the full metric breakdown.
+/// - The CTA is the plan: "Build my 14-day plan".
+///
+/// Everything renders BLURRED under the paywall — the shape is visible,
+/// nothing readable. Unlock dissolves the blur, then the score counts up.
+/// Post-unlock: shareable Reading Card + (3rd scan on, never in onboarding,
+/// 5.6.3) the once-ever native review ask.
 struct DermiqResultsView: View {
     let model: ScanFlowModel
     let onContinue: () -> Void
@@ -31,9 +37,10 @@ struct DermiqResultsView: View {
     @AppStorage("dermiq.reviewAsked") private var reviewAsked = false
 
     @State private var revealed = false
-    @State private var playCountUp = false
+    @State private var displayedScore = 0
     @State private var ringProgress: Double = 0
     @State private var countUpFinished = false
+    @State private var showProjected = false
     @State private var shareURL: URL?
 
     private var unlocked: Bool { purchases.isPro || simulatedUnlock }
@@ -71,7 +78,7 @@ struct DermiqResultsView: View {
                         .font(.system(size: 15, weight: .semibold))
                         .foregroundStyle(DQColor.textPrimary)
                         .frame(width: 38, height: 38)
-                        .background(DQColor.surface.opacity(0.7), in: Circle())
+                        .background(DQColor.surface.opacity(0.9), in: Circle())
                 }
                 .accessibilityLabel("Close")
                 Spacer()
@@ -85,24 +92,192 @@ struct DermiqResultsView: View {
     // MARK: Results content
 
     private func results(_ analysis: DermiqAnalysis, locked: Bool) -> some View {
-        ScrollView {
-            VStack(spacing: 28) {
-                scoreHeader(analysis)
-                subScoreGrid(analysis)
-                summaryBlock(analysis)
-                if !locked {
-                    shareRow
-                    if countUpFinished {
-                        DQPrimaryButton(title: "See my potential") { onContinue() }
-                            .animation(VMotion.gentle, value: countUpFinished)
+        let projection = DermiqProjection.project(analysis)
+        return ScrollViewReader { proxy in
+            ScrollView {
+                VStack(spacing: 24) {
+                    // ---- First viewport: photo, toggle, the number ----
+                    photoHeader
+                        .id("top")
+                    modeSwitch
+                    scoreHeader(analysis, projection: projection)
+
+                    if showProjected {
+                        projectionBanner
+                    }
+
+                    // The invitation to go deeper — a soft, bouncing arrow.
+                    Button {
+                        Haptics.fire(.selection)
+                        withAnimation(.easeInOut(duration: 0.55)) {
+                            proxy.scrollTo("details", anchor: .top)
+                        }
+                    } label: {
+                        DermiqScrollArrow()
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityLabel("Show all metrics")
+
+                    // ---- Details ----
+                    metricList(analysis, projection: projection)
+                        .id("details")
+                    summaryBlock(analysis)
+
+                    if !locked {
+                        shareRow
+                        if countUpFinished {
+                            DQPrimaryButton(title: "Build my 14-day plan",
+                                            systemImage: "calendar.badge.plus") { onContinue() }
+                                .animation(VMotion.gentle, value: countUpFinished)
+                        }
                     }
                 }
+                .padding(.horizontal, 24)
+                .padding(.top, 20)
+                .padding(.bottom, 40)
             }
-            .padding(.horizontal, 24)
-            .padding(.top, 48)
-            .padding(.bottom, 40)
+            .scrollIndicators(.hidden)
         }
-        .scrollIndicators(.hidden)
+    }
+
+    /// The user's own capture, softly framed — the proof this reading is
+    /// about THEM ("das hast du gerade gemacht").
+    @ViewBuilder
+    private var photoHeader: some View {
+        if let image = model.capturedImage {
+            Image(uiImage: image)
+                .resizable()
+                .scaledToFill()
+                .frame(width: 112, height: 112)
+                .clipShape(Circle())
+                .overlay(Circle().strokeBorder(DQColor.accent.opacity(0.6), lineWidth: 2))
+                .shadow(color: DQColor.accent.opacity(0.3), radius: 18, y: 8)
+                .padding(.top, 26)
+        }
+    }
+
+    /// Now ⇄ After 14 days — a two-segment capsule with a sliding thumb.
+    private var modeSwitch: some View {
+        HStack(spacing: 0) {
+            segment("Now", active: !showProjected) { setProjected(false) }
+            segment("After 14 days", active: showProjected) { setProjected(true) }
+        }
+        .padding(4)
+        .background(DQColor.surface, in: Capsule())
+        .overlay(Capsule().strokeBorder(DQColor.stroke, lineWidth: 1))
+        .frame(maxWidth: 300)
+    }
+
+    private func segment(_ title: String, active: Bool, action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            Text(title)
+                .font(.system(size: 14, weight: .semibold, design: .rounded))
+                .foregroundStyle(active ? Color.white : DQColor.textSecondary)
+                .frame(maxWidth: .infinity, minHeight: 36)
+                .background(
+                    active ? AnyShapeStyle(DQColor.accentGradient) : AnyShapeStyle(Color.clear),
+                    in: Capsule()
+                )
+        }
+        .buttonStyle(.plain)
+        .animation(VMotion.snappy, value: active)
+    }
+
+    private func scoreHeader(_ analysis: DermiqAnalysis,
+                             projection: DermiqProjection.Projected) -> some View {
+        ZStack {
+            DQScoreRing(progress: ringProgress, lineWidth: 11)
+                .frame(width: 210, height: 210)
+            VStack(spacing: 2) {
+                Text(verbatim: "\(displayedScore)")
+                    .font(.system(size: 76, weight: .heavy, design: .rounded).monospacedDigit())
+                    .foregroundStyle(DQColor.textPrimary)
+                    .contentTransition(.numericText(value: Double(displayedScore)))
+                Text(showProjected ? "PROJECTED" : "SKIN SCORE")
+                    .font(DQFont.mono(11, weight: .semibold))
+                    .foregroundStyle(showProjected ? DQColor.accentBright : DQColor.textSecondary)
+                    .tracking(2)
+                    .contentTransition(.opacity)
+            }
+        }
+    }
+
+    /// Shown only in projection mode — the honesty label.
+    private var projectionBanner: some View {
+        HStack(spacing: 8) {
+            Image(systemName: "sparkles")
+                .font(.system(size: 12, weight: .semibold))
+            Text("A careful projection if you follow your plan — not a promise.")
+                .font(DQFont.micro)
+                .fixedSize(horizontal: false, vertical: true)
+        }
+        .foregroundStyle(DQColor.accentBright)
+        .padding(.horizontal, 14)
+        .padding(.vertical, 9)
+        .background(DQColor.surfaceElevated, in: Capsule())
+        .transition(.opacity.combined(with: .move(edge: .top)))
+    }
+
+    /// All seven metrics, values switching with the mode; projection mode
+    /// shows the honest gain per metric.
+    private func metricList(_ analysis: DermiqAnalysis,
+                            projection: DermiqProjection.Projected) -> some View {
+        VStack(spacing: 10) {
+            ForEach(analysis.subScores) { score in
+                let projected = projection.value(for: score.category) ?? score.value
+                let value = showProjected ? projected : score.value
+                let gain = projected - score.value
+                HStack(spacing: 12) {
+                    Text(score.category.displayName)
+                        .font(DQFont.headline)
+                        .foregroundStyle(DQColor.textPrimary)
+                        .frame(width: 96, alignment: .leading)
+                    GeometryReader { proxy in
+                        ZStack(alignment: .leading) {
+                            Capsule().fill(DQColor.stroke.opacity(0.6))
+                            Capsule()
+                                .fill(DQColor.accentGradient)
+                                .frame(width: proxy.size.width * CGFloat(value) / 100)
+                        }
+                    }
+                    .frame(height: 7)
+                    Text(verbatim: "\(value)")
+                        .font(DQFont.mono(15, weight: .bold))
+                        .foregroundStyle(DQColor.textPrimary)
+                        .monospacedDigit()
+                        .contentTransition(.numericText(value: Double(value)))
+                        .frame(width: 30, alignment: .trailing)
+                    Text(verbatim: showProjected && gain > 0 ? "+\(gain)" : "")
+                        .font(DQFont.mono(11, weight: .bold))
+                        .foregroundStyle(DQColor.deltaUp)
+                        .frame(width: 28, alignment: .leading)
+                }
+                .padding(.horizontal, 16)
+                .padding(.vertical, 12)
+                .background(DQColor.surface, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 16, style: .continuous)
+                        .strokeBorder(DQColor.stroke, lineWidth: 1)
+                )
+            }
+        }
+        .animation(VMotion.gentle, value: showProjected)
+    }
+
+    private func summaryBlock(_ analysis: DermiqAnalysis) -> some View {
+        DQCard {
+            VStack(alignment: .leading, spacing: 8) {
+                Text("THE HONEST READ")
+                    .font(DQFont.mono(11, weight: .semibold))
+                    .foregroundStyle(DQColor.accentBright)
+                    .tracking(2)
+                Text(analysis.honestSummary)
+                    .font(DQFont.body)
+                    .foregroundStyle(DQColor.textPrimary)
+                    .lineSpacing(4)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+        }
     }
 
     /// Post-unlock: the story-sized Reading Card, rendered on-device.
@@ -127,65 +302,34 @@ struct DermiqResultsView: View {
         }
     }
 
-    private func scoreHeader(_ analysis: DermiqAnalysis) -> some View {
-        ZStack {
-            DQScoreRing(progress: ringProgress, lineWidth: 11)
-                .frame(width: 218, height: 218)
-            VStack(spacing: 2) {
-                DQCountUpScore(
-                    target: analysis.overall,
-                    size: 84,
-                    play: playCountUp
-                ) {
-                    countUpFinished = true
-                }
-                Text("SKIN SCORE")
-                    .font(DQFont.mono(11, weight: .semibold))
-                    .foregroundStyle(DQColor.textSecondary)
-                    .tracking(2)
-            }
-        }
-        .padding(.top, 8)
-    }
+    // MARK: Mode + reveal choreography
 
-    private func subScoreGrid(_ analysis: DermiqAnalysis) -> some View {
-        LazyVGrid(columns: [GridItem(.flexible(), spacing: 12), GridItem(.flexible(), spacing: 12)],
-                  spacing: 12) {
-            ForEach(analysis.subScores) { score in
-                DQSubScoreCard(score: score)
-            }
+    private func setProjected(_ projected: Bool) {
+        guard showProjected != projected, let analysis = model.analysis else { return }
+        Haptics.fire(.tick)
+        let target = projected
+            ? DermiqProjection.project(analysis).overall
+            : analysis.overall
+        withAnimation(VMotion.gentle) {
+            showProjected = projected
+            displayedScore = target
+            ringProgress = Double(target) / 100
         }
     }
-
-    private func summaryBlock(_ analysis: DermiqAnalysis) -> some View {
-        DQCard {
-            VStack(alignment: .leading, spacing: 8) {
-                Text("THE HONEST READ")
-                    .font(DQFont.mono(11, weight: .semibold))
-                    .foregroundStyle(DQColor.accentBright)
-                    .tracking(2)
-                Text(analysis.honestSummary)
-                    .font(DQFont.body)
-                    .foregroundStyle(DQColor.textPrimary)
-                    .lineSpacing(4)
-                    .fixedSize(horizontal: false, vertical: true)
-            }
-        }
-    }
-
-    // MARK: Reveal choreography
 
     private func unlockAndReveal() {
         guard !revealed else { return }
         guard let analysis = model.analysis else { return }
         withAnimation(.easeOut(duration: 0.6)) { revealed = true }
         Task {
-            // Blur fully dissolves first; THEN the count-up plays.
+            // Blur fully dissolves first; THEN the score counts up.
             try? await Task.sleep(for: .milliseconds(650))
-            playCountUp = true
             withAnimation(.easeOut(duration: 1.9)) {
+                displayedScore = analysis.overall
                 ringProgress = Double(analysis.overall) / 100
             }
+            try? await Task.sleep(for: .milliseconds(2000))
+            withAnimation(VMotion.gentle) { countUpFinished = true }
         }
         afterUnlock()
     }
@@ -213,6 +357,28 @@ struct DermiqResultsView: View {
                 requestReview()
             }
         }
+    }
+}
+
+/// The gentle bouncing chevron that says "there's more below".
+private struct DermiqScrollArrow: View {
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @State private var bob = false
+
+    var body: some View {
+        Image(systemName: "chevron.down")
+            .font(.system(size: 18, weight: .semibold))
+            .foregroundStyle(DQColor.accentBright)
+            .frame(width: 44, height: 44)
+            .background(DQColor.surface, in: Circle())
+            .overlay(Circle().strokeBorder(DQColor.stroke, lineWidth: 1))
+            .offset(y: bob && !reduceMotion ? 5 : -1)
+            .onAppear {
+                guard !reduceMotion else { return }
+                withAnimation(.easeInOut(duration: 0.9).repeatForever(autoreverses: true)) {
+                    bob = true
+                }
+            }
     }
 }
 
@@ -257,6 +423,7 @@ struct DermiqPaywallCard: View {
                     .font(DQFont.body)
                     .foregroundStyle(DQColor.textSecondary)
                     .multilineTextAlignment(.center)
+                    .fixedSize(horizontal: false, vertical: true)
             }
             .padding(.horizontal, 24)
 
@@ -333,7 +500,7 @@ struct DermiqPaywallCard: View {
                         if let badge {
                             Text(badge)
                                 .font(DQFont.mono(9, weight: .bold))
-                                .foregroundStyle(DQColor.background)
+                                .foregroundStyle(Color.white)
                                 .padding(.horizontal, 6)
                                 .padding(.vertical, 2)
                                 .background(DQColor.deltaUp, in: Capsule())

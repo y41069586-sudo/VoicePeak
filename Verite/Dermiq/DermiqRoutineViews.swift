@@ -11,21 +11,53 @@ struct DermiqRoutineGenView: View {
     let model: ScanFlowModel
     let onDone: () -> Void
 
-    @State private var shownCount = 0
+    @State private var stepCount = 0
+    @State private var targetsShown = 0
+    @State private var ready = false
+
+    private var buildSteps: [String] {
+        let targets = model.analysis?.weakestThree ?? []
+        let names = targets.map(\.category.displayName).joined(separator: ", ")
+        return [
+            "Reading your weakest metrics — \(names.isEmpty ? "…" : names)…",
+            "Choosing your morning steps…",
+            "Sequencing your evening actives…",
+            "Laying out all 14 days…",
+        ]
+    }
 
     var body: some View {
-        VStack(spacing: 28) {
+        VStack(spacing: 0) {
             Spacer()
-            Text("Building your plan from\nyour 3 weakest scores…")
-                .font(DQFont.title)
-                .foregroundStyle(DQColor.textPrimary)
-                .multilineTextAlignment(.center)
 
+            // Headline — this screen finally has a face.
+            VStack(spacing: 8) {
+                Text("BUILT FROM YOUR SCAN")
+                    .font(DQFont.mono(11, weight: .semibold))
+                    .foregroundStyle(DQColor.accentBright)
+                    .tracking(3)
+                Text("Your 14-day plan")
+                    .font(.system(size: 32, weight: .bold, design: .rounded))
+                    .foregroundStyle(DQColor.textPrimary)
+                Text("Not a template — every step answers one of your three weakest scores.")
+                    .font(DQFont.body)
+                    .foregroundStyle(DQColor.textSecondary)
+                    .multilineTextAlignment(.center)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .padding(.horizontal, 36)
+            }
+
+            Spacer().frame(height: 30)
+
+            // The three targets, landing one by one.
             VStack(spacing: 10) {
                 let targets = model.analysis?.weakestThree ?? []
                 ForEach(Array(targets.enumerated()), id: \.element.id) { index, target in
-                    if index < shownCount {
+                    if index < targetsShown {
                         HStack {
+                            Image(systemName: "target")
+                                .font(.system(size: 13, weight: .semibold))
+                                .foregroundStyle(DQColor.accentBright)
                             Text(target.category.displayName)
                                 .font(DQFont.headline)
                                 .foregroundStyle(DQColor.textPrimary)
@@ -46,19 +78,53 @@ struct DermiqRoutineGenView: View {
                 }
             }
             .padding(.horizontal, 40)
-            .animation(VMotion.standard, value: shownCount)
-            Spacer()
+            .animation(VMotion.standard, value: targetsShown)
+
+            Spacer().frame(height: 30)
+
+            // Visible work: each build step ticks in with a check.
+            VStack(alignment: .leading, spacing: 12) {
+                ForEach(0..<stepCount, id: \.self) { index in
+                    HStack(spacing: 10) {
+                        Image(systemName: index < stepCount - 1 || ready
+                              ? "checkmark.circle.fill" : "circle.dotted")
+                            .font(.system(size: 15, weight: .medium))
+                            .foregroundStyle(index < stepCount - 1 || ready
+                                             ? DQColor.deltaUp : DQColor.textSecondary)
+                        Text(buildSteps[index])
+                            .font(DQFont.caption)
+                            .foregroundStyle(index == stepCount - 1 && !ready
+                                             ? DQColor.textPrimary : DQColor.textSecondary)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
+                    .transition(.opacity.combined(with: .move(edge: .bottom)))
+                }
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(.horizontal, 48)
+            .animation(VMotion.gentle, value: stepCount)
+            .frame(minHeight: 130, alignment: .top)
+
             Spacer()
         }
         .background(DQColor.background.ignoresSafeArea())
         .task {
-            let count = model.analysis?.weakestThree.count ?? 0
-            for index in 1...max(count, 1) {
-                try? await Task.sleep(for: .milliseconds(420))
-                shownCount = index
+            let targets = model.analysis?.weakestThree.count ?? 0
+            for index in 1...max(targets, 1) {
+                try? await Task.sleep(for: .milliseconds(360))
+                targetsShown = index
                 Haptics.fire(.tick)
             }
-            try? await Task.sleep(for: .milliseconds(900))
+            for index in 1...buildSteps.count {
+                try? await Task.sleep(for: .milliseconds(560))
+                guard !Task.isCancelled else { return }
+                stepCount = index
+                Haptics.fire(.tick)
+            }
+            try? await Task.sleep(for: .milliseconds(500))
+            ready = true
+            Haptics.fire(.milestone)
+            try? await Task.sleep(for: .milliseconds(700))
             guard !Task.isCancelled else { return }
             onDone()
         }
@@ -119,6 +185,10 @@ struct DermiqRoutineTab: View {
     }
 
     private func header(_ plan: RoutinePlan, today: Int) -> some View {
+        let total = plan.steps(.am).count + plan.steps(.pm).count
+        let done = plan.steps(.am).filter { plan.isDone(day: today, block: .am, step: $0) }.count
+                 + plan.steps(.pm).filter { plan.isDone(day: today, block: .pm, step: $0) }.count
+        return VStack(alignment: .leading, spacing: 10) {
         HStack(alignment: .firstTextBaseline) {
             VStack(alignment: .leading, spacing: 3) {
                 Text("Day \(today) of 14")
@@ -142,6 +212,30 @@ struct DermiqRoutineTab: View {
             .padding(.vertical, 7)
             .background(DQColor.surface, in: Capsule())
             .overlay(Capsule().strokeBorder(DQColor.stroke, lineWidth: 1))
+        }
+
+        // Today at a glance: steps done + the honesty line.
+        VStack(alignment: .leading, spacing: 6) {
+            GeometryReader { proxy in
+                ZStack(alignment: .leading) {
+                    Capsule().fill(DQColor.stroke.opacity(0.6))
+                    Capsule()
+                        .fill(DQColor.accentGradient)
+                        .frame(width: proxy.size.width * CGFloat(done) / CGFloat(max(total, 1)))
+                }
+            }
+            .frame(height: 6)
+            .animation(VMotion.gentle, value: done)
+            HStack {
+                Text(verbatim: "\(done) of \(total) steps today")
+                    .font(DQFont.micro)
+                    .foregroundStyle(DQColor.textSecondary)
+                Spacer()
+                Text("Built from your scan — not a template")
+                    .font(DQFont.micro)
+                    .foregroundStyle(DQColor.accentBright)
+            }
+        }
         }
     }
 

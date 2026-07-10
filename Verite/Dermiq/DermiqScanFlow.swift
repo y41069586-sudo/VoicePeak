@@ -181,7 +181,7 @@ struct DermiqScanFlowView: View {
             }
         }
         .animation(VMotion.crossfade, value: model.stage)
-        .preferredColorScheme(.dark)
+        .preferredColorScheme(.light)
     }
 
     private func advanceToRoutineGen() {

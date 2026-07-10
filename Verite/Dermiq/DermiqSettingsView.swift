@@ -76,7 +76,7 @@ struct DermiqSettingsView: View {
                 DermiqLegalView(document: document)
             }
         }
-        .preferredColorScheme(.dark)
+        .preferredColorScheme(.light)
     }
 
     // MARK: Preferences
@@ -380,6 +380,6 @@ struct DermiqLegalView: View {
                 }
             }
         }
-        .preferredColorScheme(.dark)
+        .preferredColorScheme(.light)
     }
 }

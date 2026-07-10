@@ -4,9 +4,10 @@ import SwiftUI
 // MARK: — Screen 0: Opening
 // ============================================================
 
-/// The GlamUp opener: a big beautiful photo carries the first impression,
-/// a soft card below holds the promise and one coral CTA. Drop "GlowHero"
-/// into the asset catalog and the placeholder becomes the real photo.
+/// The GlamUp opener, full-bleed: the photo owns the top half of the screen
+/// (edge to edge, soft fade into the cream ground), the wordmark sits ON the
+/// image, and the promise + coral CTA breathe below. Drop "GlowHero" into
+/// Resources/Photos and the placeholder becomes the real photo.
 struct RampBootScreen: View {
     let onAdvance: () -> Void
 
@@ -14,22 +15,37 @@ struct RampBootScreen: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            Spacer().frame(height: VSpace.xl)
-
-            RampPhoto(name: "GlowHero")
-                .frame(width: 252, height: 336) // 3:4, no crop
-                .opacity(shown ? 1 : 0)
-                .scaleEffect(shown ? 1 : 0.97)
+            // Full-bleed hero with the wordmark overlaid.
+            ZStack(alignment: .bottom) {
+                RampPhoto(name: "GlowHero", cornerRadius: 0)
+                    .frame(height: 400)
+                    .frame(maxWidth: .infinity)
+                    .clipped()
+                    .overlay(
+                        // Fade the photo into the cream ground — no hard edge.
+                        LinearGradient(colors: [.clear, .clear, RampStage.porcelain],
+                                       startPoint: .top, endPoint: .bottom)
+                    )
+                VStack(spacing: 6) {
+                    Text(verbatim: "VÉRITÉ")
+                        .font(.system(size: 24, weight: .bold, design: .rounded))
+                        .tracking(8)
+                        .foregroundStyle(RampStage.ink)
+                    Text(verbatim: "THE HONEST SKIN SCORE")
+                        .font(VType.micro)
+                        .tracking(3)
+                        .foregroundStyle(RampStage.accentDeep)
+                }
+                .padding(.bottom, 2)
+            }
+            .ignoresSafeArea(edges: .top)
+            .opacity(shown ? 1 : 0)
 
             Spacer()
 
             VStack(spacing: VSpace.md) {
-                Text(verbatim: "VÉRITÉ")
-                    .font(VType.micro)
-                    .tracking(5)
-                    .foregroundStyle(RampStage.accentDeep)
                 Text("Your glow,\ntold honestly.")
-                    .font(RampStage.serif(30))
+                    .font(RampStage.serif(32))
                     .foregroundStyle(RampStage.ink)
                     .multilineTextAlignment(.center)
                     .lineSpacing(2)
@@ -37,6 +53,7 @@ struct RampBootScreen: View {
                     .font(VType.body)
                     .foregroundStyle(RampStage.textSecondary)
                     .multilineTextAlignment(.center)
+                    .fixedSize(horizontal: false, vertical: true)
             }
             .padding(.horizontal, VSpace.xl)
             .opacity(shown ? 1 : 0)
@@ -55,7 +72,7 @@ struct RampBootScreen: View {
             Spacer().frame(height: VSpace.xxl)
         }
         .task {
-            try? await Task.sleep(for: .milliseconds(150))
+            try? await Task.sleep(for: .milliseconds(120))
             withAnimation(.easeOut(duration: 0.9)) { shown = true }
         }
     }
@@ -116,7 +133,7 @@ struct RampSampleReadingScreen: View {
         .task {
             guard !reduceMotion else { return }
             while !Task.isCancelled {
-                try? await Task.sleep(for: .milliseconds(2600))
+                try? await Task.sleep(for: .milliseconds(1500))
                 guard !Task.isCancelled else { return }
                 withAnimation(.easeInOut(duration: 0.5)) {
                     index = (index + 1) % samples.count
@@ -237,6 +254,7 @@ struct RampNumberScreen: View {
                     .font(VType.bodyLarge)
                     .foregroundStyle(RampStage.textSecondary)
                     .multilineTextAlignment(.center)
+                    .fixedSize(horizontal: false, vertical: true)
                     .vStaggeredAppear(index: 1)
             }
             .padding(.horizontal, VSpace.xl)
@@ -261,11 +279,11 @@ private struct RampCalmFigure: View {
             if reduceMotion {
                 figure("· · ·")
             } else {
-                TimelineView(.periodic(from: .now, by: 1.6)) { timeline in
-                    let tick = Int(timeline.date.timeIntervalSinceReferenceDate / 1.6)
+                TimelineView(.periodic(from: .now, by: 0.8)) { timeline in
+                    let tick = Int(timeline.date.timeIntervalSinceReferenceDate / 0.8)
                     figure(String(44 + Int(Self.hash(tick) * 51)))
                         .contentTransition(.numericText())
-                        .animation(.easeInOut(duration: 0.7), value: tick)
+                        .animation(.easeInOut(duration: 0.4), value: tick)
                 }
             }
         }
@@ -297,6 +315,7 @@ struct RampSplitScreen: View {
 
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var t: Double = 0
+    @State private var showHint = true
 
     var body: some View {
         VStack(spacing: 0) {
@@ -338,9 +357,25 @@ struct RampSplitScreen: View {
             }
             .padding(.horizontal, VSpace.xl)
 
-            RampMorphSlider(value: $t)
-                .padding(.horizontal, VSpace.xl)
-                .padding(.top, VSpace.lg)
+            RampMorphSlider(value: $t) {
+                withAnimation(VMotion.gentle) { showHint = false }
+            }
+            .padding(.horizontal, VSpace.xl)
+            .padding(.top, VSpace.lg)
+
+            // "You can touch this" — visible until the first real drag.
+            HStack(spacing: 6) {
+                Image(systemName: "arrow.left.and.right")
+                    .font(.system(size: 11, weight: .bold))
+                Text("Try dragging the slider")
+                    .font(VType.captionBold)
+            }
+            .foregroundStyle(RampStage.accentDeep)
+            .padding(.horizontal, VSpace.md)
+            .padding(.vertical, 6)
+            .background(RampStage.accent.opacity(0.12), in: Capsule())
+            .opacity(showHint ? 1 : 0)
+            .padding(.top, VSpace.xs)
 
             HStack {
                 Text(verbatim: "DAY 1")
@@ -394,6 +429,8 @@ private struct RampSplitMetric {
 /// screen. Warm, quiet, no glow burst.
 struct RampMorphSlider: View {
     @Binding var value: Double
+    /// Fires on the first real finger drag (used to dismiss the "try it" hint).
+    var onUserDrag: () -> Void = {}
 
     private let knob: CGFloat = 26
 
@@ -422,6 +459,7 @@ struct RampMorphSlider: View {
             .gesture(
                 DragGesture(minimumDistance: 0)
                     .onChanged { g in
+                        onUserDrag()
                         let newValue = Double(max(0, min(usable, g.location.x - knob / 2)) / usable)
                         if abs(newValue - value) > 0.02 { Haptics.fire(.tick) }
                         value = newValue

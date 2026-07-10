@@ -170,6 +170,7 @@ struct RampInsightScreen: View {
                     .foregroundStyle(RampStage.ink)
                     .multilineTextAlignment(.center)
                     .lineSpacing(4)
+                    .fixedSize(horizontal: false, vertical: true)
             }
             .padding(.horizontal, VSpace.xl)
             .opacity(shown ? 1 : 0)
@@ -293,6 +294,7 @@ struct RampRevealScreen: View {
                 .foregroundStyle(RampStage.textSecondary)
                 .multilineTextAlignment(.center)
                 .lineSpacing(2)
+                .fixedSize(horizontal: false, vertical: true)
         }
     }
 

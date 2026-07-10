@@ -150,6 +150,8 @@ struct OnboardingRampFlow: View {
             RampRevealScreen(answers: answers) { advance() }
         case .theCurve:
             RampCurveScreen { advance() }
+        case .planPreview:
+            RampPlanPreviewScreen { advance() }
         case .dailyRitual:
             RampDailyReportScreen { advance() }
         case .signIn:
@@ -201,16 +203,8 @@ struct OnboardingRampFlow: View {
         }
     }
 
-    /// True when at least one sign-in provider is available; otherwise the
-    /// sign-in step is skipped (a screen with only "continue without" is noise).
-    private var signInAvailable: Bool {
-        appState.featureFlags.appleSignInEnabled || appState.featureFlags.googleSignInEnabled
-    }
-
     private func advance() {
-        var next = step.next
-        if next == .signIn, !signInAvailable { next = .handoff }
-        if let next { step = next } else { complete() }
+        if let next = step.next { step = next } else { complete() }
     }
 
     private func complete() {
