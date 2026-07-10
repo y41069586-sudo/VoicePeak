@@ -90,15 +90,30 @@ struct RampPhoto: View {
     }
 
     #if canImport(UIKit)
+    /// Maps the logical slot names used across the flow onto the ACTUAL
+    /// filenames uploaded to `Resources/Photos/` (so call sites stay readable
+    /// and the raw upload names never leak into the screens). Adjust the
+    /// right-hand side to match whatever files were committed.
+    private static let aliases: [String: String] = [
+        "GlowHero":    "Image (53)",
+        "GlowTexture": "Image (54)",
+        "GlowRitual":  "Image (55)",
+    ]
+
     /// Resolve an image from the asset catalog first, then a loose bundled file
-    /// of any common type — so a GitHub-web upload into Resources/Photos works
-    /// without touching the asset catalog.
+    /// (by the slot name or its uploaded-filename alias, any common type) — so
+    /// a GitHub-web upload into Resources/Photos works with no renaming and no
+    /// asset-catalog editing. `.jfif` is just JPEG, decoded fine.
     static func load(_ name: String) -> UIImage? {
         if let asset = UIImage(named: name) { return asset }
-        for ext in ["jpg", "jpeg", "png", "heic", "webp"] {
-            if let url = Bundle.main.url(forResource: name, withExtension: ext),
-               let image = UIImage(contentsOfFile: url.path) {
-                return image
+        var candidates = [name]
+        if let alias = aliases[name] { candidates.append(alias) }
+        for base in candidates {
+            for ext in ["jpg", "jpeg", "jfif", "png", "heic", "webp"] {
+                if let url = Bundle.main.url(forResource: base, withExtension: ext),
+                   let image = UIImage(contentsOfFile: url.path) {
+                    return image
+                }
             }
         }
         return nil
