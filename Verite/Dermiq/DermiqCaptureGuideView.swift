@@ -36,7 +36,7 @@ struct DermiqCaptureGuideView: View {
                         .foregroundStyle(DQColor.textPrimary)
                         .frame(width: 40, height: 40)
                         .background(DQColor.surface, in: Circle())
-                        .shadow(color: DQColor.cardShadow, radius: 8, y: 3)
+                        .overlay(Circle().strokeBorder(DQColor.stroke, lineWidth: 1))
                 }
                 .accessibilityLabel("Back")
                 Spacer()
@@ -87,7 +87,7 @@ struct DermiqCaptureGuideView: View {
             .padding(.horizontal, 24)
             .padding(.bottom, 24)
         }
-        .background(DQBackdrop())
+        .background(DQColor.background.ignoresSafeArea())
     }
 
     private func guideCard(title: String, tint: Color, symbol: String,
@@ -113,6 +113,7 @@ struct DermiqCaptureGuideView: View {
         .padding(18)
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(DQColor.surface, in: RoundedRectangle(cornerRadius: 22, style: .continuous))
-        .shadow(color: DQColor.cardShadow, radius: 14, y: 5)
+        .overlay(RoundedRectangle(cornerRadius: 22, style: .continuous)
+            .strokeBorder(DQColor.stroke, lineWidth: 1))
     }
 }

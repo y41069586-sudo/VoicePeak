@@ -57,7 +57,7 @@ struct DermiqTabShell: View {
 
             tabBar
         }
-        .background(DQBackdrop())
+        .background(DQColor.background.ignoresSafeArea())
         .dermiqBadgeAwards()
         .sheet(isPresented: $showSettings) {
             DermiqSettingsView()
@@ -94,42 +94,35 @@ struct DermiqTabShell: View {
     private var tabBar: some View {
         HStack {
             ForEach(Tab.allCases, id: \.rawValue) { item in
-                let active = tab == item
                 Button {
                     Haptics.fire(.selection)
                     withAnimation(VMotion.snappy) { tab = item }
                 } label: {
                     VStack(spacing: 3) {
                         Image(systemName: item.icon)
-                            .font(.system(size: 18, weight: active ? .semibold : .regular))
+                            .font(.system(size: 19, weight: tab == item ? .semibold : .regular))
                         Text(item.title)
                             .font(DQFont.micro)
                     }
-                    .foregroundStyle(active ? DQColor.accentBright : DQColor.textSecondary)
+                    .foregroundStyle(tab == item ? DQColor.accentBright : DQColor.textSecondary)
                     .frame(maxWidth: .infinity)
-                    .padding(.vertical, 8)
-                    .background {
-                        // Active tab sits on a soft tinted pill, not just a color.
-                        if active {
-                            RoundedRectangle(cornerRadius: 16, style: .continuous)
-                                .fill(DQColor.accentSoft.opacity(0.8))
-                                .padding(.horizontal, 8)
-                        }
-                    }
+                    .padding(.vertical, 6)
                 }
                 .buttonStyle(.plain)
             }
         }
-        .padding(.horizontal, 8)
+        .padding(.horizontal, 12)
         .padding(.vertical, 6)
         .background(
-            DQColor.surface.opacity(0.96),
-            in: RoundedRectangle(cornerRadius: 24, style: .continuous)
+            DQColor.surface.opacity(0.94),
+            in: RoundedRectangle(cornerRadius: 22, style: .continuous)
         )
-        .shadow(color: DQColor.cardShadow, radius: 18, y: 8)
+        .overlay(
+            RoundedRectangle(cornerRadius: 22, style: .continuous)
+                .strokeBorder(DQColor.stroke, lineWidth: 1)
+        )
         .padding(.horizontal, 24)
         .padding(.bottom, 10)
-        .animation(VMotion.snappy, value: tab)
     }
 }
 
@@ -185,6 +178,7 @@ struct DermiqScanHome: View {
             home
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background(DQColor.background.ignoresSafeArea())
     }
 
     // MARK: Header
@@ -204,7 +198,7 @@ struct DermiqScanHome: View {
                     .foregroundStyle(DQColor.textSecondary)
                     .frame(width: 36, height: 36)
                     .background(DQColor.surface, in: Circle())
-                    .shadow(color: DQColor.cardShadow, radius: 8, y: 3)
+                    .overlay(Circle().strokeBorder(DQColor.stroke, lineWidth: 1))
             }
             .accessibilityLabel("Settings")
         }
@@ -276,7 +270,11 @@ struct DermiqScanHome: View {
         .frame(maxWidth: .infinity)
         .frame(height: 460)
         .clipShape(RoundedRectangle(cornerRadius: 28, style: .continuous))
-        .shadow(color: DQColor.accent.opacity(0.14), radius: 22, y: 10)
+        .overlay(
+            RoundedRectangle(cornerRadius: 28, style: .continuous)
+                .strokeBorder(DQColor.stroke, lineWidth: 1)
+        )
+        .shadow(color: DQColor.accent.opacity(0.12), radius: 18, y: 8)
     }
 
     /// The bundled scan hero image (a face with an analysis mesh). Falls back to
@@ -363,7 +361,10 @@ struct DermiqScanHome: View {
             .padding(13)
             .frame(maxWidth: .infinity, alignment: .leading)
             .background(DQColor.surface, in: RoundedRectangle(cornerRadius: DQRadius.card, style: .continuous))
-            .shadow(color: DQColor.cardShadow, radius: 14, y: 5)
+            .overlay(
+                RoundedRectangle(cornerRadius: DQRadius.card, style: .continuous)
+                    .strokeBorder(DQColor.stroke, lineWidth: 1)
+            )
         }
         .buttonStyle(PressableStyle())
     }
@@ -389,7 +390,10 @@ struct DermiqScanHome: View {
         .padding(14)
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(DQColor.surfaceElevated, in: RoundedRectangle(cornerRadius: DQRadius.card, style: .continuous))
-        .shadow(color: DQColor.cardShadow.opacity(0.7), radius: 12, y: 4)
+        .overlay(
+            RoundedRectangle(cornerRadius: DQRadius.card, style: .continuous)
+                .strokeBorder(DQColor.stroke, lineWidth: 1)
+        )
     }
 }
 

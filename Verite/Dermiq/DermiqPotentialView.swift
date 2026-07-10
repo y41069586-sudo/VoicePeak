@@ -47,7 +47,7 @@ struct DermiqPotentialView: View {
             .padding(.horizontal, 24)
             .padding(.bottom, 30)
         }
-        .background(DQBackdrop())
+        .background(DQColor.background.ignoresSafeArea())
     }
 }
 

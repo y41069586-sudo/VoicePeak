@@ -48,7 +48,7 @@ struct DermiqDeltaView: View {
             .padding(.bottom, 40)
         }
         .scrollIndicators(.hidden)
-        .background(DQBackdrop())
+        .background(DQColor.background.ignoresSafeArea())
         .task { await playMorph() }
     }
 
@@ -80,7 +80,8 @@ struct DermiqDeltaView: View {
         .padding(.vertical, 20)
         .frame(maxWidth: .infinity)
         .background(DQColor.surface, in: RoundedRectangle(cornerRadius: 24, style: .continuous))
-        .shadow(color: DQColor.cardShadow, radius: 16, y: 6)
+        .overlay(RoundedRectangle(cornerRadius: 24, style: .continuous)
+            .strokeBorder(DQColor.stroke, lineWidth: 1))
     }
 
     private func deltaList(old: DermiqAnalysis, new: DermiqAnalysis) -> some View {
@@ -143,6 +144,7 @@ struct DermiqProgressTab: View {
             .padding(.bottom, 110)
         }
         .scrollIndicators(.hidden)
+        .background(DQColor.background.ignoresSafeArea())
         .sheet(isPresented: $showCompare) {
             DermiqCompareSheet(scans: compareSelection)
                 .presentationDetents([.large])
