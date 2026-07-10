@@ -12,11 +12,7 @@ struct DermiqRoutineGenView: View {
     let onDone: () -> Void
 
     @State private var stepCount = 0
-    @State private var daysFilled = 0
     @State private var ready = false
-    @State private var appeared = false
-
-    private var targets: [DermiqSubScore] { model.analysis?.weakestThree ?? [] }
 
     private var buildSteps: [String] {
         [
@@ -29,155 +25,60 @@ struct DermiqRoutineGenView: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            Spacer(minLength: 20)
+            Spacer()
 
-            // ---- Heading ----
             VStack(spacing: 8) {
                 Text("BUILT FROM YOUR SCAN")
                     .font(DQFont.mono(11, weight: .semibold))
                     .foregroundStyle(DQColor.accentBright)
                     .tracking(3)
-                Text(ready ? "Your plan is ready" : "Building your 14-day plan")
+                Text(ready ? "Your plan is ready" : "Building your\n14-day plan")
                     .font(.system(size: 30, weight: .bold, design: .rounded))
                     .foregroundStyle(DQColor.textPrimary)
                     .multilineTextAlignment(.center)
+                    .lineSpacing(2)
                     .contentTransition(.opacity)
-                Text("Not a template — every step answers one of your three weakest scores.")
-                    .font(DQFont.body)
-                    .foregroundStyle(DQColor.textSecondary)
-                    .multilineTextAlignment(.center)
-                    .fixedSize(horizontal: false, vertical: true)
-                    .padding(.horizontal, 32)
             }
-            .opacity(appeared ? 1 : 0)
-            .offset(y: appeared ? 0 : 12)
 
-            Spacer(minLength: 24)
+            Spacer().frame(height: 40)
 
-            // ---- The plan taking shape, inside one real card ----
-            VStack(alignment: .leading, spacing: 18) {
-                // Targets as chips.
-                VStack(alignment: .leading, spacing: 9) {
-                    Text("TARGETING")
-                        .font(DQFont.mono(10, weight: .semibold))
-                        .foregroundStyle(DQColor.textSecondary)
-                        .tracking(2)
-                    HStack(spacing: 8) {
-                        if targets.isEmpty {
-                            targetChip(name: "Your weakest 3", value: nil)
-                        } else {
-                            ForEach(targets) { target in
-                                targetChip(name: target.category.displayName, value: target.value)
-                            }
-                        }
+            // Just the work, ticking in — no card, no grid, no chips.
+            VStack(alignment: .leading, spacing: 16) {
+                ForEach(0..<buildSteps.count, id: \.self) { index in
+                    let done = index < stepCount
+                    HStack(spacing: 12) {
+                        Image(systemName: done ? "checkmark.circle.fill" : "circle")
+                            .font(.system(size: 18, weight: .medium))
+                            .foregroundStyle(done ? DQColor.deltaUp : DQColor.stroke)
+                            .contentTransition(.symbolEffect(.replace))
+                        Text(buildSteps[index])
+                            .font(DQFont.body)
+                            .foregroundStyle(done ? DQColor.textPrimary : DQColor.textSecondary)
+                            .fixedSize(horizontal: false, vertical: true)
+                        Spacer(minLength: 0)
                     }
+                    .opacity(done || index == stepCount ? 1 : 0.35)
                 }
-
-                Divider().overlay(DQColor.stroke)
-
-                // 14-day grid, filling as the plan lays out.
-                VStack(alignment: .leading, spacing: 9) {
-                    Text("14 DAYS · MORNING & EVENING")
-                        .font(DQFont.mono(10, weight: .semibold))
-                        .foregroundStyle(DQColor.textSecondary)
-                        .tracking(2)
-                    dayGrid
-                }
-
-                Divider().overlay(DQColor.stroke)
-
-                // Visible work: each build step ticks in with a check.
-                VStack(alignment: .leading, spacing: 11) {
-                    ForEach(0..<buildSteps.count, id: \.self) { index in
-                        let done = index < stepCount
-                        HStack(spacing: 10) {
-                            Image(systemName: done ? "checkmark.circle.fill" : "circle")
-                                .font(.system(size: 15, weight: .medium))
-                                .foregroundStyle(done ? DQColor.deltaUp : DQColor.stroke)
-                            Text(buildSteps[index])
-                                .font(DQFont.caption)
-                                .foregroundStyle(done ? DQColor.textPrimary : DQColor.textSecondary)
-                                .fixedSize(horizontal: false, vertical: true)
-                            Spacer(minLength: 0)
-                        }
-                        .opacity(done || index == stepCount ? 1 : 0.4)
-                    }
-                }
-                .animation(VMotion.gentle, value: stepCount)
             }
-            .padding(20)
             .frame(maxWidth: .infinity, alignment: .leading)
-            .background(DQColor.surface, in: RoundedRectangle(cornerRadius: 24, style: .continuous))
-            .overlay(
-                RoundedRectangle(cornerRadius: 24, style: .continuous)
-                    .strokeBorder(DQColor.stroke, lineWidth: 1)
-            )
-            .shadow(color: DQColor.accent.opacity(0.10), radius: 22, y: 10)
-            .padding(.horizontal, 24)
-            .opacity(appeared ? 1 : 0)
-            .scaleEffect(appeared ? 1 : 0.96)
-            .offset(y: appeared ? 0 : 18)
+            .padding(.horizontal, 44)
+            .animation(VMotion.gentle, value: stepCount)
 
-            Spacer(minLength: 24)
+            Spacer()
         }
         .background(DQColor.background.ignoresSafeArea())
         .task { await runBuild() }
     }
 
-    private func targetChip(name: String, value: Int?) -> some View {
-        HStack(spacing: 5) {
-            Image(systemName: "target")
-                .font(.system(size: 11, weight: .semibold))
-            Text(name)
-                .font(.system(size: 13, weight: .semibold, design: .rounded))
-                .lineLimit(1)
-            if let value {
-                Text(verbatim: "\(value)")
-                    .font(DQFont.mono(12, weight: .bold))
-                    .foregroundStyle(DQColor.deltaDown)
-            }
-        }
-        .foregroundStyle(DQColor.accentBright)
-        .padding(.horizontal, 11)
-        .padding(.vertical, 7)
-        .background(DQColor.accentSoft, in: Capsule())
-    }
-
-    /// Two rows of seven day-pills that fill in as the plan is laid out.
-    private var dayGrid: some View {
-        VStack(spacing: 6) {
-            ForEach(0..<2, id: \.self) { row in
-                HStack(spacing: 6) {
-                    ForEach(0..<7, id: \.self) { col in
-                        let day = row * 7 + col
-                        let filled = day < daysFilled
-                        Text(verbatim: "\(day + 1)")
-                            .font(.system(size: 12, weight: .bold, design: .rounded))
-                            .foregroundStyle(filled ? Color.white : DQColor.textSecondary)
-                            .frame(maxWidth: .infinity, minHeight: 30)
-                            .background(filled ? AnyShapeStyle(DQColor.accent)
-                                               : AnyShapeStyle(DQColor.surfaceElevated),
-                                        in: RoundedRectangle(cornerRadius: 9, style: .continuous))
-                    }
-                }
-            }
-        }
-        .animation(VMotion.gentle, value: daysFilled)
-    }
-
     private func runBuild() async {
-        withAnimation(VMotion.gentle) { appeared = true }
-        // Steps tick in, and the 14 days fill up alongside them.
         for index in 1...buildSteps.count {
             try? await Task.sleep(for: .milliseconds(520))
             guard !Task.isCancelled else { return }
             stepCount = index
             Haptics.fire(.tick)
-            withAnimation(VMotion.gentle) { daysFilled = min(14, index * 4) }
         }
-        try? await Task.sleep(for: .milliseconds(360))
+        try? await Task.sleep(for: .milliseconds(400))
         guard !Task.isCancelled else { return }
-        withAnimation(VMotion.gentle) { daysFilled = 14 }
         withAnimation(VMotion.snappy) { ready = true }
         Haptics.fire(.milestone)
         try? await Task.sleep(for: .milliseconds(800))
