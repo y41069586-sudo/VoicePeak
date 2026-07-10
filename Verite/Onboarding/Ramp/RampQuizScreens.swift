@@ -195,16 +195,18 @@ struct RampInsightScreen: View {
 // MARK: — The Reading (calm payoff + prediction range)
 // ============================================================
 
-/// The reward for answering. The estimate is visibly EARNED: four processing
-/// steps tick through one by one (each referencing what the user actually
-/// gave us), and only then does the personalized score *range* appear. A
-/// single number would answer the question; a range is a quiet open question
-/// only the scan can close.
+/// The reward for answering — a real, structured screen instead of bare
+/// checkmarks floating in space: eyebrow + headline up top, then one card
+/// where the estimate visibly assembles (your answers as chips, a filling
+/// progress line, the work steps ticking in) and the personalized score
+/// *range* lands inside that same card. A single number would answer the
+/// question; a range is a quiet open question only the scan can close.
 struct RampRevealScreen: View {
     let answers: RampQuizAnswers
     let onAdvance: () -> Void
 
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @State private var appeared = false
     @State private var stepCount = 0
     @State private var showRange = false
 
@@ -220,98 +222,161 @@ struct RampRevealScreen: View {
         ]
     }
 
+    /// The answers shaping the estimate, as scannable chips.
+    private var answerChips: [String] {
+        Array([answers.selfRating?.label, answers.concern?.label,
+               answers.age?.label, answers.routine?.label]
+            .compactMap { $0 }
+            .prefix(4))
+    }
+
+    private var eyebrow: String {
+        if !showRange { return "READING YOUR ANSWERS" }
+        if let name = answers.displayName { return "\(name.uppercased())'S RANGE" }
+        return "YOUR RANGE"
+    }
+
     var body: some View {
         VStack(spacing: 0) {
-            Spacer()
+            Spacer(minLength: 24)
 
-            Group {
+            // ---- Heading ----
+            VStack(spacing: VSpace.sm) {
+                Text(verbatim: eyebrow)
+                    .font(VType.micro)
+                    .tracking(3)
+                    .foregroundStyle(RampStage.accentDeep)
+                    .contentTransition(.opacity)
+                Text(showRange ? "Your first estimate\nis ready." : "Building your\nfirst estimate")
+                    .font(RampStage.serif(29))
+                    .foregroundStyle(RampStage.ink)
+                    .multilineTextAlignment(.center)
+                    .lineSpacing(3)
+                    .contentTransition(.opacity)
+            }
+            .opacity(appeared ? 1 : 0)
+            .offset(y: appeared ? 0 : 12)
+
+            Spacer(minLength: 24)
+
+            // ---- The work card ----
+            VStack(alignment: .leading, spacing: 16) {
+                if !answerChips.isEmpty {
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text(verbatim: "FROM YOUR ANSWERS")
+                            .font(VType.micro)
+                            .tracking(2)
+                            .foregroundStyle(RampStage.textTertiary)
+                        ScrollView(.horizontal) {
+                            HStack(spacing: 8) {
+                                ForEach(answerChips, id: \.self) { chip in
+                                    Text(chip)
+                                        .font(.system(size: 12, weight: .semibold, design: .rounded))
+                                        .foregroundStyle(RampStage.accentDeep)
+                                        .lineLimit(1)
+                                        .padding(.horizontal, 10)
+                                        .padding(.vertical, 6)
+                                        .background(RampStage.accentSoft, in: Capsule())
+                                }
+                            }
+                        }
+                        .scrollIndicators(.hidden)
+                    }
+
+                    Divider().overlay(RampStage.hairline)
+                }
+
                 if showRange {
-                    rangeReveal
-                        .transition(.opacity.combined(with: .move(edge: .bottom)))
+                    // The payoff lands inside the same card the work ran in.
+                    VStack(spacing: VSpace.sm) {
+                        Text(verbatim: "\(range.low) – \(range.high)")
+                            .font(RampStage.serif(54))
+                            .foregroundStyle(RampStage.ink)
+                        Text("Built from your \(answers.answeredCount) answers.\nOnly a scan narrows it to your real number.")
+                            .font(VType.caption)
+                            .foregroundStyle(RampStage.textSecondary)
+                            .multilineTextAlignment(.center)
+                            .lineSpacing(2)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 6)
+                    .transition(.opacity.combined(with: .scale(scale: 0.96)))
                 } else {
-                    processingList
+                    // Visible work: a filling hairline + steps ticking in.
+                    VStack(alignment: .leading, spacing: 12) {
+                        GeometryReader { proxy in
+                            ZStack(alignment: .leading) {
+                                Capsule().fill(RampStage.hair.opacity(0.6))
+                                Capsule()
+                                    .fill(RampStage.accent)
+                                    .frame(width: proxy.size.width
+                                           * CGFloat(stepCount) / CGFloat(max(steps.count, 1)))
+                            }
+                        }
+                        .frame(height: 5)
+                        .animation(VMotion.gentle, value: stepCount)
+
+                        ForEach(0..<steps.count, id: \.self) { index in
+                            let done = index < stepCount
+                            HStack(spacing: 10) {
+                                Image(systemName: done ? "checkmark.circle.fill" : "circle")
+                                    .font(.system(size: 15, weight: .medium))
+                                    .foregroundStyle(done ? RampStage.accent : RampStage.hair)
+                                Text(steps[index])
+                                    .font(VType.caption)
+                                    .foregroundStyle(done ? RampStage.ink : RampStage.textTertiary)
+                                Spacer(minLength: 0)
+                            }
+                            .opacity(done || index == stepCount ? 1 : 0.45)
+                        }
+                    }
+                    .animation(VMotion.gentle, value: stepCount)
+                    .transition(.opacity)
                 }
             }
-            .frame(minHeight: 220)
-            .padding(.horizontal, VSpace.xl)
+            .padding(20)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background(RampStage.card, in: RoundedRectangle(cornerRadius: 24, style: .continuous))
+            .overlay(
+                RoundedRectangle(cornerRadius: 24, style: .continuous)
+                    .strokeBorder(RampStage.hairline, lineWidth: 1)
+            )
+            .shadow(color: RampStage.accent.opacity(0.10), radius: 22, y: 10)
+            .padding(.horizontal, VSpace.lg)
+            .opacity(appeared ? 1 : 0)
+            .scaleEffect(appeared ? 1 : 0.96)
+            .offset(y: appeared ? 0 : 18)
             .animation(VMotion.gentle, value: showRange)
 
-            Spacer()
+            Spacer(minLength: 24)
 
-            if showRange {
-                RampPrimaryButton(title: "See where I land") { onAdvance() }
-                    .padding(.horizontal, VSpace.lg)
-                    .transition(.opacity)
-            }
+            RampPrimaryButton(title: "See where I land") { onAdvance() }
+                .padding(.horizontal, VSpace.lg)
+                .opacity(showRange ? 1 : 0)
+                .animation(VMotion.gentle, value: showRange)
             Spacer().frame(height: VSpace.xxl)
         }
-        .animation(VMotion.gentle, value: showRange)
         .task { await run() }
-    }
-
-    /// The visible work: steps appear one by one, each settling with a check.
-    private var processingList: some View {
-        VStack(alignment: .leading, spacing: VSpace.md) {
-            ForEach(0..<stepCount, id: \.self) { index in
-                HStack(spacing: 12) {
-                    Image(systemName: index < stepCount - 1 || showRange
-                          ? "checkmark.circle.fill" : "circle.dotted")
-                        .font(.system(size: 16, weight: .medium))
-                        .foregroundStyle(index < stepCount - 1 || showRange
-                                         ? RampStage.accent : RampStage.textTertiary)
-                    Text(steps[index])
-                        .font(VType.body)
-                        .foregroundStyle(index == stepCount - 1
-                                         ? RampStage.ink : RampStage.textSecondary)
-                }
-                .transition(.opacity.combined(with: .move(edge: .bottom)))
-            }
-        }
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .animation(VMotion.gentle, value: stepCount)
-    }
-
-    private var rangeReveal: some View {
-        VStack(spacing: VSpace.md) {
-            if let name = answers.displayName {
-                Text(verbatim: "\(name.uppercased())'S RANGE")
-                    .font(VType.micro)
-                    .tracking(3)
-                    .foregroundStyle(RampStage.accentDeep)
-            } else {
-                Text(verbatim: "YOUR RANGE")
-                    .font(VType.micro)
-                    .tracking(3)
-                    .foregroundStyle(RampStage.accentDeep)
-            }
-
-            Text(verbatim: "\(range.low) – \(range.high)")
-                .font(RampStage.serif(60))
-                .foregroundStyle(RampStage.ink)
-
-            Text("Built from your \(answers.answeredCount) answers.\nOnly a scan narrows it to your real number.")
-                .font(VType.body)
-                .foregroundStyle(RampStage.textSecondary)
-                .multilineTextAlignment(.center)
-                .lineSpacing(2)
-                .fixedSize(horizontal: false, vertical: true)
-        }
     }
 
     private func run() async {
         if reduceMotion {
+            appeared = true
             stepCount = steps.count
             try? await Task.sleep(for: .milliseconds(400))
             showRange = true
             return
         }
-        try? await Task.sleep(for: .milliseconds(400))
+        withAnimation(VMotion.gentle) { appeared = true }
+        try? await Task.sleep(for: .milliseconds(500))
         for index in steps.indices {
             guard !Task.isCancelled else { return }
             withAnimation(VMotion.gentle) { stepCount = index + 1 }
             Haptics.fire(.tick)
-            try? await Task.sleep(for: .milliseconds(720))
+            try? await Task.sleep(for: .milliseconds(640))
         }
+        try? await Task.sleep(for: .milliseconds(300))
         guard !Task.isCancelled else { return }
         withAnimation(VMotion.gentle) { showRange = true }
         Haptics.fire(.verdictReveal)
