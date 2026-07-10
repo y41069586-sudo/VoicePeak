@@ -145,7 +145,7 @@ struct DermiqScanFlowView: View {
 
     var body: some View {
         ZStack {
-            DQColor.background.ignoresSafeArea()
+            DQBackdrop()
 
             switch model.stage {
             case .guide:

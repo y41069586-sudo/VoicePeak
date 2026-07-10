@@ -44,7 +44,7 @@ struct DermiqResultsView: View {
 
     var body: some View {
         ZStack {
-            DQColor.background.ignoresSafeArea()
+            DQBackdrop()
 
             if let analysis = model.analysis {
                 results(analysis, locked: !revealed)
@@ -171,8 +171,7 @@ struct DermiqResultsView: View {
             .padding(.bottom, 22)
             .frame(maxWidth: .infinity)
             .background(DQColor.surface, in: RoundedRectangle(cornerRadius: 26, style: .continuous))
-            .overlay(RoundedRectangle(cornerRadius: 26, style: .continuous)
-                .strokeBorder(DQColor.stroke, lineWidth: 1))
+            .shadow(color: DQColor.cardShadow, radius: 18, y: 8)
 
             capturedAvatar
                 .offset(y: -46)
@@ -261,7 +260,7 @@ struct DermiqResultsView: View {
                 .foregroundStyle(DQColor.textPrimary)
                 .frame(maxWidth: .infinity, minHeight: 50)
                 .background(DQColor.surface, in: Capsule())
-                .overlay(Capsule().strokeBorder(DQColor.stroke, lineWidth: 1))
+                .shadow(color: DQColor.cardShadow, radius: 12, y: 4)
             }
             .buttonStyle(PressableStyle())
             .simultaneousGesture(TapGesture().onEnded {
@@ -387,8 +386,7 @@ struct DermiqPaywallCard: View {
                 .frame(maxWidth: .infinity, minHeight: 52)
                 .background(DQColor.surface,
                             in: RoundedRectangle(cornerRadius: 20, style: .continuous))
-                .overlay(RoundedRectangle(cornerRadius: 20, style: .continuous)
-                    .strokeBorder(DQColor.stroke, lineWidth: 1))
+                .shadow(color: DQColor.cardShadow, radius: 12, y: 4)
             }
             .buttonStyle(PressableStyle())
             .padding(.horizontal, 20)

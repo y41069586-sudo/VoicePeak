@@ -37,7 +37,7 @@ struct DermiqTheaterView: View {
     var body: some View {
         GeometryReader { proxy in
             ZStack {
-                DQColor.background.ignoresSafeArea()
+                DQBackdrop()
 
                 if let image = model.capturedImage {
                     Image(uiImage: image)

@@ -37,6 +37,10 @@ enum DQColor {
 
     /// Hairline stroke on cards (derived, not a new hue).
     static let stroke = Color(hex: "0E141C").opacity(0.10)
+
+    /// The one soft, cool shadow every card rests on (never plain black —
+    /// black shadows on a blue ground read dirty).
+    static let cardShadow = Color(hex: "1B3A6B").opacity(0.07)
 }
 
 enum DQFont {
@@ -131,22 +135,39 @@ extension View {
     func dqShimmer() -> some View { modifier(DQShimmer()) }
 }
 
-/// Standard v2 card container.
+/// Standard v2 card container — borderless, resting on two soft layered
+/// shadows instead of a hairline. Calmer and more premium than line + border.
 struct DQCard<Content: View>: View {
     var elevated = false
     @ViewBuilder var content: () -> Content
 
     var body: some View {
         content()
-            .padding(16)
+            .padding(18)
             .frame(maxWidth: .infinity, alignment: .leading)
             .background(
                 elevated ? DQColor.surfaceElevated : DQColor.surface,
                 in: RoundedRectangle(cornerRadius: DQRadius.card, style: .continuous)
             )
-            .overlay(
-                RoundedRectangle(cornerRadius: DQRadius.card, style: .continuous)
-                    .strokeBorder(DQColor.stroke, lineWidth: 1)
-            )
+            .shadow(color: DQColor.cardShadow, radius: 16, y: 6)
+            .shadow(color: DQColor.cardShadow.opacity(0.5), radius: 2, y: 1)
+    }
+}
+
+/// The shared ambient stage behind every screen: the light-blue ground with
+/// two barely-there pools of colder light. Replaces the flat fill so screens
+/// feel lit instead of printed.
+struct DQBackdrop: View {
+    var body: some View {
+        ZStack {
+            DQColor.background
+            RadialGradient(colors: [DQColor.accentSoft.opacity(0.55), .clear],
+                           center: UnitPoint(x: 0.12, y: 0.02),
+                           startRadius: 0, endRadius: 380)
+            RadialGradient(colors: [Color(hex: "DDEBFC").opacity(0.45), .clear],
+                           center: UnitPoint(x: 1.0, y: 0.45),
+                           startRadius: 0, endRadius: 420)
+        }
+        .ignoresSafeArea()
     }
 }

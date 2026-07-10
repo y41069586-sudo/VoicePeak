@@ -108,11 +108,7 @@ struct DermiqRoutineGenView: View {
             .padding(20)
             .frame(maxWidth: .infinity, alignment: .leading)
             .background(DQColor.surface, in: RoundedRectangle(cornerRadius: 24, style: .continuous))
-            .overlay(
-                RoundedRectangle(cornerRadius: 24, style: .continuous)
-                    .strokeBorder(DQColor.stroke, lineWidth: 1)
-            )
-            .shadow(color: DQColor.accent.opacity(0.10), radius: 22, y: 10)
+            .shadow(color: DQColor.cardShadow, radius: 18, y: 8)
             .padding(.horizontal, 24)
             .opacity(appeared ? 1 : 0)
             .scaleEffect(appeared ? 1 : 0.96)
@@ -120,7 +116,7 @@ struct DermiqRoutineGenView: View {
 
             Spacer(minLength: 24)
         }
-        .background(DQColor.background.ignoresSafeArea())
+        .background(DQBackdrop())
         .task { await runBuild() }
     }
 
@@ -211,7 +207,6 @@ struct DermiqRoutineTab: View {
             }
         }
         .scrollIndicators(.hidden)
-        .background(DQColor.background.ignoresSafeArea())
     }
 
     // MARK: Active plan

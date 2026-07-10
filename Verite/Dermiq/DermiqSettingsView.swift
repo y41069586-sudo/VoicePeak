@@ -63,7 +63,7 @@ struct DermiqSettingsView: View {
                 .padding(.vertical, 16)
             }
             .scrollIndicators(.hidden)
-            .background(DQColor.background.ignoresSafeArea())
+            .background(DQBackdrop())
             .navigationTitle("Settings")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
@@ -372,7 +372,7 @@ struct DermiqLegalView: View {
                 .padding(20)
             }
             .scrollIndicators(.hidden)
-            .background(DQColor.background.ignoresSafeArea())
+            .background(DQBackdrop())
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button("Done") { dismiss() }

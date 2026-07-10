@@ -24,7 +24,7 @@ struct DermiqCaptureView: View {
 
     var body: some View {
         ZStack {
-            DQColor.background.ignoresSafeArea()
+            DQBackdrop()
 
             if let frozenFrame {
                 Image(uiImage: frozenFrame)
