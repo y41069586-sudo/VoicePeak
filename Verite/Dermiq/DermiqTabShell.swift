@@ -210,18 +210,12 @@ struct DermiqScanHome: View {
 
     private var home: some View {
         ScrollView {
-            VStack(alignment: .leading, spacing: 18) {
-                VStack(alignment: .leading, spacing: 6) {
-                    Text(homeHeadline)
-                        .font(.system(size: 34, weight: .heavy, design: .rounded))
-                        .foregroundStyle(DQColor.textPrimary)
-                        .lineSpacing(1)
-                    Text(homeSubhead)
-                        .font(DQFont.body)
-                        .foregroundStyle(DQColor.textSecondary)
-                }
-                .padding(.horizontal, 24)
-                .padding(.top, 8)
+            VStack(alignment: .leading, spacing: 16) {
+                Text("Skin Analysis")
+                    .font(.system(size: 30, weight: .heavy, design: .rounded))
+                    .foregroundStyle(DQColor.textPrimary)
+                    .padding(.horizontal, 24)
+                    .padding(.top, 6)
 
                 scanCard
                     .padding(.horizontal, 24)
@@ -239,50 +233,57 @@ struct DermiqScanHome: View {
         .scrollIndicators(.hidden)
     }
 
-    /// Time-aware, non-cheesy headline (replaces "Ready to glow?").
-    private var homeHeadline: String {
-        scans.isEmpty ? "Let's read\nyour skin." : "Your skin,\ntoday."
-    }
-
-    private var homeSubhead: String {
-        scans.isEmpty
-            ? "One photo — an honest score in under a minute."
-            : "One scan to see today's number and where it's headed."
-    }
-
-    /// The single home card: a designed viewfinder visual (your photo once you
-    /// have one), a clear line, and the scan CTA. Routine and Progress are one
-    /// tap away in the tab bar, so Home stays focused on the next scan.
+    /// The home hero — a full-bleed scan photo (the UMax pattern) with a dark
+    /// bottom gradient, our headline and the scan CTA sitting on top. Routine
+    /// and Progress are one tap away in the tab bar, so Home stays focused on
+    /// the next scan.
     private var scanCard: some View {
-        VStack(spacing: 0) {
-            Spacer().frame(height: 26)
-            DeckScanVisual(photo: scans.first.flatMap { DermiqImageStore.load($0.photoFilename) })
-                .frame(height: 170)
-            Spacer().frame(height: 20)
-            Text(scans.isEmpty ? "First Skin Scan" : "New Skin Scan")
-                .font(.system(size: 23, weight: .heavy, design: .rounded))
-                .foregroundStyle(DQColor.textPrimary)
-            Text("One photo. An honest 0–100 score across 7 metrics.")
-                .font(DQFont.caption)
-                .foregroundStyle(DQColor.textSecondary)
-                .multilineTextAlignment(.center)
-                .lineSpacing(2)
-                .fixedSize(horizontal: false, vertical: true)
-                .padding(.horizontal, 28)
-                .padding(.top, 6)
-            Spacer().frame(height: 20)
-            DQPrimaryButton(title: scans.isEmpty ? "Start scan" : "New scan",
-                            systemImage: "camera.fill") { onScan() }
-                .padding(.horizontal, 20)
-            Spacer().frame(height: 22)
+        ZStack(alignment: .bottom) {
+            heroPhoto
+
+            // Legibility gradient — clear at the top, near-black at the base.
+            LinearGradient(colors: [.clear, .black.opacity(0.20), .black.opacity(0.85)],
+                           startPoint: .center, endPoint: .bottom)
+
+            VStack(spacing: 16) {
+                Text("Get your skin score\nand a 14-day plan")
+                    .font(.system(size: 25, weight: .heavy, design: .rounded))
+                    .foregroundStyle(.white)
+                    .multilineTextAlignment(.center)
+                    .lineSpacing(2)
+                    .shadow(color: .black.opacity(0.35), radius: 8, y: 2)
+                DQPrimaryButton(title: scans.isEmpty ? "Begin scan" : "New scan",
+                                systemImage: "camera.fill") { onScan() }
+            }
+            .padding(.horizontal, 20)
+            .padding(.bottom, 22)
         }
         .frame(maxWidth: .infinity)
-        .background(DQColor.surface, in: RoundedRectangle(cornerRadius: 28, style: .continuous))
+        .frame(height: 460)
+        .clipShape(RoundedRectangle(cornerRadius: 28, style: .continuous))
         .overlay(
             RoundedRectangle(cornerRadius: 28, style: .continuous)
                 .strokeBorder(DQColor.stroke, lineWidth: 1)
         )
-        .shadow(color: DQColor.accent.opacity(0.08), radius: 18, y: 8)
+        .shadow(color: DQColor.accent.opacity(0.12), radius: 18, y: 8)
+    }
+
+    /// The bundled scan hero image (a face with an analysis mesh). Falls back to
+    /// a soft gradient + the drawn viewfinder if the asset isn't present yet.
+    @ViewBuilder
+    private var heroPhoto: some View {
+        if let image = RampPhoto.load("ScanHero") {
+            Image(uiImage: image)
+                .resizable()
+                .scaledToFill()
+        } else {
+            ZStack {
+                LinearGradient(colors: [DQColor.accentSoft, DQColor.accent],
+                               startPoint: .topLeading, endPoint: .bottomTrailing)
+                DeckScanVisual(photo: nil)
+                    .frame(width: 150, height: 172)
+            }
+        }
     }
 
     /// One slim personal row under the deck: your photo, last score, delta,
