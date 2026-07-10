@@ -409,7 +409,7 @@ private struct DeckScanVisual: View {
                         .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
                 } else {
                     DeckFaceSketch()
-                        .frame(width: 86, height: 108)
+                        .frame(width: 96, height: 110)
                 }
             }
             DeckBrackets()
@@ -424,112 +424,97 @@ private struct DeckScanVisual: View {
     }
 }
 
-/// A friendly girl mascot for the pre-photo state — long hair framing the
-/// face, a bangs cap, two lively eyes with a catch-light, a hint of blush and
-/// a gentle smile. Proportional (GeometryReader) so it reads as designed.
+/// A line-art girl recreated from the reference illustration: white fill, a
+/// single accent outline, blunt bangs with a soft centre part, hair framing
+/// the face, two dot eyes and a small smile. Coordinates are authored in a
+/// 100×115 space and scaled to the view, so the drawing is exact at any size.
 private struct DeckFaceSketch: View {
     var body: some View {
         GeometryReader { geo in
-            let w = geo.size.width, h = geo.size.height
+            let s = geo.size
+            let lw = s.width / 100 * 2.4
             ZStack {
-                // Long side hair, behind the face, hanging past the chin.
-                Capsule()
-                    .fill(DQColor.accentBright)
-                    .frame(width: w * 0.22, height: h * 0.74)
-                    .position(x: w * 0.21, y: h * 0.54)
-                Capsule()
-                    .fill(DQColor.accentBright)
-                    .frame(width: w * 0.22, height: h * 0.74)
-                    .position(x: w * 0.79, y: h * 0.54)
+                // Paint order matches the reference: hair, face, then bangs on
+                // top — each filled white, then outlined.
+                piece(leftHair(s), lineWidth: lw)
+                piece(rightHair(s), lineWidth: lw)
+                piece(face(s), lineWidth: lw)
+                piece(bangs(s), lineWidth: lw)
 
-                // Face — soft white fill with a rounded accent outline.
-                DeckHeadShape()
-                    .fill(DQColor.surface)
-                    .frame(width: w * 0.64, height: h * 0.80)
-                    .position(x: w * 0.5, y: h * 0.5)
-                DeckHeadShape()
-                    .stroke(DQColor.accentBright, style: StrokeStyle(lineWidth: 2.5, lineJoin: .round))
-                    .frame(width: w * 0.64, height: h * 0.80)
-                    .position(x: w * 0.5, y: h * 0.5)
+                // Eyes — two solid dots.
+                Circle().fill(DQColor.accentBright)
+                    .frame(width: s.width * 0.05, height: s.width * 0.05)
+                    .position(pt(42, 61, s))
+                Circle().fill(DQColor.accentBright)
+                    .frame(width: s.width * 0.05, height: s.width * 0.05)
+                    .position(pt(58, 61, s))
 
-                // Hair top + bangs, over the scalp and forehead.
-                DeckHairCap()
-                    .fill(DQColor.accentBright)
-                    .frame(width: w * 0.72, height: h * 0.40)
-                    .position(x: w * 0.5, y: h * 0.25)
-
-                // Blush, low on the cheeks.
-                blush(at: CGPoint(x: w * 0.34, y: h * 0.62), in: geo.size)
-                blush(at: CGPoint(x: w * 0.66, y: h * 0.62), in: geo.size)
-
-                // Eyes with a small catch-light.
-                eye(at: CGPoint(x: w * 0.40, y: h * 0.52), in: geo.size)
-                eye(at: CGPoint(x: w * 0.60, y: h * 0.52), in: geo.size)
-
-                // Gentle smile.
-                DeckSmile()
-                    .stroke(DQColor.accentBright, style: StrokeStyle(lineWidth: 3, lineCap: .round))
-                    .frame(width: w * 0.30, height: h * 0.10)
-                    .position(x: w * 0.5, y: h * 0.70)
+                // Smile.
+                smile(s)
+                    .stroke(DQColor.accentBright,
+                            style: StrokeStyle(lineWidth: lw, lineCap: .round))
             }
         }
     }
 
-    private func eye(at point: CGPoint, in size: CGSize) -> some View {
+    /// Fill a shape white, then outline it in the accent — one line-art piece.
+    private func piece(_ path: Path, lineWidth: CGFloat) -> some View {
         ZStack {
-            Ellipse()
-                .fill(DQColor.accentBright)
-                .frame(width: size.width * 0.075, height: size.height * 0.08)
-            Circle()
-                .fill(Color.white)
-                .frame(width: size.width * 0.026, height: size.width * 0.026)
-                .offset(x: size.width * 0.016, y: -size.height * 0.016)
+            path.fill(DQColor.surface)
+            path.stroke(DQColor.accentBright,
+                        style: StrokeStyle(lineWidth: lineWidth, lineCap: .round, lineJoin: .round))
         }
-        .position(point)
     }
 
-    private func blush(at point: CGPoint, in size: CGSize) -> some View {
-        Ellipse()
-            .fill(DQColor.accent.opacity(0.20))
-            .frame(width: size.width * 0.14, height: size.height * 0.06)
-            .position(point)
+    /// Map a point from the 100×115 authoring space to the view.
+    private func pt(_ x: CGFloat, _ y: CGFloat, _ s: CGSize) -> CGPoint {
+        CGPoint(x: x / 100 * s.width, y: y / 115 * s.height)
     }
-}
 
-/// A rounded head — wider at the temples, tapering to a soft chin.
-private struct DeckHeadShape: Shape {
-    func path(in rect: CGRect) -> Path {
-        let w = rect.width, h = rect.height
+    private func leftHair(_ s: CGSize) -> Path {
         var p = Path()
-        p.move(to: CGPoint(x: rect.midX, y: rect.minY))
-        // Right side down to a soft chin.
-        p.addCurve(to: CGPoint(x: rect.midX, y: rect.maxY),
-                   control1: CGPoint(x: rect.minX + w * 1.06, y: rect.minY + h * 0.10),
-                   control2: CGPoint(x: rect.minX + w * 0.82, y: rect.maxY))
-        // Left side back up.
-        p.addCurve(to: CGPoint(x: rect.midX, y: rect.minY),
-                   control1: CGPoint(x: rect.minX + w * 0.18, y: rect.maxY),
-                   control2: CGPoint(x: rect.minX - w * 0.06, y: rect.minY + h * 0.10))
+        p.move(to: pt(33, 44, s))
+        p.addCurve(to: pt(27, 97, s), control1: pt(17, 54, s), control2: pt(15, 86, s))
+        p.addCurve(to: pt(36, 47, s), control1: pt(31, 85, s), control2: pt(29, 60, s))
         p.closeSubpath()
         return p
     }
-}
 
-/// A hair cap: a rounded dome over the scalp with a soft fringe dipping onto
-/// the forehead (the bangs).
-private struct DeckHairCap: Shape {
-    func path(in rect: CGRect) -> Path {
-        let w = rect.width, h = rect.height
+    private func rightHair(_ s: CGSize) -> Path {
         var p = Path()
-        p.move(to: CGPoint(x: rect.minX, y: rect.maxY))
-        // Dome across the top.
-        p.addCurve(to: CGPoint(x: rect.maxX, y: rect.maxY),
-                   control1: CGPoint(x: rect.minX - w * 0.05, y: rect.minY),
-                   control2: CGPoint(x: rect.maxX + w * 0.05, y: rect.minY))
-        // Fringe — a gentle downward dip across the forehead.
-        p.addQuadCurve(to: CGPoint(x: rect.minX, y: rect.maxY),
-                       control: CGPoint(x: rect.midX, y: rect.maxY + h * 0.32))
+        p.move(to: pt(67, 44, s))
+        p.addCurve(to: pt(73, 97, s), control1: pt(83, 54, s), control2: pt(85, 86, s))
+        p.addCurve(to: pt(64, 47, s), control1: pt(69, 85, s), control2: pt(71, 60, s))
         p.closeSubpath()
+        return p
+    }
+
+    private func face(_ s: CGSize) -> Path {
+        var p = Path()
+        p.move(to: pt(50, 30, s))
+        p.addCurve(to: pt(67, 82, s), control1: pt(71, 32, s), control2: pt(73, 60, s))
+        p.addCurve(to: pt(33, 82, s), control1: pt(62, 99, s), control2: pt(38, 99, s))
+        p.addCurve(to: pt(50, 30, s), control1: pt(27, 60, s), control2: pt(29, 32, s))
+        p.closeSubpath()
+        return p
+    }
+
+    private func bangs(_ s: CGSize) -> Path {
+        var p = Path()
+        p.move(to: pt(21, 48, s))
+        p.addCurve(to: pt(79, 48, s), control1: pt(18, 13, s), control2: pt(82, 13, s))
+        p.addCurve(to: pt(55, 47, s), control1: pt(70, 41, s), control2: pt(62, 47, s))
+        p.addCurve(to: pt(50, 49, s), control1: pt(52, 47, s), control2: pt(50, 49, s))
+        p.addCurve(to: pt(45, 47, s), control1: pt(50, 49, s), control2: pt(48, 47, s))
+        p.addCurve(to: pt(21, 48, s), control1: pt(38, 47, s), control2: pt(30, 41, s))
+        p.closeSubpath()
+        return p
+    }
+
+    private func smile(_ s: CGSize) -> Path {
+        var p = Path()
+        p.move(to: pt(45, 74, s))
+        p.addQuadCurve(to: pt(55, 74, s), control: pt(50, 80, s))
         return p
     }
 }
@@ -568,13 +553,4 @@ private struct DeckBrackets: Shape {
     }
 }
 
-private struct DeckSmile: Shape {
-    func path(in rect: CGRect) -> Path {
-        var p = Path()
-        p.move(to: CGPoint(x: rect.minX, y: rect.minY))
-        p.addQuadCurve(to: CGPoint(x: rect.maxX, y: rect.minY),
-                       control: CGPoint(x: rect.midX, y: rect.maxY + rect.height))
-        return p
-    }
-}
 
