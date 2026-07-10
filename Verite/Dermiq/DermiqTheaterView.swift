@@ -23,7 +23,17 @@ struct DermiqTheaterView: View {
     @State private var pointsVisible = false
     @State private var linesVisible = false
     @State private var collapsed = false
+    @State private var detailsVisible = false
     @State private var statusLabel = ""
+
+    // Corner readouts shown while the mesh reads — labels + measuring bars, no
+    // committed numbers (the honest score only lands at the end).
+    private let readouts: [(label: String, fill: CGFloat, at: UnitPoint)] = [
+        ("TEXTURE",   0.72, UnitPoint(x: 0.20, y: 0.24)),
+        ("REDNESS",   0.55, UnitPoint(x: 0.80, y: 0.30)),
+        ("HYDRATION", 0.80, UnitPoint(x: 0.19, y: 0.74)),
+        ("PORES",     0.62, UnitPoint(x: 0.81, y: 0.68)),
+    ]
 
     // Honest, self-referential steps only — no invented corpus sizes (2.3.1).
     // The lifestyle line ties the scan back to the onboarding answers.
@@ -54,6 +64,8 @@ struct DermiqTheaterView: View {
                     if sweepVisible {
                         scanLine(size: proxy.size)
                     }
+
+                    readoutLayer(size: proxy.size)
                 }
 
                 statusOverlay
@@ -61,6 +73,43 @@ struct DermiqTheaterView: View {
         }
         .ignoresSafeArea()
         .task { await run() }
+    }
+
+    // MARK: Chart readouts (measuring chips around the face)
+
+    private func readoutLayer(size: CGSize) -> some View {
+        ForEach(Array(readouts.enumerated()), id: \.offset) { index, r in
+            readoutChip(label: r.label, fill: r.fill)
+                .position(x: size.width * r.at.x, y: size.height * r.at.y)
+                .opacity(detailsVisible ? 1 : 0)
+                .scaleEffect(detailsVisible ? 1 : 0.9, anchor: .center)
+                .animation(.easeOut(duration: 0.45).delay(Double(index) * 0.12),
+                           value: detailsVisible)
+        }
+        .allowsHitTesting(false)
+    }
+
+    private func readoutChip(label: String, fill: CGFloat) -> some View {
+        VStack(alignment: .leading, spacing: 6) {
+            HStack(spacing: 5) {
+                Circle().fill(DQColor.accent).frame(width: 5, height: 5)
+                Text(label)
+                    .font(DQFont.mono(9, weight: .semibold))
+                    .tracking(1.4)
+                    .foregroundStyle(DQColor.textPrimary)
+            }
+            ZStack(alignment: .leading) {
+                Capsule().fill(DQColor.stroke).frame(width: 66, height: 4)
+                Capsule().fill(DQColor.accentGradient)
+                    .frame(width: detailsVisible ? 66 * fill : 0, height: 4)
+                    .animation(.easeInOut(duration: 1.1), value: detailsVisible)
+            }
+        }
+        .padding(.horizontal, 11)
+        .padding(.vertical, 8)
+        .background(DQColor.surface.opacity(0.92),
+                    in: RoundedRectangle(cornerRadius: 12, style: .continuous))
+        .shadow(color: .black.opacity(0.18), radius: 10, y: 4)
     }
 
     // MARK: Scan line (thin bright line + trailing gradient)
@@ -159,6 +208,7 @@ struct DermiqTheaterView: View {
             clinical = true
             mesh = await meshTask
             pointsVisible = true; linesVisible = true
+            detailsVisible = true
             await cycleLabels(minimumCycles: 2)
             onDone()
             return
@@ -179,9 +229,10 @@ struct DermiqTheaterView: View {
         Haptics.fire(.transition)
         mesh = await meshTask
         pointsVisible = true
-        try? await Task.sleep(for: .milliseconds(700))
+        try? await Task.sleep(for: .milliseconds(500))
         linesVisible = true
-        try? await Task.sleep(for: .milliseconds(700))
+        withAnimation { detailsVisible = true }
+        try? await Task.sleep(for: .milliseconds(800))
 
         // Stage 4 — status labels (~1s each); loops while the engine is slow
         Haptics.fire(.transition)
@@ -190,6 +241,7 @@ struct DermiqTheaterView: View {
         // Stage 5 — mesh collapses into a single point → cut to results
         Haptics.fire(.transition)
         statusLabel = ""
+        withAnimation(.easeIn(duration: 0.35)) { detailsVisible = false }
         collapsed = true
         try? await Task.sleep(for: .milliseconds(560))
         onDone()

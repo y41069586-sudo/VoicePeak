@@ -324,8 +324,8 @@ struct RampSignInScreen: View {
                 Circle()
                     .strokeBorder(RampStage.glow, lineWidth: 1)
                     .frame(width: 108, height: 108)
-                Image(systemName: "sparkles")
-                    .font(.system(size: 40, weight: .light))
+                Image(systemName: "lock.fill")
+                    .font(.system(size: 38, weight: .regular))
                     .foregroundStyle(RampStage.accentDeep)
             }
             .opacity(shown ? 1 : 0)
