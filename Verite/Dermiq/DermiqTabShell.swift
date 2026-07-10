@@ -241,17 +241,26 @@ struct DermiqScanHome: View {
         ZStack(alignment: .bottom) {
             heroPhoto
 
-            // Legibility gradient — clear at the top, near-black at the base.
-            LinearGradient(colors: [.clear, .black.opacity(0.20), .black.opacity(0.85)],
-                           startPoint: .center, endPoint: .bottom)
+            // Legibility gradient — a long, smooth fade from clear at the top
+            // to a soft shadow behind the text at the base.
+            LinearGradient(
+                gradient: Gradient(stops: [
+                    .init(color: .clear, location: 0.0),
+                    .init(color: .black.opacity(0.0), location: 0.42),
+                    .init(color: .black.opacity(0.30), location: 0.66),
+                    .init(color: .black.opacity(0.72), location: 0.84),
+                    .init(color: .black.opacity(0.92), location: 1.0),
+                ]),
+                startPoint: .top, endPoint: .bottom
+            )
 
             VStack(spacing: 16) {
-                Text("Get your skin score\nand a 14-day plan")
-                    .font(.system(size: 25, weight: .heavy, design: .rounded))
+                Text("Scan your face and\nget your rating")
+                    .font(.system(size: 26, weight: .heavy, design: .rounded))
                     .foregroundStyle(.white)
                     .multilineTextAlignment(.center)
                     .lineSpacing(2)
-                    .shadow(color: .black.opacity(0.35), radius: 8, y: 2)
+                    .shadow(color: .black.opacity(0.45), radius: 10, y: 2)
                 DQPrimaryButton(title: scans.isEmpty ? "Begin scan" : "New scan",
                                 systemImage: "camera.fill") { onScan() }
             }
