@@ -1,5 +1,6 @@
 import SwiftUI
 import SwiftData
+import UIKit
 
 // ============================================================
 // MARK: — v2 shell: Scan / Routine / Progress
@@ -244,26 +245,29 @@ struct DermiqScanHome: View {
         .scrollIndicators(.hidden)
     }
 
-    /// The swipeable card deck — one big illustrated card per destination,
-    /// each with its own CTA, next card peeking at the edge.
+    /// The swipeable card deck — one big card per destination, each carrying a
+    /// REAL visual (viewfinder with your photo, the live 14-day grid, your
+    /// actual curve) instead of an icon in a disc, plus its own CTA.
     private var carousel: some View {
         ScrollView(.horizontal) {
             HStack(spacing: 14) {
                 deckCard(index: 0,
-                         icon: "faceid",
                          title: scans.isEmpty ? "First Skin Scan" : "Skin Scan",
                          sub: "One photo. An honest 0–100 score across 7 metrics.",
                          button: scans.isEmpty ? "Start scan" : "New scan",
-                         action: onScan)
+                         action: onScan) {
+                    DeckScanVisual(photo: scans.first.flatMap { DermiqImageStore.load($0.photoFilename) })
+                }
                 planDeckCard(index: 1)
                 deckCard(index: 2,
-                         icon: "chart.line.uptrend.xyaxis",
                          title: "Progress",
                          sub: scans.isEmpty
                             ? "Every reading lands on your curve — watch it climb."
                             : "\(scans.count) \(scans.count == 1 ? "reading" : "readings") on your curve so far.",
                          button: "See your curve",
-                         action: onProgress)
+                         action: onProgress) {
+                    DeckCurveVisual(values: Array(scans.map(\.overall).reversed()))
+                }
             }
             .scrollTargetLayout()
         }
@@ -287,28 +291,21 @@ struct DermiqScanHome: View {
             sub = "Builds itself from your first scan — 14 days, morning & evening."
         }
         return deckCard(index: index,
-                        icon: "checklist",
                         title: "14-Day Plan",
                         sub: sub,
                         button: plan != nil ? "Open routine" : "Start with a scan",
-                        action: plan != nil ? onRoutine : onScan)
+                        action: plan != nil ? onRoutine : onScan) {
+            DeckPlanVisual(plan: plan, today: day)
+        }
     }
 
-    private func deckCard(index: Int, icon: String, title: String, sub: String,
-                          button: String, action: @escaping () -> Void) -> some View {
+    private func deckCard<Visual: View>(index: Int, title: String, sub: String,
+                                        button: String, action: @escaping () -> Void,
+                                        @ViewBuilder visual: () -> Visual) -> some View {
         VStack(spacing: 0) {
-            Spacer().frame(height: 26)
-            ZStack {
-                Circle()
-                    .fill(DQColor.accentSoft)
-                    .frame(width: 150, height: 150)
-                Circle()
-                    .strokeBorder(DQColor.accent.opacity(0.25), lineWidth: 1)
-                    .frame(width: 150, height: 150)
-                Image(systemName: icon)
-                    .font(.system(size: 52, weight: .light))
-                    .foregroundStyle(DQColor.accentBright)
-            }
+            Spacer().frame(height: 24)
+            visual()
+                .frame(height: 158)
             Spacer().frame(height: 18)
             Text(title)
                 .font(.system(size: 22, weight: .heavy, design: .rounded))
@@ -328,7 +325,7 @@ struct DermiqScanHome: View {
             Spacer().frame(height: 20)
         }
         .frame(maxWidth: .infinity)
-        .frame(height: 380)
+        .frame(height: 384)
         .background(DQColor.surface, in: RoundedRectangle(cornerRadius: 28, style: .continuous))
         .overlay(
             RoundedRectangle(cornerRadius: 28, style: .continuous)
@@ -339,12 +336,13 @@ struct DermiqScanHome: View {
         .id(index)
     }
 
+    /// Slim segmented pager — quieter and more designed than dots.
     private var pageDots: some View {
-        HStack(spacing: 6) {
+        HStack(spacing: 5) {
             ForEach(0..<3, id: \.self) { index in
                 Capsule()
-                    .fill(index == (homeCard ?? 0) ? DQColor.accent : DQColor.stroke)
-                    .frame(width: index == (homeCard ?? 0) ? 18 : 6, height: 6)
+                    .fill(index == (homeCard ?? 0) ? DQColor.accent : DQColor.stroke.opacity(0.8))
+                    .frame(width: 26, height: 4)
             }
         }
         .frame(maxWidth: .infinity)
@@ -450,5 +448,228 @@ struct DermiqScanHome: View {
             RoundedRectangle(cornerRadius: DQRadius.card, style: .continuous)
                 .strokeBorder(DQColor.stroke, lineWidth: 1)
         )
+    }
+}
+
+// ============================================================
+// MARK: — Deck visuals (designed, data-driven — no icon-in-a-disc)
+// ============================================================
+
+/// Scan card visual: a soft viewfinder with corner brackets and a scan line.
+/// Shows YOUR latest capture when one exists; a friendly face sketch before.
+private struct DeckScanVisual: View {
+    let photo: UIImage?
+
+    var body: some View {
+        ZStack {
+            RoundedRectangle(cornerRadius: 24, style: .continuous)
+                .fill(DQColor.accentSoft.opacity(0.5))
+            Group {
+                if let photo {
+                    Image(uiImage: photo)
+                        .resizable()
+                        .scaledToFill()
+                        .frame(width: 96, height: 118)
+                        .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+                } else {
+                    DeckFaceSketch()
+                        .frame(width: 86, height: 108)
+                }
+            }
+            DeckBrackets()
+                .stroke(DQColor.accent, style: StrokeStyle(lineWidth: 3.5, lineCap: .round))
+                .frame(width: 130, height: 146)
+            LinearGradient(colors: [.clear, DQColor.accent.opacity(0.7), .clear],
+                           startPoint: .leading, endPoint: .trailing)
+                .frame(width: 118, height: 2.5)
+                .offset(y: 12)
+        }
+        .frame(width: 190, height: 158)
+    }
+}
+
+/// A friendly line-drawn face (head, eyes, smile) for the pre-photo state.
+private struct DeckFaceSketch: View {
+    var body: some View {
+        ZStack {
+            Ellipse()
+                .strokeBorder(DQColor.accentBright, lineWidth: 3)
+            HStack(spacing: 17) {
+                Circle().fill(DQColor.accentBright).frame(width: 5.5, height: 5.5)
+                Circle().fill(DQColor.accentBright).frame(width: 5.5, height: 5.5)
+            }
+            .offset(y: -7)
+            DeckSmile()
+                .stroke(DQColor.accentBright, style: StrokeStyle(lineWidth: 3, lineCap: .round))
+                .frame(width: 26, height: 9)
+                .offset(y: 20)
+        }
+    }
+}
+
+/// Four rounded viewfinder corner brackets.
+private struct DeckBrackets: Shape {
+    func path(in rect: CGRect) -> Path {
+        let len = min(rect.width, rect.height) * 0.18
+        let r: CGFloat = 10
+        var p = Path()
+        // Top-left
+        p.move(to: CGPoint(x: rect.minX, y: rect.minY + len))
+        p.addLine(to: CGPoint(x: rect.minX, y: rect.minY + r))
+        p.addQuadCurve(to: CGPoint(x: rect.minX + r, y: rect.minY),
+                       control: CGPoint(x: rect.minX, y: rect.minY))
+        p.addLine(to: CGPoint(x: rect.minX + len, y: rect.minY))
+        // Top-right
+        p.move(to: CGPoint(x: rect.maxX - len, y: rect.minY))
+        p.addLine(to: CGPoint(x: rect.maxX - r, y: rect.minY))
+        p.addQuadCurve(to: CGPoint(x: rect.maxX, y: rect.minY + r),
+                       control: CGPoint(x: rect.maxX, y: rect.minY))
+        p.addLine(to: CGPoint(x: rect.maxX, y: rect.minY + len))
+        // Bottom-right
+        p.move(to: CGPoint(x: rect.maxX, y: rect.maxY - len))
+        p.addLine(to: CGPoint(x: rect.maxX, y: rect.maxY - r))
+        p.addQuadCurve(to: CGPoint(x: rect.maxX - r, y: rect.maxY),
+                       control: CGPoint(x: rect.maxX, y: rect.maxY))
+        p.addLine(to: CGPoint(x: rect.maxX - len, y: rect.maxY))
+        // Bottom-left
+        p.move(to: CGPoint(x: rect.minX + len, y: rect.maxY))
+        p.addLine(to: CGPoint(x: rect.minX + r, y: rect.maxY))
+        p.addQuadCurve(to: CGPoint(x: rect.minX, y: rect.maxY - r),
+                       control: CGPoint(x: rect.minX, y: rect.maxY))
+        p.addLine(to: CGPoint(x: rect.minX, y: rect.maxY - len))
+        return p
+    }
+}
+
+private struct DeckSmile: Shape {
+    func path(in rect: CGRect) -> Path {
+        var p = Path()
+        p.move(to: CGPoint(x: rect.minX, y: rect.minY))
+        p.addQuadCurve(to: CGPoint(x: rect.maxX, y: rect.minY),
+                       control: CGPoint(x: rect.midX, y: rect.maxY + rect.height))
+        return p
+    }
+}
+
+/// Plan card visual: the real 14-day grid in miniature — done days filled,
+/// today outlined, the rest ghosted (all ghosted before a plan exists).
+private struct DeckPlanVisual: View {
+    let plan: RoutinePlan?
+    let today: Int
+
+    var body: some View {
+        VStack(spacing: 7) {
+            ForEach(0..<2, id: \.self) { row in
+                HStack(spacing: 7) {
+                    ForEach(0..<7, id: \.self) { col in
+                        tile(day: row * 7 + col + 1)
+                    }
+                }
+            }
+        }
+        .padding(.horizontal, 16)
+        .padding(.vertical, 24)
+        .frame(width: 240, height: 158)
+        .background(DQColor.accentSoft.opacity(0.5),
+                    in: RoundedRectangle(cornerRadius: 24, style: .continuous))
+    }
+
+    @ViewBuilder
+    private func tile(day: Int) -> some View {
+        let done = plan?.dayComplete(day) ?? false
+        let isToday = plan != nil && day == today
+        ZStack {
+            RoundedRectangle(cornerRadius: 8, style: .continuous)
+                .fill(done ? DQColor.accent : DQColor.surface.opacity(isToday ? 1 : 0.7))
+            if isToday && !done {
+                RoundedRectangle(cornerRadius: 8, style: .continuous)
+                    .strokeBorder(DQColor.accent, lineWidth: 1.5)
+            }
+            if done {
+                Image(systemName: "checkmark")
+                    .font(.system(size: 9, weight: .bold))
+                    .foregroundStyle(.white)
+            }
+        }
+        .frame(maxWidth: .infinity)
+        .frame(height: 34)
+    }
+}
+
+/// Progress card visual: your actual score curve (last readings), or a dashed
+/// "still unwritten" curve with a ? before there is enough data.
+private struct DeckCurveVisual: View {
+    let values: [Int]
+
+    var body: some View {
+        ZStack {
+            RoundedRectangle(cornerRadius: 24, style: .continuous)
+                .fill(DQColor.accentSoft.opacity(0.5))
+            if values.count >= 2 {
+                GeometryReader { proxy in
+                    let pts = points(in: proxy.size)
+                    ZStack {
+                        Path { p in
+                            guard let first = pts.first, let last = pts.last else { return }
+                            p.move(to: CGPoint(x: first.x, y: proxy.size.height))
+                            p.addLine(to: first)
+                            for pt in pts.dropFirst() { p.addLine(to: pt) }
+                            p.addLine(to: CGPoint(x: last.x, y: proxy.size.height))
+                            p.closeSubpath()
+                        }
+                        .fill(LinearGradient(colors: [DQColor.accent.opacity(0.22), .clear],
+                                             startPoint: .top, endPoint: .bottom))
+                        Path { p in
+                            guard let first = pts.first else { return }
+                            p.move(to: first)
+                            for pt in pts.dropFirst() { p.addLine(to: pt) }
+                        }
+                        .stroke(DQColor.accent,
+                                style: StrokeStyle(lineWidth: 3, lineCap: .round, lineJoin: .round))
+                        if let last = pts.last {
+                            Circle()
+                                .fill(DQColor.accent)
+                                .frame(width: 10, height: 10)
+                                .overlay(Circle().strokeBorder(Color.white, lineWidth: 2))
+                                .position(last)
+                        }
+                    }
+                }
+                .padding(22)
+            } else {
+                GeometryReader { proxy in
+                    let size = proxy.size
+                    ZStack {
+                        Path { p in
+                            p.move(to: CGPoint(x: 0, y: size.height * 0.85))
+                            p.addQuadCurve(to: CGPoint(x: size.width - 6, y: size.height * 0.18),
+                                           control: CGPoint(x: size.width * 0.55, y: size.height * 0.95))
+                        }
+                        .stroke(DQColor.accent.opacity(0.55),
+                                style: StrokeStyle(lineWidth: 3, lineCap: .round, dash: [1, 7]))
+                        Text(verbatim: "?")
+                            .font(.system(size: 14, weight: .heavy, design: .rounded))
+                            .foregroundStyle(DQColor.accentBright)
+                            .frame(width: 28, height: 28)
+                            .background(DQColor.surface, in: Circle())
+                            .position(x: size.width - 6, y: size.height * 0.18)
+                    }
+                }
+                .padding(22)
+            }
+        }
+        .frame(width: 220, height: 158)
+    }
+
+    private func points(in size: CGSize) -> [CGPoint] {
+        let vals = values.suffix(8).map(Double.init)
+        guard vals.count >= 2 else { return [] }
+        let lo = (vals.min() ?? 0) - 3
+        let hi = (vals.max() ?? 100) + 3
+        let span = max(hi - lo, 1)
+        return vals.enumerated().map { index, value in
+            CGPoint(x: size.width * CGFloat(index) / CGFloat(vals.count - 1),
+                    y: size.height * CGFloat(1 - (value - lo) / span))
+        }
     }
 }
