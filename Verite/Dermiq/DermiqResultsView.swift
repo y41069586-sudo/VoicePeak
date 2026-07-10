@@ -185,21 +185,55 @@ struct DermiqResultsView: View {
 
     private func scoreHeader(_ analysis: DermiqAnalysis,
                              projection: DermiqProjection.Projected) -> some View {
-        ZStack {
-            DQScoreRing(progress: ringProgress, lineWidth: 11)
-                .frame(width: 210, height: 210)
-            VStack(spacing: 2) {
-                Text(verbatim: "\(displayedScore)")
-                    .font(.system(size: 76, weight: .heavy, design: .rounded).monospacedDigit())
-                    .foregroundStyle(DQColor.textPrimary)
-                    .contentTransition(.numericText(value: Double(displayedScore)))
-                Text(showProjected ? "PROJECTED" : "SKIN SCORE")
-                    .font(DQFont.mono(11, weight: .semibold))
-                    .foregroundStyle(showProjected ? DQColor.accentBright : DQColor.textSecondary)
-                    .tracking(2)
-                    .contentTransition(.opacity)
+        VStack(spacing: 12) {
+            ZStack {
+                DQScoreRing(progress: ringProgress, lineWidth: 11)
+                    .frame(width: 210, height: 210)
+                VStack(spacing: 2) {
+                    Text(verbatim: "\(displayedScore)")
+                        .font(.system(size: 76, weight: .heavy, design: .rounded).monospacedDigit())
+                        .foregroundStyle(DQColor.textPrimary)
+                        .contentTransition(.numericText(value: Double(displayedScore)))
+                    Text(showProjected ? "PROJECTED" : "SKIN SCORE")
+                        .font(DQFont.mono(11, weight: .semibold))
+                        .foregroundStyle(showProjected ? DQColor.accentBright : DQColor.textSecondary)
+                        .tracking(2)
+                        .contentTransition(.opacity)
+                }
+            }
+            // Honest standing estimate — only for the real score (never the
+            // projection), and always flagged "est." so it never reads as a
+            // live ranking. Count-up must be done so the number matches.
+            if !showProjected && countUpFinished {
+                percentileBadge(overall: analysis.overall)
+                    .transition(.opacity)
             }
         }
+    }
+
+    /// A quiet "Top X% · est." pill. The `est.` and the tap-hint keep it honest:
+    /// it is derived from typical score ranges, not a measured leaderboard.
+    private func percentileBadge(overall: Int) -> some View {
+        let top = DermiqPercentile.topPercent(overall: overall)
+        return VStack(spacing: 3) {
+            HStack(spacing: 6) {
+                Image(systemName: "chart.bar.fill")
+                    .font(.system(size: 11, weight: .semibold))
+                Text(verbatim: "Top \(top)% · est.")
+                    .font(.system(size: 14, weight: .bold, design: .rounded))
+            }
+            .foregroundStyle(DQColor.accentBright)
+            .padding(.horizontal, 13)
+            .padding(.vertical, 7)
+            .background(DQColor.accentSoft, in: Capsule())
+
+            Text("Estimated from typical score ranges — not a live ranking.")
+                .font(DQFont.micro)
+                .foregroundStyle(DQColor.textSecondary)
+                .multilineTextAlignment(.center)
+                .fixedSize(horizontal: false, vertical: true)
+        }
+        .animation(VMotion.gentle, value: countUpFinished)
     }
 
     /// Shown only in projection mode — the honesty label.

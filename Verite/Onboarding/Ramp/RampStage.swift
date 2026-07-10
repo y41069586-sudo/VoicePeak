@@ -14,32 +14,36 @@ import UIKit
 // the flow always ships whole.
 
 enum RampStage {
-    // Ground & ink.
-    static let porcelain = Color(hex: "FFF6F0") // warm cream-blush background
-    static let recess     = Color(hex: "FBEAE1") // recessed panel
-    static let ink        = Color(hex: "43322B") // warm cocoa, never black
-    static let inkSoft    = Color(hex: "9A8378") // secondary text
-    static let inkFaint   = Color(hex: "B8A79D") // tertiary text
-    static let hair       = Color(hex: "EDDCD2") // warm hairline
+    // Ground & ink — modern, airy "baby-blue" world with a near-black slate
+    // ink for crisp, high-contrast, app-modern typography.
+    static let porcelain = Color(hex: "F4F8FC") // light blue-white background (name kept for call sites)
+    static let recess     = Color(hex: "E9EFF6") // recessed panel
+    static let ink        = Color(hex: "0E141C") // near-black slate, maximum contrast
+    static let inkSoft    = Color(hex: "5A6774") // secondary text
+    static let inkFaint   = Color(hex: "93A0AD") // tertiary text
+    static let hair       = Color(hex: "E7EDF4") // cool hairline
 
-    // The single accent (coral peach) + its warm glow.
-    static let accent     = Color(hex: "E98A70")
-    static let accentDeep = Color(hex: "D06B52")
-    static let glow       = Color(hex: "F6C8AE")
+    // The single accent (modern blue) + a deeper shade for on-light text and
+    // a soft tint used as fills/pools.
+    static let accent     = Color(hex: "2E7DF6")
+    static let accentDeep = Color(hex: "1B5FD0")
+    static let glow       = Color(hex: "CFE0F6")
 
-    // Warm light pools layered behind the content (no cool tints — GlamUp
-    // worlds are golden-hour warm throughout).
-    static let dawnPeach  = Color(hex: "FFE3D2")
-    static let dawnLilac  = Color(hex: "FFD9CF") // blush (name kept for call sites)
-    static let dawnSky    = Color(hex: "FFF0DE") // vanilla (name kept for call sites)
+    // Cool light pools layered behind the content (names kept for call sites).
+    static let dawnPeach  = Color(hex: "DDE9FB")
+    static let dawnLilac  = Color(hex: "E7EFFA") // (name kept for call sites)
+    static let dawnSky    = Color(hex: "F0F5FC") // (name kept for call sites)
+
+    /// Soft accent tint for icon chips, segmented backgrounds, soft buttons.
+    static let accentSoft = Color(hex: "E4EEFE")
 
     // Named text roles.
     static let textPrimary   = ink
     static let textSecondary = inkSoft
     static let textTertiary  = inkFaint
 
-    // Surfaces.
-    static let card = Color.white.opacity(0.85)
+    // Surfaces — crisp solid white cards (modern, flat).
+    static let card = Color.white
     static let hairline = hair
 
     /// Total conceptual screens (for the progress hairline).
@@ -120,16 +124,16 @@ struct RampPhoto: View {
     }
     #endif
 
-    /// Golden-hour gradient placeholder — deliberately pretty on its own.
+    /// Soft blue gradient placeholder — deliberately pretty on its own.
     private var placeholder: some View {
         ZStack {
-            LinearGradient(colors: [Color(hex: "FFE0C9"), Color(hex: "F8B99B"),
-                                    Color(hex: "EE9377")],
+            LinearGradient(colors: [Color(hex: "DCEBFB"), Color(hex: "AFCDF3"),
+                                    Color(hex: "7FA9E6")],
                            startPoint: .topLeading, endPoint: .bottomTrailing)
             RadialGradient(colors: [.white.opacity(0.55), .clear],
                            center: UnitPoint(x: 0.25, y: 0.2),
                            startRadius: 0, endRadius: 220)
-            RadialGradient(colors: [Color(hex: "FFD9CF").opacity(0.8), .clear],
+            RadialGradient(colors: [Color(hex: "CFE0F6").opacity(0.8), .clear],
                            center: UnitPoint(x: 0.85, y: 0.85),
                            startRadius: 0, endRadius: 260)
         }
@@ -272,8 +276,9 @@ struct TypewriterText: View {
 // MARK: — Buttons
 // ============================================================
 
-/// Primary CTA: the GlamUp coral pill — warm, friendly, impossible to miss,
-/// with a soft matching shadow instead of a hard glow.
+/// Primary CTA: a modern, UMax-style button — full-width, bold, a flat solid
+/// blue fill on a generously rounded 20pt rectangle with one tight shadow (no
+/// glossy gradient, no wide glow — those read dated).
 struct RampPrimaryButton: View {
     let title: String
     var systemImage: String? = nil
@@ -289,15 +294,12 @@ struct RampPrimaryButton: View {
                 if let systemImage { Image(systemName: systemImage) }
                 Text(title)
             }
-            .font(.system(size: 17, weight: .semibold, design: .rounded))
+            .font(.system(size: 17, weight: .bold, design: .rounded))
             .foregroundStyle(.white)
-            .frame(maxWidth: .infinity, minHeight: 56)
-            .background(
-                LinearGradient(colors: [RampStage.accent, RampStage.accentDeep],
-                               startPoint: .top, endPoint: .bottom),
-                in: Capsule()
-            )
-            .shadow(color: RampStage.accent.opacity(isEnabled ? 0.45 : 0), radius: 16, y: 8)
+            .frame(maxWidth: .infinity, minHeight: 58)
+            .background(RampStage.accent,
+                        in: RoundedRectangle(cornerRadius: 20, style: .continuous))
+            .shadow(color: RampStage.accent.opacity(isEnabled ? 0.30 : 0), radius: 12, y: 6)
             .opacity(isEnabled ? 1 : 0.4)
         }
         .buttonStyle(PressableStyle())

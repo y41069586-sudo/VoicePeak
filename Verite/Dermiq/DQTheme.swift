@@ -15,26 +15,28 @@ import SwiftUI
 //   .light  → count-up ticks            (Haptics.fire(.tick))
 
 enum DQColor {
-    static let background      = Color(hex: "FFF6F0")
+    static let background      = Color(hex: "F4F8FC")
     static let surface         = Color(hex: "FFFFFF")
-    static let surfaceElevated = Color(hex: "FFEFE6")
-    static let accent          = Color(hex: "E98A70")
-    /// On the light ground the "bright" accent role needs the DEEPER coral
-    /// for contrast — it is used for accent text and small indicators.
-    static let accentBright    = Color(hex: "D06B52")
-    static let textPrimary     = Color(hex: "43322B")
-    static let textSecondary   = Color(hex: "9A8378")
-    static let deltaUp         = Color(hex: "3F9D6F")
+    static let surfaceElevated = Color(hex: "EEF4FB")
+    static let accent          = Color(hex: "2E7DF6")
+    /// On the light ground the "bright" accent role needs the DEEPER blue for
+    /// contrast — it is used for accent text and small indicators.
+    static let accentBright    = Color(hex: "1B5FD0")
+    /// Soft accent tint for icon chips, segmented backgrounds, soft fills.
+    static let accentSoft      = Color(hex: "E4EEFE")
+    static let textPrimary     = Color(hex: "0E141C")
+    static let textSecondary   = Color(hex: "5A6774")
+    static let deltaUp         = Color(hex: "1F9D6B")
     static let deltaDown       = Color(hex: "DE5B4E")
 
-    /// Portal ring, scan line, primary CTAs.
+    /// Portal ring, scan line — a subtle same-hue sweep (CTAs are flat now).
     static let accentGradient = LinearGradient(
         colors: [accent, accentBright],
         startPoint: .topLeading, endPoint: .bottomTrailing
     )
 
     /// Hairline stroke on cards (derived, not a new hue).
-    static let stroke = Color(hex: "43322B").opacity(0.12)
+    static let stroke = Color(hex: "0E141C").opacity(0.10)
 }
 
 enum DQFont {
@@ -66,7 +68,9 @@ enum DQRadius {
 // MARK: — Core reusable pieces
 // ============================================================
 
-/// Primary CTA: accent-gradient pill, 54pt, monochrome light label.
+/// Primary CTA: modern UMax-style button — full-width, bold white label on a
+/// flat solid blue 20pt rounded rectangle with one tight shadow. No gradient,
+/// no wide glow.
 struct DQPrimaryButton: View {
     let title: String
     var systemImage: String? = nil
@@ -82,11 +86,12 @@ struct DQPrimaryButton: View {
                 if let systemImage { Image(systemName: systemImage) }
                 Text(title)
             }
-            .font(Font.system(size: 17, weight: .semibold))
-            .foregroundStyle(DQColor.textPrimary)
-            .frame(maxWidth: .infinity, minHeight: 54)
-            .background(DQColor.accentGradient, in: Capsule())
-            .shadow(color: DQColor.accent.opacity(isEnabled ? 0.35 : 0), radius: 20)
+            .font(Font.system(size: 17, weight: .bold))
+            .foregroundStyle(.white)
+            .frame(maxWidth: .infinity, minHeight: 58)
+            .background(DQColor.accent,
+                        in: RoundedRectangle(cornerRadius: 20, style: .continuous))
+            .shadow(color: DQColor.accent.opacity(isEnabled ? 0.30 : 0), radius: 12, y: 6)
             .opacity(isEnabled ? 1 : 0.35)
         }
         .buttonStyle(PressableStyle(brightenOnPress: true))
