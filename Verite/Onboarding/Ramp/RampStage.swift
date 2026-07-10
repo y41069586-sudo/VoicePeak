@@ -57,9 +57,11 @@ enum RampStage {
 // ============================================================
 
 /// A named photo from the asset catalog inside a soft rounded card. When the
-/// asset doesn't exist yet (pre-art builds), a warm aesthetic gradient stands
-/// in — the layout never breaks, and dropping the image in later needs zero
-/// code changes. Expected assets: "GlowHero", "GlowTexture", "GlowRitual".
+/// image is missing (pre-art builds), a warm aesthetic gradient stands in — the
+/// layout never breaks. The image can be added EITHER as an asset-catalog set
+/// OR as a loose bundled file in `Verite/Resources/Photos/` (just drop
+/// `GlowHero.jpg` etc. — no Contents.json needed). Both are picked up with no
+/// code change. Expected names: "GlowHero", "GlowTexture", "GlowRitual".
 struct RampPhoto: View {
     let name: String
     var cornerRadius: CGFloat = 28
@@ -67,8 +69,8 @@ struct RampPhoto: View {
     var body: some View {
         Group {
             #if canImport(UIKit)
-            if UIImage(named: name) != nil {
-                Image(name)
+            if let image = Self.load(name) {
+                Image(uiImage: image)
                     .resizable()
                     .scaledToFill()
             } else {
@@ -86,6 +88,22 @@ struct RampPhoto: View {
         .shadow(color: RampStage.accent.opacity(0.22), radius: 24, y: 12)
         .accessibilityHidden(true)
     }
+
+    #if canImport(UIKit)
+    /// Resolve an image from the asset catalog first, then a loose bundled file
+    /// of any common type — so a GitHub-web upload into Resources/Photos works
+    /// without touching the asset catalog.
+    static func load(_ name: String) -> UIImage? {
+        if let asset = UIImage(named: name) { return asset }
+        for ext in ["jpg", "jpeg", "png", "heic", "webp"] {
+            if let url = Bundle.main.url(forResource: name, withExtension: ext),
+               let image = UIImage(contentsOfFile: url.path) {
+                return image
+            }
+        }
+        return nil
+    }
+    #endif
 
     /// Golden-hour gradient placeholder — deliberately pretty on its own.
     private var placeholder: some View {
