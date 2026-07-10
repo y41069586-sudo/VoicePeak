@@ -36,15 +36,14 @@ struct RampBootScreen: View {
         .scrollIndicators(.hidden)
         .scrollPosition(id: $page)
         .ignoresSafeArea()
-        .overlay(alignment: .top) {
-            Text(verbatim: "VÉRITÉ")
-                .font(VType.micro)
-                .tracking(6)
-                .foregroundStyle(RampStage.accentDeep)
-                .padding(.top, 62) // clear of the Dynamic Island (full-bleed pager)
-        }
         .overlay(alignment: .bottom) {
             VStack(spacing: VSpace.md) {
+                // "Swipe up" cue — only until they leave the first page, so
+                // people discover the vertical pager instead of missing it.
+                RampSwipeHint()
+                    .opacity((page ?? 0) == 0 ? 1 : 0)
+                    .animation(VMotion.gentle, value: page)
+
                 // Page dots — reflect the vertical position.
                 HStack(spacing: 6) {
                     ForEach(0..<3, id: \.self) { index in
@@ -105,6 +104,32 @@ struct RampBootScreen: View {
             Spacer().frame(height: 150)
         }
         .frame(maxWidth: .infinity)
+    }
+}
+
+/// A small "swipe up" cue — a chevron that gently bobs upward, with a quiet
+/// label, so the vertical pager is discoverable.
+private struct RampSwipeHint: View {
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @State private var bob = false
+
+    var body: some View {
+        VStack(spacing: 3) {
+            Image(systemName: "chevron.up")
+                .font(.system(size: 15, weight: .semibold))
+                .foregroundStyle(RampStage.accent)
+                .offset(y: bob && !reduceMotion ? -4 : 2)
+            Text("Swipe up")
+                .font(VType.micro)
+                .foregroundStyle(RampStage.textTertiary)
+        }
+        .onAppear {
+            guard !reduceMotion else { return }
+            withAnimation(.easeInOut(duration: 0.9).repeatForever(autoreverses: true)) {
+                bob = true
+            }
+        }
+        .accessibilityHidden(true)
     }
 }
 
