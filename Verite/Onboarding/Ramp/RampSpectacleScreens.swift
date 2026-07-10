@@ -17,9 +17,7 @@ struct RampBootScreen: View {
             Spacer().frame(height: VSpace.xl)
 
             RampPhoto(name: "GlowHero")
-                .frame(maxWidth: .infinity)
-                .frame(height: 380)
-                .padding(.horizontal, VSpace.lg)
+                .frame(width: 252, height: 336) // 3:4, no crop
                 .opacity(shown ? 1 : 0)
                 .scaleEffect(shown ? 1 : 0.97)
 

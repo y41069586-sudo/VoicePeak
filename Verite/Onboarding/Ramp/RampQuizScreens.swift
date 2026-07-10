@@ -153,9 +153,7 @@ struct RampInsightScreen: View {
             Spacer().frame(height: VSpace.xxl * 1.4)
 
             RampPhoto(name: photoName, cornerRadius: 24)
-                .frame(maxWidth: .infinity)
-                .frame(height: 240)
-                .padding(.horizontal, VSpace.lg)
+                .frame(width: 228, height: 304) // 3:4, no crop
                 .opacity(shown ? 1 : 0)
                 .scaleEffect(shown ? 1 : 0.97)
 

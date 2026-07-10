@@ -218,9 +218,7 @@ struct RampSignInScreen: View {
             Spacer().frame(height: VSpace.xl)
 
             RampPhoto(name: "GlowHero", cornerRadius: 24)
-                .frame(maxWidth: .infinity)
-                .frame(height: 260)
-                .padding(.horizontal, VSpace.lg)
+                .frame(width: 216, height: 288) // 3:4, no crop
 
             Spacer()
 
