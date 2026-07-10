@@ -51,9 +51,9 @@
 	<key>NSCameraUsageDescription</key>
 	<string>Vérité uses the camera to analyze your skin and scan product barcodes. Photos are processed on your device and never uploaded.</string>
 
-	<!-- Dark, clinical-premium committed look. -->
+	<!-- Warm, light GlamUp look — committed app-wide. -->
 	<key>UIUserInterfaceStyle</key>
-	<string>Dark</string>
+	<string>Light</string>
 
 	<!-- A compiled launch storyboard is the decisive "supports every screen
 	     size" signal. The previous UILaunchScreen dict (asset-color reference)

@@ -99,7 +99,7 @@ struct ReadingShareCard: View {
                 Image(systemName: "checkmark.seal.fill")
                     .font(.system(size: 12))
                     .foregroundStyle(RampStage.accentDeep)
-                Text(verbatim: "VERIFIED ON-DEVICE SCAN")
+                Text(verbatim: "VERIFIED SCAN · NO FILTER")
                     .font(VType.micro).tracking(2)
                     .foregroundStyle(RampStage.textSecondary)
             }

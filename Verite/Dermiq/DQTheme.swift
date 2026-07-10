@@ -4,9 +4,10 @@ import SwiftUI
 // MARK: — Vérité v2 design system (MASTER PROMPT §6)
 // ============================================================
 //
-// Dark, clinical-premium. This file is the ONLY place the v2 tokens are
-// defined. (The v1 white-blue `VColor` system remains in the module for the
-// legacy screens but is not part of the v2 experience.)
+// Warm GlamUp light world — the app now shares one visual language with the
+// onboarding stage (RampStage): cream ground, white surfaces, cocoa ink, one
+// coral accent. This file remains the ONLY place the v2 tokens are defined.
+// (The v1 white-blue `VColor` system remains for legacy screens only.)
 //
 // Haptics are part of the design system:
 //   .rigid  → captures / commits        (Haptics.fire(.capture))
@@ -14,15 +15,17 @@ import SwiftUI
 //   .light  → count-up ticks            (Haptics.fire(.tick))
 
 enum DQColor {
-    static let background      = Color(hex: "0A0C10")
-    static let surface         = Color(hex: "12151C")
-    static let surfaceElevated = Color(hex: "1A1E28")
-    static let accent          = Color(hex: "4D7CFF")
-    static let accentBright    = Color(hex: "7B9EFF")
-    static let textPrimary     = Color(hex: "F4F6FA")
-    static let textSecondary   = Color(hex: "8A93A6")
-    static let deltaUp         = Color(hex: "3DDC97")
-    static let deltaDown       = Color(hex: "FF6B6B")
+    static let background      = Color(hex: "FFF6F0")
+    static let surface         = Color(hex: "FFFFFF")
+    static let surfaceElevated = Color(hex: "FFEFE6")
+    static let accent          = Color(hex: "E98A70")
+    /// On the light ground the "bright" accent role needs the DEEPER coral
+    /// for contrast — it is used for accent text and small indicators.
+    static let accentBright    = Color(hex: "D06B52")
+    static let textPrimary     = Color(hex: "43322B")
+    static let textSecondary   = Color(hex: "9A8378")
+    static let deltaUp         = Color(hex: "3F9D6F")
+    static let deltaDown       = Color(hex: "DE5B4E")
 
     /// Portal ring, scan line, primary CTAs.
     static let accentGradient = LinearGradient(
@@ -31,7 +34,7 @@ enum DQColor {
     )
 
     /// Hairline stroke on cards (derived, not a new hue).
-    static let stroke = Color(hex: "8A93A6").opacity(0.16)
+    static let stroke = Color(hex: "43322B").opacity(0.12)
 }
 
 enum DQFont {

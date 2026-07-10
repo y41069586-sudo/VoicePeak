@@ -152,6 +152,17 @@ struct OnboardingRampFlow: View {
             RampCurveScreen { advance() }
         case .dailyRitual:
             RampDailyReportScreen { advance() }
+        case .signIn:
+            RampSignInScreen(
+                onSignedIn: { givenName in
+                    // Apple's name beats an empty field, never a typed one.
+                    if answers.displayName == nil, let givenName, !givenName.isEmpty {
+                        answers.name = givenName
+                    }
+                    advance()
+                },
+                onSkip: { advance() }
+            )
         case .handoff:
             RampHandoffScreen { complete() }
         }

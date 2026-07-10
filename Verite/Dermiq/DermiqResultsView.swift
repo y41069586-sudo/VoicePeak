@@ -6,13 +6,12 @@ import StoreKit
 // MARK: — Screen 4: Results (teased, then paywalled)
 // ============================================================
 
-/// The tease, not the wall: the OVERALL score and the two strongest metrics
-/// render clear for everyone — the honest number is never hostage. The five
-/// remaining metrics and the written read stay soft-blurred until unlock
-/// (documented genre pattern: a real taste converts harder than a blur-wall).
-/// Post-unlock the card becomes shareable (story-sized Reading Card) and —
-/// from the 3rd completed scan on, never during onboarding (5.6.3) — the
-/// native review ask may fire once.
+/// The classic gate: the WHOLE reading — score, metrics, written read —
+/// renders blurred under the paywall; the shape is visible, nothing is
+/// readable. Unlock dissolves the blur, THEN the count-up plays (the reveal
+/// is the reward for paying). Post-unlock the card becomes shareable
+/// (story-sized Reading Card) and — from the 3rd completed scan on, never
+/// during onboarding (5.6.3) — the native review ask may fire once.
 struct DermiqResultsView: View {
     let model: ScanFlowModel
     let onContinue: () -> Void
@@ -39,21 +38,14 @@ struct DermiqResultsView: View {
 
     private var unlocked: Bool { purchases.isPro || simulatedUnlock }
 
-    /// Indices of the two strongest metrics — the free taste.
-    private func freeIndices(_ analysis: DermiqAnalysis) -> Set<Int> {
-        let ranked = analysis.subScores.enumerated()
-            .sorted { $0.element.value > $1.element.value }
-            .prefix(2)
-            .map { $0.offset }
-        return Set(ranked)
-    }
-
     var body: some View {
         ZStack {
             DQColor.background.ignoresSafeArea()
 
             if let analysis = model.analysis {
                 results(analysis, locked: !revealed)
+                    .blur(radius: revealed ? 0 : 26)
+                    .allowsHitTesting(revealed)
 
                 if !revealed {
                     DermiqPaywallCard {
@@ -64,8 +56,7 @@ struct DermiqResultsView: View {
             }
         }
         .onAppear {
-            if unlocked { revealed = true }
-            startCountUp()
+            if unlocked { unlockAndReveal() }
         }
     }
 
@@ -97,9 +88,8 @@ struct DermiqResultsView: View {
         ScrollView {
             VStack(spacing: 28) {
                 scoreHeader(analysis)
-                subScoreGrid(analysis, locked: locked)
+                subScoreGrid(analysis)
                 summaryBlock(analysis)
-                    .blur(radius: locked ? 14 : 0)
                 if !locked {
                     shareRow
                     if countUpFinished {
@@ -110,10 +100,9 @@ struct DermiqResultsView: View {
             }
             .padding(.horizontal, 24)
             .padding(.top, 48)
-            .padding(.bottom, locked ? 300 : 40) // keep content clear of the paywall card
+            .padding(.bottom, 40)
         }
         .scrollIndicators(.hidden)
-        .animation(.easeOut(duration: 0.6), value: locked)
     }
 
     /// Post-unlock: the story-sized Reading Card, rendered on-device.
@@ -159,21 +148,11 @@ struct DermiqResultsView: View {
         .padding(.top, 8)
     }
 
-    private func subScoreGrid(_ analysis: DermiqAnalysis, locked: Bool) -> some View {
-        let free = freeIndices(analysis)
-        return LazyVGrid(columns: [GridItem(.flexible(), spacing: 12), GridItem(.flexible(), spacing: 12)],
-                         spacing: 12) {
-            ForEach(Array(analysis.subScores.enumerated()), id: \.element.id) { index, score in
-                let teased = locked && !free.contains(index)
+    private func subScoreGrid(_ analysis: DermiqAnalysis) -> some View {
+        LazyVGrid(columns: [GridItem(.flexible(), spacing: 12), GridItem(.flexible(), spacing: 12)],
+                  spacing: 12) {
+            ForEach(analysis.subScores) { score in
                 DQSubScoreCard(score: score)
-                    .blur(radius: teased ? 12 : 0)
-                    .overlay {
-                        if teased {
-                            Image(systemName: "lock.fill")
-                                .font(.system(size: 13, weight: .semibold))
-                                .foregroundStyle(DQColor.textSecondary)
-                        }
-                    }
             }
         }
     }
@@ -196,23 +175,18 @@ struct DermiqResultsView: View {
 
     // MARK: Reveal choreography
 
-    /// The overall score is the free tease — the count-up plays immediately,
-    /// locked or not. (The paywall sells the *why*, not the number.)
-    private func startCountUp() {
-        guard !playCountUp, let analysis = model.analysis else { return }
+    private func unlockAndReveal() {
+        guard !revealed else { return }
+        guard let analysis = model.analysis else { return }
+        withAnimation(.easeOut(duration: 0.6)) { revealed = true }
         Task {
-            try? await Task.sleep(for: .milliseconds(400))
+            // Blur fully dissolves first; THEN the count-up plays.
+            try? await Task.sleep(for: .milliseconds(650))
             playCountUp = true
             withAnimation(.easeOut(duration: 1.9)) {
                 ringProgress = Double(analysis.overall) / 100
             }
-            if revealed { afterUnlock() }
         }
-    }
-
-    private func unlockAndReveal() {
-        guard !revealed else { return }
-        withAnimation(.easeOut(duration: 0.6)) { revealed = true }
         afterUnlock()
     }
 
@@ -276,10 +250,10 @@ struct DermiqPaywallCard: View {
                 .padding(.top, 12)
 
             VStack(spacing: 6) {
-                Text("That's your score. Now the why.")
+                Text("Your score is ready.")
                     .font(DQFont.title)
                     .foregroundStyle(DQColor.textPrimary)
-                Text("Unlock all seven metrics, your written read, your potential, and the 14-day plan built from them.")
+                Text("Unlock your number, all seven metrics, your potential, and the 14-day plan built from them.")
                     .font(DQFont.body)
                     .foregroundStyle(DQColor.textSecondary)
                     .multilineTextAlignment(.center)

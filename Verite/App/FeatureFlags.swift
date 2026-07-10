@@ -25,18 +25,25 @@ final class FeatureFlags: @unchecked Sendable {
     /// hook is built, intended for later versions once ratings justify it.
     var onboardingRatingAskEnabled: Bool
 
+    /// "Continue with Google" on the sign-in screen. OFF until the
+    /// GoogleSignIn SDK + OAuth client ID are configured — a visible but
+    /// non-functional button is an App Review 2.1 rejection.
+    var googleSignInEnabled: Bool
+
     init(
         affiliateEnabled: Bool = false,
         backendEnabled: Bool = false,
         purchasesEnabled: Bool = false,
         communityEnabled: Bool = false,
-        onboardingRatingAskEnabled: Bool = false
+        onboardingRatingAskEnabled: Bool = false,
+        googleSignInEnabled: Bool = false
     ) {
         self.affiliateEnabled = affiliateEnabled
         self.backendEnabled = backendEnabled
         self.purchasesEnabled = purchasesEnabled
         self.communityEnabled = communityEnabled
         self.onboardingRatingAskEnabled = onboardingRatingAskEnabled
+        self.googleSignInEnabled = googleSignInEnabled
     }
 
     /// Production defaults — everything optional stays off.

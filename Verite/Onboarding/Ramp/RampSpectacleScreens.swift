@@ -35,7 +35,7 @@ struct RampBootScreen: View {
                     .foregroundStyle(RampStage.ink)
                     .multilineTextAlignment(.center)
                     .lineSpacing(2)
-                Text("A quiet, on-device reading of your skin.")
+                Text("A gentle reading of your skin — private, just for you.")
                     .font(VType.body)
                     .foregroundStyle(RampStage.textSecondary)
                     .multilineTextAlignment(.center)

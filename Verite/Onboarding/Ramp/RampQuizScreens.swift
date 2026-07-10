@@ -107,7 +107,7 @@ struct RampNameScreen: View {
                 .padding(.horizontal, VSpace.lg)
                 .animation(VMotion.gentle, value: focused)
 
-            Text("Stays on your device, like everything else.")
+            Text("Stays private, like everything else.")
                 .font(VType.micro)
                 .foregroundStyle(RampStage.textTertiary)
                 .padding(.horizontal, VSpace.lg)

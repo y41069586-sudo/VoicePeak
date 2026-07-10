@@ -1,4 +1,5 @@
 import SwiftUI
+import AuthenticationServices
 
 // ============================================================
 // MARK: — Screen 9: The Curve (where do you land?)
@@ -38,7 +39,7 @@ struct RampCurveScreen: View {
                 .vStaggeredAppear(index: 2)
 
             HStack(spacing: VSpace.md) {
-                RampMiniClaim(icon: "iphone.gen3", text: "On-device")
+                RampMiniClaim(icon: "lock.fill", text: "100% private")
                 RampMiniClaim(icon: "square.grid.3x3.fill", text: "7 metrics")
                 RampMiniClaim(icon: "gauge.with.dots.needle.bottom.50percent", text: "Honest 0–100")
             }
@@ -196,7 +197,103 @@ struct RampDailyReportScreen: View {
 }
 
 // ============================================================
-// MARK: — Screen 11: Handoff (the real you)
+// MARK: — Screen 11: Sign in (Apple / Google, or neither)
+// ============================================================
+
+/// Account step right before the scan. Sign in with Apple is real (native,
+/// no backend needed — the credential's given name personalizes the profile);
+/// Google appears once the SDK + client ID are configured (feature flag —
+/// a visible dead button would be an App Review 2.1 rejection). "Continue
+/// without an account" stays: the app is fully functional without one, and
+/// forcing registration for on-phone functionality violates 5.1.1(v).
+struct RampSignInScreen: View {
+    /// Reports the given name from Apple, if the user shared one.
+    let onSignedIn: (String?) -> Void
+    let onSkip: () -> Void
+
+    @Environment(AppState.self) private var appState
+
+    var body: some View {
+        VStack(spacing: 0) {
+            Spacer().frame(height: VSpace.xl)
+
+            RampPhoto(name: "GlowHero", cornerRadius: 24)
+                .frame(maxWidth: .infinity)
+                .frame(height: 260)
+                .padding(.horizontal, VSpace.lg)
+
+            Spacer()
+
+            VStack(spacing: VSpace.md) {
+                Text("Save your glow.")
+                    .font(RampStage.serif(28))
+                    .foregroundStyle(RampStage.ink)
+                    .multilineTextAlignment(.center)
+                Text("Keep your readings and your 14-day plan safe across devices.")
+                    .font(VType.body)
+                    .foregroundStyle(RampStage.textSecondary)
+                    .multilineTextAlignment(.center)
+            }
+            .padding(.horizontal, VSpace.xl)
+
+            Spacer()
+
+            VStack(spacing: VSpace.sm) {
+                SignInWithAppleButton(.signIn) { request in
+                    request.requestedScopes = [.fullName]
+                } onCompletion: { result in
+                    switch result {
+                    case .success(let authorization):
+                        let credential = authorization.credential as? ASAuthorizationAppleIDCredential
+                        let name = credential?.fullName?.givenName
+                        RampAnalytics.track("onboarding_sign_in",
+                                            ["provider": "apple", "result": "success"])
+                        Haptics.fire(.milestone)
+                        onSignedIn(name)
+                    case .failure:
+                        // Cancelled or failed — stay on the screen; the user
+                        // can retry or continue without an account.
+                        RampAnalytics.track("onboarding_sign_in",
+                                            ["provider": "apple", "result": "cancelled"])
+                    }
+                }
+                .signInWithAppleButtonStyle(.black)
+                .frame(height: 54)
+                .clipShape(Capsule())
+
+                if appState.featureFlags.googleSignInEnabled {
+                    Button {
+                        // TODO: PRODUCTION — wire GoogleSignIn SDK here once
+                        // the OAuth client ID exists; flag stays OFF until then.
+                        RampAnalytics.track("onboarding_sign_in",
+                                            ["provider": "google", "result": "tapped"])
+                    } label: {
+                        HStack(spacing: 8) {
+                            Image(systemName: "g.circle.fill")
+                            Text("Continue with Google")
+                        }
+                        .font(.system(size: 17, weight: .semibold, design: .rounded))
+                        .foregroundStyle(RampStage.ink)
+                        .frame(maxWidth: .infinity, minHeight: 54)
+                        .background(Color.white, in: Capsule())
+                        .overlay(Capsule().strokeBorder(RampStage.hairline, lineWidth: 1))
+                    }
+                    .buttonStyle(PressableStyle())
+                }
+
+                RampGhostButton(title: "Continue without an account") {
+                    RampAnalytics.track("onboarding_sign_in", ["provider": "none"])
+                    onSkip()
+                }
+            }
+            .padding(.horizontal, VSpace.lg)
+            Spacer().frame(height: VSpace.xxl)
+        }
+    }
+}
+
+// ============================================================
+// MARK: — Screen 12: Handoff (the real you)
 // ============================================================
 
 /// The resolution: the estimate is done, now the real reading. Camera

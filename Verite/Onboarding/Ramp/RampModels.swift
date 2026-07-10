@@ -32,7 +32,8 @@ enum RampStep: Int, CaseIterable {
     case theReading      // 13 — visible processing + prediction range
     case theCurve        // 14 — where do you land?
     case dailyRitual     // 15 — time choice + notifications
-    case handoff         // 16 — "now, the real you" → the scan
+    case signIn          // 16 — Apple / Google, or continue without
+    case handoff         // 17 — "now, the real you" → the scan
 
     var next: RampStep? { RampStep(rawValue: rawValue + 1) }
 
@@ -47,7 +48,7 @@ enum RampStep: Int, CaseIterable {
         }
     }
 
-    /// Conceptual screen index (0…16) for the progress hairline.
+    /// Conceptual screen index (0…17) for the progress hairline.
     var screenIndex: Int { rawValue }
 
     var analyticsName: String {
@@ -68,6 +69,7 @@ enum RampStep: Int, CaseIterable {
         case .theReading:     return "the_reading"
         case .theCurve:       return "the_curve"
         case .dailyRitual:    return "daily_ritual"
+        case .signIn:         return "sign_in"
         case .handoff:        return "handoff"
         }
     }
