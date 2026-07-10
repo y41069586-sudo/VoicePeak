@@ -119,8 +119,8 @@ struct DermiqRoutineTab: View {
 
     private func activePlan(_ plan: RoutinePlan) -> some View {
         let today = plan.dayIndex()
-        return VStack(alignment: .leading, spacing: 20) {
-            header(plan, today: today)
+        return VStack(alignment: .leading, spacing: 18) {
+            heroCard(plan, today: today)
                 .vStaggeredAppear(index: 0)
             dayGrid(plan, today: today)
                 .vStaggeredAppear(index: 1)
@@ -130,31 +130,69 @@ struct DermiqRoutineTab: View {
                     .vStaggeredAppear(index: 2)
             }
 
-            blockCard(plan, day: today, block: .am, title: "Morning", icon: "sun.max.fill")
-                .vStaggeredAppear(index: 2)
-            blockCard(plan, day: today, block: .pm, title: "Evening", icon: "moon.stars.fill")
-                .vStaggeredAppear(index: 3)
+            // The day as a timeline: sun → moon, steps hanging off the rail.
+            VStack(alignment: .leading, spacing: 0) {
+                timelineBlock(plan, day: today, block: .am,
+                              title: "Morning", icon: "sun.max.fill", isLast: false)
+                timelineBlock(plan, day: today, block: .pm,
+                              title: "Evening", icon: "moon.stars.fill", isLast: true)
+            }
+            .vStaggeredAppear(index: 2)
         }
         .padding(.horizontal, 20)
         .padding(.top, 18)
         .padding(.bottom, 110)
     }
 
-    private func header(_ plan: RoutinePlan, today: Int) -> some View {
+    /// The hero: day, today's progress ring, targets and streak in one softly
+    /// tinted card — the screen's single anchor.
+    private func heroCard(_ plan: RoutinePlan, today: Int) -> some View {
         let total = plan.steps(.am).count + plan.steps(.pm).count
         let done = plan.steps(.am).filter { plan.isDone(day: today, block: .am, step: $0) }.count
                  + plan.steps(.pm).filter { plan.isDone(day: today, block: .pm, step: $0) }.count
         let allDone = total > 0 && done == total
         return VStack(alignment: .leading, spacing: 14) {
-            HStack(alignment: .firstTextBaseline, spacing: 8) {
-                Text("Day \(today)")
-                    .font(.system(size: 34, weight: .heavy, design: .rounded))
-                    .foregroundStyle(DQColor.textPrimary)
-                Text(verbatim: "of 14")
-                    .font(.system(size: 17, weight: .semibold, design: .rounded))
-                    .foregroundStyle(DQColor.textSecondary)
-                Spacer()
-                // Streak — quiet, only once it exists.
+            HStack(alignment: .center, spacing: 14) {
+                VStack(alignment: .leading, spacing: 5) {
+                    HStack(alignment: .firstTextBaseline, spacing: 7) {
+                        Text("Day \(today)")
+                            .font(.system(size: 32, weight: .heavy, design: .rounded))
+                            .foregroundStyle(DQColor.textPrimary)
+                        Text(verbatim: "of 14")
+                            .font(.system(size: 16, weight: .semibold, design: .rounded))
+                            .foregroundStyle(DQColor.textSecondary)
+                    }
+                    if allDone {
+                        HStack(spacing: 5) {
+                            Image(systemName: "checkmark.seal.fill")
+                                .font(.system(size: 11, weight: .semibold))
+                            Text("Today complete — see you tomorrow.")
+                                .font(DQFont.micro)
+                        }
+                        .foregroundStyle(DQColor.deltaUp)
+                        .transition(.opacity)
+                    } else {
+                        Text(verbatim: "\(done) of \(total) steps today")
+                            .font(DQFont.caption)
+                            .foregroundStyle(DQColor.textSecondary)
+                            .contentTransition(.numericText(value: Double(done)))
+                    }
+                }
+                Spacer(minLength: 0)
+                progressRing(done: done, total: total, allDone: allDone)
+            }
+
+            HStack(spacing: 6) {
+                ForEach(plan.targets) { target in
+                    Text(target.category.displayName)
+                        .font(.system(size: 11.5, weight: .semibold, design: .rounded))
+                        .foregroundStyle(DQColor.accentBright)
+                        .lineLimit(1)
+                        .padding(.horizontal, 9)
+                        .padding(.vertical, 5)
+                        .background(DQColor.surface.opacity(0.85), in: Capsule())
+                }
+                Spacer(minLength: 0)
                 if plan.streak > 0 {
                     HStack(spacing: 4) {
                         Image(systemName: "flame.fill")
@@ -165,55 +203,49 @@ struct DermiqRoutineTab: View {
                     .foregroundStyle(DQColor.deltaUp)
                     .padding(.horizontal, 10)
                     .padding(.vertical, 6)
-                    .background(DQColor.deltaUp.opacity(0.10), in: Capsule())
+                    .background(DQColor.surface.opacity(0.85), in: Capsule())
                 }
             }
-
-            // The three targets — quiet little chips, no borders shouting.
-            HStack(spacing: 6) {
-                ForEach(plan.targets) { target in
-                    Text(target.category.displayName)
-                        .font(.system(size: 11.5, weight: .semibold, design: .rounded))
-                        .foregroundStyle(DQColor.accentBright)
-                        .lineLimit(1)
-                        .padding(.horizontal, 9)
-                        .padding(.vertical, 5)
-                        .background(DQColor.accentSoft.opacity(0.7), in: Capsule())
-                }
-            }
-
-            // Today at a glance: one thin line, one quiet caption — and a small
-            // moment when the day is done.
-            VStack(alignment: .leading, spacing: 7) {
-                GeometryReader { proxy in
-                    ZStack(alignment: .leading) {
-                        Capsule().fill(DQColor.stroke.opacity(0.5))
-                        Capsule()
-                            .fill(allDone ? DQColor.deltaUp : DQColor.accent)
-                            .frame(width: proxy.size.width * CGFloat(done) / CGFloat(max(total, 1)))
-                    }
-                }
-                .frame(height: 5)
-                .animation(VMotion.gentle, value: done)
-
-                if allDone {
-                    HStack(spacing: 5) {
-                        Image(systemName: "checkmark.seal.fill")
-                            .font(.system(size: 11, weight: .semibold))
-                        Text("Today complete — see you tomorrow.")
-                            .font(DQFont.micro)
-                    }
-                    .foregroundStyle(DQColor.deltaUp)
-                    .transition(.opacity.combined(with: .move(edge: .top)))
-                } else {
-                    Text(verbatim: "\(done) of \(total) steps today")
-                        .font(DQFont.micro)
-                        .foregroundStyle(DQColor.textSecondary)
-                        .contentTransition(.numericText(value: Double(done)))
-                }
-            }
-            .animation(VMotion.gentle, value: allDone)
         }
+        .padding(18)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(
+            LinearGradient(colors: [DQColor.accentSoft.opacity(0.65), DQColor.surface],
+                           startPoint: .topLeading, endPoint: .bottomTrailing),
+            in: RoundedRectangle(cornerRadius: 24, style: .continuous)
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 24, style: .continuous)
+                .strokeBorder(DQColor.stroke, lineWidth: 1)
+        )
+        .animation(VMotion.gentle, value: allDone)
+    }
+
+    /// Today's completion as a small ring — fills step by step, turns green
+    /// and shows a check when the day is done.
+    private func progressRing(done: Int, total: Int, allDone: Bool) -> some View {
+        ZStack {
+            Circle()
+                .stroke(DQColor.stroke.opacity(0.6), lineWidth: 6)
+            Circle()
+                .trim(from: 0, to: total > 0 ? CGFloat(done) / CGFloat(total) : 0)
+                .stroke(allDone ? DQColor.deltaUp : DQColor.accent,
+                        style: StrokeStyle(lineWidth: 6, lineCap: .round))
+                .rotationEffect(.degrees(-90))
+                .animation(VMotion.gentle, value: done)
+            if allDone {
+                Image(systemName: "checkmark")
+                    .font(.system(size: 16, weight: .bold))
+                    .foregroundStyle(DQColor.deltaUp)
+                    .transition(.scale.combined(with: .opacity))
+            } else {
+                Text(verbatim: "\(done)/\(total)")
+                    .font(.system(size: 13, weight: .bold, design: .rounded).monospacedDigit())
+                    .foregroundStyle(DQColor.textPrimary)
+                    .contentTransition(.numericText(value: Double(done)))
+            }
+        }
+        .frame(width: 56, height: 56)
     }
 
     /// One horizontal, scrollable strip of day pills — roomier than the old
@@ -307,38 +339,54 @@ struct DermiqRoutineTab: View {
 
     // MARK: Step blocks
 
-    private func blockCard(_ plan: RoutinePlan, day: Int, block: RoutineBlock,
-                           title: String, icon: String) -> some View {
+    /// One block of the day-timeline: a sun/moon node on a vertical rail, the
+    /// block title beside it, and each step as its own small card.
+    private func timelineBlock(_ plan: RoutinePlan, day: Int, block: RoutineBlock,
+                               title: String, icon: String, isLast: Bool) -> some View {
         let steps = plan.steps(block)
         let doneCount = steps.filter { plan.isDone(day: day, block: block, step: $0) }.count
         let complete = !steps.isEmpty && doneCount == steps.count
-        return DQCard {
-            VStack(alignment: .leading, spacing: 6) {
-                HStack(spacing: 10) {
-                    Image(systemName: icon)
+        return HStack(alignment: .top, spacing: 14) {
+            // The rail — the node fills green when the block is done, the line
+            // runs on toward the next block.
+            VStack(spacing: 6) {
+                ZStack {
+                    Circle()
+                        .fill(complete ? AnyShapeStyle(DQColor.deltaUp)
+                                       : AnyShapeStyle(DQColor.accentSoft))
+                    Image(systemName: complete ? "checkmark" : icon)
                         .font(.system(size: 14, weight: .semibold))
-                        .foregroundStyle(complete ? DQColor.deltaUp : DQColor.accentBright)
-                        .frame(width: 32, height: 32)
-                        .background((complete ? DQColor.deltaUp : DQColor.accentBright).opacity(0.10),
-                                    in: RoundedRectangle(cornerRadius: 10, style: .continuous))
+                        .foregroundStyle(complete ? Color.white : DQColor.accentBright)
+                        .contentTransition(.symbolEffect(.replace))
+                }
+                .frame(width: 36, height: 36)
+                .animation(VMotion.gentle, value: complete)
+
+                if !isLast {
+                    Rectangle()
+                        .fill(complete ? DQColor.deltaUp.opacity(0.45)
+                                       : DQColor.stroke.opacity(0.7))
+                        .frame(width: 2)
+                        .frame(maxHeight: .infinity)
+                        .animation(VMotion.gentle, value: complete)
+                }
+            }
+            .frame(width: 36)
+
+            VStack(alignment: .leading, spacing: 10) {
+                HStack {
                     Text(title)
                         .font(.system(size: 17, weight: .bold, design: .rounded))
                         .foregroundStyle(DQColor.textPrimary)
                     Spacer()
-                    if complete {
-                        Image(systemName: "checkmark.seal.fill")
-                            .font(.system(size: 16, weight: .semibold))
-                            .foregroundStyle(DQColor.deltaUp)
-                            .transition(.scale.combined(with: .opacity))
-                    } else {
+                    if !complete {
                         Text(verbatim: "\(doneCount)/\(steps.count)")
                             .font(.system(size: 13, weight: .bold, design: .rounded).monospacedDigit())
                             .foregroundStyle(DQColor.textSecondary)
                             .contentTransition(.numericText(value: Double(doneCount)))
                     }
                 }
-                .padding(.bottom, 8)
-                .animation(VMotion.gentle, value: complete)
+                .frame(minHeight: 36)
 
                 ForEach(steps) { step in
                     DermiqStepRow(
@@ -349,6 +397,7 @@ struct DermiqRoutineTab: View {
                     }
                 }
             }
+            .padding(.bottom, isLast ? 0 : 22)
         }
         .animation(VMotion.gentle, value: doneCount)
     }
@@ -464,7 +513,13 @@ private struct DermiqStepRow: View {
                 .transition(.opacity.combined(with: .move(edge: .top)))
             }
         }
-        .padding(.vertical, 9)
+        .padding(.horizontal, 14)
+        .padding(.vertical, 12)
+        .background(DQColor.surface, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+        .overlay(
+            RoundedRectangle(cornerRadius: 16, style: .continuous)
+                .strokeBorder(done ? DQColor.deltaUp.opacity(0.35) : DQColor.stroke, lineWidth: 1)
+        )
         .animation(VMotion.snappy, value: done)
     }
 }
