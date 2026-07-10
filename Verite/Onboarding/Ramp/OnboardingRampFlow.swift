@@ -201,8 +201,16 @@ struct OnboardingRampFlow: View {
         }
     }
 
+    /// True when at least one sign-in provider is available; otherwise the
+    /// sign-in step is skipped (a screen with only "continue without" is noise).
+    private var signInAvailable: Bool {
+        appState.featureFlags.appleSignInEnabled || appState.featureFlags.googleSignInEnabled
+    }
+
     private func advance() {
-        if let next = step.next { step = next } else { complete() }
+        var next = step.next
+        if next == .signIn, !signInAvailable { next = .handoff }
+        if let next { step = next } else { complete() }
     }
 
     private func complete() {

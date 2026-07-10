@@ -25,6 +25,13 @@ final class FeatureFlags: @unchecked Sendable {
     /// hook is built, intended for later versions once ratings justify it.
     var onboardingRatingAskEnabled: Bool
 
+    /// "Sign in with Apple" on the sign-in screen. OFF by default: the button
+    /// needs the `com.apple.developer.applesignin` entitlement, which requires
+    /// the capability enabled on the App ID in the developer portal. Turn ON
+    /// (and re-add CODE_SIGN_ENTITLEMENTS in project.yml) once that's done.
+    /// When both this and Google are OFF, the sign-in step is skipped entirely.
+    var appleSignInEnabled: Bool
+
     /// "Continue with Google" on the sign-in screen. OFF until the
     /// GoogleSignIn SDK + OAuth client ID are configured — a visible but
     /// non-functional button is an App Review 2.1 rejection.
@@ -36,6 +43,7 @@ final class FeatureFlags: @unchecked Sendable {
         purchasesEnabled: Bool = false,
         communityEnabled: Bool = false,
         onboardingRatingAskEnabled: Bool = false,
+        appleSignInEnabled: Bool = false,
         googleSignInEnabled: Bool = false
     ) {
         self.affiliateEnabled = affiliateEnabled
@@ -43,6 +51,7 @@ final class FeatureFlags: @unchecked Sendable {
         self.purchasesEnabled = purchasesEnabled
         self.communityEnabled = communityEnabled
         self.onboardingRatingAskEnabled = onboardingRatingAskEnabled
+        self.appleSignInEnabled = appleSignInEnabled
         self.googleSignInEnabled = googleSignInEnabled
     }
 

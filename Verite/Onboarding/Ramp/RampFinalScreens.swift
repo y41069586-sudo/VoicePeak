@@ -237,27 +237,32 @@ struct RampSignInScreen: View {
             Spacer()
 
             VStack(spacing: VSpace.sm) {
-                SignInWithAppleButton(.signIn) { request in
-                    request.requestedScopes = [.fullName]
-                } onCompletion: { result in
-                    switch result {
-                    case .success(let authorization):
-                        let credential = authorization.credential as? ASAuthorizationAppleIDCredential
-                        let name = credential?.fullName?.givenName
-                        RampAnalytics.track("onboarding_sign_in",
-                                            ["provider": "apple", "result": "success"])
-                        Haptics.fire(.milestone)
-                        onSignedIn(name)
-                    case .failure:
-                        // Cancelled or failed — stay on the screen; the user
-                        // can retry or continue without an account.
-                        RampAnalytics.track("onboarding_sign_in",
-                                            ["provider": "apple", "result": "cancelled"])
+                // Only shown once the App ID has the Sign in with Apple
+                // capability and CODE_SIGN_ENTITLEMENTS is re-added — otherwise
+                // the archive can't be signed and the button can't authorize.
+                if appState.featureFlags.appleSignInEnabled {
+                    SignInWithAppleButton(.signIn) { request in
+                        request.requestedScopes = [.fullName]
+                    } onCompletion: { result in
+                        switch result {
+                        case .success(let authorization):
+                            let credential = authorization.credential as? ASAuthorizationAppleIDCredential
+                            let name = credential?.fullName?.givenName
+                            RampAnalytics.track("onboarding_sign_in",
+                                                ["provider": "apple", "result": "success"])
+                            Haptics.fire(.milestone)
+                            onSignedIn(name)
+                        case .failure:
+                            // Cancelled or failed — stay on the screen; the user
+                            // can retry or continue without an account.
+                            RampAnalytics.track("onboarding_sign_in",
+                                                ["provider": "apple", "result": "cancelled"])
+                        }
                     }
+                    .signInWithAppleButtonStyle(.black)
+                    .frame(height: 54)
+                    .clipShape(Capsule())
                 }
-                .signInWithAppleButtonStyle(.black)
-                .frame(height: 54)
-                .clipShape(Capsule())
 
                 if appState.featureFlags.googleSignInEnabled {
                     Button {
