@@ -171,7 +171,7 @@ struct DermiqProgressTab: View {
                 }
             }
             .padding(.horizontal, 20)
-            .padding(.bottom, 110)
+            .padding(.bottom, 132)   // clear the floating tab bar
         }
         .scrollIndicators(.hidden)
         .background(DQColor.background.ignoresSafeArea())
@@ -222,7 +222,7 @@ struct DermiqProgressTab: View {
                             .foregroundStyle(DQColor.textSecondary)
                     }
                 }
-                .frame(height: 190)
+                .frame(height: 158)
             }
         }
     }
@@ -310,7 +310,7 @@ struct DermiqProgressTab: View {
                                 .foregroundStyle(DQColor.textSecondary)
                         }
                     }
-                    .frame(height: 170)
+                    .frame(height: 150)
                     .id(metric)
 
                     // The honest takeaway line under the curve.

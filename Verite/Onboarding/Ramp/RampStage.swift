@@ -404,134 +404,135 @@ struct RampOptionCard: View {
 struct RampDistributionCurve: View {
     /// The quiz-predicted score band (0–100). Nil = generic center band.
     var range: (low: Int, high: Int)? = nil
-    /// Seconds to wait after appearing before the draw starts. The screen
-    /// itself fades/springs in for ~0.55 s — starting the draw immediately
-    /// meant most of it happened while the view was still invisible ("the
-    /// whole curve just spawns"). Hold until the user can actually watch.
+    /// Seconds to wait after appearing before the draw starts, so the line
+    /// grows AFTER the screen's own entrance instead of finishing invisibly.
     var startDelay: Double = 0
 
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
-    @State private var startDate: Date = .distantFuture
+    // Draw driven by an animatable Shape (reliable, unlike Canvas+TimelineView
+    // which rendered the whole curve at once on device).
+    @State private var drawProgress: CGFloat = 0
+    @State private var bandOpacity: CGFloat = 0
 
-    /// Draw finishes after this; the band fades in right after. (Screen-side
-    /// haptics are timed against these.)
     static let drawDuration: Double = 1.6
     static let bandDelay: Double = 0.25
 
     var body: some View {
-        TimelineView(.animation(minimumInterval: 1.0 / 30)) { timeline in
-            let now = timeline.date
-            let elapsed = max(0, now.timeIntervalSince(startDate))
-            let progress: CGFloat = reduceMotion
-                ? 1
-                : CGFloat(min(elapsed / Self.drawDuration, 1))
-            let bandAlpha: CGFloat = reduceMotion
-                ? 1
-                : CGFloat(min(max((elapsed - Self.drawDuration - Self.bandDelay) / 0.5, 0), 1))
-            let t = reduceMotion ? 0 : now.timeIntervalSinceReferenceDate
-
-            Canvas { context, size in
-                let w = size.width, h = size.height
-                func bell(_ x: CGFloat) -> CGFloat {
-                    let u = (x - 0.5) / 0.16
-                    return exp(-0.5 * u * u)
-                }
-                func y(_ fx: CGFloat) -> CGFloat { h - bell(fx) * h * 0.78 - 10 }
-
-                // ---- The curve, revealed left → right by `progress`.
-                let steps = 72
-                let visibleSteps = max(1, Int(CGFloat(steps) * progress))
-                var curve = Path()
-                for i in 0...visibleSteps {
-                    let fx = CGFloat(i) / CGFloat(steps)
-                    let point = CGPoint(x: fx * w, y: y(fx))
-                    if i == 0 { curve.move(to: point) } else { curve.addLine(to: point) }
-                }
-                var fill = curve
-                let edgeX = CGFloat(visibleSteps) / CGFloat(steps) * w
-                fill.addLine(to: CGPoint(x: edgeX, y: h))
-                fill.addLine(to: CGPoint(x: 0, y: h))
-                fill.closeSubpath()
-                context.fill(fill, with: .linearGradient(
-                    Gradient(colors: [RampStage.accent.opacity(0.22), .clear]),
-                    startPoint: CGPoint(x: 0, y: 0),
-                    endPoint: CGPoint(x: 0, y: h)))
-                context.stroke(curve, with: .color(RampStage.accent.opacity(0.8)), lineWidth: 1.5)
-
-                // A small glowing tip riding the draw edge (only while
-                // actually drawing — not during the pre-start hold).
-                if progress > 0.01, progress < 1 {
-                    let fx = CGFloat(visibleSteps) / CGFloat(steps)
-                    let tip = CGPoint(x: fx * w, y: y(fx))
-                    context.fill(
-                        Path(ellipseIn: CGRect(x: tip.x - 4, y: tip.y - 4, width: 8, height: 8)),
-                        with: .color(RampStage.accent))
-                }
-
-                // ---- Peer dots appear behind the draw front.
-                for i in 0..<40 {
-                    let n = Self.hash(i, 12.9898)
-                    let n2 = Self.hash(i, 78.233)
-                    let fx = min(max(0.5 + (n - 0.5) * 0.6, 0.05), 0.95)
-                    guard fx <= progress else { continue }
-                    let py = y(fx) + (1 - n2) * (h - y(fx) - 6) * 0.9
-                    let r = 1.3 + Self.hash(i, 39.42) * 1.3
-                    context.fill(
-                        Path(ellipseIn: CGRect(x: fx * w - r, y: py - r, width: r * 2, height: r * 2)),
-                        with: .color(RampStage.ink.opacity(0.14)))
-                }
-
-                // ---- The user's estimated band + drifting "?" marker.
-                guard bandAlpha > 0 else { return }
-                let x1 = CGFloat(range?.low ?? 33) / 100
-                let x2 = CGFloat(range?.high ?? 67) / 100
-
-                var band = Path()
-                let bandSteps = 24
-                band.move(to: CGPoint(x: x1 * w, y: h))
-                for i in 0...bandSteps {
-                    let fx = x1 + (x2 - x1) * CGFloat(i) / CGFloat(bandSteps)
-                    band.addLine(to: CGPoint(x: fx * w, y: y(fx)))
-                }
-                band.addLine(to: CGPoint(x: x2 * w, y: h))
-                band.closeSubpath()
-                context.fill(band, with: .color(RampStage.accent.opacity(0.24 * bandAlpha)))
-                for edge in [x1, x2] {
-                    var line = Path()
-                    line.move(to: CGPoint(x: edge * w, y: y(edge)))
-                    line.addLine(to: CGPoint(x: edge * w, y: h))
-                    context.stroke(line, with: .color(RampStage.accent.opacity(0.5 * bandAlpha)),
-                                   style: StrokeStyle(lineWidth: 1, dash: [3, 3]))
-                }
-
-                // "?" drifts INSIDE the band — your spot is somewhere in here.
-                let mid = (x1 + x2) / 2
-                let drift = (x2 - x1) * 0.38
-                let mx = mid + drift * CGFloat(sin(t * 0.7))
-                let my = y(mx)
-                context.fill(
-                    Path(ellipseIn: CGRect(x: mx * w - 15, y: my - 15, width: 30, height: 30)),
-                    with: .color(RampStage.accent.opacity(0.2 * bandAlpha)))
-                context.fill(
-                    Path(ellipseIn: CGRect(x: mx * w - 5, y: my - 5, width: 10, height: 10)),
-                    with: .color(RampStage.accent.opacity(bandAlpha)))
-                context.draw(
-                    Text(verbatim: "?").font(RampStage.serif(13))
-                        .foregroundColor(RampStage.accentDeep.opacity(bandAlpha)),
-                    at: CGPoint(x: mx * w, y: my - 22))
-            }
+        ZStack {
+            RampBellShape(progress: drawProgress, filled: true)
+                .fill(LinearGradient(colors: [RampStage.accent.opacity(0.22), .clear],
+                                     startPoint: .top, endPoint: .bottom))
+            RampBellShape(progress: drawProgress, filled: false)
+                .stroke(RampStage.accent.opacity(0.85),
+                        style: StrokeStyle(lineWidth: 2, lineCap: .round, lineJoin: .round))
+            peerDots.opacity(Double(drawProgress))
+            bandOverlay.opacity(Double(bandOpacity))
         }
         .frame(height: 172)
         .accessibilityHidden(true)
-        .onAppear {
-            if startDate == .distantFuture {
-                startDate = Date.now.addingTimeInterval(startDelay)
+        .onAppear { animate() }
+    }
+
+    private func animate() {
+        if reduceMotion { drawProgress = 1; bandOpacity = 1; return }
+        withAnimation(.easeInOut(duration: Self.drawDuration).delay(startDelay)) {
+            drawProgress = 1
+        }
+        withAnimation(.easeOut(duration: 0.5)
+            .delay(startDelay + Self.drawDuration + Self.bandDelay)) {
+            bandOpacity = 1
+        }
+    }
+
+    /// Faint peer dots scattered under the curve — fade in as the line draws.
+    private var peerDots: some View {
+        Canvas { context, size in
+            let w = size.width, h = size.height
+            func bell(_ x: CGFloat) -> CGFloat { let u = (x - 0.5) / 0.16; return exp(-0.5 * u * u) }
+            func y(_ fx: CGFloat) -> CGFloat { h - bell(fx) * h * 0.78 - 10 }
+            for i in 0..<40 {
+                let n = Self.hash(i, 12.9898), n2 = Self.hash(i, 78.233)
+                let fx = min(max(0.5 + (n - 0.5) * 0.6, 0.05), 0.95)
+                let py = y(fx) + (1 - n2) * (h - y(fx) - 6) * 0.9
+                let r = 1.3 + Self.hash(i, 39.42) * 1.3
+                context.fill(Path(ellipseIn: CGRect(x: fx * w - r, y: py - r, width: r * 2, height: r * 2)),
+                             with: .color(RampStage.ink.opacity(0.14)))
             }
+        }
+    }
+
+    /// The user's estimated band + a "?" marker — fades in after the draw.
+    private var bandOverlay: some View {
+        Canvas { context, size in
+            let w = size.width, h = size.height
+            func bell(_ x: CGFloat) -> CGFloat { let u = (x - 0.5) / 0.16; return exp(-0.5 * u * u) }
+            func y(_ fx: CGFloat) -> CGFloat { h - bell(fx) * h * 0.78 - 10 }
+            let x1 = CGFloat(range?.low ?? 33) / 100
+            let x2 = CGFloat(range?.high ?? 67) / 100
+
+            var band = Path()
+            let bandSteps = 24
+            band.move(to: CGPoint(x: x1 * w, y: h))
+            for i in 0...bandSteps {
+                let fx = x1 + (x2 - x1) * CGFloat(i) / CGFloat(bandSteps)
+                band.addLine(to: CGPoint(x: fx * w, y: y(fx)))
+            }
+            band.addLine(to: CGPoint(x: x2 * w, y: h))
+            band.closeSubpath()
+            context.fill(band, with: .color(RampStage.accent.opacity(0.24)))
+            for edge in [x1, x2] {
+                var line = Path()
+                line.move(to: CGPoint(x: edge * w, y: y(edge)))
+                line.addLine(to: CGPoint(x: edge * w, y: h))
+                context.stroke(line, with: .color(RampStage.accent.opacity(0.5)),
+                               style: StrokeStyle(lineWidth: 1, dash: [3, 3]))
+            }
+            let mid = (x1 + x2) / 2, my = y(mid)
+            context.fill(Path(ellipseIn: CGRect(x: mid * w - 15, y: my - 15, width: 30, height: 30)),
+                         with: .color(RampStage.accent.opacity(0.2)))
+            context.fill(Path(ellipseIn: CGRect(x: mid * w - 5, y: my - 5, width: 10, height: 10)),
+                         with: .color(RampStage.accent))
+            context.draw(Text(verbatim: "?").font(RampStage.serif(13))
+                            .foregroundColor(RampStage.accentDeep),
+                         at: CGPoint(x: mid * w, y: my - 22))
         }
     }
 
     private static func hash(_ i: Int, _ salt: Double) -> CGFloat {
         let v = sin(Double(i + 1) * salt) * 43758.5453
         return CGFloat(v - floor(v))
+    }
+}
+
+/// The bell curve as an animatable Shape, revealed left → right by `progress`.
+private struct RampBellShape: Shape {
+    var progress: CGFloat
+    var filled: Bool
+
+    var animatableData: CGFloat {
+        get { progress }
+        set { progress = newValue }
+    }
+
+    func path(in rect: CGRect) -> Path {
+        let w = rect.width, h = rect.height
+        func bell(_ x: CGFloat) -> CGFloat { let u = (x - 0.5) / 0.16; return exp(-0.5 * u * u) }
+        func y(_ fx: CGFloat) -> CGFloat { rect.minY + h - bell(fx) * h * 0.78 - 10 }
+
+        let steps = 72
+        let visible = max(1, Int(CGFloat(steps) * min(max(progress, 0), 1)))
+        var p = Path()
+        p.move(to: CGPoint(x: rect.minX, y: y(0)))
+        for i in 1...visible {
+            let fx = CGFloat(i) / CGFloat(steps)
+            p.addLine(to: CGPoint(x: rect.minX + fx * w, y: y(fx)))
+        }
+        if filled {
+            let edgeX = rect.minX + CGFloat(visible) / CGFloat(steps) * w
+            p.addLine(to: CGPoint(x: edgeX, y: rect.maxY))
+            p.addLine(to: CGPoint(x: rect.minX, y: rect.maxY))
+            p.closeSubpath()
+        }
+        return p
     }
 }
