@@ -67,10 +67,14 @@ final class ScanFlowModel {
     }
 
     /// Theater guarantees `analysis != nil` before calling this.
+    ///
+    /// Every scan — first or rescan — lands on the normal results grid. The
+    /// "Now ⇄ In 14 days" toggle there is how you see the projection; we no
+    /// longer shove the delta comparison screen in front of a dashboard rescan.
     func theaterFinished(context: ModelContext) {
         persist(context: context)
         Haptics.fire(.transition)
-        stage = isRescan ? .delta : .results
+        stage = .results
     }
 
     private func persist(context: ModelContext) {

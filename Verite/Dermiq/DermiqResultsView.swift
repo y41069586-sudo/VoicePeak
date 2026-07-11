@@ -40,6 +40,11 @@ struct DermiqResultsView: View {
     @State private var countUpFinished = false
     @State private var shareURL: URL?
 
+    /// The iOS-style segmented toggle: false = your score now, true = the
+    /// conservative 14-day projection. Flipping it re-drives every grid cell.
+    @State private var showProjected = false
+    @Namespace private var segmentNS
+
     private var unlocked: Bool { purchases.isPro || simulatedUnlock }
 
     var body: some View {
@@ -107,12 +112,22 @@ struct DermiqResultsView: View {
                 }
                 .padding(.top, 6)
 
+                // ---- Now ⇄ In 14 days. Flips the whole grid between the real
+                // reading and the conservative projection. Only after unlock —
+                // under the paywall the numbers are blurred anyway.
+                if !locked {
+                    modeSwitch
+                }
+
                 // ---- The card: your photo straddling a 2-column metric grid.
-                // Under the paywall only the VALUES blur — photo + labels stay
-                // crisp, exactly like the reference.
+                // Overall lives inside the grid as the lead cell — never a big
+                // number under the photo. Under the paywall only the VALUES
+                // blur; photo + labels stay crisp, exactly like the reference.
                 gridCard(analysis, projection: projection, locked: locked)
 
-                potentialNote
+                if !locked {
+                    potentialNote
+                }
 
                 if !locked {
                     summaryBlock(analysis)
@@ -148,8 +163,48 @@ struct DermiqResultsView: View {
         .shadow(color: DQColor.accent.opacity(0.28), radius: 14, y: 8)
     }
 
-    /// The metric grid card. Overall + Potential lead, then every sub-score,
-    /// two columns. `locked` blurs only the numbers and bars (not the labels).
+    /// The iOS-style segmented toggle. A white pill slides between the two
+    /// segments (matchedGeometry), flipping the whole grid Now ⇄ In 14 days.
+    private var modeSwitch: some View {
+        HStack(spacing: 4) {
+            segment(title: "Now", active: !showProjected) { setProjected(false) }
+            segment(title: "In 14 days", active: showProjected) { setProjected(true) }
+        }
+        .padding(4)
+        .background(DQColor.accentSoft, in: Capsule())
+        .frame(maxWidth: 300)
+    }
+
+    private func segment(title: String, active: Bool, action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            Text(title)
+                .font(.system(size: 15, weight: .bold, design: .rounded))
+                .foregroundStyle(active ? DQColor.accentBright : DQColor.textSecondary)
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 9)
+                .background {
+                    if active {
+                        Capsule()
+                            .fill(DQColor.surface)
+                            .shadow(color: DQColor.accent.opacity(0.18), radius: 6, y: 2)
+                            .matchedGeometryEffect(id: "segmentPill", in: segmentNS)
+                    }
+                }
+        }
+        .buttonStyle(.plain)
+    }
+
+    private func setProjected(_ value: Bool) {
+        guard showProjected != value else { return }
+        Haptics.fire(.selection)
+        withAnimation(VMotion.gentle) { showProjected = value }
+    }
+
+    /// The metric grid card. Overall is the lead cell, then every sub-score,
+    /// two columns — exactly the six-grid reference, with Overall *inside* the
+    /// grid (not a big number under the photo). Each cell reads the "Now" value
+    /// or the projected one depending on the toggle. `locked` blurs only the
+    /// numbers and bars (not the labels).
     private func gridCard(_ analysis: DermiqAnalysis,
                           projection: DermiqProjection.Projected,
                           locked: Bool) -> some View {
@@ -157,13 +212,15 @@ struct DermiqResultsView: View {
                        GridItem(.flexible(), spacing: 22)]
         return ZStack(alignment: .top) {
             LazyVGrid(columns: columns, alignment: .leading, spacing: 20) {
-                metricCell(label: "Overall", value: analysis.overall,
-                           fill: DQColor.accent, emphasized: false, locked: locked)
-                metricCell(label: "Potential", value: projection.overall,
-                           fill: DQColor.accentBright, emphasized: true, locked: locked)
+                metricCell(label: "Overall",
+                           now: analysis.overall,
+                           projected: projection.overall,
+                           lead: true, locked: locked)
                 ForEach(analysis.subScores) { score in
-                    metricCell(label: score.category.displayName, value: score.value,
-                               fill: DQColor.accent, emphasized: false, locked: locked)
+                    metricCell(label: score.category.displayName,
+                               now: score.value,
+                               projected: projection.value(for: score.category) ?? score.value,
+                               lead: false, locked: locked)
                 }
             }
             .padding(.horizontal, 20)
@@ -180,32 +237,34 @@ struct DermiqResultsView: View {
         .padding(.top, 46)
     }
 
-    /// One metric: label, big number, thin progress bar. "Potential" is tinted
-    /// and carries a "14d" tag. Locked → the number and bar blur.
-    private func metricCell(label: String, value: Int, fill: Color,
-                            emphasized: Bool, locked: Bool) -> some View {
-        VStack(alignment: .leading, spacing: 7) {
+    /// One metric: label, big number, thin progress bar. In projected mode the
+    /// value morphs to the 14-day figure, the bar tints brighter, and a small
+    /// ↑/↓ delta chip shows the change. `lead` (Overall) tints its number.
+    private func metricCell(label: String, now: Int, projected: Int,
+                            lead: Bool, locked: Bool) -> some View {
+        let value = showProjected ? projected : now
+        let delta = projected - now
+        let tinted = lead || showProjected
+        return VStack(alignment: .leading, spacing: 7) {
             HStack(spacing: 5) {
                 Text(label)
                     .font(.system(size: 13, weight: .semibold, design: .rounded))
                     .foregroundStyle(DQColor.textSecondary)
                     .lineLimit(1)
-                if emphasized {
-                    Text("14d")
-                        .font(.system(size: 9, weight: .bold, design: .rounded))
-                        .foregroundStyle(DQColor.accentBright)
-                        .padding(.horizontal, 5).padding(.vertical, 1)
-                        .background(DQColor.accentSoft, in: Capsule())
+                Spacer(minLength: 0)
+                if showProjected && delta != 0 {
+                    deltaChip(delta)
                 }
             }
             Text(verbatim: "\(value)")
                 .font(.system(size: 27, weight: .heavy, design: .rounded).monospacedDigit())
-                .foregroundStyle(emphasized ? DQColor.accentBright : DQColor.textPrimary)
+                .foregroundStyle(tinted ? DQColor.accentBright : DQColor.textPrimary)
+                .contentTransition(.numericText(value: Double(value)))
                 .blur(radius: locked ? 9 : 0)
             GeometryReader { proxy in
                 ZStack(alignment: .leading) {
                     Capsule().fill(DQColor.stroke.opacity(0.7))
-                    Capsule().fill(fill)
+                    Capsule().fill(showProjected ? DQColor.accentBright : DQColor.accent)
                         .frame(width: proxy.size.width * CGFloat(value) / 100)
                 }
             }
@@ -214,6 +273,21 @@ struct DermiqResultsView: View {
             .opacity(locked ? 0.7 : 1)
         }
         .animation(VMotion.gentle, value: locked)
+        .animation(VMotion.gentle, value: showProjected)
+    }
+
+    /// The ↑/↓ change pill shown on each cell in projected mode.
+    private func deltaChip(_ delta: Int) -> some View {
+        let up = delta >= 0
+        return HStack(spacing: 2) {
+            Image(systemName: up ? "arrow.up" : "arrow.down")
+                .font(.system(size: 8, weight: .black))
+            Text(verbatim: "\(abs(delta))")
+                .font(.system(size: 10, weight: .bold, design: .rounded).monospacedDigit())
+        }
+        .foregroundStyle(up ? DQColor.deltaUp : DQColor.deltaDown)
+        .padding(.horizontal, 5).padding(.vertical, 1)
+        .background((up ? DQColor.deltaUp : DQColor.deltaDown).opacity(0.12), in: Capsule())
     }
 
     /// Honest note under the grid — Potential is a projection, never a promise.
@@ -221,7 +295,7 @@ struct DermiqResultsView: View {
         HStack(spacing: 8) {
             Image(systemName: "sparkles")
                 .font(.system(size: 12, weight: .semibold))
-            Text("“Potential” is a careful 14-day projection if you follow your plan — not a promise.")
+            Text("“In 14 days” is a careful projection if you follow your plan — not a promise.")
                 .font(DQFont.micro)
                 .fixedSize(horizontal: false, vertical: true)
         }
