@@ -52,36 +52,64 @@ struct DermiqDeltaView: View {
         .task { await playMorph() }
     }
 
-    /// Flat "hero" number (no ring) — the score counts up, then a delta pill
-    /// lands. Matches the UMax-style grid the rest of the results use.
+    /// UMax-style hero: YOUR new scan photo straddles the top of the card, the
+    /// score counts up beneath it, then a delta pill lands.
     private func overallHero(old: Int, new: Int) -> some View {
-        VStack(spacing: 10) {
-            Text("OVERALL")
-                .font(DQFont.mono(11, weight: .semibold))
-                .foregroundStyle(DQColor.textSecondary)
-                .tracking(3)
-            Text(verbatim: "\(shownScore)")
-                .font(.system(size: 80, weight: .heavy, design: .rounded).monospacedDigit())
-                .foregroundStyle(DQColor.textPrimary)
-                .contentTransition(.numericText(value: Double(shownScore)))
-            HStack(spacing: 5) {
-                Image(systemName: new >= old ? "arrow.up" : "arrow.down")
-                    .font(.system(size: 12, weight: .bold))
-                Text(verbatim: "\(abs(new - old)) from \(old)")
-                    .font(.system(size: 14, weight: .bold, design: .rounded))
+        ZStack(alignment: .top) {
+            VStack(spacing: 10) {
+                Text("OVERALL")
+                    .font(DQFont.mono(11, weight: .semibold))
+                    .foregroundStyle(DQColor.textSecondary)
+                    .tracking(3)
+                Text(verbatim: "\(shownScore)")
+                    .font(.system(size: 76, weight: .heavy, design: .rounded).monospacedDigit())
+                    .foregroundStyle(DQColor.textPrimary)
+                    .contentTransition(.numericText(value: Double(shownScore)))
+                HStack(spacing: 5) {
+                    Image(systemName: new >= old ? "arrow.up" : "arrow.down")
+                        .font(.system(size: 12, weight: .bold))
+                    Text(verbatim: "\(abs(new - old)) from \(old)")
+                        .font(.system(size: 14, weight: .bold, design: .rounded))
+                }
+                .foregroundStyle(new >= old ? DQColor.deltaUp : DQColor.deltaDown)
+                .padding(.horizontal, 13)
+                .padding(.vertical, 7)
+                .background((new >= old ? DQColor.deltaUp : DQColor.deltaDown).opacity(0.12), in: Capsule())
+                .opacity(morphDone ? 1 : 0)
+                .animation(VMotion.gentle, value: morphDone)
             }
-            .foregroundStyle(new >= old ? DQColor.deltaUp : DQColor.deltaDown)
-            .padding(.horizontal, 13)
-            .padding(.vertical, 7)
-            .background((new >= old ? DQColor.deltaUp : DQColor.deltaDown).opacity(0.12), in: Capsule())
-            .opacity(morphDone ? 1 : 0)
-            .animation(VMotion.gentle, value: morphDone)
+            .padding(.top, 60)
+            .padding(.bottom, 22)
+            .frame(maxWidth: .infinity)
+            .background(DQColor.surface, in: RoundedRectangle(cornerRadius: 24, style: .continuous))
+            .overlay(RoundedRectangle(cornerRadius: 24, style: .continuous)
+                .strokeBorder(DQColor.stroke, lineWidth: 1))
+
+            heroAvatar
+                .offset(y: -46)
         }
-        .padding(.vertical, 20)
-        .frame(maxWidth: .infinity)
-        .background(DQColor.surface, in: RoundedRectangle(cornerRadius: 24, style: .continuous))
-        .overlay(RoundedRectangle(cornerRadius: 24, style: .continuous)
-            .strokeBorder(DQColor.stroke, lineWidth: 1))
+        .padding(.top, 46)
+    }
+
+    /// The new scan photo, framed with a soft ring — sits half over the card.
+    private var heroAvatar: some View {
+        Group {
+            if let image = model.capturedImage {
+                Image(uiImage: image).resizable().scaledToFill()
+            } else {
+                ZStack {
+                    DQColor.accentSoft
+                    Image(systemName: "face.smiling")
+                        .font(.system(size: 30, weight: .light))
+                        .foregroundStyle(DQColor.accentBright)
+                }
+            }
+        }
+        .frame(width: 92, height: 92)
+        .clipShape(Circle())
+        .overlay(Circle().strokeBorder(DQColor.surface, lineWidth: 4))
+        .overlay(Circle().strokeBorder(DQColor.accentSoft, lineWidth: 4).padding(-4))
+        .shadow(color: DQColor.accent.opacity(0.28), radius: 14, y: 8)
     }
 
     private func deltaList(old: DermiqAnalysis, new: DermiqAnalysis) -> some View {
