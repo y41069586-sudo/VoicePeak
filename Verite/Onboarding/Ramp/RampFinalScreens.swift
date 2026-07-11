@@ -5,20 +5,33 @@ import SwiftUI
 // ============================================================
 
 /// Social comparison without a single fabricated testimonial (App Review
-/// 2.3.1-safe): a soft population curve with a "?" that keeps searching for
-/// the user's spot and never finds it — because only a scan can place it.
+/// 2.3.1-safe): a population curve that draws itself live, then lights up the
+/// user's own predicted band — with a "?" that keeps drifting inside it and
+/// never settles, because only a scan can place it. Haptic ticks ride the
+/// draw; a milestone pulse lands with the band.
 ///
 /// NOTE: deliberately NO review prompt here — Apple 5.6.3 forbids rating asks
 /// during onboarding. The ask lives post-scan (results, 3rd+ completed scan).
 struct RampCurveScreen: View {
+    let answers: RampQuizAnswers
     let onAdvance: () -> Void
+
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @State private var bandShown = false
+
+    private var range: (low: Int, high: Int) { answers.predictedRange }
+
+    private var headline: String {
+        if let name = answers.displayName { return "Where do you\nland, \(name)?" }
+        return "Where do\nyou land?"
+    }
 
     var body: some View {
         VStack(spacing: 0) {
             Spacer()
 
             VStack(spacing: VSpace.md) {
-                Text("Where do\nyou land?")
+                Text(headline)
                     .font(RampStage.serif(28))
                     .foregroundStyle(RampStage.ink)
                     .multilineTextAlignment(.center)
@@ -33,10 +46,18 @@ struct RampCurveScreen: View {
             }
             .padding(.horizontal, VSpace.xl)
 
-            RampDistributionCurve()
+            RampDistributionCurve(range: range)
                 .padding(.horizontal, VSpace.lg)
                 .padding(.top, VSpace.lg)
                 .vStaggeredAppear(index: 2)
+
+            // The estimate echoed under its own band — lands with the pulse.
+            Text(verbatim: "Your estimated range: \(range.low) – \(range.high)")
+                .font(VType.caption)
+                .foregroundStyle(RampStage.accentDeep)
+                .padding(.top, VSpace.sm)
+                .opacity(bandShown ? 1 : 0)
+                .offset(y: bandShown ? 0 : 6)
 
             HStack(spacing: VSpace.md) {
                 RampMiniClaim(icon: "lock.fill", text: "100% private")
@@ -53,6 +74,27 @@ struct RampCurveScreen: View {
                 .padding(.horizontal, VSpace.lg)
             Spacer().frame(height: VSpace.xxl)
         }
+        .task { await choreograph() }
+    }
+
+    /// Haptic ticks riding the curve draw, then a milestone pulse as the
+    /// user's band lights up (timed to RampDistributionCurve's constants).
+    private func choreograph() async {
+        if reduceMotion {
+            bandShown = true
+            return
+        }
+        let drawMs = Int(RampDistributionCurve.drawDuration * 1000)
+        for quarter in 1...3 {
+            try? await Task.sleep(for: .milliseconds(drawMs * quarter / 4))
+            guard !Task.isCancelled else { return }
+            Haptics.fire(.tick)
+        }
+        try? await Task.sleep(for: .milliseconds(
+            drawMs / 4 + Int(RampDistributionCurve.bandDelay * 1000)))
+        guard !Task.isCancelled else { return }
+        Haptics.fire(.milestone)
+        withAnimation(VMotion.gentle) { bandShown = true }
     }
 }
 
@@ -113,7 +155,7 @@ struct RampDailyReportScreen: View {
                     .foregroundStyle(RampStage.ink)
                     .multilineTextAlignment(.center)
                     .lineSpacing(2)
-                Text("Your score shifts daily. When should your ritual check in?")
+                Text("A plan only works on the days you do it. When should yours check in?")
                     .font(VType.bodyLarge)
                     .foregroundStyle(RampStage.textSecondary)
                     .multilineTextAlignment(.center)
@@ -131,6 +173,13 @@ struct RampDailyReportScreen: View {
             }
             .padding(.horizontal, VSpace.lg)
             .vStaggeredAppear(index: 1)
+
+            // What you'll actually receive — an honest preview of the nudge,
+            // rendered as a system-style banner. Updates with the choice.
+            notificationPreview
+                .padding(.horizontal, VSpace.lg)
+                .padding(.top, VSpace.md)
+                .vStaggeredAppear(index: 2)
 
             Spacer()
 
@@ -160,6 +209,47 @@ struct RampDailyReportScreen: View {
             .padding(.horizontal, VSpace.lg)
             Spacer().frame(height: VSpace.xxl)
         }
+    }
+
+    /// A faux notification banner — exactly what the chosen reminder will say.
+    private var notificationPreview: some View {
+        HStack(spacing: 10) {
+            RoundedRectangle(cornerRadius: 8, style: .continuous)
+                .fill(RampStage.accent)
+                .frame(width: 34, height: 34)
+                .overlay(
+                    Text(verbatim: "V")
+                        .font(.system(size: 17, weight: .heavy, design: .serif))
+                        .foregroundStyle(.white)
+                )
+            VStack(alignment: .leading, spacing: 1) {
+                HStack {
+                    Text(verbatim: "VÉRITÉ")
+                        .font(.system(size: 12, weight: .bold, design: .rounded))
+                        .foregroundStyle(RampStage.ink)
+                    Spacer()
+                    Text(verbatim: time == .morning ? "8:00" : "21:00")
+                        .font(.system(size: 11, weight: .medium, design: .rounded))
+                        .foregroundStyle(RampStage.textTertiary)
+                }
+                Text(time == .morning
+                     ? "Morning ritual — 3 steps, 4 minutes."
+                     : "Evening ritual — 3 steps before bed.")
+                    .font(.system(size: 12.5, weight: .medium, design: .rounded))
+                    .foregroundStyle(RampStage.textSecondary)
+                    .lineLimit(1)
+            }
+        }
+        .padding(.horizontal, 12)
+        .padding(.vertical, 10)
+        .background(Color.white.opacity(0.9), in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+        .overlay(
+            RoundedRectangle(cornerRadius: 16, style: .continuous)
+                .strokeBorder(RampStage.hairline, lineWidth: 1)
+        )
+        .shadow(color: RampStage.ink.opacity(0.06), radius: 10, y: 5)
+        .animation(VMotion.gentle, value: time)
+        .accessibilityLabel("Preview of your daily reminder")
     }
 
     private func timeTile(_ option: RitualTime) -> some View {
@@ -203,9 +293,36 @@ struct RampDailyReportScreen: View {
 
 /// Shows the shape of the deliverable BEFORE the commitment screens: a Day-1
 /// preview of the 14-day plan. Illustrative, clearly labeled — the real one
-/// is built from the scan.
+/// is built from the scan. The user's own quiz answers surface INSIDE the
+/// card (their concern names the evening active; SPF answer shapes the AM
+/// line) so the preview reads as "already mine", not a template.
 struct RampPlanPreviewScreen: View {
+    let answers: RampQuizAnswers
     let onAdvance: () -> Void
+
+    /// "Targeted active" becomes THEIR concern's active line.
+    private var eveningSteps: String {
+        switch answers.concern {
+        case .breakouts?: return "Cleanse · Blemish active (BHA) · Moisturizer"
+        case .redness?:   return "Cleanse · Calming active (azelaic) · Moisturizer"
+        case .pores?:     return "Cleanse · Pore active (niacinamide) · Moisturizer"
+        case .texture?:   return "Cleanse · Texture active (retinal) · Moisturizer"
+        case .dullness?:  return "Cleanse · Glow active (vitamin C) · Moisturizer"
+        case .nothing?, nil:
+            return "Cleanse · Targeted active · Moisturizer"
+        }
+    }
+
+    /// The AM line acknowledges their SPF answer.
+    private var morningSteps: String {
+        answers.spf == .daily
+            ? "Gentle cleanse · Hydrating serum · Your SPF, kept"
+            : "Gentle cleanse · Hydrating serum · SPF 30+ (new)"
+    }
+
+    private var focusChip: String? {
+        answers.concern?.chip
+    }
 
     var body: some View {
         VStack(spacing: 0) {
@@ -231,21 +348,27 @@ struct RampPlanPreviewScreen: View {
 
             Spacer()
 
-            // Day-1 sample card.
+            // Day-1 sample card, seeded with their own answers.
             VStack(alignment: .leading, spacing: 12) {
                 HStack {
                     Text(verbatim: "DAY 1 · PREVIEW")
                         .font(VType.micro).tracking(3)
                         .foregroundStyle(RampStage.accentDeep)
                     Spacer()
-                    Text(verbatim: "ILLUSTRATIVE")
-                        .font(VType.micro).tracking(2)
-                        .foregroundStyle(RampStage.textTertiary)
+                    if let focusChip {
+                        Text(verbatim: "FOR: \(focusChip.uppercased())")
+                            .font(VType.micro).tracking(2)
+                            .foregroundStyle(RampStage.accentDeep)
+                            .padding(.horizontal, 8).padding(.vertical, 3)
+                            .background(RampStage.accentSoft, in: Capsule())
+                    } else {
+                        Text(verbatim: "ILLUSTRATIVE")
+                            .font(VType.micro).tracking(2)
+                            .foregroundStyle(RampStage.textTertiary)
+                    }
                 }
-                previewRow(icon: "sun.max.fill", title: "Morning",
-                           steps: "Gentle cleanse · Hydrating serum · SPF 30+")
-                previewRow(icon: "moon.stars.fill", title: "Evening",
-                           steps: "Cleanse · Targeted active · Moisturizer")
+                previewRow(icon: "sun.max.fill", title: "Morning", steps: morningSteps)
+                previewRow(icon: "moon.stars.fill", title: "Evening", steps: eveningSteps)
                 HStack(spacing: 6) {
                     Image(systemName: "checkmark.seal")
                         .font(.system(size: 11, weight: .semibold))
@@ -288,6 +411,181 @@ struct RampPlanPreviewScreen: View {
                     .fixedSize(horizontal: false, vertical: true)
             }
         }
+    }
+}
+
+// ============================================================
+// MARK: — Screen: The commitment (sign your 14 days)
+// ============================================================
+
+/// The strongest retention mechanic in consumer onboarding: a literal
+/// signature. The user signs their 14 days with a finger — a contract with
+/// themselves, not with us. Honesty guarantees: the drawing never leaves this
+/// screen (only a signed yes/no goes to analytics), and the step is skippable.
+struct RampCommitmentScreen: View {
+    let name: String?
+    let onAdvance: () -> Void
+
+    @State private var strokes: [[CGPoint]] = []
+    @State private var sealed = false
+
+    private var signed: Bool {
+        strokes.reduce(0) { $0 + $1.count } >= 12
+    }
+
+    private var headline: String {
+        if let name { return "Make it official,\n\(name)." }
+        return "Make it\nofficial."
+    }
+
+    var body: some View {
+        VStack(spacing: 0) {
+            Spacer()
+
+            VStack(spacing: VSpace.md) {
+                Text(verbatim: "YOUR 14-DAY COMMITMENT")
+                    .font(VType.micro)
+                    .tracking(3)
+                    .foregroundStyle(RampStage.accentDeep)
+                Text(headline)
+                    .font(RampStage.serif(28))
+                    .foregroundStyle(RampStage.ink)
+                    .multilineTextAlignment(.center)
+                    .lineSpacing(2)
+                Text("14 days, morning and evening.\nSign it — for yourself, not for us.")
+                    .font(VType.bodyLarge)
+                    .foregroundStyle(RampStage.textSecondary)
+                    .multilineTextAlignment(.center)
+                    .lineSpacing(2)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+            .padding(.horizontal, VSpace.xl)
+            .vStaggeredAppear(index: 0)
+
+            Spacer().frame(height: VSpace.xl)
+
+            signaturePad
+                .padding(.horizontal, VSpace.lg)
+                .vStaggeredAppear(index: 1)
+
+            Text("Your signature stays on this screen — never stored, never uploaded.")
+                .font(VType.micro)
+                .foregroundStyle(RampStage.textTertiary)
+                .multilineTextAlignment(.center)
+                .padding(.horizontal, VSpace.xl)
+                .padding(.top, VSpace.sm)
+                .vStaggeredAppear(index: 2)
+
+            Spacer()
+
+            VStack(spacing: VSpace.sm) {
+                RampPrimaryButton(title: "I'm in for 14 days", isEnabled: signed && !sealed) {
+                    guard !sealed else { return }
+                    sealed = true
+                    Haptics.fire(.verdictReveal)
+                    RampAnalytics.track("onboarding_commitment", ["signed": "true"])
+                    onAdvance()
+                }
+                RampGhostButton(title: "Not now") {
+                    RampAnalytics.track("onboarding_commitment", ["signed": "false"])
+                    onAdvance()
+                }
+            }
+            .padding(.horizontal, VSpace.lg)
+            Spacer().frame(height: VSpace.xxl)
+        }
+        .animation(VMotion.gentle, value: signed)
+    }
+
+    // MARK: The pad
+
+    private var signaturePad: some View {
+        ZStack {
+            RoundedRectangle(cornerRadius: 22, style: .continuous)
+                .fill(Color.white.opacity(0.8))
+            RoundedRectangle(cornerRadius: 22, style: .continuous)
+                .strokeBorder(signed ? RampStage.accent : RampStage.hairline,
+                              lineWidth: signed ? 1.5 : 1)
+
+            // Baseline + hint, fading once ink lands.
+            VStack {
+                Spacer()
+                Rectangle()
+                    .fill(RampStage.hair.opacity(0.8))
+                    .frame(height: 1)
+                    .padding(.horizontal, 28)
+                Text(strokes.isEmpty ? "Sign with your finger" : " ")
+                    .font(RampStage.serif(15))
+                    .foregroundStyle(RampStage.textTertiary)
+                    .padding(.top, 8)
+                    .padding(.bottom, 18)
+            }
+            .opacity(strokes.isEmpty ? 1 : 0.4)
+
+            SignatureCanvas(strokes: $strokes)
+
+            // Clear, once there is something to clear.
+            if !strokes.isEmpty {
+                VStack {
+                    HStack {
+                        Spacer()
+                        Button {
+                            Haptics.fire(.selection)
+                            strokes.removeAll()
+                        } label: {
+                            Image(systemName: "arrow.counterclockwise")
+                                .font(.system(size: 13, weight: .semibold))
+                                .foregroundStyle(RampStage.textSecondary)
+                                .frame(width: 32, height: 32)
+                                .background(RampStage.card, in: Circle())
+                                .overlay(Circle().strokeBorder(RampStage.hairline, lineWidth: 1))
+                        }
+                        .accessibilityLabel("Clear signature")
+                        .padding(10)
+                    }
+                    Spacer()
+                }
+                .transition(.opacity)
+            }
+        }
+        .frame(height: 190)
+        .shadow(color: RampStage.accent.opacity(signed ? 0.18 : 0.08), radius: 18, y: 8)
+        .animation(VMotion.gentle, value: strokes.isEmpty)
+    }
+}
+
+/// Finger-ink capture: strokes render live in a Canvas; nothing is persisted.
+private struct SignatureCanvas: View {
+    @Binding var strokes: [[CGPoint]]
+    @State private var current: [CGPoint] = []
+
+    var body: some View {
+        Canvas { context, _ in
+            for stroke in strokes + (current.isEmpty ? [] : [current]) {
+                guard let first = stroke.first else { continue }
+                var path = Path()
+                path.move(to: first)
+                for point in stroke.dropFirst() {
+                    path.addLine(to: point)
+                }
+                context.stroke(path, with: .color(RampStage.ink),
+                               style: StrokeStyle(lineWidth: 2.4, lineCap: .round, lineJoin: .round))
+            }
+        }
+        .contentShape(Rectangle())
+        .gesture(
+            DragGesture(minimumDistance: 0)
+                .onChanged { value in
+                    if current.isEmpty { Haptics.fire(.tick) }
+                    current.append(value.location)
+                }
+                .onEnded { _ in
+                    if !current.isEmpty {
+                        strokes.append(current)
+                        current = []
+                    }
+                }
+        )
     }
 }
 

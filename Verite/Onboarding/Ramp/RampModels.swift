@@ -32,9 +32,10 @@ enum RampStep: Int, CaseIterable {
     case theReading      // 13 — visible processing + prediction range
     case theCurve        // 14 — where do you land?
     case planPreview     // 15 — your first plan, previewed
-    case dailyRitual     // 16 — time choice + notifications
-    case signIn          // 17 — register before the first scan
-    case handoff         // 18 — "now, the real you" → the scan
+    case commitment      // 16 — sign your 14-day commitment
+    case dailyRitual     // 17 — time choice + notifications
+    case signIn          // 18 — register before the first scan
+    case handoff         // 19 — "now, the real you" → the scan
 
     var next: RampStep? { RampStep(rawValue: rawValue + 1) }
 
@@ -70,6 +71,7 @@ enum RampStep: Int, CaseIterable {
         case .theReading:     return "the_reading"
         case .theCurve:       return "the_curve"
         case .planPreview:    return "plan_preview"
+        case .commitment:     return "commitment"
         case .dailyRitual:    return "daily_ritual"
         case .signIn:         return "sign_in"
         case .handoff:        return "handoff"
