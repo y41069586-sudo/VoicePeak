@@ -218,21 +218,27 @@ final class PerfectCorpSkinEngine: DermiqAnalysisEngine {
     ///  • zip `score_info.json`: `{ texture:{ui_score}, pore:{ui_score}, … }`
     private static func buildAnalysis(from results: [String: Any]) throws -> DermiqAnalysis {
         var byCategory: [DermiqCategory: Int] = [:]
+        var overallFromAll: Int?
 
         if let output = results["output"] as? [[String: Any]] {
             for item in output {
                 guard let type = item["type"] as? String else { continue }
+                // Some metrics come split by region (pore: forehead/nose/cheek
+                // /whole). Keep only the "whole" aggregate or region-less rows.
+                if let region = item["region"] as? String, region != "whole" { continue }
+                // The overall lives in the output array as type "all".
+                if type == "all" { overallFromAll = score(in: item); continue }
                 let base = type.hasPrefix("hd_") ? String(type.dropFirst(3)) : type
                 guard let category = categoryForBase[base],
-                      let score = score(in: item) else { continue }
-                byCategory[category] = score
+                      let sc = score(in: item) else { continue }
+                byCategory[category] = sc
             }
         } else {
             // Flat metric-keyed dict (zip / older shapes).
             for (hd, base, category) in concernMap {
                 if let node = (results[base] ?? results[hd]),
-                   let score = score(in: node) {
-                    byCategory[category] = score
+                   let sc = score(in: node) {
+                    byCategory[category] = sc
                 }
             }
         }
@@ -249,7 +255,7 @@ final class PerfectCorpSkinEngine: DermiqAnalysisEngine {
             DermiqSubScore(category: $0, value: byCategory[$0] ?? average, trend: nil)
         }
 
-        let overall = overallScore(in: results) ?? average
+        let overall = overallFromAll ?? overallScore(in: results) ?? average
         let weakest = subScores.sorted { $0.value < $1.value }
         let topIssues = weakest.prefix(3).map { DermiqIssue.issue(for: $0.category) }
 
