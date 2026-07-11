@@ -18,11 +18,9 @@ enum DermiqConfig {
             && !DermiqSecrets.perfectCorpRSAPublicKey.isEmpty
     }
 
-    // TODO: PRODUCTION KEY — image-to-image enhancement endpoint + key.
-    static let enhancementEndpoint = ""    // e.g. "https://api.example.com/v1/img2img"
-    static let enhancementAPIKey = ""
-
-    static var hasLiveEnhancement: Bool { !enhancementEndpoint.isEmpty && !enhancementAPIKey.isEmpty }
+    /// Live "Potential" enhancement = Google Gemini (gemini-2.5-flash-image).
+    /// Key lives in `DermiqSecrets` (CI-injected from GEMINI_API_KEY).
+    static var hasLiveEnhancement: Bool { !DermiqSecrets.geminiAPIKey.isEmpty }
 }
 
 // ============================================================
@@ -93,43 +91,7 @@ protocol FaceEnhancementEngine: Sendable {
     func enhance(image: UIImage) async throws -> UIImage
 }
 
-/// Production conformance — image-to-image API call.
-final class PotentialImageEngine: FaceEnhancementEngine {
-
-    /// IDENTITY PRESERVATION IS NON-NEGOTIABLE. This exact instruction ships
-    /// with every request: same person, same structure — only skin improved.
-    static let identityPrompt = """
-    Enhance ONLY the skin of this exact person. Preserve identity completely: \
-    same person, same facial structure, same angle, same lighting, same \
-    expression. Improve ONLY skin clarity, texture, tone evenness, and glow \
-    to a realistic optimal state. Never alter bone structure, eyes, nose, \
-    lips, hair, or face shape.
-    """
-
-    func enhance(image: UIImage) async throws -> UIImage {
-        guard DermiqConfig.hasLiveEnhancement,
-              let url = URL(string: DermiqConfig.enhancementEndpoint),
-              let jpeg = image.jpegData(compressionQuality: 0.9) else {
-            throw DermiqEngineError.notConfigured
-        }
-        var request = URLRequest(url: url)
-        request.httpMethod = "POST"
-        request.setValue("Bearer \(DermiqConfig.enhancementAPIKey)", forHTTPHeaderField: "Authorization")
-        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        request.httpBody = try JSONEncoder().encode([
-            "prompt": Self.identityPrompt,
-            "image_b64": jpeg.base64EncodedString(),
-            "strength": "0.35", // low denoise strength — skin only, identity intact
-        ])
-
-        let (data, response) = try await URLSession.shared.data(for: request)
-        guard (response as? HTTPURLResponse)?.statusCode == 200,
-              let result = UIImage(data: data) else {
-            throw DermiqEngineError.badResponse
-        }
-        return result
-    }
-}
+// The production conformance is `GeminiEnhancementEngine` (GeminiEngine.swift).
 
 /// On-device enhancement (used as the mock AND as the fallback): a real skin
 /// retouch of the user's own photo, not just a brightness bump.
@@ -249,7 +211,7 @@ enum EngineFactory {
     }
 
     static func enhancement() -> FaceEnhancementEngine {
-        DermiqConfig.hasLiveEnhancement ? PotentialImageEngine() : MockEnhancementEngine()
+        DermiqConfig.hasLiveEnhancement ? GeminiEnhancementEngine() : MockEnhancementEngine()
     }
 }
 

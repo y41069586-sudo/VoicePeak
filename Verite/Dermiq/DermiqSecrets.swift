@@ -18,4 +18,8 @@ enum DermiqSecrets {
     /// is generated (an X.509/SPKI RSA public key, no PEM header lines).
     /// Codemagic variable: PERFECTCORP_RSA_KEY
     static let perfectCorpRSAPublicKey = ""
+
+    /// Google Gemini API key (Google AI Studio) for the "Potential" face
+    /// enhancement (gemini-2.5-flash-image). Codemagic variable: GEMINI_API_KEY
+    static let geminiAPIKey = ""
 }

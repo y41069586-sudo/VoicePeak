@@ -42,30 +42,28 @@ workflows:
     scripts:
       - name: Install XcodeGen
         script: brew install xcodegen
-      - name: Inject Perfect Corp API secrets
+      - name: Inject API secrets
         script: |
           # Overwrites the committed-empty DermiqSecrets.swift with the real
-          # keys so this build runs LIVE skin analysis. To activate: Codemagic
-          # → app → Environment variables → add BOTH as Secure app variables
-          # (any group, e.g. "perfectcorp", then reference it under
-          # environment.groups — or add them team-wide):
-          #   PERFECTCORP_API_KEY  — YCE API key (sk-…)
+          # keys so this build runs the LIVE engines. Add these as Secure app
+          # variables in the "Verite" group (already referenced below):
+          #   PERFECTCORP_API_KEY  — YCE skin-analysis key (sk-…)
           #   PERFECTCORP_RSA_KEY  — the one-time base64 "secret key" block
-          if [ -n "${PERFECTCORP_API_KEY:-}" ] && [ -n "${PERFECTCORP_RSA_KEY:-}" ]; then
-            # Strip whitespace/newlines a PEM-style paste would carry — they
-            # would break the generated Swift string literal.
-            RSA_CLEAN="$(printf '%s' "$PERFECTCORP_RSA_KEY" | tr -d ' \r\n')"
-            {
-              echo '// CI-GENERATED — values injected from Codemagic env vars. Never committed.'
-              echo 'enum DermiqSecrets {'
-              echo "    static let perfectCorpAPIKey = \"${PERFECTCORP_API_KEY}\""
-              echo "    static let perfectCorpRSAPublicKey = \"${RSA_CLEAN}\""
-              echo '}'
-            } > Verite/Dermiq/DermiqSecrets.swift
-            echo "Perfect Corp keys injected — building with LIVE skin analysis"
-          else
-            echo "PERFECTCORP_API_KEY / PERFECTCORP_RSA_KEY not set — building with MOCK engines"
-          fi
+          #   GEMINI_API_KEY       — Google AI Studio key (Potential image)
+          # Any subset may be set; whatever is empty keeps that engine on mock.
+          # Strip whitespace/newlines a PEM-style paste would carry (they break
+          # the generated Swift string literal).
+          RSA_CLEAN="$(printf '%s' "${PERFECTCORP_RSA_KEY:-}" | tr -d ' \r\n')"
+          {
+            echo '// CI-GENERATED — values injected from Codemagic env vars. Never committed.'
+            echo 'enum DermiqSecrets {'
+            echo "    static let perfectCorpAPIKey = \"${PERFECTCORP_API_KEY:-}\""
+            echo "    static let perfectCorpRSAPublicKey = \"${RSA_CLEAN}\""
+            echo "    static let geminiAPIKey = \"${GEMINI_API_KEY:-}\""
+            echo '}'
+          } > Verite/Dermiq/DermiqSecrets.swift
+          echo "Analysis: $([ -n "${PERFECTCORP_API_KEY:-}" ] && [ -n "${PERFECTCORP_RSA_KEY:-}" ] && echo LIVE || echo mock)"
+          echo "Potential: $([ -n "${GEMINI_API_KEY:-}" ] && echo LIVE || echo mock)"
       - name: Probe Perfect Corp auth (only when keys are set)
         script: |
           # Proves the keys + auth contract from CI (this container has open
@@ -88,6 +86,22 @@ workflows:
           echo "$RESP" | grep -q access_token \
             && echo "PERFECT CORP AUTH OK" \
             || { echo "PERFECT CORP AUTH FAILED — check both variables in Codemagic"; exit 1; }
+      - name: Probe Gemini key (only when set)
+        script: |
+          # Cheap validity check: list models. 200 = key works; 400/403 = bad
+          # key. Fails the build loudly rather than silently falling back to
+          # the on-device retouch.
+          if [ -z "${GEMINI_API_KEY:-}" ]; then echo "GEMINI_API_KEY not set — probe skipped"; exit 0; fi
+          CODE="$(curl -sS -o /tmp/gemini.json -w '%{http_code}' \
+            -H "x-goog-api-key: $GEMINI_API_KEY" \
+            https://generativelanguage.googleapis.com/v1beta/models)"
+          if [ "$CODE" = "200" ]; then
+            echo "GEMINI KEY OK"
+          else
+            echo "GEMINI KEY FAILED (HTTP $CODE):"
+            head -c 400 /tmp/gemini.json
+            exit 1
+          fi
       - name: Generate Xcode project
         script: xcodegen generate --spec project.yml
       - name: Build for iOS Simulator (no code signing)
@@ -132,26 +146,23 @@ workflows:
     scripts:
       - name: Install XcodeGen
         script: brew install xcodegen
-      - name: Inject Perfect Corp API secrets
+      - name: Inject API secrets
         script: |
           # Same injection as the compile-check workflow (see comments there).
-          # No auth probe here — a transient API outage must not block a release;
-          # the app falls back to mock engines at runtime if analysis fails.
-          if [ -n "${PERFECTCORP_API_KEY:-}" ] && [ -n "${PERFECTCORP_RSA_KEY:-}" ]; then
-            # Strip whitespace/newlines a PEM-style paste would carry — they
-            # would break the generated Swift string literal.
-            RSA_CLEAN="$(printf '%s' "$PERFECTCORP_RSA_KEY" | tr -d ' \r\n')"
-            {
-              echo '// CI-GENERATED — values injected from Codemagic env vars. Never committed.'
-              echo 'enum DermiqSecrets {'
-              echo "    static let perfectCorpAPIKey = \"${PERFECTCORP_API_KEY}\""
-              echo "    static let perfectCorpRSAPublicKey = \"${RSA_CLEAN}\""
-              echo '}'
-            } > Verite/Dermiq/DermiqSecrets.swift
-            echo "Perfect Corp keys injected — LIVE skin analysis"
-          else
-            echo "Perfect Corp keys not set — MOCK engines"
-          fi
+          # No auth probes here — a transient API outage must not block a
+          # release; the app falls back to mock engines at runtime if a live
+          # call fails.
+          RSA_CLEAN="$(printf '%s' "${PERFECTCORP_RSA_KEY:-}" | tr -d ' \r\n')"
+          {
+            echo '// CI-GENERATED — values injected from Codemagic env vars. Never committed.'
+            echo 'enum DermiqSecrets {'
+            echo "    static let perfectCorpAPIKey = \"${PERFECTCORP_API_KEY:-}\""
+            echo "    static let perfectCorpRSAPublicKey = \"${RSA_CLEAN}\""
+            echo "    static let geminiAPIKey = \"${GEMINI_API_KEY:-}\""
+            echo '}'
+          } > Verite/Dermiq/DermiqSecrets.swift
+          echo "Analysis: $([ -n "${PERFECTCORP_API_KEY:-}" ] && [ -n "${PERFECTCORP_RSA_KEY:-}" ] && echo LIVE || echo mock)"
+          echo "Potential: $([ -n "${GEMINI_API_KEY:-}" ] && echo LIVE || echo mock)"
       - name: Generate Xcode project
         script: xcodegen generate --spec project.yml
       - name: Set up signing
