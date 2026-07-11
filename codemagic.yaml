@@ -275,20 +275,15 @@ workflows:
       - name: Generate Xcode project
         script: xcodegen generate --spec project.yml
       - name: Set up signing
-        script: |
-          set -e
-          # Codemagic's automatic ios_signing pre-fetch reliably provisions
-          # only the main app. The embedded widget is a SEPARATE bundle id and
-          # needs its OWN App Store profile carrying the App Groups capability,
-          # or archiving fails with "VeriteWidget requires a provisioning
-          # profile with the App Groups feature". Create/fetch both explicitly
-          # (credentials come from the app_store_connect integration), then
-          # apply every profile to the generated project.
-          app-store-connect fetch-signing-files "com.verite.com" \
-            --type IOS_APP_STORE --create
-          app-store-connect fetch-signing-files "com.verite.com.widget" \
-            --type IOS_APP_STORE --create
-          xcode-project use-profiles
+        # Automatic signing via the app_store_connect integration provisions
+        # the app AND its embedded widget. If the widget archive fails with
+        # "requires a provisioning profile with the App Groups feature", a
+        # STALE com.verite.com.widget profile (created before the App Group was
+        # enabled) is being reused — delete it in the Apple Developer portal so
+        # a fresh one is generated with the capability. (Manual
+        # fetch-signing-files can't run here: it has no access to the
+        # integration-managed certificate's private key.)
+        script: xcode-project use-profiles
       - name: Determine next build number
         script: |
           set -e
