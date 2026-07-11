@@ -42,7 +42,8 @@ struct DermiqPotentialView: View {
                    let overall = model.analysis?.overall {
                     DQShareButton(current: current, potential: potential, overall: overall)
                 }
-                DQPrimaryButton(title: "Get my 14-day plan") { onContinue() }
+                DQPrimaryButton(title: "Build my 14-day plan",
+                                systemImage: "calendar.badge.plus") { onContinue() }
             }
             .padding(.horizontal, 24)
             .padding(.bottom, 30)

@@ -132,9 +132,11 @@ struct DermiqResultsView: View {
                 if !locked {
                     summaryBlock(analysis)
                     shareRow
+                    // Leads to the Potential reveal (the before/after image);
+                    // the plan CTA lives on THAT screen.
                     if countUpFinished {
-                        DQPrimaryButton(title: "Build my 14-day plan",
-                                        systemImage: "calendar.badge.plus") { onContinue() }
+                        DQPrimaryButton(title: "Make me a 10/10",
+                                        systemImage: "sparkles") { onContinue() }
                             .animation(VMotion.gentle, value: countUpFinished)
                     }
                 }
@@ -156,7 +158,7 @@ struct DermiqResultsView: View {
                 Circle().fill(DQColor.accentSoft)
             }
         }
-        .frame(width: 92, height: 92)
+        .frame(width: 116, height: 116)
         .clipShape(Circle())
         .overlay(Circle().strokeBorder(DQColor.surface, lineWidth: 4))
         .overlay(Circle().strokeBorder(DQColor.accentSoft, lineWidth: 4).padding(-4))
@@ -224,7 +226,7 @@ struct DermiqResultsView: View {
                 }
             }
             .padding(.horizontal, 20)
-            .padding(.top, 62)
+            .padding(.top, 76)
             .padding(.bottom, 22)
             .frame(maxWidth: .infinity)
             .background(DQColor.surface, in: RoundedRectangle(cornerRadius: 26, style: .continuous))
@@ -232,9 +234,9 @@ struct DermiqResultsView: View {
                 .strokeBorder(DQColor.stroke, lineWidth: 1))
 
             capturedAvatar
-                .offset(y: -46)
+                .offset(y: -58)
         }
-        .padding(.top, 46)
+        .padding(.top, 58)
     }
 
     /// One metric: label, big number, thin progress bar. In projected mode the

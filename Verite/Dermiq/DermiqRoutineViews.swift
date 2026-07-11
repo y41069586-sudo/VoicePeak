@@ -23,9 +23,18 @@ struct DermiqRoutineGenView: View {
         ]
     }
 
+    /// 0…1 across the four build steps; drives the ring.
+    private var progress: CGFloat {
+        ready ? 1 : CGFloat(stepCount) / CGFloat(buildSteps.count)
+    }
+
     var body: some View {
         VStack(spacing: 0) {
             Spacer()
+
+            progressRing
+
+            Spacer().frame(height: 28)
 
             VStack(spacing: 8) {
                 Text("BUILT FROM YOUR SCAN")
@@ -40,7 +49,7 @@ struct DermiqRoutineGenView: View {
                     .contentTransition(.opacity)
             }
 
-            Spacer().frame(height: 40)
+            Spacer().frame(height: 36)
 
             // Just the work, ticking in — no card, no grid, no chips.
             VStack(alignment: .leading, spacing: 16) {
@@ -68,6 +77,34 @@ struct DermiqRoutineGenView: View {
         }
         .background(DQColor.background.ignoresSafeArea())
         .task { await runBuild() }
+    }
+
+    /// A thin gradient ring that fills step by step; flips to a checkmark
+    /// when the plan lands.
+    private var progressRing: some View {
+        ZStack {
+            Circle()
+                .stroke(DQColor.accentSoft, lineWidth: 8)
+            Circle()
+                .trim(from: 0, to: progress)
+                .stroke(DQColor.accentGradient,
+                        style: StrokeStyle(lineWidth: 8, lineCap: .round))
+                .rotationEffect(.degrees(-90))
+            if ready {
+                Image(systemName: "checkmark")
+                    .font(.system(size: 30, weight: .heavy))
+                    .foregroundStyle(DQColor.accentBright)
+                    .transition(.scale.combined(with: .opacity))
+            } else {
+                Text(verbatim: "\(Int(progress * 100))%")
+                    .font(.system(size: 22, weight: .heavy, design: .rounded).monospacedDigit())
+                    .foregroundStyle(DQColor.textPrimary)
+                    .contentTransition(.numericText(value: Double(progress)))
+            }
+        }
+        .frame(width: 96, height: 96)
+        .animation(VMotion.gentle, value: progress)
+        .animation(VMotion.snappy, value: ready)
     }
 
     private func runBuild() async {
