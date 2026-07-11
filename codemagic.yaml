@@ -28,6 +28,8 @@ workflows:
     max_build_duration: 45
     environment:
       xcode: latest
+      groups:
+        - Verite   # PERFECTCORP_API_KEY + PERFECTCORP_RSA_KEY (secure)
       vars:
         XCODE_PROJECT: "Verite.xcodeproj"
         XCODE_SCHEME: "Verite"
@@ -115,12 +117,12 @@ workflows:
       ios_signing:
         distribution_type: app_store
         bundle_identifier: com.verite.com
+      groups:
+        - Verite   # PERFECTCORP_API_KEY + PERFECTCORP_RSA_KEY (secure)
       vars:
         XCODE_PROJECT: "Verite.xcodeproj"
         XCODE_SCHEME: "Verite"
         BUNDLE_ID: "com.verite.com"
-      # groups:
-      #   - verite_secrets   # only if you turn the backend/affiliate modules ON
     triggering:
       events:
         - tag
