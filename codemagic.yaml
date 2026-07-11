@@ -275,15 +275,52 @@ workflows:
       - name: Generate Xcode project
         script: xcodegen generate --spec project.yml
       - name: Set up signing
-        # Automatic signing via the app_store_connect integration provisions
-        # the app AND its embedded widget. If the widget archive fails with
-        # "requires a provisioning profile with the App Groups feature", a
-        # STALE com.verite.com.widget profile (created before the App Group was
-        # enabled) is being reused — delete it in the Apple Developer portal so
-        # a fresh one is generated with the capability. (Manual
-        # fetch-signing-files can't run here: it has no access to the
-        # integration-managed certificate's private key.)
-        script: xcode-project use-profiles
+        script: |
+          set -e
+          # The automatic app_store_connect signing imports the distribution
+          # certificate and provisions the MAIN app, but it never provisions
+          # the embedded widget (com.verite.com.widget is a separate bundle id
+          # + its own App Group entitlement). So we mint the widget's App Store
+          # profile ourselves via the API. create-profile needs only the
+          # certificate's RESOURCE id — not its private key — so it works with
+          # the integration-managed cert (unlike fetch-signing-files, which
+          # tries to re-save the cert and fails without the private key).
+          #
+          # The profile inherits whatever capabilities are enabled on the
+          # Widget App ID, so the App Group MUST be enabled + saved on
+          # com.verite.com.widget in the developer portal for this to carry it.
+
+          # Distribution certificate id (try the unified "Apple Distribution"
+          # type first, then the legacy iOS one).
+          CERT_ID=$(app-store-connect list-certificates --type DISTRIBUTION --json 2>/dev/null | jq -r '.[0].id // empty')
+          if [ -z "$CERT_ID" ]; then
+            CERT_ID=$(app-store-connect list-certificates --type IOS_DISTRIBUTION --json 2>/dev/null | jq -r '.[0].id // empty')
+          fi
+          echo "Distribution certificate resource id: ${CERT_ID:-NONE}"
+
+          # Widget App ID resource id (exact match on the bundle identifier).
+          WIDGET_APPID=$(app-store-connect list-bundle-ids \
+            --bundle-id-identifier com.verite.com.widget \
+            --bundle-id-identifier-strict-match --json 2>/dev/null | jq -r '.[0].id // empty')
+          echo "Widget App ID resource id: ${WIDGET_APPID:-NONE}"
+
+          if [ -n "$CERT_ID" ] && [ -n "$WIDGET_APPID" ]; then
+            # Fresh profile each build so it always reflects current
+            # capabilities; unique name avoids a name collision.
+            app-store-connect create-profile \
+              "$WIDGET_APPID" "$CERT_ID" \
+              --type IOS_APP_STORE \
+              --name "Verite Widget CI $(date +%s)" \
+              --save \
+              && echo "Widget App Store profile created + saved." \
+              || echo "WARNING: widget profile creation failed; relying on any existing one."
+          else
+            echo "WARNING: missing cert or widget App ID; cannot mint widget profile."
+          fi
+
+          # Apply every downloaded profile (auto-fetched app profile + the
+          # widget profile just saved) to the generated Xcode project.
+          xcode-project use-profiles
       - name: Determine next build number
         script: |
           set -e
