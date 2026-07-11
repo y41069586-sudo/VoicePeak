@@ -22,6 +22,9 @@ struct DermiqSettingsView: View {
     @AppStorage("languageOverride") private var languageOverride = ""
     @AppStorage("dermiq.reminder") private var reminderPref = ReminderPref.off.rawValue
     @AppStorage("dermiq.unlocked") private var simulatedUnlock = false
+    // Live analysis diagnostic (updates after each scan).
+    @AppStorage("dq.diag.text") private var diagText = "No scan yet"
+    @AppStorage("dq.diag.at") private var diagAt = "—"
 
     @State private var legalDocument: LegalDocument?
     @State private var showSignOutConfirm = false
@@ -54,6 +57,7 @@ struct DermiqSettingsView: View {
                 VStack(spacing: 18) {
                     preferencesSection
                     subscriptionSection
+                    diagnosticsSection
                     legalSection
                     supportSection
                     accountSection
@@ -288,6 +292,34 @@ struct DermiqSettingsView: View {
             try? await center.add(UNNotificationRequest(identifier: "dermiq.daily",
                                                         content: content,
                                                         trigger: trigger))
+        }
+    }
+
+    // MARK: Analysis diagnostic (debug aid for the live engine)
+
+    /// Shows whether the last scan hit Perfect Corp (LIVE) or fell back to the
+    /// mock — and, on fallback, the exact reason (bad key, HTTP code, face too
+    /// small, timeout). Lets us diagnose the real device without Xcode logs.
+    private var diagnosticsSection: some View {
+        settingsCard("LAST ANALYSIS") {
+            VStack(alignment: .leading, spacing: 6) {
+                HStack(alignment: .top, spacing: 12) {
+                    Image(systemName: diagText.contains("LIVE") ? "checkmark.seal.fill" : "stethoscope")
+                        .font(.system(size: 15, weight: .medium))
+                        .foregroundStyle(diagText.contains("LIVE") ? DQColor.deltaUp : DQColor.accentBright)
+                        .frame(width: 24)
+                    Text(verbatim: diagText)
+                        .font(DQFont.body)
+                        .foregroundStyle(DQColor.textPrimary)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+                Text(verbatim: "at \(diagAt)")
+                    .font(DQFont.caption)
+                    .foregroundStyle(DQColor.textSecondary)
+                    .padding(.leading, 36)
+            }
+            .padding(.vertical, 13)
+            .frame(maxWidth: .infinity, alignment: .leading)
         }
     }
 

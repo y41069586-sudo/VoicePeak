@@ -45,13 +45,16 @@ final class PerfectCorpSkinEngine: DermiqAnalysisEngine {
     func analyze(image: UIImage) async throws -> DermiqAnalysis {
         guard DermiqConfig.hasLiveAnalysis,
               let jpeg = image.jpegData(compressionQuality: 0.85) else {
+            DermiqDiagnostics.record("Mock — no API keys in this build")
             throw DermiqEngineError.notConfigured
         }
         let token = try await authenticate()
         let fileID = try await upload(jpeg, token: token)
         let taskID = try await startTask(fileID: fileID, token: token)
         let results = try await pollTask(taskID: taskID, token: token)
-        return try Self.buildAnalysis(from: results)
+        let analysis = try Self.buildAnalysis(from: results)
+        DermiqDiagnostics.record("Perfect Corp LIVE ✓ — overall \(analysis.overall)")
+        return analysis
     }
 
     // MARK: Step 1 — auth
@@ -64,6 +67,7 @@ final class PerfectCorpSkinEngine: DermiqAnalysisEngine {
         guard let idToken = Self.rsaEncrypt(payload,
                                             spkiBase64: DermiqSecrets.perfectCorpRSAPublicKey) else {
             print("[PerfectCorp] RSA key unusable — check PERFECTCORP_RSA_KEY")
+            DermiqDiagnostics.record("RSA key unusable (PERFECTCORP_RSA_KEY missing/bad)")
             throw DermiqEngineError.notConfigured
         }
         var request = URLRequest(url: Self.authBase.appendingPathComponent("client/auth"))
@@ -172,12 +176,15 @@ final class PerfectCorpSkinEngine: DermiqAnalysisEngine {
                 if let results = container["results"] as? [String: Any] { return results }
                 throw DermiqEngineError.badResponse
             case "error", "failed", "fail":
+                let reason = (container["error"] as? String) ?? "unknown"
                 print("[PerfectCorp] task failed: \(container)")
+                DermiqDiagnostics.record("Task error: \(reason)")
                 throw DermiqEngineError.badResponse
             default:
                 continue                                    // running / pending
             }
         }
+        DermiqDiagnostics.record("Task timed out (still running after 90 s)")
         throw DermiqEngineError.badResponse                 // timed out
     }
 
@@ -314,7 +321,9 @@ final class PerfectCorpSkinEngine: DermiqAnalysisEngine {
         guard let http = response as? HTTPURLResponse, (200..<300).contains(http.statusCode),
               let object = try? JSONSerialization.jsonObject(with: data) as? [String: Any] else {
             let code = (response as? HTTPURLResponse)?.statusCode ?? -1
-            print("[PerfectCorp] HTTP \(code): \(String(data: data.prefix(400), encoding: .utf8) ?? "<binary>")")
+            let body = String(data: data.prefix(200), encoding: .utf8) ?? "<binary>"
+            print("[PerfectCorp] HTTP \(code): \(body)")
+            DermiqDiagnostics.record("HTTP \(code): \(body)")
             throw DermiqEngineError.badResponse
         }
         return object
