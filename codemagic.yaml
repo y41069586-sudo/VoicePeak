@@ -125,6 +125,91 @@ workflows:
             head -c 400 /tmp/gemini.json
             exit 1
           fi
+      - name: E2E API diagnostic (opt-in — set RUN_API_E2E=1; consumes 1 unit + 1 image credit)
+        script: |
+          # Runs the REAL data-plane end to end so we can see the actual API
+          # responses and fix parsing. Gated on RUN_API_E2E so normal pushes
+          # don't burn units. Never fails the build (diagnostic only).
+          set +e
+          if [ "${RUN_API_E2E:-}" != "1" ]; then echo "RUN_API_E2E != 1 — E2E diagnostic skipped"; exit 0; fi
+          IMG="Verite/Resources/Photos/ScanHero.jpg"
+          SIZE=$(wc -c < "$IMG" | tr -d ' ')
+          echo "=== test image: $IMG ($SIZE bytes) ==="
+
+          echo "##################### PERFECT CORP #####################"
+          if [ -n "${PERFECTCORP_API_KEY:-}" ] && [ -n "${PERFECTCORP_RSA_KEY:-}" ]; then
+            API_CLEAN="$(printf '%s' "$PERFECTCORP_API_KEY" | tr -d ' \t\r\n')"
+            RSA_CLEAN="$(printf '%s' "$PERFECTCORP_RSA_KEY" | sed -E 's/-----[^-]*-----//g' | tr -d ' \t\r\n')"
+            printf '%s\n' '-----BEGIN PUBLIC KEY-----' > /tmp/e.pem
+            printf '%s' "$RSA_CLEAN" | fold -w64 >> /tmp/e.pem
+            printf '\n%s\n' '-----END PUBLIC KEY-----' >> /tmp/e.pem
+            TS="$(($(date +%s) * 1000))"
+            printf 'client_id=%s&timestamp=%s' "$API_CLEAN" "$TS" > /tmp/e.pl
+            openssl pkeyutl -encrypt -pubin -inkey /tmp/e.pem -pkeyopt rsa_padding_mode:pkcs1 -in /tmp/e.pl -out /tmp/e.enc
+            IDT="$(base64 < /tmp/e.enc | tr -d '\n')"
+            TOKEN=$(curl -sS -X POST https://yce-api-01.perfectcorp.com/s2s/v1.0/client/auth \
+              -H 'Content-Type: application/json' \
+              -d "{\"client_id\":\"$API_CLEAN\",\"id_token\":\"$IDT\"}" | jq -r '.result.access_token // empty')
+            echo "access_token: $([ -n "$TOKEN" ] && echo got || echo EMPTY)"
+
+            FID=""; PUT_URL=""; GOODVER=""
+            for V in v2.0 v1.1 v1.0; do
+              echo "----- declare file @ /s2s/$V/file/skin-analysis -----"
+              D=$(curl -sS -X POST "https://yce-api-01.perfectcorp.com/s2s/$V/file/skin-analysis" \
+                -H "Authorization: Bearer $TOKEN" -H 'Content-Type: application/json' \
+                -d "{\"files\":[{\"content_type\":\"image/jpeg\",\"file_name\":\"scan.jpg\",\"file_size\":$SIZE}]}")
+              echo "$D" | head -c 700; echo
+              FID=$(echo "$D" | jq -r '.result.files[0].file_id // empty')
+              PUT_URL=$(echo "$D" | jq -r '.result.files[0].requests[0].url // empty')
+              if [ -n "$FID" ] && [ -n "$PUT_URL" ]; then GOODVER=$V; echo ">>> declare OK on $V"; break; fi
+            done
+
+            if [ -n "$FID" ]; then
+              CT=$(echo "$D" | jq -r '.result.files[0].requests[0].headers."Content-Type" // "image/jpeg"')
+              echo "----- PUT bytes to presigned url -----"
+              PUTCODE=$(curl -sS -o /dev/null -w '%{http_code}' -X PUT "$PUT_URL" -H "Content-Type: $CT" --data-binary @"$IMG")
+              echo "PUT status: $PUTCODE"
+              echo "----- start task @ /s2s/$GOODVER/task/skin-analysis -----"
+              T=$(curl -sS -X POST "https://yce-api-01.perfectcorp.com/s2s/$GOODVER/task/skin-analysis" \
+                -H "Authorization: Bearer $TOKEN" -H 'Content-Type: application/json' \
+                -d "{\"src_file_id\":\"$FID\",\"dst_actions\":[\"hd_texture\",\"hd_redness\",\"hd_pore\",\"hd_age_spot\",\"hd_radiance\",\"hd_moisture\",\"hd_acne\"],\"format\":\"json\"}")
+              echo "$T" | head -c 700; echo
+              TID=$(echo "$T" | jq -r '.result.task_id // .data.task_id // .task_id // empty')
+              echo "task_id: ${TID:-EMPTY}"
+              if [ -n "$TID" ]; then
+                for i in 1 2 3 4 5 6 7 8 9 10; do
+                  sleep 3
+                  P=$(curl -sS "https://yce-api-01.perfectcorp.com/s2s/$GOODVER/task/skin-analysis/$TID" -H "Authorization: Bearer $TOKEN")
+                  ST=$(echo "$P" | jq -r '.result.status // .data.status // .status // "?"')
+                  echo "poll $i: status=$ST"
+                  case "$ST" in success|done|completed|error|failed|fail)
+                    echo "===== FINAL TASK RESPONSE ====="; echo "$P" | head -c 3000; echo; break;; esac
+                done
+              fi
+            else
+              echo ">>> declare FAILED on all versions — data-plane host/path differs (maybe yce-api-01.makeupar.com)"
+            fi
+          else
+            echo "Perfect Corp keys not set"
+          fi
+
+          echo "##################### GEMINI IMAGE #####################"
+          if [ -n "${GEMINI_API_KEY:-}" ]; then
+            B64=$(base64 < "$IMG" | tr -d '\n')
+            printf '{"contents":[{"parts":[{"text":"Edit: subtly improve skin. Return the edited photo."},{"inline_data":{"mime_type":"image/jpeg","data":"%s"}}]}],"generationConfig":{"responseModalities":["IMAGE"]}}' "$B64" > /tmp/g.json
+            GCODE=$(curl -sS -o /tmp/g.out -w '%{http_code}' -X POST \
+              "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image:generateContent" \
+              -H "x-goog-api-key: $GEMINI_API_KEY" -H 'Content-Type: application/json' --data @/tmp/g.json)
+            echo "Gemini image HTTP: $GCODE"
+            HASIMG=$(jq -r '[.candidates[0].content.parts[]? | select(.inlineData.data or .inline_data.data)] | length' /tmp/g.out 2>/dev/null)
+            echo "image parts in response: ${HASIMG:-0}"
+            echo "----- response head (no image bytes) -----"
+            jq 'del(.candidates[]?.content.parts[]?.inlineData, .candidates[]?.content.parts[]?.inline_data)' /tmp/g.out 2>/dev/null | head -c 1500 || head -c 800 /tmp/g.out
+            echo
+          else
+            echo "Gemini key not set"
+          fi
+          echo "=== E2E diagnostic done ==="
       - name: Generate Xcode project
         script: xcodegen generate --spec project.yml
       - name: Build for iOS Simulator (no code signing)

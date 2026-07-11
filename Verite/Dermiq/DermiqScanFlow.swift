@@ -57,10 +57,17 @@ final class ScanFlowModel {
 
         let enhancer = EngineFactory.enhancement()
         enhanceTask = Task { [weak self] in
-            guard let enhanced = try? await enhancer.enhance(image: image) else { return }
-            self?.potentialImage = enhanced
+            // Try the live enhancer (Gemini); if it fails for ANY reason, fall
+            // back to the on-device retouch so the Potential reveal is never
+            // stuck on "Rendering…" forever.
+            var enhanced = try? await enhancer.enhance(image: image)
+            if enhanced == nil {
+                enhanced = try? await MockEnhancementEngine().enhance(image: image)
+            }
+            guard let enhanced, let self else { return }
+            self.potentialImage = enhanced
             // The record may already exist by the time the render lands.
-            if let record = self?.record, record.potentialFilename == nil {
+            if let record = self.record, record.potentialFilename == nil {
                 record.potentialFilename = DermiqImageStore.save(enhanced)
             }
         }
