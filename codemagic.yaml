@@ -53,13 +53,18 @@ workflows:
           # Any subset may be set; whatever is empty keeps that engine on mock.
           # Strip whitespace/newlines a PEM-style paste would carry (they break
           # the generated Swift string literal).
-          RSA_CLEAN="$(printf '%s' "${PERFECTCORP_RSA_KEY:-}" | tr -d ' \r\n')"
+          # Strip ALL whitespace/newlines from every key — a value pasted with
+          # a line break (the console wraps long keys visually) would otherwise
+          # produce an unterminated Swift string literal and fail the build.
+          API_CLEAN="$(printf '%s' "${PERFECTCORP_API_KEY:-}" | tr -d ' \t\r\n')"
+          RSA_CLEAN="$(printf '%s' "${PERFECTCORP_RSA_KEY:-}" | tr -d ' \t\r\n')"
+          GEMINI_CLEAN="$(printf '%s' "${GEMINI_API_KEY:-}" | tr -d ' \t\r\n')"
           {
             echo '// CI-GENERATED — values injected from Codemagic env vars. Never committed.'
             echo 'enum DermiqSecrets {'
-            echo "    static let perfectCorpAPIKey = \"${PERFECTCORP_API_KEY:-}\""
+            echo "    static let perfectCorpAPIKey = \"${API_CLEAN}\""
             echo "    static let perfectCorpRSAPublicKey = \"${RSA_CLEAN}\""
-            echo "    static let geminiAPIKey = \"${GEMINI_API_KEY:-}\""
+            echo "    static let geminiAPIKey = \"${GEMINI_CLEAN}\""
             echo '}'
           } > Verite/Dermiq/DermiqSecrets.swift
           echo "Analysis: $([ -n "${PERFECTCORP_API_KEY:-}" ] && [ -n "${PERFECTCORP_RSA_KEY:-}" ] && echo LIVE || echo mock)"
@@ -72,16 +77,18 @@ workflows:
           if [ -z "${PERFECTCORP_API_KEY:-}" ] || [ -z "${PERFECTCORP_RSA_KEY:-}" ]; then
             echo "Keys not set — probe skipped"; exit 0
           fi
+          # Same whitespace/newline strip as the injection step.
+          API_CLEAN="$(printf '%s' "$PERFECTCORP_API_KEY" | tr -d ' \t\r\n')"
           printf '%s\n' '-----BEGIN PUBLIC KEY-----' > /tmp/pc.pem
-          printf '%s' "$PERFECTCORP_RSA_KEY" | tr -d ' \n' | fold -w64 >> /tmp/pc.pem
+          printf '%s' "$PERFECTCORP_RSA_KEY" | tr -d ' \t\r\n' | fold -w64 >> /tmp/pc.pem
           printf '\n%s\n' '-----END PUBLIC KEY-----' >> /tmp/pc.pem
           TS="$(($(date +%s) * 1000))"
-          printf 'client_id=%s&timestamp=%s' "$PERFECTCORP_API_KEY" "$TS" > /tmp/pc.payload
+          printf 'client_id=%s&timestamp=%s' "$API_CLEAN" "$TS" > /tmp/pc.payload
           openssl pkeyutl -encrypt -pubin -inkey /tmp/pc.pem -in /tmp/pc.payload -out /tmp/pc.enc
           ID_TOKEN="$(base64 < /tmp/pc.enc | tr -d '\n')"
           RESP="$(curl -sS -X POST https://yce-api-01.perfectcorp.com/s2s/v1.0/client/auth \
             -H 'Content-Type: application/json' \
-            -d "{\"client_id\":\"$PERFECTCORP_API_KEY\",\"id_token\":\"$ID_TOKEN\"}")"
+            -d "{\"client_id\":\"$API_CLEAN\",\"id_token\":\"$ID_TOKEN\"}")"
           echo "$RESP" | sed -E 's/"access_token" *: *"[^"]+"/"access_token":"***"/'
           echo "$RESP" | grep -q access_token \
             && echo "PERFECT CORP AUTH OK" \
@@ -152,13 +159,18 @@ workflows:
           # No auth probes here — a transient API outage must not block a
           # release; the app falls back to mock engines at runtime if a live
           # call fails.
-          RSA_CLEAN="$(printf '%s' "${PERFECTCORP_RSA_KEY:-}" | tr -d ' \r\n')"
+          # Strip ALL whitespace/newlines from every key — a value pasted with
+          # a line break (the console wraps long keys visually) would otherwise
+          # produce an unterminated Swift string literal and fail the build.
+          API_CLEAN="$(printf '%s' "${PERFECTCORP_API_KEY:-}" | tr -d ' \t\r\n')"
+          RSA_CLEAN="$(printf '%s' "${PERFECTCORP_RSA_KEY:-}" | tr -d ' \t\r\n')"
+          GEMINI_CLEAN="$(printf '%s' "${GEMINI_API_KEY:-}" | tr -d ' \t\r\n')"
           {
             echo '// CI-GENERATED — values injected from Codemagic env vars. Never committed.'
             echo 'enum DermiqSecrets {'
-            echo "    static let perfectCorpAPIKey = \"${PERFECTCORP_API_KEY:-}\""
+            echo "    static let perfectCorpAPIKey = \"${API_CLEAN}\""
             echo "    static let perfectCorpRSAPublicKey = \"${RSA_CLEAN}\""
-            echo "    static let geminiAPIKey = \"${GEMINI_API_KEY:-}\""
+            echo "    static let geminiAPIKey = \"${GEMINI_CLEAN}\""
             echo '}'
           } > Verite/Dermiq/DermiqSecrets.swift
           echo "Analysis: $([ -n "${PERFECTCORP_API_KEY:-}" ] && [ -n "${PERFECTCORP_RSA_KEY:-}" ] && echo LIVE || echo mock)"
