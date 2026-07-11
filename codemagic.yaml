@@ -176,14 +176,25 @@ workflows:
               TID=$(echo "$T" | jq -r '(.result.task_id // .data.task_id // .task_id) // empty')
               echo "task_id: ${TID:-EMPTY}"
               if [ -n "$TID" ]; then
-                for i in 1 2 3 4 5 6 7 8 9 10 11 12; do
-                  sleep 3
+                LAST=""
+                for i in $(seq 1 20); do
+                  sleep 4
                   P=$(curl -sS "https://yce-api-01.perfectcorp.com/s2s/v2.0/task/skin-analysis/$TID" -H "Authorization: Bearer $TOKEN")
-                  ST=$(echo "$P" | jq -r '(.result.status // .data.status // .status) // "?"')
-                  echo "poll $i: status=$ST"
-                  case "$ST" in success|done|completed|error|failed|fail)
-                    echo "===== FINAL TASK RESPONSE ====="; echo "$P" | head -c 4000; echo; break;; esac
+                  LAST="$P"
+                  # Print the FULL structure of the first poll so we see the
+                  # real field names (last run misread the HTTP status as task
+                  # status). Then a compact per-poll status guess.
+                  if [ "$i" = "1" ]; then
+                    echo "----- RAW POLL #1 (full structure) -----"; echo "$P" | head -c 1800; echo
+                  fi
+                  ST=$(echo "$P" | jq -r '(.data.status // .data.task_status // .data.state // .result.status // "running")')
+                  RESKEYS=$(echo "$P" | jq -r '(.data.results // .result.results) | if . then (if type=="array" then "array" else keys end) else "none" end' 2>/dev/null)
+                  echo "poll $i: status=$ST  results=$RESKEYS"
+                  case "$ST" in success|done|completed|finished|error|failed|fail)
+                    break;; esac
+                  if [ "$RESKEYS" != "none" ] && [ "$RESKEYS" != "null" ]; then break; fi
                 done
+                echo "===== FINAL / LAST POLL RESPONSE ====="; echo "$LAST" | head -c 6000; echo
               fi
             else
               echo ">>> declare failed to yield a file_id/url — see response above"
@@ -191,23 +202,7 @@ workflows:
           else
             echo "Perfect Corp keys not set"
           fi
-
-          echo "##################### GEMINI IMAGE #####################"
-          if [ -n "${GEMINI_API_KEY:-}" ]; then
-            B64=$(base64 < "$IMG" | tr -d '\n')
-            printf '{"contents":[{"parts":[{"text":"Edit: subtly improve skin. Return the edited photo."},{"inline_data":{"mime_type":"image/jpeg","data":"%s"}}]}],"generationConfig":{"responseModalities":["IMAGE"]}}' "$B64" > /tmp/g.json
-            GCODE=$(curl -sS -o /tmp/g.out -w '%{http_code}' -X POST \
-              "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image:generateContent" \
-              -H "x-goog-api-key: $GEMINI_API_KEY" -H 'Content-Type: application/json' --data @/tmp/g.json)
-            echo "Gemini image HTTP: $GCODE"
-            HASIMG=$(jq -r '[.candidates[0].content.parts[]? | select(.inlineData.data or .inline_data.data)] | length' /tmp/g.out 2>/dev/null)
-            echo "image parts in response: ${HASIMG:-0}"
-            echo "----- response head (no image bytes) -----"
-            jq 'del(.candidates[]?.content.parts[]?.inlineData, .candidates[]?.content.parts[]?.inline_data)' /tmp/g.out 2>/dev/null | head -c 1500 || head -c 800 /tmp/g.out
-            echo
-          else
-            echo "Gemini key not set"
-          fi
+          echo "(Gemini image test skipped — needs billing; app uses on-device fallback.)"
           echo "=== E2E diagnostic done ==="
       - name: Generate Xcode project
         script: xcodegen generate --spec project.yml
