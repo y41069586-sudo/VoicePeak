@@ -84,7 +84,7 @@ struct DQPrimaryButton: View {
         } label: {
             HStack(spacing: 8) {
                 if let systemImage { Image(systemName: systemImage) }
-                Text(title)
+                Text(LocalizedStringKey(title))
             }
             .font(Font.system(size: 17, weight: .bold))
             .foregroundStyle(.white)

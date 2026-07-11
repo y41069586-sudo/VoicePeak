@@ -107,7 +107,7 @@ private struct RampMiniClaim: View {
             Image(systemName: icon)
                 .font(.system(size: 16, weight: .regular))
                 .foregroundStyle(RampStage.accentDeep)
-            Text(text)
+            Text(LocalizedStringKey(text))
                 .font(VType.micro)
                 .foregroundStyle(RampStage.textSecondary)
         }
@@ -262,10 +262,10 @@ struct RampDailyReportScreen: View {
                 Image(systemName: option.icon)
                     .font(.system(size: 18, weight: .regular))
                     .foregroundStyle(selected ? RampStage.accentDeep : RampStage.textTertiary)
-                Text(option.label)
+                Text(LocalizedStringKey(option.label))
                     .font(VType.bodyMedium)
                     .foregroundStyle(selected ? RampStage.accentDeep : RampStage.ink)
-                Text(option.sub)
+                Text(LocalizedStringKey(option.sub))
                     .font(VType.micro)
                     .foregroundStyle(RampStage.textTertiary)
             }
@@ -329,7 +329,7 @@ struct RampPlanPreviewScreen: View {
             Spacer().frame(height: VSpace.xxl * 1.6)
 
             VStack(spacing: VSpace.sm) {
-                Text(verbatim: "AFTER YOUR SCAN")
+                Text("AFTER YOUR SCAN")
                     .font(VType.micro)
                     .tracking(3)
                     .foregroundStyle(RampStage.accentDeep)
@@ -351,7 +351,7 @@ struct RampPlanPreviewScreen: View {
             // Day-1 sample card, seeded with their own answers.
             VStack(alignment: .leading, spacing: 12) {
                 HStack {
-                    Text(verbatim: "DAY 1 · PREVIEW")
+                    Text("DAY 1 · PREVIEW")
                         .font(VType.micro).tracking(3)
                         .foregroundStyle(RampStage.accentDeep)
                     Spacer()
@@ -362,7 +362,7 @@ struct RampPlanPreviewScreen: View {
                             .padding(.horizontal, 8).padding(.vertical, 3)
                             .background(RampStage.accentSoft, in: Capsule())
                     } else {
-                        Text(verbatim: "ILLUSTRATIVE")
+                        Text("ILLUSTRATIVE")
                             .font(VType.micro).tracking(2)
                             .foregroundStyle(RampStage.textTertiary)
                     }
@@ -443,7 +443,7 @@ struct RampCommitmentScreen: View {
             Spacer()
 
             VStack(spacing: VSpace.md) {
-                Text(verbatim: "YOUR 14-DAY COMMITMENT")
+                Text("YOUR 14-DAY COMMITMENT")
                     .font(VType.micro)
                     .tracking(3)
                     .foregroundStyle(RampStage.accentDeep)
@@ -632,7 +632,7 @@ struct RampSignInScreen: View {
             Spacer().frame(height: VSpace.xl)
 
             VStack(spacing: VSpace.md) {
-                Text(verbatim: "CREATE YOUR ACCOUNT")
+                Text("CREATE YOUR ACCOUNT")
                     .font(VType.micro)
                     .tracking(3)
                     .foregroundStyle(RampStage.accentDeep)
@@ -784,7 +784,7 @@ struct RampHandoffScreen: View {
             Spacer()
 
             VStack(spacing: VSpace.md) {
-                Text(verbatim: "READY WHEN YOU ARE")
+                Text("READY WHEN YOU ARE")
                     .font(VType.micro)
                     .tracking(3)
                     .foregroundStyle(RampStage.accentDeep)

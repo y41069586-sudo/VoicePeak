@@ -292,7 +292,7 @@ struct RampPrimaryButton: View {
         } label: {
             HStack(spacing: 8) {
                 if let systemImage { Image(systemName: systemImage) }
-                Text(title)
+                Text(LocalizedStringKey(title))
             }
             .font(.system(size: 17, weight: .bold, design: .rounded))
             .foregroundStyle(.white)
@@ -314,7 +314,7 @@ struct RampGhostButton: View {
 
     var body: some View {
         Button(action: action) {
-            Text(title)
+            Text(LocalizedStringKey(title))
                 .font(VType.body)
                 .foregroundStyle(RampStage.textSecondary)
                 .padding(.vertical, VSpace.sm)
@@ -350,11 +350,11 @@ struct RampOptionCard: View {
                                     in: RoundedRectangle(cornerRadius: 10, style: .continuous))
                 }
                 VStack(alignment: .leading, spacing: 2) {
-                    Text(label)
+                    Text(LocalizedStringKey(label))
                         .font(VType.bodyLarge.weight(.medium))
                         .foregroundStyle(selected ? RampStage.accentDeep : RampStage.ink)
                     if let sub {
-                        Text(sub)
+                        Text(LocalizedStringKey(sub))
                             .font(VType.caption)
                             .foregroundStyle(RampStage.textSecondary)
                     }

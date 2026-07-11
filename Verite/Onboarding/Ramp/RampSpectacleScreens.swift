@@ -217,7 +217,7 @@ private struct RampPlanArt: View {
                 .fill(RampStage.accent)
                 .frame(width: 170, height: 40)
                 .offset(y: -60)
-            Text(verbatim: "14 DAYS")
+            Text("14 DAYS")
                 .font(.system(size: 15, weight: .heavy, design: .rounded))
                 .foregroundStyle(Color.white)
                 .tracking(1)
@@ -378,7 +378,7 @@ struct RampSampleReadingCard: View {
                     .font(VType.micro).tracking(4)
                     .foregroundStyle(RampStage.accentDeep)
                 Spacer()
-                Text(verbatim: "READING")
+                Text("READING")
                     .font(VType.micro).tracking(4)
                     .foregroundStyle(RampStage.textTertiary)
             }
@@ -579,10 +579,10 @@ struct RampSplitScreen: View {
             .padding(.top, VSpace.xs)
 
             HStack {
-                Text(verbatim: "DAY 1")
+                Text("DAY 1")
                     .foregroundStyle(t < 0.5 ? RampStage.accentDeep : RampStage.textTertiary)
                 Spacer()
-                Text(verbatim: "DAY 14")
+                Text("DAY 14")
                     .foregroundStyle(t >= 0.5 ? RampStage.accentDeep : RampStage.textTertiary)
             }
             .font(VType.micro)

@@ -27,7 +27,7 @@ struct RampQuizScreen: View {
             Spacer().frame(height: VSpace.xxl * 2)
 
             if let chapter {
-                Text(verbatim: chapter)
+                Text(LocalizedStringKey(chapter))
                     .font(VType.micro)
                     .tracking(3)
                     .foregroundStyle(RampStage.accentDeep)
@@ -35,7 +35,7 @@ struct RampQuizScreen: View {
                     .padding(.bottom, VSpace.sm)
             }
 
-            Text(question)
+            Text(LocalizedStringKey(question))
                 .font(RampStage.serif(25))
                 .foregroundStyle(RampStage.ink)
                 .lineSpacing(2)
@@ -160,12 +160,12 @@ struct RampInsightScreen: View {
             Spacer()
 
             VStack(spacing: VSpace.md) {
-                Text(verbatim: eyebrow)
+                Text(LocalizedStringKey(eyebrow))
                     .font(VType.micro)
                     .tracking(3)
                     .foregroundStyle(RampStage.accentDeep)
 
-                Text(insight)
+                Text(LocalizedStringKey(insight))
                     .font(RampStage.serif(21, weight: .semibold))
                     .foregroundStyle(RampStage.ink)
                     .multilineTextAlignment(.center)
@@ -263,7 +263,7 @@ struct RampRevealScreen: View {
             VStack(alignment: .leading, spacing: 16) {
                 if !answerChips.isEmpty {
                     VStack(alignment: .leading, spacing: 8) {
-                        Text(verbatim: "FROM YOUR ANSWERS")
+                        Text("FROM YOUR ANSWERS")
                             .font(VType.micro)
                             .tracking(2)
                             .foregroundStyle(RampStage.textTertiary)
