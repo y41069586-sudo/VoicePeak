@@ -32,6 +32,9 @@ struct DermiqPotentialView: View {
                 DQBeforeAfterSlider(before: current, after: model.potentialImage)
                     .frame(maxHeight: 470)
                     .padding(.horizontal, 24)
+                    .onChange(of: model.potentialImage == nil) { _, stillRendering in
+                        if !stillRendering { Haptics.fire(.milestone) }
+                    }
             }
 
             Spacer()
@@ -69,17 +72,19 @@ struct DQBeforeAfterSlider: View {
             ZStack {
                 photo(before, size: size)
 
-                if let after {
-                    photo(after, size: size)
-                        .mask(alignment: .trailing) {
-                            Rectangle().frame(width: size.width * (1 - split))
-                        }
-                } else {
-                    renderingPlaceholder(size: size)
-                        .mask(alignment: .trailing) {
-                            Rectangle().frame(width: size.width * (1 - split))
-                        }
+                Group {
+                    if let after {
+                        photo(after, size: size)
+                            .transition(.opacity.combined(with: .scale(scale: 1.03)))
+                    } else {
+                        renderingPlaceholder(size: size)
+                            .transition(.opacity)
+                    }
                 }
+                .mask(alignment: .trailing) {
+                    Rectangle().frame(width: size.width * (1 - split))
+                }
+                .animation(VMotion.gentle, value: after == nil)
 
                 divider(size: size)
                 labels(size: size)
