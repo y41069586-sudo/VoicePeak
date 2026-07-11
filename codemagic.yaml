@@ -77,14 +77,27 @@ workflows:
           if [ -z "${PERFECTCORP_API_KEY:-}" ] || [ -z "${PERFECTCORP_RSA_KEY:-}" ]; then
             echo "Keys not set — probe skipped"; exit 0
           fi
-          # Same whitespace/newline strip as the injection step.
+          # Normalize both values: drop any PEM header lines the console value
+          # might carry, plus all whitespace/newlines.
           API_CLEAN="$(printf '%s' "$PERFECTCORP_API_KEY" | tr -d ' \t\r\n')"
+          RSA_CLEAN="$(printf '%s' "$PERFECTCORP_RSA_KEY" | sed -E 's/-----[^-]*-----//g' | tr -d ' \t\r\n')"
+          echo "API key: ${#API_CLEAN} chars (expect ~60-70, starts sk-)"
+          echo "RSA key: ${#RSA_CLEAN} base64 chars (a 1024-bit public key is ~216)"
           printf '%s\n' '-----BEGIN PUBLIC KEY-----' > /tmp/pc.pem
-          printf '%s' "$PERFECTCORP_RSA_KEY" | tr -d ' \t\r\n' | fold -w64 >> /tmp/pc.pem
+          printf '%s' "$RSA_CLEAN" | fold -w64 >> /tmp/pc.pem
           printf '\n%s\n' '-----END PUBLIC KEY-----' >> /tmp/pc.pem
+          # Does the RSA value actually load as a public key?
+          if ! openssl pkey -pubin -in /tmp/pc.pem -noout 2>/tmp/pc.keyerr; then
+            echo "RSA PUBLIC KEY FAILED TO LOAD:"; cat /tmp/pc.keyerr
+            echo "→ PERFECTCORP_RSA_KEY must be the console 'Secret key' / 'Geheimschlüssel'"
+            echo "  (base64 starting MIGf…, ending …IDAQAB) — NOT the sk- API key."
+            exit 1
+          fi
+          echo "RSA public key: loads OK"
           TS="$(($(date +%s) * 1000))"
           printf 'client_id=%s&timestamp=%s' "$API_CLEAN" "$TS" > /tmp/pc.payload
-          openssl pkeyutl -encrypt -pubin -inkey /tmp/pc.pem -in /tmp/pc.payload -out /tmp/pc.enc
+          openssl pkeyutl -encrypt -pubin -inkey /tmp/pc.pem \
+            -pkeyopt rsa_padding_mode:pkcs1 -in /tmp/pc.payload -out /tmp/pc.enc
           ID_TOKEN="$(base64 < /tmp/pc.enc | tr -d '\n')"
           RESP="$(curl -sS -X POST https://yce-api-01.perfectcorp.com/s2s/v1.0/client/auth \
             -H 'Content-Type: application/json' \
@@ -92,7 +105,7 @@ workflows:
           echo "$RESP" | sed -E 's/"access_token" *: *"[^"]+"/"access_token":"***"/'
           echo "$RESP" | grep -q access_token \
             && echo "PERFECT CORP AUTH OK" \
-            || { echo "PERFECT CORP AUTH FAILED — check both variables in Codemagic"; exit 1; }
+            || { echo "PERFECT CORP AUTH FAILED — see response above"; exit 1; }
       - name: Probe Gemini key (only when set)
         script: |
           # Cheap validity check: list models. 200 = key works; 400/403 = bad

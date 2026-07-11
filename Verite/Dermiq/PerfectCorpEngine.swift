@@ -6,34 +6,41 @@ import Compression
 // MARK: — Live analysis: Perfect Corp YouCam AI (yce.perfectcorp.com)
 // ============================================================
 //
-// S2S pipeline (YCE "AI Skin Analysis", HD concerns):
-//   1. POST /client/auth            — id_token = RSA-PKCS1(client_id&timestamp)
-//   2. POST /file/skin-analysis     — declare upload → file_id + presigned PUT
-//   3. PUT  <presigned url>         — raw JPEG bytes
-//   4. POST /task/skin-analysis     — start the task for our 8 HD concerns
-//   5. GET  /task/skin-analysis     — poll until success → result URL
-//   6. download result (zip of masks + score JSON) → map to DermiqAnalysis
+// S2S pipeline (YCE "AI Skin Analysis", HD concerns), per the confirmed
+// contract from Perfect Corp's own SDK samples:
+//   1. POST v1.0/client/auth          — id_token = base64(RSA-PKCS1v1.5(
+//                                       "client_id=<key>&timestamp=<ms>", pubkey))
+//   2. POST v2.0/file/skin-analysis   — declare upload → file_id + presigned PUT
+//   3. PUT  <presigned url>           — raw JPEG bytes
+//   4. POST v2.0/task/skin-analysis   — {src_file_id, dst_actions:[7 hd_*], format:"json"}
+//   5. GET  v2.0/task/skin-analysis/<id> — poll until success
+//   6. read results.output[].ui_score → map to DermiqAnalysis
 //
 // Every failure throws — ScanFlowModel catches and falls back to the mock
-// engine, so a network problem can never dead-end the scan theater. Field
-// lookups are deliberately defensive (recursive search for hd_* score nodes)
-// so minor response-shape changes don't break the mapping.
+// engine, so a network problem can never dead-end the scan theater.
 
 final class PerfectCorpSkinEngine: DermiqAnalysisEngine {
 
-    private static let base = URL(string: "https://yce-api-01.perfectcorp.com/s2s/v1.0")!
+    // Auth is on the v1.0 path; the file + task data-plane is v2.x.
+    private static let authBase = URL(string: "https://yce-api-01.perfectcorp.com/s2s/v1.0")!
+    private static let dataBase = URL(string: "https://yce-api-01.perfectcorp.com/s2s/v2.0")!
 
-    /// HD concern → our seven categories. `hd_oiliness` rides along solely to
-    /// derive the skin type; it maps to no category.
-    private static let concernMap: [(action: String, category: DermiqCategory)] = [
-        ("hd_texture", .texture),
-        ("hd_redness", .redness),
-        ("hd_pore", .pores),
-        ("hd_age_spot", .evenness),
-        ("hd_radiance", .glow),
-        ("hd_moisture", .hydration),
-        ("hd_acne", .blemishes),
+    /// Our seven categories ↔ Perfect Corp HD concerns. `hd` is what we request
+    /// (`dst_actions`); `base` is the `type` string the response comes back
+    /// with (HD prefix sometimes stripped). Exactly seven — a valid action
+    /// count (the API rejects counts other than 4 / 7 / 14).
+    private static let concernMap: [(hd: String, base: String, category: DermiqCategory)] = [
+        ("hd_texture",  "texture",  .texture),
+        ("hd_redness",  "redness",  .redness),
+        ("hd_pore",     "pore",     .pores),
+        ("hd_age_spot", "age_spot", .evenness),
+        ("hd_radiance", "radiance", .glow),
+        ("hd_moisture", "moisture", .hydration),
+        ("hd_acne",     "acne",     .blemishes),
     ]
+
+    private static let categoryForBase: [String: DermiqCategory] =
+        Dictionary(uniqueKeysWithValues: concernMap.map { ($0.base, $0.category) })
 
     func analyze(image: UIImage) async throws -> DermiqAnalysis {
         guard DermiqConfig.hasLiveAnalysis,
@@ -43,12 +50,13 @@ final class PerfectCorpSkinEngine: DermiqAnalysisEngine {
         let token = try await authenticate()
         let fileID = try await upload(jpeg, token: token)
         let taskID = try await startTask(fileID: fileID, token: token)
-        let resultURL = try await pollTask(taskID: taskID, token: token)
-        let scores = try await fetchScores(from: resultURL)
-        return try Self.buildAnalysis(from: scores)
+        let results = try await pollTask(taskID: taskID, token: token)
+        return try Self.buildAnalysis(from: results)
     }
 
     // MARK: Step 1 — auth
+    // id_token = base64( RSA-PKCS1v1.5-encrypt( "client_id=<key>&timestamp=<ms>",
+    // console public "Secret key" ) ), POSTed with the plaintext client_id.
 
     private func authenticate() async throws -> String {
         let timestamp = Int(Date().timeIntervalSince1970 * 1000)
@@ -58,7 +66,7 @@ final class PerfectCorpSkinEngine: DermiqAnalysisEngine {
             print("[PerfectCorp] RSA key unusable — check PERFECTCORP_RSA_KEY")
             throw DermiqEngineError.notConfigured
         }
-        var request = URLRequest(url: Self.base.appendingPathComponent("client/auth"))
+        var request = URLRequest(url: Self.authBase.appendingPathComponent("client/auth"))
         request.httpMethod = "POST"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         request.httpBody = try JSONSerialization.data(withJSONObject: [
@@ -72,10 +80,10 @@ final class PerfectCorpSkinEngine: DermiqAnalysisEngine {
         return token
     }
 
-    // MARK: Step 2+3 — upload
+    // MARK: Step 2+3 — declare file, then PUT the bytes to the presigned URL
 
     private func upload(_ jpeg: Data, token: String) async throws -> String {
-        var request = URLRequest(url: Self.base.appendingPathComponent("file/skin-analysis"))
+        var request = URLRequest(url: Self.dataBase.appendingPathComponent("file/skin-analysis"))
         request.httpMethod = "POST"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
@@ -95,7 +103,7 @@ final class PerfectCorpSkinEngine: DermiqAnalysisEngine {
         }
 
         var putRequest = URLRequest(url: putURL)
-        putRequest.httpMethod = "PUT"
+        putRequest.httpMethod = (put["method"] as? String) ?? "PUT"
         if let headers = put["headers"] as? [String: Any] {
             for (key, value) in headers {
                 putRequest.setValue("\(value)", forHTTPHeaderField: key)
@@ -108,61 +116,58 @@ final class PerfectCorpSkinEngine: DermiqAnalysisEngine {
         return fileID
     }
 
-    // MARK: Step 4 — start the task
+    // MARK: Step 4 — start the task (v2.x flat form)
 
     private func startTask(fileID: String, token: String) async throws -> String {
-        var request = URLRequest(url: Self.base.appendingPathComponent("task/skin-analysis"))
+        var request = URLRequest(url: Self.dataBase.appendingPathComponent("task/skin-analysis"))
         request.httpMethod = "POST"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
-        let actions = Self.concernMap.map { $0.action } + ["hd_oiliness"]
-        let action: [String: Any] = [
-            "id": 0,
-            "params": ["dst_actions": actions],
-        ]
-        let payload: [String: Any] = [
-            "file_sets": ["src_ids": [fileID]],
-            "actions": [action],
-        ]
         let body: [String: Any] = [
-            "request_id": 0,
-            "payload": payload,
+            "src_file_id": fileID,
+            "dst_actions": Self.concernMap.map { $0.hd },
+            "format": "json",
         ]
         request.httpBody = try JSONSerialization.data(withJSONObject: body)
         let json = try await Self.json(for: request)
-        guard let taskID = (json["result"] as? [String: Any])?["task_id"] as? String else {
+        let container = (json["result"] as? [String: Any]) ?? (json["data"] as? [String: Any])
+        guard let taskID = container?["task_id"] as? String
+                ?? (json["task_id"] as? String) else {
             throw DermiqEngineError.badResponse
         }
         return taskID
     }
 
-    // MARK: Step 5 — poll
+    // MARK: Step 5 — poll until done, return the `results` object
 
-    private func pollTask(taskID: String, token: String) async throws -> URL {
-        var components = URLComponents(
-            url: Self.base.appendingPathComponent("task/skin-analysis"),
-            resolvingAgainstBaseURL: false
-        )
-        components?.queryItems = [URLQueryItem(name: "task_id", value: taskID)]
-        guard let url = components?.url else { throw DermiqEngineError.badResponse }
+    private func pollTask(taskID: String, token: String) async throws -> [String: Any] {
+        let url = Self.dataBase
+            .appendingPathComponent("task/skin-analysis")
+            .appendingPathComponent(taskID)
         var request = URLRequest(url: url)
         request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
 
         for _ in 0..<45 {                                   // ≈90 s ceiling
             try await Task.sleep(for: .seconds(2))
             let json = try await Self.json(for: request)
-            let result = json["result"] as? [String: Any]
-            switch ((result?["status"] as? String) ?? "").lowercased() {
-            case "success":
-                guard let results = result?["results"] as? [[String: Any]],
-                      let data = results.first?["data"] as? [[String: Any]],
-                      let urlString = data.first?["url"] as? String,
-                      let resultURL = URL(string: urlString) else {
-                    throw DermiqEngineError.badResponse
+            let container = (json["result"] as? [String: Any]) ?? (json["data"] as? [String: Any]) ?? json
+            let status = ((container["status"] as? String)
+                          ?? (container["task_status"] as? String) ?? "").lowercased()
+
+            switch status {
+            case "success", "done", "completed":
+                // v2 + format:json → results inline; older → a URL to a zip.
+                if let results = container["results"] as? [String: Any], results["output"] != nil {
+                    return results
                 }
-                return resultURL
-            case "error", "failed":
-                print("[PerfectCorp] task failed: \(result ?? [:])")
+                if let url = Self.resultURL(in: container) {
+                    return try await Self.downloadResults(from: url)
+                }
+                // Some shapes put the output array directly under results.
+                if let results = container["results"] as? [String: Any] { return results }
+                throw DermiqEngineError.badResponse
+            case "error", "failed", "fail":
+                print("[PerfectCorp] task failed: \(container)")
                 throw DermiqEngineError.badResponse
             default:
                 continue                                    // running / pending
@@ -171,10 +176,17 @@ final class PerfectCorpSkinEngine: DermiqAnalysisEngine {
         throw DermiqEngineError.badResponse                 // timed out
     }
 
-    // MARK: Step 6 — result → scores
+    /// Finds a result download URL in any of the shapes seen in the wild.
+    private static func resultURL(in container: [String: Any]) -> URL? {
+        if let s = container["url"] as? String, let u = URL(string: s) { return u }
+        if let results = container["results"] as? [[String: Any]],
+           let data = results.first?["data"] as? [[String: Any]],
+           let s = data.first?["url"] as? String, let u = URL(string: s) { return u }
+        return nil
+    }
 
-    /// The result URL serves either a bare JSON or a zip (masks + score JSON).
-    private func fetchScores(from url: URL) async throws -> [String: Any] {
+    /// Download + parse the result payload (bare JSON or a zip of JSON+masks).
+    private static func downloadResults(from url: URL) async throws -> [String: Any] {
         let (data, _) = try await URLSession.shared.data(from: url)
         let blobs: [Data]
         if data.starts(with: [0x50, 0x4B]) {                // "PK" — zip
@@ -196,68 +208,79 @@ final class PerfectCorpSkinEngine: DermiqAnalysisEngine {
 
     // MARK: Mapping → DermiqAnalysis
 
-    private static func buildAnalysis(from root: [String: Any]) throws -> DermiqAnalysis {
-        var found: [String: Int] = [:]
-        collectScores(in: root, into: &found)
+    /// Accepts the `results` object in either shape:
+    ///  • v2 JSON: `{ output: [{type, ui_score|whole.ui_score}], all:{score}, skin_age }`
+    ///  • zip `score_info.json`: `{ texture:{ui_score}, pore:{ui_score}, … }`
+    private static func buildAnalysis(from results: [String: Any]) throws -> DermiqAnalysis {
+        var byCategory: [DermiqCategory: Int] = [:]
 
-        let mapped = concernMap.compactMap { pair -> DermiqSubScore? in
-            guard let value = found[pair.action] else { return nil }
-            return DermiqSubScore(category: pair.category, value: value, trend: nil)
+        if let output = results["output"] as? [[String: Any]] {
+            for item in output {
+                guard let type = item["type"] as? String else { continue }
+                let base = type.hasPrefix("hd_") ? String(type.dropFirst(3)) : type
+                guard let category = categoryForBase[base],
+                      let score = score(in: item) else { continue }
+                byCategory[category] = score
+            }
+        } else {
+            // Flat metric-keyed dict (zip / older shapes).
+            for (hd, base, category) in concernMap {
+                if let node = (results[base] ?? results[hd]),
+                   let score = score(in: node) {
+                    byCategory[category] = score
+                }
+            }
         }
-        // Fewer than 5 of 7 concerns ⇒ the contract changed under us. Bail to
-        // the mock rather than invent numbers.
-        guard mapped.count >= 5 else {
-            print("[PerfectCorp] only \(mapped.count)/7 concerns in response — keys: \(found.keys.sorted())")
+
+        // Fewer than 5 of 7 ⇒ the contract shifted; bail to the mock rather
+        // than invent numbers.
+        guard byCategory.count >= 5 else {
+            print("[PerfectCorp] only \(byCategory.count)/7 concerns parsed — results keys: \(results.keys.sorted())")
             throw DermiqEngineError.badResponse
         }
-        // Backfill any missing category with the average of the real readings
-        // so the grid stays complete (anchored in measured data, not random).
-        let average = mapped.map(\.value).reduce(0, +) / mapped.count
-        let subScores = concernMap.map { pair in
-            DermiqSubScore(category: pair.category,
-                           value: found[pair.action] ?? average,
-                           trend: nil)
+
+        let average = byCategory.values.reduce(0, +) / byCategory.count
+        let subScores = DermiqCategory.allCases.map {
+            DermiqSubScore(category: $0, value: byCategory[$0] ?? average, trend: nil)
         }
 
-        let overall = found["all"] ?? average
+        let overall = overallScore(in: results) ?? average
         let weakest = subScores.sorted { $0.value < $1.value }
         let topIssues = weakest.prefix(3).map { DermiqIssue.issue(for: $0.category) }
 
         return DermiqAnalysis(
             overall: overall,
             subScores: subScores,
-            skinType: skinType(oiliness: found["hd_oiliness"], hydration: found["hd_moisture"]),
+            skinType: skinType(hydration: byCategory[.hydration], redness: byCategory[.redness]),
             topIssues: Array(topIssues),
             honestSummary: HonestSummaryBuilder.summary(overall: overall, weakest: weakest[0])
         )
     }
 
-    /// Walks the whole result tree and records a 0–100 health score for every
-    /// node keyed by a concern name (or "all" for the overall).
-    private static func collectScores(in node: Any, into out: inout [String: Int], key: String? = nil) {
-        let interesting = key.map { $0 == "all" || $0.hasPrefix("hd_") } ?? false
-        if let dict = node as? [String: Any] {
-            if interesting, let key, let score = healthScore(in: dict) {
-                out[key] = score
-            }
-            for (childKey, value) in dict {
-                collectScores(in: value, into: &out, key: childKey)
-            }
-        } else if let array = node as? [Any] {
-            for element in array {
-                collectScores(in: element, into: &out, key: key)
-            }
-        } else if interesting, let key, let number = node as? NSNumber {
-            out[key] = clamp(number.doubleValue)
+    /// A 0–100 health score from a metric node. Prefer `ui_score`; for
+    /// region-split metrics use the `.whole`/`.all` sub-node; fall back to a
+    /// bare `score`, then invert a severity `raw_score`.
+    private static func score(in node: Any) -> Int? {
+        guard let dict = node as? [String: Any] else {
+            if let n = node as? NSNumber { return clamp(n.doubleValue) }
+            return nil
         }
+        if let ui = dict["ui_score"] as? NSNumber { return clamp(ui.doubleValue) }
+        for region in ["whole", "all", "overall"] {
+            if let sub = dict[region] as? [String: Any],
+               let ui = sub["ui_score"] as? NSNumber { return clamp(ui.doubleValue) }
+        }
+        if let s = dict["score"] as? NSNumber { return clamp(s.doubleValue) }
+        if let raw = dict["raw_score"] as? NSNumber {
+            let v = raw.doubleValue
+            return clamp(v <= 1 ? (1 - v) * 100 : 100 - v)  // severity → health
+        }
+        return nil
     }
 
-    /// YCE reports `ui_score` (higher = healthier). `raw_score` is severity,
-    /// so alone it inverts. `score` is used as-is when it's all we get.
-    private static func healthScore(in dict: [String: Any]) -> Int? {
-        if let ui = dict["ui_score"] as? NSNumber { return clamp(ui.doubleValue) }
-        if let score = dict["score"] as? NSNumber { return clamp(score.doubleValue) }
-        if let raw = dict["raw_score"] as? NSNumber { return clamp(100 - raw.doubleValue) }
+    private static func overallScore(in results: [String: Any]) -> Int? {
+        if let all = results["all"] as? [String: Any] { return score(in: all) }
+        if let n = results["all"] as? NSNumber { return clamp(n.doubleValue) }
         return nil
     }
 
@@ -265,12 +288,12 @@ final class PerfectCorpSkinEngine: DermiqAnalysisEngine {
         Int(min(max(value.rounded(), 0), 100))
     }
 
-    private static func skinType(oiliness: Int?, hydration: Int?) -> SkinType {
-        guard let oiliness else { return .normal }
-        if oiliness < 45 { return .oily }                        // low score = oily
-        if oiliness > 75, let hydration, hydration < 50 { return .dry }
-        if oiliness < 60 { return .combination }
-        return .normal
+    /// Rough skin type from the two metrics we have (no dedicated oiliness in
+    /// the requested set): low hydration → dry, high redness → sensitive.
+    private static func skinType(hydration: Int?, redness: Int?) -> SkinType {
+        if let hydration, hydration < 45 { return .dry }
+        if let redness, redness < 45 { return .sensitive }
+        return .combination
     }
 
     // MARK: Shared JSON request
@@ -291,7 +314,14 @@ final class PerfectCorpSkinEngine: DermiqAnalysisEngine {
     /// Encrypts `payload` with the console-provided RSA public key
     /// (PKCS#1 v1.5), returning base64 — YCE's `id_token` scheme.
     private static func rsaEncrypt(_ payload: String, spkiBase64: String) -> String? {
-        let cleaned = spkiBase64.filter { !$0.isWhitespace }
+        // Accept the bare console value OR one accidentally pasted with PEM
+        // header lines; keep only the base64 body.
+        var cleaned = spkiBase64
+        for header in ["-----BEGIN PUBLIC KEY-----", "-----END PUBLIC KEY-----",
+                       "-----BEGIN RSA PUBLIC KEY-----", "-----END RSA PUBLIC KEY-----"] {
+            cleaned = cleaned.replacingOccurrences(of: header, with: "")
+        }
+        cleaned = cleaned.filter { !$0.isWhitespace }
         guard let der = Data(base64Encoded: cleaned) else { return nil }
         let attributes: [CFString: Any] = [
             kSecAttrKeyType: kSecAttrKeyTypeRSA,
