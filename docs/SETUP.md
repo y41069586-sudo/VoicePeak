@@ -91,6 +91,28 @@ analysis only. **Face photos never leave the device regardless of any flag.**
 Keys/secrets belong in a git-ignored `Secrets.xcconfig` (already in `.gitignore`),
 never committed.
 
+## Live skin analysis (Perfect Corp YouCam AI API)
+
+The scan pipeline runs on `MockDermiqEngine` until Perfect Corp keys are
+present. To go live:
+
+1. Create a (free) account at <https://yce.perfectcorp.com/ai-api> and generate
+   an API key. The console shows two values: the **API key** (`sk-…`) and a
+   one-time **secret key** (a base64 RSA public key block, `MIGf…`).
+2. In Codemagic → app → **Environment variables**, add both as *Secure*
+   variables in a group (e.g. `perfectcorp`), and reference that group under
+   `environment.groups` in both workflows of `codemagic.yaml`:
+   - `PERFECTCORP_API_KEY` — the `sk-…` key
+   - `PERFECTCORP_RSA_KEY` — the base64 block (no PEM header lines, no spaces)
+3. CI overwrites the committed-empty `Verite/Dermiq/DermiqSecrets.swift` with
+   these values at build time ("Inject Perfect Corp API secrets" step) and the
+   compile-check workflow live-probes the auth endpoint, failing loudly on bad
+   keys. Real values must never be committed.
+
+Engine code: `Verite/Dermiq/PerfectCorpEngine.swift` (auth → upload → task →
+poll → score mapping onto the seven `DermiqCategory` metrics). Any API failure
+falls back to the mock engine, so the scan flow never dead-ends.
+
 ## Where things are
 
 - Design tokens & motion specs → `docs/DESIGN_SPEC.md`

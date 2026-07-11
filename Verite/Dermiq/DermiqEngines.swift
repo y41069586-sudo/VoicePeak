@@ -7,18 +7,21 @@ import Vision
 // MARK: — Config (MASTER PROMPT §2)
 // ============================================================
 
-/// Endpoint + auth injected via config. Empty values ⇒ the factory serves the
-/// mock engines so every screen is fully demo-able without the live APIs.
+/// Empty values ⇒ the factory serves the mock engines so every screen is
+/// fully demo-able without the live APIs.
 enum DermiqConfig {
-    // TODO: PRODUCTION KEY — inject the live Dermiq endpoint + API key here.
-    static let analysisEndpoint = ""       // e.g. "https://api.dermiq.ai/v1/analyze"
-    static let analysisAPIKey = ""
+    /// Live analysis = Perfect Corp YouCam AI API. The keys live in
+    /// `DermiqSecrets` (committed empty, overwritten by CI from the
+    /// PERFECTCORP_API_KEY / PERFECTCORP_RSA_KEY Codemagic variables).
+    static var hasLiveAnalysis: Bool {
+        !DermiqSecrets.perfectCorpAPIKey.isEmpty
+            && !DermiqSecrets.perfectCorpRSAPublicKey.isEmpty
+    }
 
     // TODO: PRODUCTION KEY — image-to-image enhancement endpoint + key.
     static let enhancementEndpoint = ""    // e.g. "https://api.example.com/v1/img2img"
     static let enhancementAPIKey = ""
 
-    static var hasLiveAnalysis: Bool { !analysisEndpoint.isEmpty && !analysisAPIKey.isEmpty }
     static var hasLiveEnhancement: Bool { !enhancementEndpoint.isEmpty && !enhancementAPIKey.isEmpty }
 }
 
@@ -37,29 +40,7 @@ enum DermiqEngineError: Error {
     case notConfigured
 }
 
-/// Production conformance — network call to the Dermiq API.
-final class DermiqEngine: DermiqAnalysisEngine {
-
-    func analyze(image: UIImage) async throws -> DermiqAnalysis {
-        guard DermiqConfig.hasLiveAnalysis,
-              let url = URL(string: DermiqConfig.analysisEndpoint),
-              let jpeg = image.jpegData(compressionQuality: 0.85) else {
-            throw DermiqEngineError.notConfigured
-        }
-        var request = URLRequest(url: url)
-        request.httpMethod = "POST"
-        request.setValue("Bearer \(DermiqConfig.analysisAPIKey)", forHTTPHeaderField: "Authorization")
-        request.setValue("image/jpeg", forHTTPHeaderField: "Content-Type")
-        request.httpBody = jpeg
-
-        let (data, response) = try await URLSession.shared.data(for: request)
-        guard (response as? HTTPURLResponse)?.statusCode == 200 else {
-            throw DermiqEngineError.badResponse
-        }
-        // The Dermiq response is expected to decode 1:1 onto DermiqAnalysis.
-        return try JSONDecoder().decode(DermiqAnalysis.self, from: data)
-    }
-}
+// The production conformance is `PerfectCorpSkinEngine` (PerfectCorpEngine.swift).
 
 /// Realistic fixture data so the full app runs end-to-end without the API.
 /// Calibrated per §4: most results land 55–75; above 85 is rare.
@@ -262,7 +243,9 @@ final class MockEnhancementEngine: FaceEnhancementEngine {
 
 enum EngineFactory {
     static func analysis(previousOverall: Int? = nil) -> DermiqAnalysisEngine {
-        DermiqConfig.hasLiveAnalysis ? DermiqEngine() : MockDermiqEngine(previousOverall: previousOverall)
+        DermiqConfig.hasLiveAnalysis
+            ? PerfectCorpSkinEngine()
+            : MockDermiqEngine(previousOverall: previousOverall)
     }
 
     static func enhancement() -> FaceEnhancementEngine {

@@ -40,6 +40,49 @@ workflows:
     scripts:
       - name: Install XcodeGen
         script: brew install xcodegen
+      - name: Inject Perfect Corp API secrets
+        script: |
+          # Overwrites the committed-empty DermiqSecrets.swift with the real
+          # keys so this build runs LIVE skin analysis. To activate: Codemagic
+          # → app → Environment variables → add BOTH as Secure app variables
+          # (any group, e.g. "perfectcorp", then reference it under
+          # environment.groups — or add them team-wide):
+          #   PERFECTCORP_API_KEY  — YCE API key (sk-…)
+          #   PERFECTCORP_RSA_KEY  — the one-time base64 "secret key" block
+          if [ -n "${PERFECTCORP_API_KEY:-}" ] && [ -n "${PERFECTCORP_RSA_KEY:-}" ]; then
+            {
+              echo '// CI-GENERATED — values injected from Codemagic env vars. Never committed.'
+              echo 'enum DermiqSecrets {'
+              echo "    static let perfectCorpAPIKey = \"${PERFECTCORP_API_KEY}\""
+              echo "    static let perfectCorpRSAPublicKey = \"${PERFECTCORP_RSA_KEY}\""
+              echo '}'
+            } > Verite/Dermiq/DermiqSecrets.swift
+            echo "Perfect Corp keys injected — building with LIVE skin analysis"
+          else
+            echo "PERFECTCORP_API_KEY / PERFECTCORP_RSA_KEY not set — building with MOCK engines"
+          fi
+      - name: Probe Perfect Corp auth (only when keys are set)
+        script: |
+          # Proves the keys + auth contract from CI (this container has open
+          # network). Fails loudly on bad keys instead of letting the app
+          # silently fall back to mock scores.
+          if [ -z "${PERFECTCORP_API_KEY:-}" ] || [ -z "${PERFECTCORP_RSA_KEY:-}" ]; then
+            echo "Keys not set — probe skipped"; exit 0
+          fi
+          printf '%s\n' '-----BEGIN PUBLIC KEY-----' > /tmp/pc.pem
+          printf '%s' "$PERFECTCORP_RSA_KEY" | tr -d ' \n' | fold -w64 >> /tmp/pc.pem
+          printf '\n%s\n' '-----END PUBLIC KEY-----' >> /tmp/pc.pem
+          TS="$(($(date +%s) * 1000))"
+          printf 'client_id=%s&timestamp=%s' "$PERFECTCORP_API_KEY" "$TS" > /tmp/pc.payload
+          openssl pkeyutl -encrypt -pubin -inkey /tmp/pc.pem -in /tmp/pc.payload -out /tmp/pc.enc
+          ID_TOKEN="$(base64 < /tmp/pc.enc | tr -d '\n')"
+          RESP="$(curl -sS -X POST https://yce-api-01.perfectcorp.com/s2s/v1.0/client/auth \
+            -H 'Content-Type: application/json' \
+            -d "{\"client_id\":\"$PERFECTCORP_API_KEY\",\"id_token\":\"$ID_TOKEN\"}")"
+          echo "$RESP" | sed -E 's/"access_token" *: *"[^"]+"/"access_token":"***"/'
+          echo "$RESP" | grep -q access_token \
+            && echo "PERFECT CORP AUTH OK" \
+            || { echo "PERFECT CORP AUTH FAILED — check both variables in Codemagic"; exit 1; }
       - name: Generate Xcode project
         script: xcodegen generate --spec project.yml
       - name: Build for iOS Simulator (no code signing)
@@ -84,6 +127,23 @@ workflows:
     scripts:
       - name: Install XcodeGen
         script: brew install xcodegen
+      - name: Inject Perfect Corp API secrets
+        script: |
+          # Same injection as the compile-check workflow (see comments there).
+          # No auth probe here — a transient API outage must not block a release;
+          # the app falls back to mock engines at runtime if analysis fails.
+          if [ -n "${PERFECTCORP_API_KEY:-}" ] && [ -n "${PERFECTCORP_RSA_KEY:-}" ]; then
+            {
+              echo '// CI-GENERATED — values injected from Codemagic env vars. Never committed.'
+              echo 'enum DermiqSecrets {'
+              echo "    static let perfectCorpAPIKey = \"${PERFECTCORP_API_KEY}\""
+              echo "    static let perfectCorpRSAPublicKey = \"${PERFECTCORP_RSA_KEY}\""
+              echo '}'
+            } > Verite/Dermiq/DermiqSecrets.swift
+            echo "Perfect Corp keys injected — LIVE skin analysis"
+          else
+            echo "Perfect Corp keys not set — MOCK engines"
+          fi
       - name: Generate Xcode project
         script: xcodegen generate --spec project.yml
       - name: Set up signing
