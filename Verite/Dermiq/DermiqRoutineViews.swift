@@ -105,13 +105,15 @@ struct DermiqRoutineGenView: View {
 /// polyline so trim-by-length and node fractions line up exactly.
 private enum PlanRoute {
 
-    /// Relative waypoints, top to bottom. One per day station.
+    /// Relative waypoints, top to bottom. One per day station. The x extremes
+    /// stay off the edges so each day label has room on the OUTER side of its
+    /// node (away from the snaking line, which never reaches past a turn).
     static let waypoints: [CGPoint] = [
-        CGPoint(x: 0.72, y: 0.06),   // Day 1
-        CGPoint(x: 0.24, y: 0.30),   // Day 3
-        CGPoint(x: 0.74, y: 0.54),   // Day 7
-        CGPoint(x: 0.26, y: 0.78),   // Day 10
-        CGPoint(x: 0.62, y: 0.94),   // Day 14 — finish
+        CGPoint(x: 0.68, y: 0.06),   // Day 1
+        CGPoint(x: 0.30, y: 0.30),   // Day 3
+        CGPoint(x: 0.70, y: 0.54),   // Day 7
+        CGPoint(x: 0.30, y: 0.78),   // Day 10
+        CGPoint(x: 0.58, y: 0.94),   // Day 14 — finish
     ]
 
     /// Catmull-Rom through the waypoints, sampled densely (normalized space).
@@ -273,7 +275,9 @@ private struct PlanRouteView: View {
                                       weight: reached ? .bold : .semibold,
                                       design: .rounded))
                         .foregroundStyle(reached ? DQColor.accentBright : DQColor.textSecondary)
-                        .position(x: center.x + (waypoint.x < 0.5 ? 52 : -52), y: center.y)
+                        .fixedSize()
+                        .position(x: labelX(node: center.x, onLeft: waypoint.x < 0.5, in: size),
+                                  y: center.y)
                         .animation(VMotion.gentle, value: reached)
                 }
             }
@@ -281,6 +285,15 @@ private struct PlanRouteView: View {
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .accessibilityElement()
         .accessibilityLabel("Your 14-day plan is being laid out")
+    }
+
+    /// Label sits on the OUTER side of its node (the line turns back inward at
+    /// each station, so the outer side is always clear), clamped so it never
+    /// runs off the canvas edge.
+    private func labelX(node: CGFloat, onLeft: Bool, in size: CGSize) -> CGFloat {
+        let outer: CGFloat = 46
+        let x = onLeft ? node - outer : node + outer
+        return min(max(x, 36), size.width - 36)
     }
 
     @ViewBuilder
