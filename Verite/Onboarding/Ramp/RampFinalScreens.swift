@@ -91,7 +91,7 @@ struct RampCurveScreen: View {
         try? await Task.sleep(for: .milliseconds(Int(Self.drawStartDelay * 1000)))
         guard !Task.isCancelled else { return }
         let drawMs = Int(RampDistributionCurve.drawDuration * 1000)
-        for quarter in 1...3 {
+        for _ in 1...3 {
             try? await Task.sleep(for: .milliseconds(drawMs / 4))
             guard !Task.isCancelled else { return }
             Haptics.fire(.tick)
