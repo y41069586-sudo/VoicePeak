@@ -403,7 +403,7 @@ struct RampOptionCard: View {
 /// visualization in warm ink.
 struct RampDistributionCurve: View {
     /// The quiz-predicted score band (0–100). Nil = generic center band.
-    var range: (low: Int, high: Int)?
+    var range: (low: Int, high: Int)? = nil
 
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var startDate: Date = .distantFuture

@@ -50,7 +50,7 @@ enum RampStep: Int, CaseIterable {
         }
     }
 
-    /// Conceptual screen index (0…18) for the progress hairline.
+    /// Conceptual screen index (0…19) for the progress hairline.
     var screenIndex: Int { rawValue }
 
     var analyticsName: String {
