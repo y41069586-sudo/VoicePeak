@@ -79,13 +79,12 @@ final class PerfectCorpSkinEngine: DermiqAnalysisEngine {
         request.httpMethod = "POST"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
-        request.httpBody = try JSONSerialization.data(withJSONObject: [
-            "files": [[
-                "content_type": "image/jpeg",
-                "file_name": "scan.jpg",
-                "file_size": jpeg.count,
-            ]],
-        ])
+        let fileEntry: [String: Any] = [
+            "content_type": "image/jpeg",
+            "file_name": "scan.jpg",
+            "file_size": jpeg.count,
+        ]
+        request.httpBody = try JSONSerialization.data(withJSONObject: ["files": [fileEntry]])
         let json = try await Self.json(for: request)
         guard let file = ((json["result"] as? [String: Any])?["files"] as? [[String: Any]])?.first,
               let fileID = file["file_id"] as? String,
@@ -116,16 +115,20 @@ final class PerfectCorpSkinEngine: DermiqAnalysisEngine {
         request.httpMethod = "POST"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
-        request.httpBody = try JSONSerialization.data(withJSONObject: [
+        let actions = Self.concernMap.map { $0.action } + ["hd_oiliness"]
+        let action: [String: Any] = [
+            "id": 0,
+            "params": ["dst_actions": actions],
+        ]
+        let payload: [String: Any] = [
+            "file_sets": ["src_ids": [fileID]],
+            "actions": [action],
+        ]
+        let body: [String: Any] = [
             "request_id": 0,
-            "payload": [
-                "file_sets": ["src_ids": [fileID]],
-                "actions": [[
-                    "id": 0,
-                    "params": ["dst_actions": Self.concernMap.map(\.action) + ["hd_oiliness"]],
-                ]],
-            ],
-        ])
+            "payload": payload,
+        ]
+        request.httpBody = try JSONSerialization.data(withJSONObject: body)
         let json = try await Self.json(for: request)
         guard let taskID = (json["result"] as? [String: Any])?["task_id"] as? String else {
             throw DermiqEngineError.badResponse
@@ -385,6 +388,8 @@ enum MiniZip {
             let extraLength = Int(u16(bytes, offset + 30))
             let commentLength = Int(u16(bytes, offset + 32))
             let localOffset = Int(u32(bytes, offset + 42))
+            // A truncated/malformed entry must not trap the slice below.
+            guard offset + 46 + nameLength + extraLength + commentLength <= bytes.count else { break }
             let name = String(bytes: bytes[(offset + 46)..<(offset + 46 + nameLength)],
                               encoding: .utf8) ?? ""
 
