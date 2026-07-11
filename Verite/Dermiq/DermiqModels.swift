@@ -234,11 +234,26 @@ enum RoutineBuilder {
         }
     }
 
+    /// Below this, a metric counts as SEVERE and gets the stronger option.
+    private static let severeThreshold = 55
+
+    /// Two tiers per category: a stronger, proven active when the score is
+    /// genuinely low, a gentler one for a moderate dip — so two people with
+    /// different readings really do get different plans.
     private static func targetedStep(for target: DermiqSubScore) -> RoutineStep {
         let score = target.value
+        let severe = score < severeThreshold
         switch target.category {
         case .texture:
-            return RoutineStep(
+            return severe
+            ? RoutineStep(
+                key: "t.texture",
+                productType: "Retinal night serum",
+                active: "Retinaldehyde 0.05%",
+                why: "At \(score), texture is your biggest lever — retinoids are the proven route.",
+                examples: ["Geek & Gorgeous A-Game 5 · $$", "Avène Retrinal 0.05 · $$$"]
+            )
+            : RoutineStep(
                 key: "t.texture",
                 productType: "BHA exfoliant",
                 active: "Salicylic acid 2%",
@@ -246,7 +261,15 @@ enum RoutineBuilder {
                 examples: ["The Ordinary Salicylic 2% · $", "COSRX BHA Power Liquid · $$", "Paula's Choice 2% BHA · $$$"]
             )
         case .redness:
-            return RoutineStep(
+            return severe
+            ? RoutineStep(
+                key: "t.redness",
+                productType: "Azelaic acid treatment",
+                active: "Azelaic acid 10%",
+                why: "At \(score), redness needs the stronger calmer — azelaic is it.",
+                examples: ["The Ordinary Azelaic 10% · $", "Paula's Choice Azelaic Booster · $$$"]
+            )
+            : RoutineStep(
                 key: "t.redness",
                 productType: "Niacinamide serum",
                 active: "Niacinamide 10%",
@@ -254,7 +277,15 @@ enum RoutineBuilder {
                 examples: ["The Ordinary Niacinamide · $", "Naturium Niacinamide · $$", "Paula's Choice 10% · $$$"]
             )
         case .pores:
-            return RoutineStep(
+            return severe
+            ? RoutineStep(
+                key: "t.pores",
+                productType: "Clay + BHA mask (2×/week)",
+                active: "Kaolin + salicylic acid",
+                why: "At \(score), pores need the deep-clean combo, not just a serum.",
+                examples: ["Paula's Choice Pore Clarifying Mask · $$", "Innisfree Volcanic Clay · $"]
+            )
+            : RoutineStep(
                 key: "t.pores",
                 productType: "Niacinamide + zinc serum",
                 active: "Niacinamide 10% + Zinc 1%",
@@ -262,7 +293,15 @@ enum RoutineBuilder {
                 examples: ["The Ordinary Niacinamide+Zinc · $", "Geek & Gorgeous B-Bomb · $$"]
             )
         case .evenness:
-            return RoutineStep(
+            return severe
+            ? RoutineStep(
+                key: "t.evenness",
+                productType: "Tranexamic acid serum",
+                active: "Tranexamic acid 3% + niacinamide",
+                why: "At \(score), tone needs the targeted fader — tranexamic acid.",
+                examples: ["Naturium Tranexamic 5% · $$", "La Roche-Posay Mela B3 · $$$"]
+            )
+            : RoutineStep(
                 key: "t.evenness",
                 productType: "Vitamin C serum",
                 active: "Ascorbic acid 10–15%",
@@ -270,15 +309,31 @@ enum RoutineBuilder {
                 examples: ["Timeless 10% C · $", "Geek & Gorgeous C-Glow · $$", "Skinceuticals CE Ferulic · $$$"]
             )
         case .glow:
-            return RoutineStep(
+            return severe
+            ? RoutineStep(
                 key: "t.glow",
                 productType: "AHA exfoliant (2–3×/week)",
                 active: "Glycolic acid 7%",
-                why: "Brings back the surface light your glow score is missing (\(score)).",
+                why: "At \(score), glow needs real resurfacing — glycolic delivers it.",
                 examples: ["The Ordinary Glycolic Toner · $", "Pixi Glow Tonic · $$"]
             )
+            : RoutineStep(
+                key: "t.glow",
+                productType: "Gentle AHA (2×/week)",
+                active: "Lactic acid 5%",
+                why: "Brings back the surface light your glow score is missing (\(score)).",
+                examples: ["The Ordinary Lactic 5% · $", "Good Molecules Lactic Toner · $"]
+            )
         case .hydration:
-            return RoutineStep(
+            return severe
+            ? RoutineStep(
+                key: "t.hydration",
+                productType: "Overnight hydration mask",
+                active: "HA + squalane + panthenol",
+                why: "At \(score), a serum alone won't refill the deficit — seal it overnight.",
+                examples: ["Laneige Water Sleeping Mask · $$", "COSRX Rice Mask · $"]
+            )
+            : RoutineStep(
                 key: "t.hydration",
                 productType: "Hydrating serum",
                 active: "Hyaluronic acid + B5",
@@ -286,12 +341,20 @@ enum RoutineBuilder {
                 examples: ["The Ordinary HA 2% · $", "La Roche-Posay Hyalu B5 · $$$"]
             )
         case .blemishes:
-            return RoutineStep(
+            return severe
+            ? RoutineStep(
                 key: "t.blemishes",
                 productType: "Retinoid treatment",
                 active: "Adapalene 0.1%",
-                why: "The proven route down for your blemish score (\(score)).",
+                why: "At \(score), blemishes need the proven prescription-grade route.",
                 examples: ["Differin Gel · $$", "La Roche-Posay Effaclar Adapalene · $$"]
+            )
+            : RoutineStep(
+                key: "t.blemishes",
+                productType: "BHA spot treatment",
+                active: "Salicylic acid 2%",
+                why: "Keeps the occasional breakout from settling in (\(score)).",
+                examples: ["COSRX Pimple Patches · $", "Paula's Choice 2% BHA · $$$"]
             )
         }
     }

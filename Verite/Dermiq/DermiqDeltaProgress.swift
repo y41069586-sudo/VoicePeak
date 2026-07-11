@@ -121,6 +121,7 @@ struct DermiqProgressTab: View {
 
     @State private var compareSelection: [ScanRecord] = []
     @State private var showCompare = false
+    @State private var metric: DermiqCategory = .hydration
 
     var body: some View {
         ScrollView {
@@ -135,6 +136,7 @@ struct DermiqProgressTab: View {
                     DermiqBadgesSection()
                 } else {
                     chartCard
+                    metricChartCard
                     timelineSection
                     DermiqBadgesSection()
                     subScoreHistory
@@ -193,6 +195,110 @@ struct DermiqProgressTab: View {
                     }
                 }
                 .frame(height: 190)
+            }
+        }
+    }
+
+    // MARK: Per-metric detail chart
+
+    /// One metric across every scan — picked via chips. Needs at least two
+    /// readings to draw a line, so it appears from the second scan on.
+    @ViewBuilder
+    private var metricChartCard: some View {
+        let points: [MetricPoint] = scans.compactMap { scan in
+            scan.analysis?.subScore(for: metric).map {
+                MetricPoint(date: scan.date, value: $0.value)
+            }
+        }
+        if points.count >= 2 {
+            DQCard {
+                VStack(alignment: .leading, spacing: 14) {
+                    Text("METRIC DETAIL")
+                        .font(DQFont.mono(11, weight: .semibold))
+                        .foregroundStyle(DQColor.textSecondary)
+                        .tracking(2)
+
+                    // Metric picker chips.
+                    ScrollView(.horizontal) {
+                        HStack(spacing: 6) {
+                            ForEach(DermiqCategory.allCases) { category in
+                                let on = category == metric
+                                Button {
+                                    Haptics.fire(.tick)
+                                    withAnimation(VMotion.gentle) { metric = category }
+                                } label: {
+                                    Text(category.displayName)
+                                        .font(.system(size: 12, weight: .semibold, design: .rounded))
+                                        .foregroundStyle(on ? Color.white : DQColor.accentBright)
+                                        .padding(.horizontal, 11)
+                                        .padding(.vertical, 6)
+                                        .background(on ? AnyShapeStyle(DQColor.accent)
+                                                       : AnyShapeStyle(DQColor.accentSoft),
+                                                    in: Capsule())
+                                }
+                                .buttonStyle(.plain)
+                            }
+                        }
+                    }
+                    .scrollIndicators(.hidden)
+
+                    Chart(points) { point in
+                        AreaMark(
+                            x: .value("Date", point.date),
+                            y: .value("Score", point.value)
+                        )
+                        .foregroundStyle(
+                            LinearGradient(colors: [DQColor.accent.opacity(0.16), .clear],
+                                           startPoint: .top, endPoint: .bottom)
+                        )
+                        .interpolationMethod(.catmullRom)
+                        LineMark(
+                            x: .value("Date", point.date),
+                            y: .value("Score", point.value)
+                        )
+                        .foregroundStyle(DQColor.accent)
+                        .interpolationMethod(.catmullRom)
+                        .lineStyle(StrokeStyle(lineWidth: 2.5, lineCap: .round))
+                        PointMark(
+                            x: .value("Date", point.date),
+                            y: .value("Score", point.value)
+                        )
+                        .foregroundStyle(DQColor.accentBright)
+                        .symbolSize(40)
+                    }
+                    .chartYScale(domain: 0...100)
+                    .chartXAxis {
+                        AxisMarks { _ in
+                            AxisValueLabel()
+                                .font(DQFont.mono(9))
+                                .foregroundStyle(DQColor.textSecondary)
+                        }
+                    }
+                    .chartYAxis {
+                        AxisMarks(values: [0, 25, 50, 75, 100]) { _ in
+                            AxisGridLine().foregroundStyle(DQColor.stroke)
+                            AxisValueLabel()
+                                .font(DQFont.mono(9))
+                                .foregroundStyle(DQColor.textSecondary)
+                        }
+                    }
+                    .frame(height: 170)
+                    .id(metric)
+
+                    // The honest takeaway line under the curve.
+                    if let first = points.first?.value, let last = points.last?.value {
+                        let delta = last - first
+                        HStack(spacing: 5) {
+                            Image(systemName: delta >= 0 ? "arrow.up.right" : "arrow.down.right")
+                                .font(.system(size: 11, weight: .bold))
+                            Text(verbatim: delta == 0
+                                 ? "Flat since your first scan"
+                                 : "\(delta > 0 ? "+" : "")\(delta) since your first scan")
+                                .font(DQFont.caption)
+                        }
+                        .foregroundStyle(delta >= 0 ? DQColor.deltaUp : DQColor.deltaDown)
+                    }
+                }
             }
         }
     }
@@ -299,6 +405,13 @@ struct DermiqProgressTab: View {
             .padding(.vertical, 24)
         }
     }
+}
+
+/// One (date, value) reading of a single metric — chart fodder.
+private struct MetricPoint: Identifiable {
+    let date: Date
+    let value: Int
+    var id: Date { date }
 }
 
 /// Side-by-side comparison of any two scans.
