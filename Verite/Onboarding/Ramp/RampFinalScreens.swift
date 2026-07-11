@@ -46,7 +46,7 @@ struct RampCurveScreen: View {
             }
             .padding(.horizontal, VSpace.xl)
 
-            RampDistributionCurve(range: range)
+            RampDistributionCurve(range: range, startDelay: Self.drawStartDelay)
                 .padding(.horizontal, VSpace.lg)
                 .padding(.top, VSpace.lg)
                 .vStaggeredAppear(index: 2)
@@ -77,6 +77,10 @@ struct RampCurveScreen: View {
         .task { await choreograph() }
     }
 
+    /// The draw waits for the screen's own entrance (spring + stagger) so the
+    /// user actually sees the line grow instead of it finishing invisibly.
+    static let drawStartDelay: Double = 0.65
+
     /// Haptic ticks riding the curve draw, then a milestone pulse as the
     /// user's band lights up (timed to RampDistributionCurve's constants).
     private func choreograph() async {
@@ -84,9 +88,11 @@ struct RampCurveScreen: View {
             bandShown = true
             return
         }
+        try? await Task.sleep(for: .milliseconds(Int(Self.drawStartDelay * 1000)))
+        guard !Task.isCancelled else { return }
         let drawMs = Int(RampDistributionCurve.drawDuration * 1000)
         for quarter in 1...3 {
-            try? await Task.sleep(for: .milliseconds(drawMs * quarter / 4))
+            try? await Task.sleep(for: .milliseconds(drawMs / 4))
             guard !Task.isCancelled else { return }
             Haptics.fire(.tick)
         }

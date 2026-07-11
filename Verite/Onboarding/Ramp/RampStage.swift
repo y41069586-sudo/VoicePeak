@@ -404,6 +404,11 @@ struct RampOptionCard: View {
 struct RampDistributionCurve: View {
     /// The quiz-predicted score band (0–100). Nil = generic center band.
     var range: (low: Int, high: Int)? = nil
+    /// Seconds to wait after appearing before the draw starts. The screen
+    /// itself fades/springs in for ~0.55 s — starting the draw immediately
+    /// meant most of it happened while the view was still invisible ("the
+    /// whole curve just spawns"). Hold until the user can actually watch.
+    var startDelay: Double = 0
 
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var startDate: Date = .distantFuture
@@ -453,8 +458,9 @@ struct RampDistributionCurve: View {
                     endPoint: CGPoint(x: 0, y: h)))
                 context.stroke(curve, with: .color(RampStage.accent.opacity(0.8)), lineWidth: 1.5)
 
-                // A small glowing tip riding the draw edge.
-                if progress < 1 {
+                // A small glowing tip riding the draw edge (only while
+                // actually drawing — not during the pre-start hold).
+                if progress > 0.01, progress < 1 {
                     let fx = CGFloat(visibleSteps) / CGFloat(steps)
                     let tip = CGPoint(x: fx * w, y: y(fx))
                     context.fill(
@@ -518,7 +524,9 @@ struct RampDistributionCurve: View {
         .frame(height: 172)
         .accessibilityHidden(true)
         .onAppear {
-            if startDate == .distantFuture { startDate = .now }
+            if startDate == .distantFuture {
+                startDate = Date.now.addingTimeInterval(startDelay)
+            }
         }
     }
 

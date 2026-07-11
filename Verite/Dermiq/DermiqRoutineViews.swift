@@ -5,36 +5,27 @@ import SwiftData
 // MARK: — Screen 6: Routine Generation (2s transition)
 // ============================================================
 
-/// Makes the routine feel derived, not generic: the user's actual bottom-3
-/// sub-scores are listed while the plan "builds".
+/// The plan builds as a JOURNEY: a smooth route draws itself down the screen,
+/// day stations check in as the line passes them — slow over the first days,
+/// then accelerating — and day 14 lands with a checkered flag. Same honest
+/// content (a 14-day plan being laid out), staged as the road ahead.
 struct DermiqRoutineGenView: View {
     let model: ScanFlowModel
     let onDone: () -> Void
 
-    @State private var stepCount = 0
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @State private var progress: CGFloat = 0
+    @State private var reachedCount = 0
     @State private var ready = false
 
-    private var buildSteps: [String] {
-        [
-            "Reading your three weakest metrics…",
-            "Choosing your morning steps…",
-            "Sequencing your evening actives…",
-            "Laying out all 14 days…",
-        ]
-    }
-
-    /// 0…1 across the four build steps; drives the ring.
-    private var progress: CGFloat {
-        ready ? 1 : CGFloat(stepCount) / CGFloat(buildSteps.count)
-    }
+    /// The day stations along the route (last = finish).
+    private static let days = [1, 3, 7, 10, 14]
+    /// Per-leg travel time — the route ACCELERATES toward day 14.
+    private static let legDurations: [Double] = [0.85, 0.70, 0.45, 0.32]
 
     var body: some View {
         VStack(spacing: 0) {
-            Spacer()
-
-            progressRing
-
-            Spacer().frame(height: 28)
+            Spacer().frame(height: 40)
 
             VStack(spacing: 8) {
                 Text("BUILT FROM YOUR SCAN")
@@ -47,80 +38,272 @@ struct DermiqRoutineGenView: View {
                     .multilineTextAlignment(.center)
                     .lineSpacing(2)
                     .contentTransition(.opacity)
+                    .animation(VMotion.gentle, value: ready)
             }
 
-            Spacer().frame(height: 36)
+            PlanRouteView(progress: progress,
+                          reachedCount: reachedCount,
+                          days: Self.days,
+                          finished: ready)
+                .padding(.horizontal, 36)
+                .padding(.vertical, 10)
 
-            // Just the work, ticking in — no card, no grid, no chips.
-            VStack(alignment: .leading, spacing: 16) {
-                ForEach(0..<buildSteps.count, id: \.self) { index in
-                    let done = index < stepCount
-                    HStack(spacing: 12) {
-                        Image(systemName: done ? "checkmark.circle.fill" : "circle")
-                            .font(.system(size: 18, weight: .medium))
-                            .foregroundStyle(done ? DQColor.deltaUp : DQColor.stroke)
-                            .contentTransition(.symbolEffect(.replace))
-                        Text(buildSteps[index])
-                            .font(DQFont.body)
-                            .foregroundStyle(done ? DQColor.textPrimary : DQColor.textSecondary)
-                            .fixedSize(horizontal: false, vertical: true)
-                        Spacer(minLength: 0)
-                    }
-                    .opacity(done || index == stepCount ? 1 : 0.35)
-                }
-            }
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .padding(.horizontal, 44)
-            .animation(VMotion.gentle, value: stepCount)
-
-            Spacer()
+            Text("Morning & evening — aimed at your three weakest scores.")
+                .font(DQFont.caption)
+                .foregroundStyle(DQColor.textSecondary)
+                .multilineTextAlignment(.center)
+                .padding(.horizontal, 40)
+                .padding(.bottom, 46)
         }
         .background(DQColor.background.ignoresSafeArea())
-        .task { await runBuild() }
+        .task { await travel() }
     }
 
-    /// A thin gradient ring that fills step by step; flips to a checkmark
-    /// when the plan lands.
-    private var progressRing: some View {
-        ZStack {
-            Circle()
-                .stroke(DQColor.accentSoft, lineWidth: 8)
-            Circle()
-                .trim(from: 0, to: progress)
-                .stroke(DQColor.accentGradient,
-                        style: StrokeStyle(lineWidth: 8, lineCap: .round))
-                .rotationEffect(.degrees(-90))
-            if ready {
-                Image(systemName: "checkmark")
-                    .font(.system(size: 30, weight: .heavy))
-                    .foregroundStyle(DQColor.accentBright)
-                    .transition(.scale.combined(with: .opacity))
-            } else {
-                Text(verbatim: "\(Int(progress * 100))%")
-                    .font(.system(size: 22, weight: .heavy, design: .rounded).monospacedDigit())
-                    .foregroundStyle(DQColor.textPrimary)
-                    .contentTransition(.numericText(value: Double(progress)))
-            }
+    /// Drives the trip: hold for the screen entrance, pop day 1, then run the
+    /// legs with rising speed; day 14 lands with the milestone pulse.
+    private func travel() async {
+        if reduceMotion {
+            progress = 1
+            reachedCount = Self.days.count
+            ready = true
+            try? await Task.sleep(for: .milliseconds(900))
+            if !Task.isCancelled { onDone() }
+            return
         }
-        .frame(width: 96, height: 96)
-        .animation(VMotion.gentle, value: progress)
-        .animation(VMotion.snappy, value: ready)
-    }
 
-    private func runBuild() async {
-        for index in 1...buildSteps.count {
-            try? await Task.sleep(for: .milliseconds(520))
-            guard !Task.isCancelled else { return }
-            stepCount = index
-            Haptics.fire(.tick)
-        }
-        try? await Task.sleep(for: .milliseconds(400))
+        // Let the screen's own crossfade land before the route moves.
+        try? await Task.sleep(for: .milliseconds(450))
         guard !Task.isCancelled else { return }
+        reachedCount = 1                                  // Day 1 — checked.
+        Haptics.fire(.tick)
+
+        let fractions = PlanRoute.nodeFractions
+        for leg in 0..<Self.legDurations.count {
+            let duration = Self.legDurations[leg]
+            withAnimation(.easeInOut(duration: duration)) {
+                progress = fractions[leg + 1]
+            }
+            try? await Task.sleep(for: .milliseconds(Int(duration * 1000)))
+            guard !Task.isCancelled else { return }
+            reachedCount = leg + 2
+            Haptics.fire(leg == Self.legDurations.count - 1 ? .milestone : .tick)
+        }
+
         withAnimation(VMotion.snappy) { ready = true }
-        Haptics.fire(.milestone)
-        try? await Task.sleep(for: .milliseconds(800))
+        try? await Task.sleep(for: .milliseconds(950))
         guard !Task.isCancelled else { return }
         onDone()
+    }
+}
+
+// ============================================================
+// MARK: — The route (path + day stations)
+// ============================================================
+
+/// Geometry of the journey: waypoints snake down the canvas (right → left →
+/// right → left → finish), smoothed with Catmull-Rom and sampled into a
+/// polyline so trim-by-length and node fractions line up exactly.
+private enum PlanRoute {
+
+    /// Relative waypoints, top to bottom. One per day station.
+    static let waypoints: [CGPoint] = [
+        CGPoint(x: 0.72, y: 0.06),   // Day 1
+        CGPoint(x: 0.24, y: 0.30),   // Day 3
+        CGPoint(x: 0.74, y: 0.54),   // Day 7
+        CGPoint(x: 0.26, y: 0.78),   // Day 10
+        CGPoint(x: 0.62, y: 0.94),   // Day 14 — finish
+    ]
+
+    /// Catmull-Rom through the waypoints, sampled densely (normalized space).
+    static let samples: [CGPoint] = {
+        var result: [CGPoint] = []
+        let pts = waypoints
+        let n = pts.count
+        for i in 0..<(n - 1) {
+            let p0 = pts[max(i - 1, 0)]
+            let p1 = pts[i]
+            let p2 = pts[i + 1]
+            let p3 = pts[min(i + 2, n - 1)]
+            let steps = 28
+            for s in 0..<steps {
+                let t = CGFloat(s) / CGFloat(steps)
+                result.append(catmullRom(p0, p1, p2, p3, t))
+            }
+        }
+        result.append(pts[n - 1])
+        return result
+    }()
+
+    /// Cumulative normalized arc length at every sample.
+    static let cumulative: [CGFloat] = {
+        var out: [CGFloat] = [0]
+        for i in 1..<samples.count {
+            let dx = samples[i].x - samples[i - 1].x
+            let dy = samples[i].y - samples[i - 1].y
+            out.append(out[i - 1] + (dx * dx + dy * dy).squareRoot())
+        }
+        return out
+    }()
+
+    /// Arc-length fraction (0…1) at each waypoint — the animation targets.
+    static let nodeFractions: [CGFloat] = {
+        let total = cumulative.last ?? 1
+        let perSegment = 28
+        return (0..<waypoints.count).map { i in
+            let index = min(i * perSegment, cumulative.count - 1)
+            return cumulative[index] / total
+        }
+    }()
+
+    /// Point on the route at arc-length fraction `f`, scaled to `size`.
+    static func point(at f: CGFloat, in size: CGSize) -> CGPoint {
+        let total = cumulative.last ?? 1
+        let target = max(0, min(1, f)) * total
+        var i = 1
+        while i < cumulative.count - 1, cumulative[i] < target { i += 1 }
+        let segment = cumulative[i] - cumulative[i - 1]
+        let t = segment > 0 ? (target - cumulative[i - 1]) / segment : 0
+        let a = samples[i - 1], b = samples[i]
+        return CGPoint(x: (a.x + (b.x - a.x) * t) * size.width,
+                       y: (a.y + (b.y - a.y) * t) * size.height)
+    }
+
+    private static func catmullRom(_ p0: CGPoint, _ p1: CGPoint,
+                                   _ p2: CGPoint, _ p3: CGPoint,
+                                   _ t: CGFloat) -> CGPoint {
+        let t2 = t * t, t3 = t2 * t
+        func axis(_ a: CGFloat, _ b: CGFloat, _ c: CGFloat, _ d: CGFloat) -> CGFloat {
+            0.5 * ((2 * b)
+                   + (-a + c) * t
+                   + (2 * a - 5 * b + 4 * c - d) * t2
+                   + (-a + 3 * b - 3 * c + d) * t3)
+        }
+        return CGPoint(x: axis(p0.x, p1.x, p2.x, p3.x),
+                       y: axis(p0.y, p1.y, p2.y, p3.y))
+    }
+}
+
+/// The route, trimmed by `progress`; upcoming road is a faint dashed hint.
+private struct PlanRouteShape: Shape {
+    var progress: CGFloat
+
+    var animatableData: CGFloat {
+        get { progress }
+        set { progress = newValue }
+    }
+
+    func path(in rect: CGRect) -> Path {
+        var path = Path()
+        let samples = PlanRoute.samples
+        guard let total = PlanRoute.cumulative.last, total > 0,
+              let first = samples.first else { return path }
+        let target = total * max(0, min(1, progress))
+
+        path.move(to: scaled(first, rect))
+        for i in 1..<samples.count {
+            let length = PlanRoute.cumulative[i]
+            if length <= target {
+                path.addLine(to: scaled(samples[i], rect))
+            } else {
+                let previous = PlanRoute.cumulative[i - 1]
+                let segment = length - previous
+                let t = segment > 0 ? (target - previous) / segment : 0
+                if t > 0 {
+                    let a = samples[i - 1], b = samples[i]
+                    path.addLine(to: scaled(
+                        CGPoint(x: a.x + (b.x - a.x) * t, y: a.y + (b.y - a.y) * t), rect))
+                }
+                break
+            }
+        }
+        return path
+    }
+
+    private func scaled(_ p: CGPoint, _ rect: CGRect) -> CGPoint {
+        CGPoint(x: rect.minX + p.x * rect.width, y: rect.minY + p.y * rect.height)
+    }
+}
+
+/// Route + stations + moving tip. Pure presentation — the parent drives
+/// `progress`/`reachedCount`.
+private struct PlanRouteView: View {
+    let progress: CGFloat
+    let reachedCount: Int
+    let days: [Int]
+    let finished: Bool
+
+    var body: some View {
+        GeometryReader { proxy in
+            let size = proxy.size
+            ZStack {
+                // The road ahead — faint, dashed.
+                PlanRouteShape(progress: 1)
+                    .stroke(DQColor.stroke,
+                            style: StrokeStyle(lineWidth: 3, lineCap: .round, dash: [1, 10]))
+
+                // The traveled road — solid, glowing.
+                PlanRouteShape(progress: progress)
+                    .stroke(DQColor.accentGradient,
+                            style: StrokeStyle(lineWidth: 4.5, lineCap: .round))
+                    .shadow(color: DQColor.accent.opacity(0.45), radius: 6)
+
+                // The moving tip.
+                if progress > 0.001, !finished {
+                    Circle()
+                        .fill(Color.white)
+                        .frame(width: 13, height: 13)
+                        .overlay(Circle().strokeBorder(DQColor.accent, lineWidth: 3.5))
+                        .shadow(color: DQColor.accent.opacity(0.6), radius: 7)
+                        .position(PlanRoute.point(at: progress, in: size))
+                }
+
+                // Day stations.
+                ForEach(Array(days.enumerated()), id: \.offset) { index, day in
+                    let waypoint = PlanRoute.waypoints[index]
+                    let center = CGPoint(x: waypoint.x * size.width,
+                                         y: waypoint.y * size.height)
+                    let isFinish = index == days.count - 1
+                    let reached = index < reachedCount
+
+                    stationNode(reached: reached, finish: isFinish)
+                        .position(center)
+
+                    Text("Day \(day)")
+                        .font(.system(size: 13,
+                                      weight: reached ? .bold : .semibold,
+                                      design: .rounded))
+                        .foregroundStyle(reached ? DQColor.accentBright : DQColor.textSecondary)
+                        .position(x: center.x + (waypoint.x < 0.5 ? 52 : -52), y: center.y)
+                        .animation(VMotion.gentle, value: reached)
+                }
+            }
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .accessibilityElement()
+        .accessibilityLabel("Your 14-day plan is being laid out")
+    }
+
+    @ViewBuilder
+    private func stationNode(reached: Bool, finish: Bool) -> some View {
+        let side: CGFloat = finish ? 40 : 28
+        ZStack {
+            Circle()
+                .fill(reached ? AnyShapeStyle(DQColor.accentGradient)
+                              : AnyShapeStyle(DQColor.surface))
+            Circle()
+                .strokeBorder(reached ? DQColor.accentBright : DQColor.stroke,
+                              lineWidth: reached ? 0 : 1.5)
+            if reached {
+                Image(systemName: finish ? "flag.checkered" : "checkmark")
+                    .font(.system(size: finish ? 16 : 12, weight: .heavy))
+                    .foregroundStyle(.white)
+                    .transition(.scale.combined(with: .opacity))
+            }
+        }
+        .frame(width: side, height: side)
+        .shadow(color: DQColor.accent.opacity(reached ? 0.35 : 0), radius: 9, y: 4)
+        .scaleEffect(reached ? 1 : 0.86)
+        .animation(VMotion.snappy, value: reached)
     }
 }
 
