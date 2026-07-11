@@ -229,12 +229,12 @@ workflows:
       xcode: latest
       ios_signing:
         distribution_type: app_store
-        # No `bundle_identifier:` — with it set, Codemagic fetches a profile
-        # ONLY for that one id. The app now embeds a widget extension
-        # (com.verite.com.widget), which needs its own profile too. Omitting
-        # the filter makes Codemagic fetch/create signing files for EVERY
-        # bundle id in the project (app + widget). Both App IDs must have the
-        # `group.verite.com` App Group enabled in the developer portal.
+        # bundle_identifier is REQUIRED by Codemagic. It is matched as a
+        # PREFIX, so `com.verite.com` also covers the embedded widget
+        # (`com.verite.com.widget`) — Codemagic fetches/creates profiles for
+        # both. Both App IDs must have the `group.verite.com` App Group
+        # enabled in the developer portal.
+        bundle_identifier: com.verite.com
       groups:
         - Verite   # PERFECTCORP_API_KEY + PERFECTCORP_RSA_KEY (secure)
       vars:
