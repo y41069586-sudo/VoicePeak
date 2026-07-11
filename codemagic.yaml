@@ -132,7 +132,9 @@ workflows:
           # don't burn units. Never fails the build (diagnostic only).
           set +e
           if [ "${RUN_API_E2E:-}" != "1" ]; then echo "RUN_API_E2E != 1 — E2E diagnostic skipped"; exit 0; fi
-          IMG="Verite/Resources/Photos/ScanHero.jpg"
+          # Face-filling crop (ScanHero is a wide shot → "face too small").
+          # Not under Verite/, so it is NOT bundled into the app.
+          IMG="ci/facetest.jpg"
           SIZE=$(wc -c < "$IMG" | tr -d ' ')
           echo "=== test image: $IMG ($SIZE bytes) ==="
 
