@@ -255,7 +255,7 @@ struct DermiqProgressTab: View {
                                     Haptics.fire(.tick)
                                     withAnimation(VMotion.gentle) { metric = category }
                                 } label: {
-                                    Text(category.displayName)
+                                    Text(LocalizedStringKey(category.displayName))
                                         .font(.system(size: 12, weight: .semibold, design: .rounded))
                                         .foregroundStyle(on ? Color.white : DQColor.accentBright)
                                         .padding(.horizontal, 11)

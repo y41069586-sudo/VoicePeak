@@ -88,7 +88,7 @@ struct DermiqSettingsView: View {
                 Spacer()
                 Picker("Language", selection: $languageOverride) {
                     ForEach(languages, id: \.code) { language in
-                        Text(language.label).tag(language.code)
+                        Text(LocalizedStringKey(language.label)).tag(language.code)
                     }
                 }
                 .tint(DQColor.accentBright)
@@ -99,7 +99,7 @@ struct DermiqSettingsView: View {
                 Spacer()
                 Picker("Daily reminder", selection: $reminderPref) {
                     ForEach(ReminderPref.allCases, id: \.rawValue) { pref in
-                        Text(pref.label).tag(pref.rawValue)
+                        Text(LocalizedStringKey(pref.label)).tag(pref.rawValue)
                     }
                 }
                 .tint(DQColor.accentBright)
@@ -295,7 +295,7 @@ struct DermiqSettingsView: View {
 
     private func settingsCard(_ title: String, @ViewBuilder rows: () -> some View) -> some View {
         VStack(alignment: .leading, spacing: 0) {
-            Text(title)
+            Text(LocalizedStringKey(title))
                 .font(DQFont.mono(11, weight: .semibold))
                 .foregroundStyle(DQColor.textSecondary)
                 .tracking(2)
@@ -317,7 +317,7 @@ struct DermiqSettingsView: View {
                 .font(.system(size: 15, weight: .medium))
                 .foregroundStyle(destructive ? DQColor.deltaDown : DQColor.accentBright)
                 .frame(width: 24)
-            Text(text)
+            Text(LocalizedStringKey(text))
                 .font(DQFont.body)
                 .foregroundStyle(destructive ? DQColor.deltaDown : DQColor.textPrimary)
         }

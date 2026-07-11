@@ -93,7 +93,7 @@ struct DermiqTheaterView: View {
         VStack(alignment: .leading, spacing: 6) {
             HStack(spacing: 5) {
                 Circle().fill(DQColor.accent).frame(width: 5, height: 5)
-                Text(label)
+                Text(LocalizedStringKey(label))
                     .font(DQFont.mono(9, weight: .semibold))
                     .tracking(1.4)
                     .foregroundStyle(DQColor.textPrimary)
@@ -179,7 +179,7 @@ struct DermiqTheaterView: View {
     private var statusOverlay: some View {
         VStack {
             Spacer()
-            Text(statusLabel)
+            Text(LocalizedStringKey(statusLabel))
                 .font(DQFont.mono(14))
                 .foregroundStyle(DQColor.textPrimary)
                 .padding(.horizontal, 18)

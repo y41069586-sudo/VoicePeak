@@ -146,7 +146,7 @@ struct DQBeforeAfterSlider: View {
     }
 
     private func tag(_ text: String, accent: Bool = false) -> some View {
-        Text(text)
+        Text(LocalizedStringKey(text))
             .font(DQFont.mono(10, weight: .bold))
             .tracking(1.5)
             .foregroundStyle(accent ? DQColor.accentBright : DQColor.textSecondary)
@@ -270,7 +270,7 @@ struct DQShareCard: View {
             .frame(width: 150, height: 340)
             .clipped()
             .overlay(alignment: .bottom) {
-                Text(label)
+                Text(LocalizedStringKey(label))
                     .font(DQFont.mono(9, weight: .bold))
                     .tracking(1.5)
                     .foregroundStyle(DQColor.textPrimary)

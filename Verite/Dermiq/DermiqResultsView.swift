@@ -179,7 +179,7 @@ struct DermiqResultsView: View {
 
     private func segment(title: String, active: Bool, action: @escaping () -> Void) -> some View {
         Button(action: action) {
-            Text(title)
+            Text(LocalizedStringKey(title))
                 .font(.system(size: 15, weight: .bold, design: .rounded))
                 .foregroundStyle(active ? DQColor.accentBright : DQColor.textSecondary)
                 .frame(maxWidth: .infinity)
@@ -249,7 +249,7 @@ struct DermiqResultsView: View {
         let tinted = lead || showProjected
         return VStack(alignment: .leading, spacing: 7) {
             HStack(spacing: 5) {
-                Text(label)
+                Text(LocalizedStringKey(label))
                     .font(.system(size: 13, weight: .semibold, design: .rounded))
                     .foregroundStyle(DQColor.textSecondary)
                     .lineLimit(1)
@@ -521,11 +521,11 @@ struct DermiqPaywallCard: View {
             HStack {
                 VStack(alignment: .leading, spacing: 2) {
                     HStack(spacing: 8) {
-                        Text(title)
+                        Text(LocalizedStringKey(title))
                             .font(DQFont.headline)
                             .foregroundStyle(DQColor.textPrimary)
                         if let badge {
-                            Text(badge)
+                            Text(LocalizedStringKey(badge))
                                 .font(DQFont.mono(9, weight: .bold))
                                 .foregroundStyle(Color.white)
                                 .padding(.horizontal, 6)

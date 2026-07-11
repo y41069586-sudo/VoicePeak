@@ -91,7 +91,7 @@ struct DQSubScoreCard: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
             HStack(alignment: .firstTextBaseline) {
-                Text(score.category.displayName)
+                Text(LocalizedStringKey(score.category.displayName))
                     .font(DQFont.caption)
                     .foregroundStyle(DQColor.textSecondary)
                     .lineLimit(1)

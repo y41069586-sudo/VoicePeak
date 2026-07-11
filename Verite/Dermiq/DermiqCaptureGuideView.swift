@@ -93,7 +93,7 @@ struct DermiqCaptureGuideView: View {
     private func guideCard(title: String, tint: Color, symbol: String,
                            rows: [(String, String)]) -> some View {
         VStack(alignment: .leading, spacing: 14) {
-            Text(title)
+            Text(LocalizedStringKey(title))
                 .font(DQFont.mono(11, weight: .bold))
                 .foregroundStyle(tint)
                 .tracking(3)
@@ -102,7 +102,7 @@ struct DermiqCaptureGuideView: View {
                     Image(systemName: symbol)
                         .font(.system(size: 18, weight: .medium))
                         .foregroundStyle(tint)
-                    Text(row.1)
+                    Text(LocalizedStringKey(row.1))
                         .font(DQFont.headline)
                         .foregroundStyle(DQColor.textPrimary)
                         .fixedSize(horizontal: false, vertical: true)

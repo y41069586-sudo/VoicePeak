@@ -209,7 +209,7 @@ struct DermiqRoutineTab: View {
             // The three targets — quiet little chips, no borders shouting.
             HStack(spacing: 6) {
                 ForEach(plan.targets) { target in
-                    Text(target.category.displayName)
+                    Text(LocalizedStringKey(target.category.displayName))
                         .font(.system(size: 11.5, weight: .semibold, design: .rounded))
                         .foregroundStyle(DQColor.accentBright)
                         .lineLimit(1)
@@ -358,7 +358,7 @@ struct DermiqRoutineTab: View {
                         .frame(width: 32, height: 32)
                         .background((complete ? DQColor.deltaUp : DQColor.accentBright).opacity(0.10),
                                     in: RoundedRectangle(cornerRadius: 10, style: .continuous))
-                    Text(title)
+                    Text(LocalizedStringKey(title))
                         .font(.system(size: 17, weight: .bold, design: .rounded))
                         .foregroundStyle(DQColor.textPrimary)
                     Spacer()
@@ -445,11 +445,11 @@ private struct DermiqStepRow: View {
                             .contentTransition(.symbolEffect(.replace))
                             .scaleEffect(done ? 1.0 : 0.96)
                         VStack(alignment: .leading, spacing: 2) {
-                            Text(step.productType)
+                            Text(LocalizedStringKey(step.productType))
                                 .font(DQFont.headline)
                                 .foregroundStyle(done ? DQColor.textSecondary : DQColor.textPrimary)
                                 .strikethrough(done, color: DQColor.textSecondary.opacity(0.6))
-                            Text(step.active)
+                            Text(LocalizedStringKey(step.active))
                                 .font(DQFont.mono(11))
                                 .foregroundStyle(DQColor.accentBright)
                                 .lineLimit(1)
@@ -489,7 +489,7 @@ private struct DermiqStepRow: View {
                                 .foregroundStyle(DQColor.accentBright)
                                 .tracking(1.5)
                             ForEach(step.examples, id: \.self) { example in
-                                Text(example)
+                                Text(LocalizedStringKey(example))
                                     .font(DQFont.caption)
                                     .foregroundStyle(DQColor.textSecondary)
                             }

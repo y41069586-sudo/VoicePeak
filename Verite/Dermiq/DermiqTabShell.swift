@@ -101,7 +101,7 @@ struct DermiqTabShell: View {
                     VStack(spacing: 3) {
                         Image(systemName: item.icon)
                             .font(.system(size: 19, weight: tab == item ? .semibold : .regular))
-                        Text(item.title)
+                        Text(LocalizedStringKey(item.title))
                             .font(DQFont.micro)
                     }
                     .foregroundStyle(tab == item ? DQColor.accentBright : DQColor.textSecondary)
@@ -185,7 +185,7 @@ struct DermiqScanHome: View {
 
     private var header: some View {
         HStack(spacing: 14) {
-            Text(greeting)
+            Text(LocalizedStringKey(greeting))
                 .font(.system(size: 15, weight: .semibold, design: .rounded))
                 .foregroundStyle(DQColor.textSecondary)
             Spacer()
@@ -380,7 +380,7 @@ struct DermiqScanHome: View {
                     .font(DQFont.mono(9, weight: .semibold))
                     .foregroundStyle(DQColor.textSecondary)
                     .tracking(1.5)
-                Text(dailyTip)
+                Text(LocalizedStringKey(dailyTip))
                     .font(DQFont.caption)
                     .foregroundStyle(DQColor.textPrimary)
                     .fixedSize(horizontal: false, vertical: true)

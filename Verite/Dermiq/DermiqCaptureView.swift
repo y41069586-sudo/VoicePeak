@@ -209,7 +209,7 @@ private struct ChecklistRow: View {
                 .font(.system(size: 14, weight: .semibold))
                 .foregroundStyle(passed ? DQColor.deltaUp : DQColor.textSecondary.opacity(0.6))
                 .contentTransition(.symbolEffect(.replace))
-            Text(label)
+            Text(LocalizedStringKey(label))
                 .font(DQFont.mono(13))
                 .foregroundStyle(passed ? DQColor.textPrimary : DQColor.textSecondary)
         }
