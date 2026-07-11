@@ -179,22 +179,17 @@ workflows:
               echo "task_id: ${TID:-EMPTY}"
               if [ -n "$TID" ]; then
                 LAST=""
-                for i in $(seq 1 20); do
-                  sleep 4
+                for i in $(seq 1 30); do
+                  sleep 5
                   P=$(curl -sS "https://yce-api-01.perfectcorp.com/s2s/v2.0/task/skin-analysis/$TID" -H "Authorization: Bearer $TOKEN")
                   LAST="$P"
-                  # Print the FULL structure of the first poll so we see the
-                  # real field names (last run misread the HTTP status as task
-                  # status). Then a compact per-poll status guess.
-                  if [ "$i" = "1" ]; then
-                    echo "----- RAW POLL #1 (full structure) -----"; echo "$P" | head -c 1800; echo
-                  fi
-                  ST=$(echo "$P" | jq -r '(.data.status // .data.task_status // .data.state // .result.status // "running")')
-                  RESKEYS=$(echo "$P" | jq -r '(.data.results // .result.results) | if . then (if type=="array" then "array" else keys end) else "none" end' 2>/dev/null)
-                  echo "poll $i: status=$ST  results=$RESKEYS"
-                  case "$ST" in success|done|completed|finished|error|failed|fail)
-                    break;; esac
-                  if [ "$RESKEYS" != "none" ] && [ "$RESKEYS" != "null" ]; then break; fi
+                  ST=$(echo "$P" | jq -r '(.data.task_status // .data.status // .data.state // "running")')
+                  # results_filled = a non-empty object/array (empty {} means
+                  # still running — do NOT stop on that).
+                  FILLED=$(echo "$P" | jq -r '((.data.results // {}) | if ((type=="object" and (length>0)) or (type=="array" and (length>0))) then "yes" else "no" end)' 2>/dev/null)
+                  echo "poll $i: task_status=$ST results_filled=$FILLED"
+                  case "$ST" in success|done|completed|finished|error|failed|fail) break;; esac
+                  [ "$FILLED" = "yes" ] && break
                 done
                 echo "===== FINAL / LAST POLL RESPONSE ====="; echo "$LAST" | head -c 6000; echo
               fi
