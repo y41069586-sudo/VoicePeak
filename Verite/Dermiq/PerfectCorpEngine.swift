@@ -94,7 +94,8 @@ final class PerfectCorpSkinEngine: DermiqAnalysisEngine {
         ]
         request.httpBody = try JSONSerialization.data(withJSONObject: ["files": [fileEntry]])
         let json = try await Self.json(for: request)
-        guard let file = ((json["result"] as? [String: Any])?["files"] as? [[String: Any]])?.first,
+        // v2.0 wraps the payload in "data"; older versions use "result".
+        guard let file = (Self.container(json)["files"] as? [[String: Any]])?.first,
               let fileID = file["file_id"] as? String,
               let put = (file["requests"] as? [[String: Any]])?.first,
               let putURLString = put["url"] as? String,
@@ -130,12 +131,16 @@ final class PerfectCorpSkinEngine: DermiqAnalysisEngine {
         ]
         request.httpBody = try JSONSerialization.data(withJSONObject: body)
         let json = try await Self.json(for: request)
-        let container = (json["result"] as? [String: Any]) ?? (json["data"] as? [String: Any])
-        guard let taskID = container?["task_id"] as? String
+        guard let taskID = (Self.container(json)["task_id"] as? String)
                 ?? (json["task_id"] as? String) else {
             throw DermiqEngineError.badResponse
         }
         return taskID
+    }
+
+    /// v2.0 responses wrap the payload in "data"; older ones use "result".
+    private static func container(_ json: [String: Any]) -> [String: Any] {
+        (json["result"] as? [String: Any]) ?? (json["data"] as? [String: Any]) ?? json
     }
 
     // MARK: Step 5 — poll until done, return the `results` object

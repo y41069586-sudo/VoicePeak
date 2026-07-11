@@ -152,42 +152,41 @@ workflows:
               -d "{\"client_id\":\"$API_CLEAN\",\"id_token\":\"$IDT\"}" | jq -r '.result.access_token // empty')
             echo "access_token: $([ -n "$TOKEN" ] && echo got || echo EMPTY)"
 
-            FID=""; PUT_URL=""; GOODVER=""
-            for V in v2.0 v1.1 v1.0; do
-              echo "----- declare file @ /s2s/$V/file/skin-analysis -----"
-              D=$(curl -sS -X POST "https://yce-api-01.perfectcorp.com/s2s/$V/file/skin-analysis" \
-                -H "Authorization: Bearer $TOKEN" -H 'Content-Type: application/json' \
-                -d "{\"files\":[{\"content_type\":\"image/jpeg\",\"file_name\":\"scan.jpg\",\"file_size\":$SIZE}]}")
-              echo "$D" | head -c 700; echo
-              FID=$(echo "$D" | jq -r '.result.files[0].file_id // empty')
-              PUT_URL=$(echo "$D" | jq -r '.result.files[0].requests[0].url // empty')
-              if [ -n "$FID" ] && [ -n "$PUT_URL" ]; then GOODVER=$V; echo ">>> declare OK on $V"; break; fi
-            done
+            # v2.0 for everything; responses use the "data" envelope (v1.x used
+            # "result"), so parse both. jq helper: .result.X // .data.X
+            echo "----- declare file @ /s2s/v2.0/file/skin-analysis -----"
+            D=$(curl -sS -X POST "https://yce-api-01.perfectcorp.com/s2s/v2.0/file/skin-analysis" \
+              -H "Authorization: Bearer $TOKEN" -H 'Content-Type: application/json' \
+              -d "{\"files\":[{\"content_type\":\"image/jpeg\",\"file_name\":\"scan.jpg\",\"file_size\":$SIZE}]}")
+            echo "$D" | head -c 500; echo
+            FID=$(echo "$D" | jq -r '(.result.files[0].file_id // .data.files[0].file_id) // empty')
+            PUT_URL=$(echo "$D" | jq -r '(.result.files[0].requests[0].url // .data.files[0].requests[0].url) // empty')
+            CT=$(echo "$D" | jq -r '(.result.files[0].requests[0].headers."Content-Type" // .data.files[0].requests[0].headers."Content-Type") // "image/jpeg"')
+            echo "file_id: $([ -n "$FID" ] && echo got || echo EMPTY)"
 
-            if [ -n "$FID" ]; then
-              CT=$(echo "$D" | jq -r '.result.files[0].requests[0].headers."Content-Type" // "image/jpeg"')
+            if [ -n "$FID" ] && [ -n "$PUT_URL" ]; then
               echo "----- PUT bytes to presigned url -----"
               PUTCODE=$(curl -sS -o /dev/null -w '%{http_code}' -X PUT "$PUT_URL" -H "Content-Type: $CT" --data-binary @"$IMG")
               echo "PUT status: $PUTCODE"
-              echo "----- start task @ /s2s/$GOODVER/task/skin-analysis -----"
-              T=$(curl -sS -X POST "https://yce-api-01.perfectcorp.com/s2s/$GOODVER/task/skin-analysis" \
+              echo "----- start task @ /s2s/v2.0/task/skin-analysis -----"
+              T=$(curl -sS -X POST "https://yce-api-01.perfectcorp.com/s2s/v2.0/task/skin-analysis" \
                 -H "Authorization: Bearer $TOKEN" -H 'Content-Type: application/json' \
                 -d "{\"src_file_id\":\"$FID\",\"dst_actions\":[\"hd_texture\",\"hd_redness\",\"hd_pore\",\"hd_age_spot\",\"hd_radiance\",\"hd_moisture\",\"hd_acne\"],\"format\":\"json\"}")
               echo "$T" | head -c 700; echo
-              TID=$(echo "$T" | jq -r '.result.task_id // .data.task_id // .task_id // empty')
+              TID=$(echo "$T" | jq -r '(.result.task_id // .data.task_id // .task_id) // empty')
               echo "task_id: ${TID:-EMPTY}"
               if [ -n "$TID" ]; then
-                for i in 1 2 3 4 5 6 7 8 9 10; do
+                for i in 1 2 3 4 5 6 7 8 9 10 11 12; do
                   sleep 3
-                  P=$(curl -sS "https://yce-api-01.perfectcorp.com/s2s/$GOODVER/task/skin-analysis/$TID" -H "Authorization: Bearer $TOKEN")
-                  ST=$(echo "$P" | jq -r '.result.status // .data.status // .status // "?"')
+                  P=$(curl -sS "https://yce-api-01.perfectcorp.com/s2s/v2.0/task/skin-analysis/$TID" -H "Authorization: Bearer $TOKEN")
+                  ST=$(echo "$P" | jq -r '(.result.status // .data.status // .status) // "?"')
                   echo "poll $i: status=$ST"
                   case "$ST" in success|done|completed|error|failed|fail)
-                    echo "===== FINAL TASK RESPONSE ====="; echo "$P" | head -c 3000; echo; break;; esac
+                    echo "===== FINAL TASK RESPONSE ====="; echo "$P" | head -c 4000; echo; break;; esac
                 done
               fi
             else
-              echo ">>> declare FAILED on all versions — data-plane host/path differs (maybe yce-api-01.makeupar.com)"
+              echo ">>> declare failed to yield a file_id/url — see response above"
             fi
           else
             echo "Perfect Corp keys not set"
