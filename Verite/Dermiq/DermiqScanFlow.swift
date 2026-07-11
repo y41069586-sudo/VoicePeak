@@ -130,6 +130,7 @@ final class ScanFlowModel {
         )
         context.insert(plan)
         try? context.save()
+        WidgetBridge.publish(plan)
         RampAnalytics.track("plan_created", [
             "targets": targets.map(\.category.rawValue).joined(separator: ","),
         ])

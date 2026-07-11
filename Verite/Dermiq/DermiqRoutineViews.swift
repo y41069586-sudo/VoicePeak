@@ -349,6 +349,9 @@ struct DermiqRoutineTab: View {
         }
         .scrollIndicators(.hidden)
         .background(DQColor.background.ignoresSafeArea())
+        // Keep the Home Screen widget in sync with what's on screen — covers
+        // the midnight day rollover and any edit made elsewhere.
+        .onAppear { WidgetBridge.publish(plan) }
     }
 
     // MARK: Active plan
@@ -593,6 +596,7 @@ struct DermiqRoutineTab: View {
         let wasComplete = plan.blockComplete(day: day, block)
         plan.toggle(day: day, block: block, step: step)
         try? modelContext.save()
+        WidgetBridge.publish(plan)
         Haptics.fire(.selection)
         if !wasComplete && plan.blockComplete(day: day, block) {
             // Block just finished → the day tile fills. Commit-grade haptic.

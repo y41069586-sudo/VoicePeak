@@ -32,25 +32,49 @@ targets:
     settings:
       base:
         INFOPLIST_FILE: Verite/Resources/Info.plist
-        # Sign in with Apple is OFF for signing right now (the App ID doesn't
-        # carry the capability yet, which fails release archiving). To enable:
-        #   1. developer.apple.com → App ID com.verite.com → tick "Sign in with
-        #      Apple", save (Codemagic regenerates the profile next build).
-        #   2. Uncomment the line below.
-        #   3. Set FeatureFlags.appleSignInEnabled = true.
-        # CODE_SIGN_ENTITLEMENTS: Verite/Verite.entitlements
+        # Entitlements carry the App Group (shared with the widget). The group
+        # `group.com.verite.com` must be enabled for App ID com.verite.com in
+        # the Apple Developer portal, or release archiving fails at signing.
+        # Sign in with Apple lives in the same file but stays commented until
+        # its own capability is enabled in the portal.
+        CODE_SIGN_ENTITLEMENTS: Verite/Verite.entitlements
         PRODUCT_BUNDLE_IDENTIFIER: com.verite.com
         ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
         SUPPORTS_MACCATALYST: NO
         TARGETED_DEVICE_FAMILY: "1" # iPhone only
         # The two feature-flag SDKs (StoreKit/Supabase) are OFF by default and
         # require no linked frameworks until their milestones are enabled.
+    dependencies:
+      - target: VeriteWidget
+        embed: true
     # DO NOT add an `info:` block here. XcodeGen REGENERATES the plist at
     # `info.path` on every `xcodegen generate` (CI runs it every build),
     # overwriting the hand-written Verite/Resources/Info.plist with 8 boiler-
     # plate keys — silently dropping UILaunchStoryboardName (=> tiny legacy
     # compatibility window on iPad), NSCameraUsageDescription, UIAppFonts,
     # orientations, and everything else. INFOPLIST_FILE above is sufficient.
+
+  VeriteWidget:
+    type: app-extension
+    platform: iOS
+    deploymentTarget: "17.0"
+    sources:
+      # The extension compiles its own files plus the shared snapshot type.
+      # WidgetShared.swift is ALSO in the app target (via the Verite glob) —
+      # that's intended; it's the one type both sides encode/decode.
+      - path: VeriteWidget
+        excludes:
+          - "**/*.md"
+      - path: Verite/Widget/WidgetShared.swift
+    settings:
+      base:
+        INFOPLIST_FILE: VeriteWidget/Info.plist
+        CODE_SIGN_ENTITLEMENTS: VeriteWidget/VeriteWidget.entitlements
+        PRODUCT_BUNDLE_IDENTIFIER: com.verite.com.widget
+        SUPPORTS_MACCATALYST: NO
+        TARGETED_DEVICE_FAMILY: "1" # iPhone only
+        # WidgetKit extensions ship a display name + no launch storyboard.
+        CFBundleDisplayName: Vérité
 
 schemes:
   Verite:
