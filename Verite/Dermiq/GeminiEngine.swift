@@ -24,14 +24,47 @@ final class GeminiEnhancementEngine: FaceEnhancementEngine {
         "https://generativelanguage.googleapis.com/v1beta/models/\(model):generateContent"
 
     /// IDENTITY PRESERVATION IS NON-NEGOTIABLE. This exact instruction ships
-    /// with every request: same person, same structure — only skin improved.
+    /// with every request. Structure matters for nano banana: an explicit
+    /// edit framing, a hard identity contract, a whitelist of the ONLY
+    /// allowed changes, and a realism anchor — so the result reads as the
+    /// same photo on the person's best skin day, never a beauty filter.
     static let identityPrompt = """
-    Edit this exact photograph. Enhance ONLY the skin of this exact person. \
-    Preserve identity completely: same person, same facial structure, same \
-    angle, same lighting, same expression, same hair, same background. Improve \
-    ONLY skin clarity, texture, tone evenness, and glow to a realistic, natural \
-    optimal state — no makeup, no reshaping. Never alter bone structure, eyes, \
-    nose, lips, hair, or face shape. Return the edited photograph.
+    Edit this photograph. This is a skin-retouching task only.
+
+    THE PERSON MUST REMAIN 100% IDENTICAL AND RECOGNIZABLE — treat this as \
+    the same photo of the same person, taken on the same day:
+    - Do not change face shape, bone structure, jawline, cheekbones, chin, \
+    forehead, ears, nose, lips, teeth, or eyes (same iris color, same eye \
+    shape, same eyebrows).
+    - Do not change hair (same hairstyle, hairline, color, individual \
+    strands), facial hair, makeup level, or facial expression.
+    - Do not change head pose, camera angle, framing, crop, background, \
+    clothing, jewelry, or the lighting's direction and color temperature.
+    - Keep permanent identity marks exactly where they are: moles, freckles, \
+    birthmarks, scars.
+    - Do not slim, reshape, or beautify any facial proportions. No \
+    digital-art or beauty-filter look.
+
+    CHANGE ONLY THE SKIN CONDITION, as if this person had followed a perfect \
+    skincare routine for two weeks:
+    - Heal active blemishes: pimples, whiteheads, acne spots, and irritation \
+    are cleared.
+    - Calm diffuse redness around the nose, cheeks, and chin to an even, \
+    healthy tone.
+    - Even out patchy pigmentation and dark post-acne marks, while keeping \
+    the person's natural skin tone and undertone at exactly the same depth — \
+    never lighten or darken the overall complexion.
+    - Slightly refine visible pores and rough texture in the T-zone; up \
+    close the skin still shows realistic pores and fine natural texture.
+    - Add a healthy, hydrated glow: subtle natural light reflection on the \
+    high points (forehead, cheekbones, nose bridge), like well-moisturized \
+    real skin — not oily shine, not a blur filter, not porcelain smoothing.
+    - Slightly reduce dark under-eye tint, keeping natural under-eye anatomy.
+
+    The result must look like a real, unedited photograph of this same \
+    person on their best skin day — natural photo grain, realistic texture, \
+    believable as a dermatologist's after-photo. Return only the edited \
+    photograph.
     """
 
     func enhance(image: UIImage) async throws -> UIImage {
