@@ -36,9 +36,15 @@ struct DermiqResultsView: View {
     /// The post-scan review ask fires at most once, ever (system throttles too).
     @AppStorage("dermiq.reviewAsked") private var reviewAsked = false
 
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
     @State private var revealed = false
     @State private var countUpFinished = false
     @State private var shareURL: URL?
+    /// 0…1 multiplier on every score during the reveal count-up.
+    @State private var countReveal: Double = 1
+    /// Brief scale bump on the Overall number when the count-up lands.
+    @State private var overallPulse = false
 
     /// The iOS-style segmented toggle: false = your score now, true = the
     /// conservative 14-day projection. Flipping it re-drives every grid cell.
@@ -217,12 +223,14 @@ struct DermiqResultsView: View {
                 metricCell(label: "Overall",
                            now: analysis.overall,
                            projected: projection.overall,
-                           lead: true, locked: locked)
+                           lead: true, locked: locked,
+                           reveal: countReveal, pulse: overallPulse)
                 ForEach(analysis.subScores) { score in
                     metricCell(label: score.category.displayName,
                                now: score.value,
                                projected: projection.value(for: score.category) ?? score.value,
-                               lead: false, locked: locked)
+                               lead: false, locked: locked,
+                               reveal: countReveal)
                 }
             }
             .padding(.horizontal, 20)
@@ -243,8 +251,10 @@ struct DermiqResultsView: View {
     /// value morphs to the 14-day figure, the bar tints brighter, and a small
     /// ↑/↓ delta chip shows the change. `lead` (Overall) tints its number.
     private func metricCell(label: String, now: Int, projected: Int,
-                            lead: Bool, locked: Bool) -> some View {
+                            lead: Bool, locked: Bool,
+                            reveal: Double = 1, pulse: Bool = false) -> some View {
         let value = showProjected ? projected : now
+        let shown = Int((Double(value) * reveal).rounded())   // count-up multiplier
         let delta = projected - now
         let tinted = lead || showProjected
         return VStack(alignment: .leading, spacing: 7) {
@@ -258,16 +268,17 @@ struct DermiqResultsView: View {
                     deltaChip(delta)
                 }
             }
-            Text(verbatim: "\(value)")
+            Text(verbatim: "\(shown)")
                 .font(.system(size: 27, weight: .heavy, design: .rounded).monospacedDigit())
                 .foregroundStyle(tinted ? DQColor.accentBright : DQColor.textPrimary)
-                .contentTransition(.numericText(value: Double(value)))
+                .contentTransition(.numericText(value: Double(shown)))
+                .scaleEffect(pulse ? 1.08 : 1)
                 .blur(radius: locked ? 9 : 0)
             GeometryReader { proxy in
                 ZStack(alignment: .leading) {
                     Capsule().fill(DQColor.stroke.opacity(0.7))
                     Capsule().fill(showProjected ? DQColor.accentBright : DQColor.accent)
-                        .frame(width: proxy.size.width * CGFloat(value) / 100)
+                        .frame(width: proxy.size.width * CGFloat(shown) / 100)
                 }
             }
             .frame(height: 6)
@@ -350,13 +361,39 @@ struct DermiqResultsView: View {
 
     private func unlockAndReveal() {
         guard !revealed else { return }
-        // The value-blur dissolves as `revealed` flips; the CTA follows.
-        withAnimation(.easeOut(duration: 0.7)) { revealed = true }
-        Task {
-            try? await Task.sleep(for: .milliseconds(800))
-            withAnimation(VMotion.gentle) { countUpFinished = true }
-        }
+        // The value-blur dissolves as `revealed` flips; the scores then race up.
+        withAnimation(.easeOut(duration: 0.6)) { revealed = true }
         afterUnlock()
+
+        if reduceMotion {
+            countReveal = 1
+            withAnimation(VMotion.gentle) { countUpFinished = true }
+            return
+        }
+        countReveal = 0
+        Task { await runScoreCountUp() }
+    }
+
+    /// The reveal moment: every number races up, decelerates as it lands, a
+    /// haptic crescendo thins out with it, then a milestone tap + a brief pulse
+    /// on the Overall. No grid flash — the count-up carries the moment.
+    private func runScoreCountUp() async {
+        let steps = 26
+        for i in 1...steps {
+            let t = Double(i) / Double(steps)
+            withAnimation(.linear(duration: 0.05)) {
+                countReveal = 1 - pow(1 - t, 2.4)          // easeOut → decelerates
+            }
+            if i % 2 == 0 { Haptics.fire(.tick) }          // ticks thin out as it slows
+            try? await Task.sleep(for: .seconds(0.026 + 0.055 * t))
+            if Task.isCancelled { return }
+        }
+        withAnimation(.easeOut(duration: 0.12)) { countReveal = 1 }
+        Haptics.fire(.milestone)
+        withAnimation(VMotion.snappy) { overallPulse = true }
+        try? await Task.sleep(for: .milliseconds(170))
+        withAnimation(VMotion.gentle) { overallPulse = false }
+        withAnimation(VMotion.gentle) { countUpFinished = true }
     }
 
     /// Post-unlock side effects: render the shareable Reading Card, and — from

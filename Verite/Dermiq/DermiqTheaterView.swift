@@ -6,9 +6,12 @@ import UIKit
 // MARK: — Screen 3: Analysis Sequence (the theater)
 // ============================================================
 
-/// 6–8 staged seconds that sell the app. No spinner anywhere. If the engine is
-/// slower than the animation the status-label stage loops gracefully; if it's
-/// faster, the full sequence still plays — the duration is intentional.
+/// 6–8 staged seconds that sell the app. No spinner. Instead of a geometric
+/// face-landmark mesh (which read as looks-rating), the skin itself is
+/// sampled: a dense field of analysis points spreads across the WHOLE face and
+/// is read top-to-bottom by a scan line — a skincare surface analysis, not a
+/// face-geometry outline. If the engine is slower than the animation the
+/// status-label stage loops gracefully.
 struct DermiqTheaterView: View {
     let model: ScanFlowModel
     let onDone: () -> Void
@@ -19,14 +22,13 @@ struct DermiqTheaterView: View {
     @State private var clinical = false          // desaturated treatment
     @State private var sweepProgress: CGFloat = -0.15
     @State private var sweepVisible = false
-    @State private var mesh: FaceMesh = .empty
-    @State private var pointsVisible = false
-    @State private var linesVisible = false
+    @State private var field: FaceField = .empty
+    @State private var fieldVisible = false
     @State private var collapsed = false
     @State private var detailsVisible = false
     @State private var statusLabel = ""
 
-    // Corner readouts shown while the mesh reads — labels + measuring bars, no
+    // Corner readouts shown while the skin reads — labels + measuring bars, no
     // committed numbers (the honest score only lands at the end).
     private let readouts: [(label: String, fill: CGFloat, at: UnitPoint)] = [
         ("TEXTURE",   0.72, UnitPoint(x: 0.20, y: 0.24)),
@@ -36,11 +38,10 @@ struct DermiqTheaterView: View {
     ]
 
     // Honest, self-referential steps only — no invented corpus sizes (2.3.1).
-    // The lifestyle line ties the scan back to the onboarding answers.
     private let statusLabels = [
-        "Mapping texture…",
-        "Measuring redness…",
-        "Analyzing pore density…",
+        "Reading your skin surface…",
+        "Mapping texture & pores…",
+        "Measuring redness & tone…",
         "Weighing your lifestyle answers…",
     ]
 
@@ -59,7 +60,7 @@ struct DermiqTheaterView: View {
                         .opacity(photoVisible ? (clinical ? 0.85 : 1) : 0)
                         .ignoresSafeArea()
 
-                    meshLayer(size: proxy.size, imageSize: image.size)
+                    skinFieldLayer(size: proxy.size, imageSize: image.size)
 
                     if sweepVisible {
                         scanLine(size: proxy.size)
@@ -73,6 +74,27 @@ struct DermiqTheaterView: View {
         }
         .ignoresSafeArea()
         .task { await run() }
+    }
+
+    // MARK: The skin-sampling field (dots across the whole face)
+
+    private func skinFieldLayer(size: CGSize, imageSize: CGSize) -> some View {
+        ZStack {
+            ForEach(Array(field.points.enumerated()), id: \.offset) { _, p in
+                let pt = map(p, imageSize: imageSize, viewSize: size)
+                // Top points light up first → the scan reads down the face.
+                let delay = fieldVisible ? Double(p.y) * 1.5 : 0
+                Circle()
+                    .fill(DQColor.accentBright)
+                    .frame(width: 3, height: 3)
+                    .opacity(fieldVisible ? (collapsed ? 0 : 0.85) : 0)
+                    .scaleEffect(fieldVisible ? 1 : 0.2)
+                    .position(pt)
+                    .animation(.easeOut(duration: 0.5).delay(delay), value: fieldVisible)
+                    .animation(.easeIn(duration: 0.4), value: collapsed)
+            }
+        }
+        .allowsHitTesting(false)
     }
 
     // MARK: Chart readouts (measuring chips around the face)
@@ -131,34 +153,6 @@ struct DermiqTheaterView: View {
         .allowsHitTesting(false)
     }
 
-    // MARK: Mesh layer
-
-    private func meshLayer(size: CGSize, imageSize: CGSize) -> some View {
-        Canvas { context, _ in
-            guard pointsVisible, !mesh.points.isEmpty else { return }
-            let mapped = mesh.points.map { map($0, imageSize: imageSize, viewSize: size) }
-
-            if linesVisible {
-                var path = Path()
-                for (a, b) in mesh.edges {
-                    path.move(to: mapped[a])
-                    path.addLine(to: mapped[b])
-                }
-                context.stroke(path, with: .color(DQColor.accent.opacity(0.35)), lineWidth: 0.6)
-            }
-            for point in mapped {
-                let dot = CGRect(x: point.x - 1.3, y: point.y - 1.3, width: 2.6, height: 2.6)
-                context.fill(Path(ellipseIn: dot), with: .color(DQColor.accentBright.opacity(0.9)))
-            }
-        }
-        .opacity(pointsVisible ? (collapsed ? 0 : 1) : 0)
-        .scaleEffect(collapsed ? 0.005 : 1, anchor: mesh.anchor)
-        .animation(.easeIn(duration: 0.5), value: collapsed)
-        .animation(.easeInOut(duration: 0.8), value: pointsVisible)
-        .animation(.easeInOut(duration: 0.8), value: linesVisible)
-        .allowsHitTesting(false)
-    }
-
     /// Maps a normalized (0–1, y-down) image point through the aspect-fill crop.
     private func map(_ point: CGPoint, imageSize: CGSize, viewSize: CGSize) -> CGPoint {
         guard imageSize.width > 0, imageSize.height > 0 else { return .zero }
@@ -198,52 +192,47 @@ struct DermiqTheaterView: View {
     private func run() async {
         guard let image = model.capturedImage else { onDone(); return }
 
-        // Stage 1 — photo appears
+        // Stage 1 — photo appears, skin field detected in the background.
         withAnimation(.easeOut(duration: 0.3)) { photoVisible = true }
-        async let meshTask = FaceMesh.detect(in: image)
-        try? await Task.sleep(for: .milliseconds(450))
+        async let fieldTask = FaceField.detect(in: image)
+        try? await Task.sleep(for: .milliseconds(400))
+        field = await fieldTask
 
         if reduceMotion {
-            // Reduced sequence: clinical treatment + labels, no sweeps/mesh motion.
             clinical = true
-            mesh = await meshTask
-            pointsVisible = true; linesVisible = true
+            fieldVisible = true
             detailsVisible = true
             await cycleLabels(minimumCycles: 2)
             onDone()
             return
         }
 
-        // Stage 2 — two sweeps + clinical desaturation
+        // Stage 2 — clinical desaturation + one downward read; the sampling
+        // field lights up top-to-bottom in sync with the scan line.
         Haptics.fire(.transition)
+        withAnimation(.easeInOut(duration: 0.9)) { clinical = true }
         sweepVisible = true
-        withAnimation(.easeInOut(duration: 1.0)) { clinical = true }
-        for _ in 0..<2 {
-            sweepProgress = -0.12
-            withAnimation(.easeInOut(duration: 1.05)) { sweepProgress = 1.1 }
-            try? await Task.sleep(for: .milliseconds(1100))
-        }
+        sweepProgress = -0.12
+        withAnimation(.easeInOut(duration: 1.7)) { sweepProgress = 1.12 }
+        fieldVisible = true
+        try? await Task.sleep(for: .milliseconds(1750))
         sweepVisible = false
 
-        // Stage 3 — landmark points, then connecting lines
+        // Stage 3 — the measuring chips settle in.
         Haptics.fire(.transition)
-        mesh = await meshTask
-        pointsVisible = true
-        try? await Task.sleep(for: .milliseconds(500))
-        linesVisible = true
         withAnimation { detailsVisible = true }
-        try? await Task.sleep(for: .milliseconds(800))
+        try? await Task.sleep(for: .milliseconds(700))
 
-        // Stage 4 — status labels (~1s each); loops while the engine is slow
+        // Stage 4 — status labels (~1s each); loops while the engine is slow.
         Haptics.fire(.transition)
         await cycleLabels(minimumCycles: 1)
 
-        // Stage 5 — mesh collapses into a single point → cut to results
+        // Stage 5 — everything dissolves → cut to results.
         Haptics.fire(.transition)
         statusLabel = ""
         withAnimation(.easeIn(duration: 0.35)) { detailsVisible = false }
         collapsed = true
-        try? await Task.sleep(for: .milliseconds(560))
+        try? await Task.sleep(for: .milliseconds(520))
         onDone()
     }
 
@@ -262,72 +251,63 @@ struct DermiqTheaterView: View {
 }
 
 // ============================================================
-// MARK: — Face mesh extraction (Vision)
+// MARK: — Skin sampling field (Vision face box → dot field)
 // ============================================================
 
-/// Landmark points (normalized, y-down) + nearest-neighbor edges.
-struct FaceMesh: Sendable {
+/// A dense field of sample points spread across the whole face region
+/// (normalized, y-down). Not landmarks — a skin-surface sampling grid clipped
+/// to the face oval, so the read looks like skincare, not face geometry.
+struct FaceField: Sendable {
     let points: [CGPoint]
-    let edges: [(Int, Int)]
-    /// Collapse anchor — the mesh centroid in unit coordinates.
+    /// Field centroid in unit coordinates (collapse/scale anchor).
     let anchor: UnitPoint
 
-    static let empty = FaceMesh(points: [], edges: [], anchor: .center)
+    static let empty = FaceField(points: [], anchor: .center)
 
-    static func detect(in image: UIImage) async -> FaceMesh {
+    static func detect(in image: UIImage) async -> FaceField {
         await Task.detached(priority: .userInitiated) {
-            guard let cgImage = image.cgImage else { return .empty }
-            let request = VNDetectFaceLandmarksRequest()
-            let handler = VNImageRequestHandler(
-                cgImage: cgImage,
-                orientation: CGImagePropertyOrientation(image.imageOrientation),
-                options: [:]
-            )
-            try? handler.perform([request])
-
-            guard let face = request.results?.max(by: { $0.boundingBox.height < $1.boundingBox.height }),
-                  let all = face.landmarks?.allPoints else {
-                return .empty
-            }
-
-            let box = face.boundingBox // Vision: origin bottom-left
-            let points: [CGPoint] = all.normalizedPoints.map { p in
-                CGPoint(
-                    x: box.minX + CGFloat(p.x) * box.width,
-                    y: 1 - (box.minY + CGFloat(p.y) * box.height) // flip to y-down
+            // Find the face box (Vision, bottom-left origin) or fall back to a
+            // sensible centered region so the field always draws.
+            var box = CGRect(x: 0.28, y: 0.20, width: 0.44, height: 0.52) // y-down fallback
+            if let cgImage = image.cgImage {
+                let request = VNDetectFaceRectanglesRequest()
+                let handler = VNImageRequestHandler(
+                    cgImage: cgImage,
+                    orientation: CGImagePropertyOrientation(image.imageOrientation),
+                    options: [:]
                 )
+                try? handler.perform([request])
+                if let face = request.results?.max(by: { $0.boundingBox.height < $1.boundingBox.height }) {
+                    let b = face.boundingBox
+                    box = CGRect(x: b.minX, y: 1 - b.minY - b.height, width: b.width, height: b.height)
+                }
             }
-            return FaceMesh(points: points, edges: edges(for: points), anchor: centroid(of: points))
+
+            // Jittered grid, kept inside the inscribed ellipse → whole-face fill.
+            let cols = 9, rows = 13
+            var points: [CGPoint] = []
+            for r in 0..<rows {
+                for c in 0..<cols {
+                    let seed = r * cols + c
+                    let jx = (pseudo(seed, 12.9898) - 0.5) * 0.7
+                    let jy = (pseudo(seed, 78.233) - 0.5) * 0.7
+                    let u = (CGFloat(c) + 0.5) / CGFloat(cols) + jx / CGFloat(cols)
+                    let v = (CGFloat(r) + 0.5) / CGFloat(rows) + jy / CGFloat(rows)
+                    let dx = (u - 0.5) / 0.5, dy = (v - 0.5) / 0.5
+                    guard dx * dx + dy * dy <= 1.0 else { continue }   // inside the oval
+                    points.append(CGPoint(x: box.minX + u * box.width,
+                                          y: box.minY + v * box.height))
+                }
+            }
+            return FaceField(points: points,
+                             anchor: UnitPoint(x: box.midX, y: box.midY))
         }.value
     }
 
-    /// Connect each point to its 2 nearest neighbors (n ≈ 80 → trivial O(n²)).
-    private static func edges(for points: [CGPoint]) -> [(Int, Int)] {
-        var result: [(Int, Int)] = []
-        var seen = Set<Int>()
-        for i in points.indices {
-            let nearest = points.indices
-                .filter { $0 != i }
-                .sorted {
-                    hypot(points[$0].x - points[i].x, points[$0].y - points[i].y)
-                    < hypot(points[$1].x - points[i].x, points[$1].y - points[i].y)
-                }
-                .prefix(2)
-            for j in nearest {
-                let key = i < j ? i * 10_000 + j : j * 10_000 + i
-                if seen.insert(key).inserted {
-                    result.append((min(i, j), max(i, j)))
-                }
-            }
-        }
-        return result
-    }
-
-    private static func centroid(of points: [CGPoint]) -> UnitPoint {
-        guard !points.isEmpty else { return .center }
-        let x = points.map(\.x).reduce(0, +) / CGFloat(points.count)
-        let y = points.map(\.y).reduce(0, +) / CGFloat(points.count)
-        return UnitPoint(x: x, y: y)
+    /// Deterministic pseudo-random in 0…1.
+    private static func pseudo(_ i: Int, _ salt: Double) -> CGFloat {
+        let v = sin(Double(i + 1) * salt) * 43758.5453
+        return CGFloat(v - floor(v))
     }
 }
 
