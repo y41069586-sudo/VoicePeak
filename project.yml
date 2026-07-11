@@ -33,7 +33,7 @@ targets:
       base:
         INFOPLIST_FILE: Verite/Resources/Info.plist
         # Entitlements carry the App Group (shared with the widget). The group
-        # `group.com.verite.com` must be enabled for App ID com.verite.com in
+        # `group.verite.com` must be enabled for App ID com.verite.com in
         # the Apple Developer portal, or release archiving fails at signing.
         # Sign in with Apple lives in the same file but stays commented until
         # its own capability is enabled in the portal.

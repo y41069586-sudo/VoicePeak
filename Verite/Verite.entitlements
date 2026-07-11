@@ -8,7 +8,7 @@
 	     (release) build fails at the signing step. Same string on both sides. -->
 	<key>com.apple.security.application-groups</key>
 	<array>
-		<string>group.com.verite.com</string>
+		<string>group.verite.com</string>
 	</array>
 
 	<!-- Sign in with Apple (onboarding sign-in screen). OFF for signing until

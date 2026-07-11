@@ -32,7 +32,7 @@ struct VeriteWidgetSnapshot: Codable {
 enum VeriteWidgetStore {
     /// Must match the App Group enabled in the developer portal for BOTH
     /// com.verite.com and com.verite.com.widget.
-    static let appGroup = "group.com.verite.com"
+    static let appGroup = "group.verite.com"
     private static let key = "widget.snapshot.v1"
 
     static func write(_ snapshot: VeriteWidgetSnapshot) {
