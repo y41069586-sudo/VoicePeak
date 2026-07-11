@@ -82,7 +82,10 @@ workflows:
           API_CLEAN="$(printf '%s' "$PERFECTCORP_API_KEY" | tr -d ' \t\r\n')"
           RSA_CLEAN="$(printf '%s' "$PERFECTCORP_RSA_KEY" | sed -E 's/-----[^-]*-----//g' | tr -d ' \t\r\n')"
           echo "API key: ${#API_CLEAN} chars (expect ~60-70, starts sk-)"
-          echo "RSA key: ${#RSA_CLEAN} base64 chars (a 1024-bit public key is ~216)"
+          echo "RSA key: ${#RSA_CLEAN} base64 chars (a valid key is exactly 216)"
+          case "$RSA_CLEAN" in MIGf*) echo "  starts 'MIGf': yes";; *) echo "  starts 'MIGf': NO ← wrong value";; esac
+          case "$RSA_CLEAN" in *IDAQAB) echo "  ends 'IDAQAB': yes";; *) echo "  ends 'IDAQAB': NO ← truncated/wrong";; esac
+          echo "  length mod 4 = $(( ${#RSA_CLEAN} % 4 )) (must be 0; else a character is missing)"
           printf '%s\n' '-----BEGIN PUBLIC KEY-----' > /tmp/pc.pem
           printf '%s' "$RSA_CLEAN" | fold -w64 >> /tmp/pc.pem
           printf '\n%s\n' '-----END PUBLIC KEY-----' >> /tmp/pc.pem
