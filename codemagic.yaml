@@ -315,7 +315,14 @@ workflows:
           # MUST be enabled + saved on that App ID in the portal — otherwise
           # this profile has no App Group and archiving still fails.
           if [ -n "$CERT_ID" ] && [ -n "$WIDGET_APPID" ]; then
-            app-store-connect create-profile "$WIDGET_APPID" "$CERT_ID" --type IOS_APP_STORE --name "Verite Widget CI $(date +%s)" --save \
+            # Correct arg shape (per the CLI usage): the bundle-id resource is
+            # the sole positional; the cert goes through --certificate-ids.
+            app-store-connect create-profile \
+              --certificate-ids "$CERT_ID" \
+              --type IOS_APP_STORE \
+              --name "Verite Widget CI $(date +%s)" \
+              --save \
+              "$WIDGET_APPID" \
               && echo "Widget App Store profile created + saved." \
               || echo "WARNING: create-profile failed (see output above)."
           else
