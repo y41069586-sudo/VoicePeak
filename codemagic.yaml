@@ -284,7 +284,7 @@ workflows:
           # certificate id). jq / naive regex tripped on the log prefix.
           cat > /tmp/pickid.py <<'PY'
           import sys, json
-          mode = sys.argv[1] if len(sys.argv) > 1 else 'appid'
+          mode = sys.argv[1] if len(sys.argv) > 1 else 'first'
           raw = sys.stdin.read()
           dec = json.JSONDecoder()
           arr = None
@@ -299,34 +299,43 @@ workflows:
                       break
           if not arr:
               print(''); sys.exit(0)
-          if mode == 'cert':
-              dist = [c['id'] for c in arr if 'DISTRIBUTION' in ((c.get('attributes') or {}).get('certificateType') or '')]
-              print(dist[0] if dist else arr[0]['id'])
+          if mode == 'allcerts':
+              # EVERY distribution cert id — the profile must include whichever
+              # one xcodebuild signs with (there can be more than one).
+              ids = [c['id'] for c in arr if 'DISTRIBUTION' in ((c.get('attributes') or {}).get('certificateType') or '')]
+              print(' '.join(ids))
+          elif mode.startswith('bundle:'):
+              target = mode.split(':', 1)[1]
+              match = [b['id'] for b in arr if ((b.get('attributes') or {}).get('identifier')) == target]
+              print(match[0] if match else '')
           else:
               print(arr[0]['id'])
           PY
 
-          CERT_ID=$(app-store-connect list-certificates --json 2>&1 | python3 /tmp/pickid.py cert)
-          WIDGET_APPID=$(app-store-connect list-bundle-ids --bundle-id-identifier com.verite.com.widget --json 2>&1 | python3 /tmp/pickid.py appid)
-          echo "Resolved -> cert id: ${CERT_ID:-NONE} | widget app id: ${WIDGET_APPID:-NONE}"
+          CERT_IDS=$(app-store-connect list-certificates --json 2>&1 | python3 /tmp/pickid.py allcerts)
+          APP_APPID=$(app-store-connect list-bundle-ids --bundle-id-identifier com.verite.com --json 2>&1 | python3 /tmp/pickid.py bundle:com.verite.com)
+          WIDGET_APPID=$(app-store-connect list-bundle-ids --bundle-id-identifier com.verite.com.widget --json 2>&1 | python3 /tmp/pickid.py bundle:com.verite.com.widget)
+          echo "Dist certs: ${CERT_IDS:-NONE}"
+          echo "App IDs -> app: ${APP_APPID:-NONE} | widget: ${WIDGET_APPID:-NONE}"
 
-          # Mint the widget's App Store profile. It inherits whatever
-          # capabilities are enabled on com.verite.com.widget, so the App Group
-          # MUST be enabled + saved on that App ID in the portal — otherwise
-          # this profile has no App Group and archiving still fails.
-          if [ -n "$CERT_ID" ] && [ -n "$WIDGET_APPID" ]; then
-            # Correct arg shape (per the CLI usage): the bundle-id resource is
-            # the sole positional; the cert goes through --certificate-ids.
-            app-store-connect create-profile \
-              --certificate-ids "$CERT_ID" \
-              --type IOS_APP_STORE \
-              --name "Verite Widget CI $(date +%s)" \
-              --save \
-              "$WIDGET_APPID" \
-              && echo "Widget App Store profile created + saved." \
-              || echo "WARNING: create-profile failed (see output above)."
+          # Codemagic's automatic pre-fetch reuses a STALE app profile ("Verite1")
+          # that predates the App Group, and a widget profile can carry the wrong
+          # cert. Clear ALL downloaded profiles, then mint fresh App Store profiles
+          # for BOTH bundle ids — each including EVERY distribution cert (so the
+          # "Apple Distribution" signing identity is covered) and inheriting the
+          # App Group enabled on the App IDs. The cert stays in the keychain.
+          rm -f "$HOME/Library/Developer/Xcode/UserData/Provisioning Profiles/"*.mobileprovision 2>/dev/null
+          rm -f "$HOME/Library/MobileDevice/Provisioning Profiles/"*.mobileprovision 2>/dev/null
+
+          if [ -n "$CERT_IDS" ] && [ -n "$APP_APPID" ] && [ -n "$WIDGET_APPID" ]; then
+            app-store-connect create-profile --certificate-ids $CERT_IDS \
+              --type IOS_APP_STORE --name "Verite App CI $(date +%s)" --save "$APP_APPID" \
+              && echo "App profile created + saved." || echo "WARNING: app profile creation failed."
+            app-store-connect create-profile --certificate-ids $CERT_IDS \
+              --type IOS_APP_STORE --name "Verite Widget CI $(date +%s)" --save "$WIDGET_APPID" \
+              && echo "Widget profile created + saved." || echo "WARNING: widget profile creation failed."
           else
-            echo "WARNING: could not resolve cert / widget App ID; widget profile not minted."
+            echo "WARNING: missing certs or app ids — cannot mint profiles."
           fi
 
           set -e
