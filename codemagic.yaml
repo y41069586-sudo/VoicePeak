@@ -290,18 +290,19 @@ workflows:
           # Widget App ID, so the App Group MUST be enabled + saved on
           # com.verite.com.widget in the developer portal for this to carry it.
 
-          # Distribution certificate id (try the unified "Apple Distribution"
-          # type first, then the legacy iOS one).
-          CERT_ID=$(app-store-connect list-certificates --type DISTRIBUTION --json 2>/dev/null | jq -r '.[0].id // empty')
-          if [ -z "$CERT_ID" ]; then
-            CERT_ID=$(app-store-connect list-certificates --type IOS_DISTRIBUTION --json 2>/dev/null | jq -r '.[0].id // empty')
-          fi
+          # NOTE: parse with python, not jq — codemagic-cli-tools can print a
+          # log line before the JSON array on stdout, which trips jq ("Invalid
+          # numeric literal"). The regex grabs the first [...] array from the
+          # output regardless of any leading noise.
+
+          # Distribution certificate resource id. List ALL certs (no risky
+          # --type flag) and pick the first whose certificateType contains
+          # DISTRIBUTION; fall back to the first cert if none is tagged.
+          CERT_ID=$(app-store-connect list-certificates --json 2>/dev/null | python3 -c "import sys,json,re; m=re.search(r'\[.*\]', sys.stdin.read(), re.S); d=json.loads(m.group(0)) if m else []; ids=[c['id'] for c in d if isinstance(c,dict) and 'DISTRIBUTION' in ((c.get('attributes') or {}).get('certificateType') or '')]; print(ids[0] if ids else (d[0]['id'] if d and isinstance(d[0],dict) else ''))" 2>/dev/null || true)
           echo "Distribution certificate resource id: ${CERT_ID:-NONE}"
 
           # Widget App ID resource id (exact match on the bundle identifier).
-          WIDGET_APPID=$(app-store-connect list-bundle-ids \
-            --bundle-id-identifier com.verite.com.widget \
-            --bundle-id-identifier-strict-match --json 2>/dev/null | jq -r '.[0].id // empty')
+          WIDGET_APPID=$(app-store-connect list-bundle-ids --bundle-id-identifier com.verite.com.widget --bundle-id-identifier-strict-match --json 2>/dev/null | python3 -c "import sys,json,re; m=re.search(r'\[.*\]', sys.stdin.read(), re.S); d=json.loads(m.group(0)) if m else []; print(d[0]['id'] if d and isinstance(d[0],dict) else '')" 2>/dev/null || true)
           echo "Widget App ID resource id: ${WIDGET_APPID:-NONE}"
 
           if [ -n "$CERT_ID" ] && [ -n "$WIDGET_APPID" ]; then
