@@ -11,8 +11,10 @@ import UIKit
 // straight into the AVAssetWriter's pixel-buffer pool — no intermediate
 // UIImage per frame, so exports finish in a few seconds.
 
-/// One scan as reel input. Plain value data so the composer can run off-main.
-struct ReelFrame {
+/// One scan as reel input. `@unchecked Sendable`: the only non-Sendable member
+/// is `image`, and we only ever READ it (immutable UIImage) across the export
+/// task boundary — safe to hand to the detached composer.
+struct ReelFrame: @unchecked Sendable {
     let image: UIImage
     let dayLabel: String   // "DAY 1"
     let score: Int
