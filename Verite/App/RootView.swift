@@ -28,6 +28,9 @@ struct RootView: View {
         .tint(DQColor.accent)
         .preferredColorScheme(.light) // warm GlamUp light, app-wide
         .task { SeedData.seedCatalogIfNeeded(modelContext) }
+        // Skin Duel invite/result links (verite://duel?d=…) land in the inbox;
+        // the Duel tab picks them up and routes accordingly.
+        .onOpenURL { url in DuelInbox.shared.handle(url) }
     }
 }
 

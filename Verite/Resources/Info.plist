@@ -33,6 +33,20 @@
 	<key>ITSAppUsesNonExemptEncryption</key>
 	<false/>
 
+	<!-- Custom URL scheme for Skin Duel invite/result deep links
+	     (verite://duel?d=…). Opened via .onOpenURL in RootView. -->
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleURLName</key>
+			<string>com.verite.com</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>verite</string>
+			</array>
+		</dict>
+	</array>
+
 	<!-- App Store category. -->
 	<key>LSApplicationCategoryType</key>
 	<string>public.app-category.lifestyle</string>

@@ -8,12 +8,13 @@ import UIKit
 
 struct DermiqTabShell: View {
     enum Tab: String, CaseIterable {
-        case scan, routine, progress
+        case scan, routine, duel, progress
 
         var title: String {
             switch self {
             case .scan: return "Home"
             case .routine: return "Routine"
+            case .duel: return "Duel"
             case .progress: return "Progress"
             }
         }
@@ -22,6 +23,7 @@ struct DermiqTabShell: View {
             switch self {
             case .scan: return "house.fill"
             case .routine: return "checklist"
+            case .duel: return "flag.checkered.2.crossed"
             case .progress: return "chart.line.uptrend.xyaxis"
             }
         }
@@ -34,6 +36,7 @@ struct DermiqTabShell: View {
     @State private var showFlow = false
     @State private var showSettings = false
     @State private var autoLaunched = false
+    @State private var duelInbox = DuelInbox.shared
 
     var body: some View {
         ZStack(alignment: .bottom) {
@@ -49,6 +52,8 @@ struct DermiqTabShell: View {
                     )
                 case .routine:
                     DermiqRoutineTab { startScan() }
+                case .duel:
+                    DuelTab { startScan() }
                 case .progress:
                     DermiqProgressTab()
                 }
@@ -83,6 +88,10 @@ struct DermiqTabShell: View {
             var transaction = Transaction()
             transaction.disablesAnimations = true
             withTransaction(transaction) { showFlow = true }
+        }
+        // A tapped duel link jumps straight to the Duel tab, which consumes it.
+        .onChange(of: duelInbox.pending?.id) { _, id in
+            if id != nil { withAnimation(VMotion.snappy) { tab = .duel } }
         }
     }
 

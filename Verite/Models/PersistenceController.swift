@@ -18,6 +18,7 @@ enum Persistence {
         // v2 (Dermiq) experience
         ScanRecord.self,
         RoutinePlan.self,
+        SkinDuel.self,
     ])
 
     /// The on-disk container the live app uses.
