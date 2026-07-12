@@ -276,51 +276,39 @@ workflows:
         script: xcodegen generate --spec project.yml
       - name: Set up signing
         script: |
-          set -e
-          # The automatic app_store_connect signing imports the distribution
-          # certificate and provisions the MAIN app, but it never provisions
-          # the embedded widget (com.verite.com.widget is a separate bundle id
-          # + its own App Group entitlement). So we mint the widget's App Store
-          # profile ourselves via the API. create-profile needs only the
-          # certificate's RESOURCE id — not its private key — so it works with
-          # the integration-managed cert (unlike fetch-signing-files, which
-          # tries to re-save the cert and fails without the private key).
-          #
-          # The profile inherits whatever capabilities are enabled on the
-          # Widget App ID, so the App Group MUST be enabled + saved on
-          # com.verite.com.widget in the developer portal for this to carry it.
+          # Diagnostic + best-effort widget provisioning. Do NOT abort on the
+          # API probes — we want the full picture in the log even if a call
+          # fails. (`set -e` is re-enabled just before use-profiles.)
+          set +e
 
-          # NOTE: parse with python, not jq — codemagic-cli-tools can print a
-          # log line before the JSON array on stdout, which trips jq ("Invalid
-          # numeric literal"). The regex grabs the first [...] array from the
-          # output regardless of any leading noise.
+          echo "=== App Store Connect API credential presence ==="
+          [ -n "$APP_STORE_CONNECT_ISSUER_ID" ]     && echo "issuer id:   SET" || echo "issuer id:   MISSING"
+          [ -n "$APP_STORE_CONNECT_KEY_IDENTIFIER" ] && echo "key id:      SET" || echo "key id:      MISSING"
+          [ -n "$APP_STORE_CONNECT_PRIVATE_KEY" ]    && echo "private key: SET" || echo "private key: MISSING"
 
-          # Distribution certificate resource id. List ALL certs (no risky
-          # --type flag) and pick the first whose certificateType contains
-          # DISTRIBUTION; fall back to the first cert if none is tagged.
-          CERT_ID=$(app-store-connect list-certificates --json 2>/dev/null | python3 -c "import sys,json,re; m=re.search(r'\[.*\]', sys.stdin.read(), re.S); d=json.loads(m.group(0)) if m else []; ids=[c['id'] for c in d if isinstance(c,dict) and 'DISTRIBUTION' in ((c.get('attributes') or {}).get('certificateType') or '')]; print(ids[0] if ids else (d[0]['id'] if d and isinstance(d[0],dict) else ''))" 2>/dev/null || true)
-          echo "Distribution certificate resource id: ${CERT_ID:-NONE}"
+          echo "=== list-certificates (raw stdout+stderr, first 40 lines) ==="
+          app-store-connect list-certificates --json 2>&1 | head -40
+          echo "=== list-bundle-ids com.verite.com.widget (raw, first 40 lines) ==="
+          app-store-connect list-bundle-ids --bundle-id-identifier com.verite.com.widget --json 2>&1 | head -40
+          echo "================================================================"
 
-          # Widget App ID resource id (exact match on the bundle identifier).
-          WIDGET_APPID=$(app-store-connect list-bundle-ids --bundle-id-identifier com.verite.com.widget --bundle-id-identifier-strict-match --json 2>/dev/null | python3 -c "import sys,json,re; m=re.search(r'\[.*\]', sys.stdin.read(), re.S); d=json.loads(m.group(0)) if m else []; print(d[0]['id'] if d and isinstance(d[0],dict) else '')" 2>/dev/null || true)
-          echo "Widget App ID resource id: ${WIDGET_APPID:-NONE}"
-
+          # Best-effort: mint the widget's App Store profile from the cert +
+          # App-ID resource ids. create-profile needs only the certificate's
+          # RESOURCE id (not its private key). The profile inherits the App
+          # Group enabled on com.verite.com.widget.
+          CERT_ID=$(app-store-connect list-certificates --json 2>/dev/null | python3 -c "import sys,json,re; m=re.search(r'\[.*\]', sys.stdin.read(), re.S); d=json.loads(m.group(0)) if m else []; ids=[c['id'] for c in d if isinstance(c,dict) and 'DISTRIBUTION' in ((c.get('attributes') or {}).get('certificateType') or '')]; print(ids[0] if ids else (d[0]['id'] if d and isinstance(d[0],dict) else ''))" 2>/dev/null)
+          WIDGET_APPID=$(app-store-connect list-bundle-ids --bundle-id-identifier com.verite.com.widget --bundle-id-identifier-strict-match --json 2>/dev/null | python3 -c "import sys,json,re; m=re.search(r'\[.*\]', sys.stdin.read(), re.S); d=json.loads(m.group(0)) if m else []; print(d[0]['id'] if d and isinstance(d[0],dict) else '')" 2>/dev/null)
+          echo "Parsed -> cert id: ${CERT_ID:-NONE} | widget app id: ${WIDGET_APPID:-NONE}"
           if [ -n "$CERT_ID" ] && [ -n "$WIDGET_APPID" ]; then
-            # Fresh profile each build so it always reflects current
-            # capabilities; unique name avoids a name collision.
-            app-store-connect create-profile \
-              "$WIDGET_APPID" "$CERT_ID" \
-              --type IOS_APP_STORE \
-              --name "Verite Widget CI $(date +%s)" \
-              --save \
+            app-store-connect create-profile "$WIDGET_APPID" "$CERT_ID" --type IOS_APP_STORE --name "Verite Widget CI $(date +%s)" --save \
               && echo "Widget App Store profile created + saved." \
-              || echo "WARNING: widget profile creation failed; relying on any existing one."
+              || echo "WARNING: create-profile failed (see output above)."
           else
-            echo "WARNING: missing cert or widget App ID; cannot mint widget profile."
+            echo "WARNING: could not resolve cert / widget App ID; widget profile not minted."
           fi
 
-          # Apply every downloaded profile (auto-fetched app profile + the
-          # widget profile just saved) to the generated Xcode project.
+          # Apply all downloaded profiles to the generated project.
+          set -e
           xcode-project use-profiles
       - name: Determine next build number
         script: |
