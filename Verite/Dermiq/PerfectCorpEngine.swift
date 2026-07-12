@@ -226,13 +226,24 @@ final class PerfectCorpSkinEngine: DermiqAnalysisEngine {
     private static func buildAnalysis(from results: [String: Any]) throws -> DermiqAnalysis {
         var byCategory: [DermiqCategory: Int] = [:]
         var overallFromAll: Int?
+        // Region-split rows (pore: forehead/nose/cheek/…) feed the zone map.
+        var zoneAccum: [DermiqZone: [(category: DermiqCategory, score: Int)]] = [:]
 
         if let output = results["output"] as? [[String: Any]] {
             for item in output {
                 guard let type = item["type"] as? String else { continue }
                 // Some metrics come split by region (pore: forehead/nose/cheek
-                // /whole). Keep only the "whole" aggregate or region-less rows.
-                if let region = item["region"] as? String, region != "whole" { continue }
+                // /whole). The "whole" aggregate feeds the sub-scores; the
+                // per-region rows are kept for the zone map instead of dropped.
+                if let region = item["region"] as? String, region != "whole" {
+                    let base = type.hasPrefix("hd_") ? String(type.dropFirst(3)) : type
+                    if let zone = DermiqZone.fromRegion(region),
+                       let category = categoryForBase[base],
+                       let sc = score(in: item) {
+                        zoneAccum[zone, default: []].append((category, sc))
+                    }
+                    continue
+                }
                 // The overall lives in the output array as type "all".
                 if type == "all" { overallFromAll = score(in: item); continue }
                 let base = type.hasPrefix("hd_") ? String(type.dropFirst(3)) : type
@@ -271,7 +282,8 @@ final class PerfectCorpSkinEngine: DermiqAnalysisEngine {
             subScores: subScores,
             skinType: skinType(hydration: byCategory[.hydration], redness: byCategory[.redness]),
             topIssues: Array(topIssues),
-            honestSummary: HonestSummaryBuilder.summary(overall: overall, weakest: weakest[0])
+            honestSummary: HonestSummaryBuilder.summary(overall: overall, weakest: weakest[0]),
+            zones: DermiqZoneDeriver.zones(fromLive: zoneAccum, subScores: subScores, overall: overall)
         )
     }
 

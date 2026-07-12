@@ -80,6 +80,9 @@ struct DermiqAnalysis: Codable, Sendable {
     let skinType: SkinType           // reuses the app-wide enum
     let topIssues: [DermiqIssue]     // max 3, ranked — drives the routine
     let honestSummary: String        // 2–3 sentences, direct tone
+    /// Per-region readings for the zone map. Optional so scans stored before
+    /// this existed still decode; nil → zones are derived from sub-scores.
+    var zones: [DermiqZoneScore]? = nil
 
     /// Lowest three sub-scores, worst first (routine derivation input).
     var weakestThree: [DermiqSubScore] {

@@ -136,6 +136,7 @@ struct DermiqResultsView: View {
                 }
 
                 if !locked {
+                    DermiqZoneMapCard(analysis: analysis)
                     summaryBlock(analysis)
                     shareRow
                     // Leads to the Potential reveal (the before/after image);

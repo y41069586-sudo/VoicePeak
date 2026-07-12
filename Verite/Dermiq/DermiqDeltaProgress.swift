@@ -149,7 +149,11 @@ struct DermiqProgressTab: View {
 
     @State private var compareSelection: [ScanRecord] = []
     @State private var showCompare = false
+    @State private var showReel = false
     @State private var metric: DermiqCategory = .hydration
+
+    /// Scans that can appear in the Glow-Up Reel (need a stored photo).
+    private var reelScans: [ScanRecord] { scans.filter { $0.photoFilename != nil } }
 
     var body: some View {
         ScrollView {
@@ -164,6 +168,9 @@ struct DermiqProgressTab: View {
                     DermiqBadgesSection()
                 } else {
                     chartCard
+                    if reelScans.count >= 2 {
+                        reelCard
+                    }
                     metricChartCard
                     timelineSection
                     DermiqBadgesSection()
@@ -180,6 +187,49 @@ struct DermiqProgressTab: View {
                 .presentationDetents([.large])
                 .presentationBackground(DQColor.surface)
         }
+        .sheet(isPresented: $showReel) {
+            GlowUpReelSheet(scans: reelScans)
+        }
+    }
+
+    // MARK: Glow-Up Reel entry
+
+    private var reelCard: some View {
+        Button {
+            Haptics.fire(.selection)
+            showReel = true
+        } label: {
+            HStack(spacing: 14) {
+                ZStack {
+                    Circle().fill(.white.opacity(0.18))
+                    Image(systemName: "film.fill")
+                        .font(.system(size: 19, weight: .semibold))
+                        .foregroundStyle(.white)
+                }
+                .frame(width: 46, height: 46)
+
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("Glow-Up Reel")
+                        .font(.system(size: 17, weight: .heavy, design: .rounded))
+                        .foregroundStyle(.white)
+                    Text("Turn your \(reelScans.count) scans into a share-ready video")
+                        .font(DQFont.micro)
+                        .foregroundStyle(.white.opacity(0.85))
+                        .lineLimit(1)
+                }
+                Spacer()
+                Image(systemName: "chevron.right")
+                    .font(.system(size: 13, weight: .semibold))
+                    .foregroundStyle(.white.opacity(0.8))
+            }
+            .padding(16)
+            .background(
+                DQColor.accentGradient,
+                in: RoundedRectangle(cornerRadius: DQRadius.card, style: .continuous)
+            )
+            .shadow(color: DQColor.accent.opacity(0.25), radius: 14, y: 6)
+        }
+        .buttonStyle(PressableStyle())
     }
 
     // MARK: Score-over-time chart
