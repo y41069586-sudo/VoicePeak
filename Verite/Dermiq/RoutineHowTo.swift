@@ -66,6 +66,9 @@ struct KitProduct: Identifiable {
     let usage: String         // "AM + PM", "PM · 2×/week", …
     let cheapest: String?     // first example (the $ tier)
     let tiers: String         // "$ – $$$"
+    /// The starter four: cleanser, moisturizer, SPF + the single highest-
+    /// priority treatment. Everything else is "add when you're ready".
+    let isEssential: Bool
 }
 
 extension RoutinePlan {
@@ -87,6 +90,13 @@ extension RoutinePlan {
                 order.append(id)
             }
         }
+        // Base products (cleanser, moisturizer, SPF) are always essential; of
+        // the targeted treatments, only the first one — the top-priority active
+        // — makes the starter kit. The rest are "add later".
+        let baseKeys: Set<String> = [
+            "am.cleanse", "pm.cleanse", "am.moisturize", "pm.moisturize", "am.spf",
+        ]
+        var heroAssigned = false
         return order.compactMap { id in
             guard let entry = byType[id] else { return nil }
             let step = entry.step
@@ -102,13 +112,23 @@ extension RoutinePlan {
                 if count == 2 { return "$ – $$" }
                 return "$"
             }()
+            let isEssential: Bool
+            if baseKeys.contains(step.key) {
+                isEssential = true
+            } else if !heroAssigned {
+                isEssential = true
+                heroAssigned = true
+            } else {
+                isEssential = false
+            }
             return KitProduct(
                 id: id,
                 productType: step.productType,
                 active: step.active,
                 usage: usage,
                 cheapest: step.examples.first,
-                tiers: priceTier
+                tiers: priceTier,
+                isEssential: isEssential
             )
         }
     }

@@ -342,52 +342,43 @@ enum RoutineBuilder {
     }
 
     private static func baseMoisturizer(feel: SkinFeel?, block: RoutineBlock) -> RoutineStep {
-        if block == .am {
-            switch feel {
-            case .dry:
-                return RoutineStep(key: "am.moisturize", productType: "Rich day cream",
-                    active: "Ceramides + shea + glycerin",
-                    why: "Dry skin needs the fuller buffer under SPF.",
-                    examples: ["CeraVe Moisturizing Cream · $", "Kiehl's Ultra Facial Cream · $$$"])
-            case .oily:
-                return RoutineStep(key: "am.moisturize", productType: "Oil-free gel moisturizer",
-                    active: "HA + niacinamide",
-                    why: "Hydration without weight — shine stays down.",
-                    examples: ["Neutrogena Hydro Boost · $", "Clinique Dramatically Different Gel · $$"])
-            case .sensitive:
-                return RoutineStep(key: "am.moisturize", productType: "Barrier cream, fragrance-free",
-                    active: "Ceramides + panthenol",
-                    why: "Calm buffer that keeps the actives from nipping.",
-                    examples: ["Avène Tolérance Control · $$", "CeraVe PM Lotion · $"])
-            default:
-                return RoutineStep(key: "am.moisturize", productType: "Lightweight moisturizer",
-                    active: "Ceramides + glycerin",
-                    why: "Seals the actives in and keeps the barrier calm.",
-                    examples: ["CeraVe PM Lotion · $", "Neutrogena Hydro Boost · $", "Dr. Jart+ Ceramidin · $$$"])
-            }
-        } else {
-            switch feel {
-            case .dry:
-                return RoutineStep(key: "pm.moisturize", productType: "Overnight repair cream",
-                    active: "Ceramides + panthenol + squalane",
-                    why: "Overnight is when repair happens — dry skin gets the richest seal.",
-                    examples: ["CeraVe Moisturizing Cream · $", "Weleda Skin Food · $"])
-            case .oily:
-                return RoutineStep(key: "pm.moisturize", productType: "Light night gel-cream",
-                    active: "Ceramides + niacinamide",
-                    why: "Repair material without clogging a shine-prone skin.",
-                    examples: ["CeraVe PM Lotion · $", "Belif Aqua Bomb · $$"])
-            case .sensitive:
-                return RoutineStep(key: "pm.moisturize", productType: "Soothing barrier balm",
-                    active: "Panthenol + madecassoside",
-                    why: "Overnight calm-down — fragrance-free, barrier-first.",
-                    examples: ["Avène Cicalfate+ · $$", "La Roche-Posay Cicaplast B5 · $$"])
-            default:
-                return RoutineStep(key: "pm.moisturize", productType: "Barrier moisturizer",
-                    active: "Ceramides + panthenol",
-                    why: "Overnight is when repair happens — give it the material.",
-                    examples: ["CeraVe Moisturizing Cream · $", "Avène Cicalfate+ · $$"])
-            }
+        let key = block == .am ? "am.moisturize" : "pm.moisturize"
+        // Dry skin genuinely benefits from a lighter day cream AND a richer
+        // overnight repair — that's two products, on purpose. Everyone else uses
+        // ONE moisturizer morning and night: same productType in both blocks, so
+        // the shopping kit dedupes it to a single item and the count stays lean.
+        switch feel {
+        case .dry where block == .am:
+            return RoutineStep(key: key, productType: "Rich day cream",
+                active: "Ceramides + shea + glycerin",
+                why: "Dry skin needs the fuller buffer under SPF.",
+                examples: ["CeraVe Moisturizing Cream · $", "Kiehl's Ultra Facial Cream · $$$"])
+        case .dry:
+            return RoutineStep(key: key, productType: "Overnight repair cream",
+                active: "Ceramides + panthenol + squalane",
+                why: "Overnight is when repair happens — dry skin gets the richest seal.",
+                examples: ["CeraVe Moisturizing Cream · $", "Weleda Skin Food · $"])
+        case .oily:
+            return RoutineStep(key: key, productType: "Oil-free gel moisturizer",
+                active: "Ceramides + niacinamide + HA",
+                why: block == .am
+                    ? "Hydration without weight — shine stays down."
+                    : "Same gel at night — repair material without clogging.",
+                examples: ["Neutrogena Hydro Boost · $", "CeraVe PM Lotion · $", "Belif Aqua Bomb · $$"])
+        case .sensitive:
+            return RoutineStep(key: key, productType: "Barrier cream, fragrance-free",
+                active: "Ceramides + panthenol",
+                why: block == .am
+                    ? "Calm buffer that keeps the actives from nipping."
+                    : "The same fragrance-free barrier for an overnight calm-down.",
+                examples: ["Avène Tolérance Control · $$", "La Roche-Posay Cicaplast B5 · $$", "CeraVe PM Lotion · $"])
+        default:
+            return RoutineStep(key: key, productType: "Ceramide moisturizer",
+                active: "Ceramides + glycerin",
+                why: block == .am
+                    ? "Seals the actives in and keeps the barrier calm."
+                    : "The same barrier cream at night — that's when repair happens.",
+                examples: ["CeraVe PM Lotion · $", "Neutrogena Hydro Boost · $", "Dr. Jart+ Ceramidin · $$$"])
         }
     }
 

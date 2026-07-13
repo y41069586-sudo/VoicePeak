@@ -377,6 +377,10 @@ struct DermiqRoutineTab: View {
     @Environment(\.modelContext) private var modelContext
     @Query(sort: \RoutinePlan.createdAt, order: .reverse) private var plans: [RoutinePlan]
 
+    /// Kit card starts on the lean "Essentials" view so the first thing the
+    /// user sees is the four products they actually need to start.
+    @State private var kitEssentialsOnly = true
+
     /// Asks the shell to start the day-14 rescan flow.
     let onRescan: () -> Void
 
@@ -507,14 +511,22 @@ struct DermiqRoutineTab: View {
     }
 
     /// "Your kit" — the honest shopping answer. The 8 daily steps are really
-    /// only a handful of products (one cleanser covers AM + PM, etc.). Tap to
-    /// expand the full list with when-to-use + price tiers.
+    /// only a handful of products (one cleanser covers AM + PM, etc.), and the
+    /// Essentials view trims that to the four you need to start. Tap to expand.
     @ViewBuilder
     private func kitCard(_ plan: RoutinePlan) -> some View {
         let kit = plan.shoppingKit
+        let essentials = kit.filter(\.isEssential)
+        let extras = kit.filter { !$0.isEssential }
+        let visible = kitEssentialsOnly ? essentials : kit
         DisclosureGroup {
             VStack(spacing: 0) {
-                ForEach(kit) { product in
+                if !extras.isEmpty {
+                    kitSegment(essentialCount: essentials.count, totalCount: kit.count)
+                        .padding(.top, 4)
+                        .padding(.bottom, 6)
+                }
+                ForEach(visible) { product in
                     HStack(alignment: .top, spacing: 10) {
                         Image(systemName: "bag")
                             .font(.system(size: 12, weight: .semibold))
@@ -527,6 +539,14 @@ struct DermiqRoutineTab: View {
                                 Text(LocalizedStringKey(product.productType))
                                     .font(.system(size: 14, weight: .semibold, design: .rounded))
                                     .foregroundStyle(DQColor.textPrimary)
+                                if !product.isEssential {
+                                    Text("Add later")
+                                        .font(DQFont.mono(8, weight: .bold))
+                                        .tracking(0.5)
+                                        .foregroundStyle(DQColor.textSecondary)
+                                        .padding(.horizontal, 5).padding(.vertical, 2)
+                                        .background(DQColor.stroke, in: Capsule())
+                                }
                                 Spacer(minLength: 4)
                                 Text(verbatim: product.tiers)
                                     .font(DQFont.mono(10, weight: .semibold))
@@ -543,15 +563,22 @@ struct DermiqRoutineTab: View {
                         }
                     }
                     .padding(.vertical, 9)
-                    if product.id != kit.last?.id {
+                    if product.id != visible.last?.id {
                         Divider().overlay(DQColor.stroke)
                     }
                 }
-                Text("One cleanser covers morning and evening — you buy fewer products than there are steps.")
-                    .font(DQFont.micro)
-                    .foregroundStyle(DQColor.textSecondary)
-                    .fixedSize(horizontal: false, vertical: true)
-                    .padding(.top, 8)
+                Group {
+                    if kitEssentialsOnly && !extras.isEmpty {
+                        Text("Start with these four. The other \(extras.count) you add once the habit sticks.")
+                    } else {
+                        Text("One cleanser covers morning and evening — you buy fewer products than there are steps.")
+                    }
+                }
+                .font(DQFont.micro)
+                .foregroundStyle(DQColor.textSecondary)
+                .fixedSize(horizontal: false, vertical: true)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(.top, 8)
             }
         } label: {
             HStack(spacing: 10) {
@@ -564,7 +591,7 @@ struct DermiqRoutineTab: View {
                     Text("Your kit")
                         .font(.system(size: 16, weight: .bold, design: .rounded))
                         .foregroundStyle(DQColor.textPrimary)
-                    Text("\(kit.count) products for the whole plan")
+                    Text("\(essentials.count) to start · \(kit.count) in full")
                         .font(DQFont.micro)
                         .foregroundStyle(DQColor.textSecondary)
                 }
@@ -577,6 +604,41 @@ struct DermiqRoutineTab: View {
             RoundedRectangle(cornerRadius: DQRadius.card, style: .continuous)
                 .strokeBorder(DQColor.stroke, lineWidth: 1)
         )
+    }
+
+    /// Two-segment pill: Essentials (the starter four) vs Full (everything).
+    private func kitSegment(essentialCount: Int, totalCount: Int) -> some View {
+        HStack(spacing: 4) {
+            kitSegmentButton(title: "Essentials", count: essentialCount, on: kitEssentialsOnly) {
+                kitEssentialsOnly = true
+            }
+            kitSegmentButton(title: "Full plan", count: totalCount, on: !kitEssentialsOnly) {
+                kitEssentialsOnly = false
+            }
+        }
+        .padding(3)
+        .background(DQColor.background, in: Capsule())
+    }
+
+    private func kitSegmentButton(title: LocalizedStringKey, count: Int,
+                                  on: Bool, action: @escaping () -> Void) -> some View {
+        Button {
+            Haptics.fire(.selection)
+            withAnimation(VMotion.snappy) { action() }
+        } label: {
+            HStack(spacing: 5) {
+                Text(title)
+                Text(verbatim: "\(count)")
+                    .font(DQFont.mono(10, weight: .bold))
+                    .opacity(0.8)
+            }
+            .font(.system(size: 12, weight: .semibold, design: .rounded))
+            .foregroundStyle(on ? .white : DQColor.textSecondary)
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, 7)
+            .background(on ? DQColor.accentBright : .clear, in: Capsule())
+        }
+        .buttonStyle(.plain)
     }
 
     /// The Gemini verdict on this plan: badge + personal 2–3 sentence summary.
