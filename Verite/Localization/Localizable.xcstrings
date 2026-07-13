@@ -351,6 +351,41 @@
         }
       }
     },
+    "%lld products for the whole plan": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld Produkte für den ganzen Plan"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld products for the whole plan"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld productos para todo el plan"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld produits pour tout le plan"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld prodotti per tutto il piano"
+          }
+        }
+      }
+    },
     "+5 Club": {
       "extractionState": "manual",
       "localizations": {
@@ -732,6 +767,41 @@
           "stringUnit": {
             "state": "translated",
             "value": "1×/settimana"
+          }
+        }
+      }
+    },
+    "1–2× a week. Spread an even layer, leave 10 minutes, then rinse off.": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "1–2× pro Woche. Gleichmäßig auftragen, 10 Minuten einwirken, abspülen."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "1–2× a week. Spread an even layer, leave 10 minutes, then rinse off."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "1–2× por semana. Aplica una capa uniforme, deja 10 minutos y aclara."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "1–2× par semaine. Couche uniforme, laisse 10 minutes, puis rince."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "1–2 volte a settimana. Strato uniforme, lascia 10 minuti, poi risciacqua."
           }
         }
       }
@@ -1331,6 +1401,41 @@
         }
       }
     },
+    "A few drops after cleansing, before moisturizer. Works morning or evening.": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ein paar Tropfen nach der Reinigung, vor der Creme. Morgens oder abends."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A few drops after cleansing, before moisturizer. Works morning or evening."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Unas gotas tras limpiar, antes de la crema. Sirve de día o de noche."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Quelques gouttes après le nettoyage, avant la crème. Matin ou soir."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Qualche goccia dopo la detersione, prima della crema. Mattina o sera."
+          }
+        }
+      }
+    },
     "A full week, no gaps.": {
       "extractionState": "manual",
       "localizations": {
@@ -1502,6 +1607,41 @@
           "stringUnit": {
             "state": "translated",
             "value": "Un semplice rituale mattina e sera, ricostruito a ogni scansione."
+          }
+        }
+      }
+    },
+    "A thin layer after cleansing, before moisturizer.": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Eine dünne Schicht nach der Reinigung, vor der Creme."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A thin layer after cleansing, before moisturizer."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Una capa fina tras limpiar, antes de la crema."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Une fine couche après le nettoyage, avant la crème."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Uno strato sottile dopo la detersione, prima della crema."
           }
         }
       }
@@ -1821,6 +1961,41 @@
         }
       }
     },
+    "After you wake up": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nach dem Aufwachen"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "After you wake up"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Al despertar"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Au réveil"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Al risveglio"
+          }
+        }
+      }
+    },
     "All 14 days completed.": {
       "extractionState": "manual",
       "localizations": {
@@ -1922,6 +2097,76 @@
           "stringUnit": {
             "state": "translated",
             "value": "Annuale"
+          }
+        }
+      }
+    },
+    "Apply after cleansing, before moisturizer.": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nach der Reinigung auftragen, vor der Creme."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Apply after cleansing, before moisturizer."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aplica tras limpiar, antes de la crema."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Applique après le nettoyage, avant la crème."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Applica dopo la detersione, prima della crema."
+          }
+        }
+      }
+    },
+    "Apply to slightly damp skin, then lock it in with your moisturizer.": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Auf leicht feuchter Haut auftragen, dann mit der Creme versiegeln."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Apply to slightly damp skin, then lock it in with your moisturizer."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aplica sobre piel ligeramente húmeda y sella con tu crema."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Applique sur peau légèrement humide, puis scelle avec ta crème."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Applica sulla pelle leggermente umida, poi sigilla con la crema."
           }
         }
       }
@@ -2727,6 +2972,41 @@
           "stringUnit": {
             "state": "translated",
             "value": "Idratante barriera"
+          }
+        }
+      }
+    },
+    "Before bed": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vor dem Schlafen"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Before bed"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Antes de dormir"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Avant le coucher"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Prima di dormire"
           }
         }
       }
@@ -5391,6 +5671,41 @@
         }
       }
     },
+    "Evening only, on dry skin. A pea-sized amount for the whole face, avoid the eye area. If it stings, apply moisturizer first.": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nur abends, auf trockener Haut. Erbsengroße Menge fürs ganze Gesicht, Augenpartie aussparen. Bei Brennen erst Creme auftragen."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Evening only, on dry skin. A pea-sized amount for the whole face, avoid the eye area. If it stings, apply moisturizer first."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Solo de noche, sobre piel seca. Cantidad tipo guisante para toda la cara, evita los ojos. Si escuece, aplica crema antes."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Le soir seulement, sur peau sèche. Une noisette pour tout le visage, évite les yeux. Si ça picote, applique la crème d'abord."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Solo la sera, su pelle asciutta. Quantità come un pisello per tutto il viso, evita gli occhi. Se brucia, prima la crema."
+          }
+        }
+      }
+    },
     "Evening ritual — 3 steps before bed.": {
       "extractionState": "manual",
       "localizations": {
@@ -5457,6 +5772,76 @@
           "stringUnit": {
             "state": "translated",
             "value": "Sera · 20:00"
+          }
+        }
+      }
+    },
+    "Evening, on clean dry skin before moisturizer. Never the same night as your retinoid.": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Abends auf sauberer, trockener Haut vor der Creme. Nie in derselben Nacht wie dein Retinoid."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Evening, on clean dry skin before moisturizer. Never the same night as your retinoid."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "De noche, sobre piel limpia y seca antes de la crema. Nunca la misma noche que tu retinoide."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Le soir, sur peau propre et sèche avant la crème. Jamais le même soir que ton rétinoïde."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "La sera, su pelle pulita e asciutta prima della crema. Mai la stessa notte del retinoide."
+          }
+        }
+      }
+    },
+    "Evening, on dry skin before moisturizer. Don't layer with your retinoid or BHA the same night.": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Abends auf trockener Haut vor der Creme. Nicht in derselben Nacht mit Retinoid oder BHA kombinieren."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Evening, on dry skin before moisturizer. Don't layer with your retinoid or BHA the same night."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "De noche, sobre piel seca antes de la crema. No lo mezcles con tu retinoide o BHA la misma noche."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Le soir, sur peau sèche avant la crème. Ne le combine pas avec ton rétinoïde ou BHA le même soir."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "La sera, su pelle asciutta prima della crema. Non abbinarlo a retinoide o BHA la stessa notte."
           }
         }
       }
@@ -6826,6 +7211,41 @@
         }
       }
     },
+    "HOW TO USE": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "SO ANWENDEN"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "HOW TO USE"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "CÓMO USAR"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "MODE D'EMPLOI"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "COME USARE"
+          }
+        }
+      }
+    },
     "HYDRATION": {
       "extractionState": "manual",
       "localizations": {
@@ -8051,6 +8471,41 @@
         }
       }
     },
+    "Last morning step. Use two finger-lengths and reapply if you're outdoors.": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Letzter Morgenschritt. Zwei Fingerlängen nehmen und draußen nachcremen."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Last morning step. Use two finger-lengths and reapply if you're outdoors."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Último paso de la mañana. Usa dos dedos de producto y reaplica si estás fuera."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dernière étape du matin. Deux longueurs de doigt, à réappliquer dehors."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ultimo passo del mattino. Usa due dita di prodotto e riapplica all'aperto."
+          }
+        }
+      }
+    },
     "Layer a humectant serum before moisturizer here.": {
       "extractionState": "manual",
       "localizations": {
@@ -8541,6 +8996,41 @@
         }
       }
     },
+    "Massage onto damp skin for ~30 seconds, then rinse with lukewarm water.": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Auf feuchter Haut ~30 Sekunden einmassieren, dann mit lauwarmem Wasser abspülen."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Massage onto damp skin for ~30 seconds, then rinse with lukewarm water."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Masajea sobre piel húmeda ~30 segundos y aclara con agua tibia."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Masse sur peau humide ~30 secondes, puis rince à l'eau tiède."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Massaggia sulla pelle umida ~30 secondi, poi risciacqua con acqua tiepida."
+          }
+        }
+      }
+    },
     "Measuring redness…": {
       "extractionState": "manual",
       "localizations": {
@@ -8712,6 +9202,41 @@
           "stringUnit": {
             "state": "translated",
             "value": "Mattina · 8:00"
+          }
+        }
+      }
+    },
+    "Morning, after cleansing and before SPF. A few drops, pressed into the skin.": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Morgens nach der Reinigung und vor dem SPF. Ein paar Tropfen einklopfen."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Morning, after cleansing and before SPF. A few drops, pressed into the skin."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Por la mañana, tras limpiar y antes del SPF. Unas gotas presionadas en la piel."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Le matin, après le nettoyage et avant le SPF. Quelques gouttes tapotées."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Al mattino, dopo la detersione e prima dell'SPF. Qualche goccia picchiettata."
           }
         }
       }
@@ -9626,6 +10151,41 @@
         }
       }
     },
+    "One cleanser covers morning and evening — you buy fewer products than there are steps.": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ein Reiniger deckt Morgen und Abend ab — du kaufst weniger Produkte, als es Schritte gibt."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "One cleanser covers morning and evening — you buy fewer products than there are steps."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Un limpiador sirve para mañana y noche: compras menos productos de los que hay pasos."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Un seul nettoyant pour le matin et le soir — tu achètes moins de produits qu'il n'y a d'étapes."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Un detergente copre mattina e sera: compri meno prodotti di quanti passaggi ci siano."
+          }
+        }
+      }
+    },
     "One clear photo is all it takes. A few quick do’s and don’ts:": {
       "extractionState": "manual",
       "localizations": {
@@ -9972,6 +10532,41 @@
           "stringUnit": {
             "state": "translated",
             "value": "PREFERENZE"
+          }
+        }
+      }
+    },
+    "PRODUCTS ($ → $$$)": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "PRODUKTE ($ → $$$)"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "PRODUCTS ($ → $$$)"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "PRODUCTOS ($ → $$$)"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "PRODUITS ($ → $$$)"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "PRODOTTI ($ → $$$)"
           }
         }
       }
@@ -13231,6 +13826,41 @@
         }
       }
     },
+    "Smooth a pea-to-almond amount over the face while skin is still slightly damp.": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Erbsen- bis mandelgroße Menge auf noch leicht feuchter Haut verteilen."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Smooth a pea-to-almond amount over the face while skin is still slightly damp."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Extiende una cantidad del tamaño de un guisante/almendra con la piel aún húmeda."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Étale une noisette sur le visage encore légèrement humide."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Distribuisci una quantità tra un pisello e una mandorla sulla pelle ancora umida."
+          }
+        }
+      }
+    },
     "So close": {
       "extractionState": "manual",
       "localizations": {
@@ -15261,6 +15891,41 @@
         }
       }
     },
+    "WHY THIS": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "WARUM DAS"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "WHY THIS"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "POR QUÉ ESTO"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "POURQUOI"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "PERCHÉ QUESTO"
+          }
+        }
+      }
+    },
     "Weekly": {
       "extractionState": "manual",
       "localizations": {
@@ -16517,6 +17182,41 @@
           "stringUnit": {
             "state": "translated",
             "value": "Le tue abitudini proteggono la tua base — puntiamo più in alto."
+          }
+        }
+      }
+    },
+    "Your kit": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dein Set"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Your kit"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tu kit"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ton kit"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Il tuo kit"
           }
         }
       }

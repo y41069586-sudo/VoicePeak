@@ -408,6 +408,8 @@ struct DermiqRoutineTab: View {
                 aiCheckCard(summary)
                     .vStaggeredAppear(index: 1)
             }
+            kitCard(plan)
+                .vStaggeredAppear(index: 1)
             dayGrid(plan, today: today)
                 .vStaggeredAppear(index: 1)
 
@@ -502,6 +504,79 @@ struct DermiqRoutineTab: View {
             }
             .animation(VMotion.gentle, value: allDone)
         }
+    }
+
+    /// "Your kit" — the honest shopping answer. The 8 daily steps are really
+    /// only a handful of products (one cleanser covers AM + PM, etc.). Tap to
+    /// expand the full list with when-to-use + price tiers.
+    @ViewBuilder
+    private func kitCard(_ plan: RoutinePlan) -> some View {
+        let kit = plan.shoppingKit
+        DisclosureGroup {
+            VStack(spacing: 0) {
+                ForEach(kit) { product in
+                    HStack(alignment: .top, spacing: 10) {
+                        Image(systemName: "bag")
+                            .font(.system(size: 12, weight: .semibold))
+                            .foregroundStyle(DQColor.accentBright)
+                            .frame(width: 22, height: 22)
+                            .background(DQColor.accentSoft.opacity(0.7), in: Circle())
+                            .padding(.top, 2)
+                        VStack(alignment: .leading, spacing: 2) {
+                            HStack(spacing: 6) {
+                                Text(LocalizedStringKey(product.productType))
+                                    .font(.system(size: 14, weight: .semibold, design: .rounded))
+                                    .foregroundStyle(DQColor.textPrimary)
+                                Spacer(minLength: 4)
+                                Text(verbatim: product.tiers)
+                                    .font(DQFont.mono(10, weight: .semibold))
+                                    .foregroundStyle(DQColor.textSecondary)
+                            }
+                            Text(verbatim: product.usage)
+                                .font(DQFont.micro)
+                                .foregroundStyle(DQColor.accentBright)
+                            if let cheapest = product.cheapest {
+                                Text(LocalizedStringKey(cheapest))
+                                    .font(DQFont.micro)
+                                    .foregroundStyle(DQColor.textSecondary)
+                            }
+                        }
+                    }
+                    .padding(.vertical, 9)
+                    if product.id != kit.last?.id {
+                        Divider().overlay(DQColor.stroke)
+                    }
+                }
+                Text("One cleanser covers morning and evening — you buy fewer products than there are steps.")
+                    .font(DQFont.micro)
+                    .foregroundStyle(DQColor.textSecondary)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .padding(.top, 8)
+            }
+        } label: {
+            HStack(spacing: 10) {
+                Image(systemName: "basket.fill")
+                    .font(.system(size: 14, weight: .semibold))
+                    .foregroundStyle(DQColor.accentBright)
+                    .frame(width: 32, height: 32)
+                    .background(DQColor.accentBright.opacity(0.10), in: RoundedRectangle(cornerRadius: 10, style: .continuous))
+                VStack(alignment: .leading, spacing: 1) {
+                    Text("Your kit")
+                        .font(.system(size: 16, weight: .bold, design: .rounded))
+                        .foregroundStyle(DQColor.textPrimary)
+                    Text("\(kit.count) products for the whole plan")
+                        .font(DQFont.micro)
+                        .foregroundStyle(DQColor.textSecondary)
+                }
+            }
+        }
+        .tint(DQColor.accentBright)
+        .padding(16)
+        .background(DQColor.surface, in: RoundedRectangle(cornerRadius: DQRadius.card, style: .continuous))
+        .overlay(
+            RoundedRectangle(cornerRadius: DQRadius.card, style: .continuous)
+                .strokeBorder(DQColor.stroke, lineWidth: 1)
+        )
     }
 
     /// The Gemini verdict on this plan: badge + personal 2–3 sentence summary.
@@ -635,9 +710,14 @@ struct DermiqRoutineTab: View {
                         .frame(width: 32, height: 32)
                         .background((complete ? DQColor.deltaUp : DQColor.accentBright).opacity(0.10),
                                     in: RoundedRectangle(cornerRadius: 10, style: .continuous))
-                    Text(LocalizedStringKey(title))
-                        .font(.system(size: 17, weight: .bold, design: .rounded))
-                        .foregroundStyle(DQColor.textPrimary)
+                    VStack(alignment: .leading, spacing: 1) {
+                        Text(LocalizedStringKey(title))
+                            .font(.system(size: 17, weight: .bold, design: .rounded))
+                            .foregroundStyle(DQColor.textPrimary)
+                        Text(LocalizedStringKey(block == .am ? "After you wake up" : "Before bed"))
+                            .font(DQFont.micro)
+                            .foregroundStyle(DQColor.textSecondary)
+                    }
                     Spacer()
                     if complete {
                         Image(systemName: "checkmark.seal.fill")
@@ -767,16 +847,36 @@ private struct DermiqStepRow: View {
             }
 
             if expanded {
-                VStack(alignment: .leading, spacing: 8) {
-                    Text(step.why)
-                        .font(DQFont.caption)
-                        .foregroundStyle(DQColor.textSecondary)
-                        .fixedSize(horizontal: false, vertical: true)
+                VStack(alignment: .leading, spacing: 12) {
+                    // HOW TO USE — the practical instruction, front and centre.
+                    VStack(alignment: .leading, spacing: 4) {
+                        Label("HOW TO USE", systemImage: "hand.draw")
+                            .font(DQFont.mono(9, weight: .bold))
+                            .foregroundStyle(DQColor.accentBright)
+                            .tracking(1.5)
+                        Text(LocalizedStringKey(RoutineHowTo.instruction(for: step)))
+                            .font(DQFont.caption)
+                            .foregroundStyle(DQColor.textPrimary)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
+
+                    // WHY — the personal, score-tied reason.
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text("WHY THIS")
+                            .font(DQFont.mono(9, weight: .bold))
+                            .foregroundStyle(DQColor.textSecondary)
+                            .tracking(1.5)
+                        Text(step.why)
+                            .font(DQFont.caption)
+                            .foregroundStyle(DQColor.textSecondary)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
+
                     if !step.examples.isEmpty {
                         VStack(alignment: .leading, spacing: 3) {
-                            Text("EXAMPLES")
+                            Text("PRODUCTS ($ → $$$)")
                                 .font(DQFont.mono(9, weight: .bold))
-                                .foregroundStyle(DQColor.accentBright)
+                                .foregroundStyle(DQColor.textSecondary)
                                 .tracking(1.5)
                             ForEach(step.examples, id: \.self) { example in
                                 Text(LocalizedStringKey(example))
@@ -787,7 +887,7 @@ private struct DermiqStepRow: View {
                     }
                 }
                 .padding(.leading, 34)
-                .padding(.top, 8)
+                .padding(.top, 10)
                 .transition(.opacity.combined(with: .move(edge: .top)))
             }
         }
