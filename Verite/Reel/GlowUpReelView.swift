@@ -25,20 +25,21 @@ final class ReelExportModel {
         failed = false
         url = nil
         progress = 0
-        Task.detached(priority: .userInitiated) { [weak self] in
+        // A MainActor Task; `compose` is nonisolated async, so its heavy render
+        // loop runs OFF the main actor, and we resume back here to publish the
+        // result. `report` is a plain @Sendable closure that hops to main — no
+        // nested weak-self captures (which Swift 6 rejects in concurrent code).
+        Task { [weak self] in
+            let report: @Sendable (Double) -> Void = { p in
+                Task { @MainActor in self?.progress = p }
+            }
             do {
-                let out = try await GlowUpReelComposer.compose(frames: frames) { p in
-                    Task { @MainActor [weak self] in self?.progress = p }
-                }
-                await MainActor.run { [weak self] in
-                    self?.url = out
-                    self?.exporting = false
-                }
+                let out = try await GlowUpReelComposer.compose(frames: frames, progress: report)
+                self?.url = out
+                self?.exporting = false
             } catch {
-                await MainActor.run { [weak self] in
-                    self?.failed = true
-                    self?.exporting = false
-                }
+                self?.failed = true
+                self?.exporting = false
             }
         }
     }
