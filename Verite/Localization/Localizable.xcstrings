@@ -31715,6 +31715,426 @@
           }
         }
       }
+    },
+    "WHAT TO EXPECT": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "WHAT TO EXPECT"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "WAS DICH ERWARTET"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "QUÉ ESPERAR"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "À QUOI T’ATTENDRE"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "COSA ASPETTARTI"
+          }
+        }
+      }
+    },
+    "Likely by day 14": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Likely by day 14"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Wahrscheinlich bis Tag 14"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Probable para el día 14"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Probable d’ici le jour 14"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Probabile entro il giorno 14"
+          }
+        }
+      }
+    },
+    "Starts now, more with time": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Starts now, more with time"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Beginnt jetzt, mehr mit der Zeit"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Empieza ahora, más con el tiempo"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Commence maintenant, plus avec le temps"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Inizia ora, di più col tempo"
+          }
+        }
+      }
+    },
+    "A longer play": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A longer play"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ein längeres Spiel"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A más largo plazo"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sur le long terme"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Un percorso più lungo"
+          }
+        }
+      }
+    },
+    "Plumper, less tight skin — usually within days.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Plumper, less tight skin — usually within days."
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pralle, weniger spannende Haut — meist in wenigen Tagen."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Piel más tersa y menos tirante, normalmente en días."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Une peau plus rebondie et moins tiraillée — souvent en quelques jours."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pelle più piena e meno tirata — di solito in pochi giorni."
+          }
+        }
+      }
+    },
+    "A brighter, fresher look as dull surface cells clear.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A brighter, fresher look as dull surface cells clear."
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Frischerer, strahlenderer Look, wenn matte Hautzellen weichen."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Un aspecto más luminoso y fresco al eliminarse las células apagadas."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Un teint plus lumineux et frais à mesure que les cellules ternes s’éliminent."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Un aspetto più luminoso e fresco man mano che le cellule opache si eliminano."
+          }
+        }
+      }
+    },
+    "Calmer, less flushed skin over the two weeks.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Calmer, less flushed skin over the two weeks."
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ruhigere, weniger gerötete Haut über die zwei Wochen."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Piel más calmada y menos enrojecida en las dos semanas."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Une peau plus apaisée et moins rougie sur les deux semaines."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pelle più calma e meno arrossata nelle due settimane."
+          }
+        }
+      }
+    },
+    "Tone begins to even out; full fading takes longer.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tone begins to even out; full fading takes longer."
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Der Ton gleicht sich an; vollständiges Verblassen dauert länger."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "El tono empieza a uniformarse; el desvanecimiento total tarda más."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Le teint commence à s’uniformiser ; l’estompage complet prend plus de temps."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Il tono inizia a uniformarsi; lo schiarimento completo richiede più tempo."
+          }
+        }
+      }
+    },
+    "Fewer new breakouts — it can briefly purge before it clears.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fewer new breakouts — it can briefly purge before it clears."
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Weniger neue Unreinheiten — kann kurz „purgen“, bevor es besser wird."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Menos brotes nuevos; puede purgar brevemente antes de mejorar."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Moins de nouvelles imperfections — une purge brève est possible avant l’amélioration."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Meno nuove imperfezioni — può fare un breve “purge” prima di migliorare."
+          }
+        }
+      }
+    },
+    "Smoother texture is structural change — think weeks, not days.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Smoother texture is structural change — think weeks, not days."
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Glattere Textur ist strukturelle Veränderung — Wochen, nicht Tage."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Una textura más suave es un cambio estructural: semanas, no días."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Une texture plus lisse est un changement structurel — des semaines, pas des jours."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Una texture più liscia è un cambiamento strutturale — settimane, non giorni."
+          }
+        }
+      }
+    },
+    "Pore size is largely fixed; you manage the look, not shrink them.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pore size is largely fixed; you manage the look, not shrink them."
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Porengröße ist weitgehend fix; du steuerst das Aussehen, verkleinerst sie nicht."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "El tamaño del poro es casi fijo; gestionas su aspecto, no los reduces."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "La taille des pores est quasi fixe ; tu gères l’apparence, tu ne les réduis pas."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "La dimensione dei pori è quasi fissa; ne gestisci l’aspetto, non li rimpicciolisci."
+          }
+        }
+      }
+    },
+    "Your plan hits all three from day one — you just see the fast ones first.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Your plan hits all three from day one — you just see the fast ones first."
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dein Plan geht alle drei ab Tag eins an — du siehst nur die schnellen zuerst."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tu plan aborda los tres desde el día uno; solo ves antes los rápidos."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ton plan agit sur les trois dès le premier jour — tu vois juste les rapides en premier."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Il tuo piano agisce su tutti e tre dal primo giorno — vedi solo prima quelli rapidi."
+          }
+        }
+      }
     }
   },
   "version": "1.0"

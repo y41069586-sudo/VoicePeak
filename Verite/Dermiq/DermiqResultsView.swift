@@ -133,6 +133,7 @@ struct DermiqResultsView: View {
 
                 if !locked {
                     potentialNote
+                    expectationsCard(analysis)
                 }
 
                 if !locked {
@@ -318,6 +319,58 @@ struct DermiqResultsView: View {
         .padding(.vertical, 10)
         .frame(maxWidth: .infinity)
         .background(DQColor.surfaceElevated, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+    }
+
+    /// Honest per-area timeline: the plan targets the three weakest scores, and
+    /// they don't all move at the same speed. Groups them into what's realistic
+    /// by day 14 vs. what's a longer play — so the projection above never reads
+    /// as "everything fixed in two weeks".
+    private func expectationsCard(_ analysis: DermiqAnalysis) -> some View {
+        let targeted = analysis.weakestThree
+        let groups: [(DermiqProjection.Horizon, [DermiqSubScore])] =
+            [.fast, .gradual, .slow].compactMap { horizon in
+                let scores = targeted.filter { DermiqProjection.horizon(for: $0.category) == horizon }
+                return scores.isEmpty ? nil : (horizon, scores)
+            }
+        return DQCard {
+            VStack(alignment: .leading, spacing: 16) {
+                Text("WHAT TO EXPECT")
+                    .font(DQFont.mono(11, weight: .semibold))
+                    .foregroundStyle(DQColor.accentBright)
+                ForEach(groups.indices, id: \.self) { index in
+                    let horizon = groups[index].0
+                    let scores = groups[index].1
+                    VStack(alignment: .leading, spacing: 9) {
+                        HStack(spacing: 6) {
+                            Image(systemName: horizon.icon)
+                                .font(.system(size: 11, weight: .bold))
+                            Text(LocalizedStringKey(horizon.heading))
+                                .font(DQFont.mono(10, weight: .bold))
+                                .tracking(1)
+                        }
+                        .foregroundStyle(horizon == .slow ? DQColor.textSecondary : DQColor.accentBright)
+                        ForEach(scores) { score in
+                            HStack(alignment: .top, spacing: 8) {
+                                Text(LocalizedStringKey(score.category.displayName))
+                                    .font(.system(size: 13, weight: .semibold, design: .rounded))
+                                    .foregroundStyle(DQColor.textPrimary)
+                                    .frame(width: 74, alignment: .leading)
+                                Text(LocalizedStringKey(DermiqProjection.expectation(for: score.category)))
+                                    .font(DQFont.micro)
+                                    .foregroundStyle(DQColor.textSecondary)
+                                    .fixedSize(horizontal: false, vertical: true)
+                                    .frame(maxWidth: .infinity, alignment: .leading)
+                            }
+                        }
+                    }
+                }
+                Text("Your plan hits all three from day one — you just see the fast ones first.")
+                    .font(DQFont.micro)
+                    .foregroundStyle(DQColor.textSecondary)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .padding(.top, 2)
+            }
+        }
     }
 
     private func summaryBlock(_ analysis: DermiqAnalysis) -> some View {

@@ -37,6 +37,54 @@ enum DermiqProjection {
         }
     }
 
+    // MARK: Honest expectations (how soon each trait realistically moves)
+
+    /// How quickly a trait shows visible change on a 14-day horizon. Derived
+    /// straight from `cap` so the words and the numbers can never disagree.
+    enum Horizon: Int {
+        case fast     // clearly visible within the two weeks
+        case gradual  // starts moving in 14 days, keeps going after
+        case slow     // a longer play — weeks to months
+
+        /// Grouping header shown to the user.
+        var heading: String {
+            switch self {
+            case .fast:    return "Likely by day 14"
+            case .gradual: return "Starts now, more with time"
+            case .slow:    return "A longer play"
+            }
+        }
+        var icon: String {
+            switch self {
+            case .fast:    return "bolt.fill"
+            case .gradual: return "chart.line.uptrend.xyaxis"
+            case .slow:    return "hourglass"
+            }
+        }
+    }
+
+    static func horizon(for category: DermiqCategory) -> Horizon {
+        switch cap(category) {
+        case 10...: return .fast
+        case 7..<10: return .gradual
+        default:     return .slow
+        }
+    }
+
+    /// One honest, specific sentence about what to expect for a trait — no
+    /// promises, and it names the real caveats (purging, structural limits).
+    static func expectation(for category: DermiqCategory) -> String {
+        switch category {
+        case .hydration: return "Plumper, less tight skin — usually within days."
+        case .glow:      return "A brighter, fresher look as dull surface cells clear."
+        case .redness:   return "Calmer, less flushed skin over the two weeks."
+        case .evenness:  return "Tone begins to even out; full fading takes longer."
+        case .blemishes: return "Fewer new breakouts — it can briefly purge before it clears."
+        case .texture:   return "Smoother texture is structural change — think weeks, not days."
+        case .pores:     return "Pore size is largely fixed; you manage the look, not shrink them."
+        }
+    }
+
     static func project(_ analysis: DermiqAnalysis) -> Projected {
         let targeted = Set(analysis.weakestThree.map(\.category))
 
