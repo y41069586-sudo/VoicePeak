@@ -83,8 +83,10 @@ enum RoutineAIReview {
             .map { "\($0.category.rawValue): \($0.value)" }
             .joined(separator: ", ")
         func describe(_ steps: [RoutineStep]) -> String {
-            steps.map { "- key=\($0.key) | \($0.productType) | active: \($0.active)" }
-                .joined(separator: "\n")
+            steps.map { step in
+                let cadence = RoutineSchedule.frequencyLabel(for: step) ?? "daily"
+                return "- key=\(step.key) | \(step.productType) | active: \(step.active) | cadence: \(cadence)"
+            }.joined(separator: "\n")
         }
         let quiz = prefs.map {
             "Skin feel: \($0.feel.rawValue). Current concern: \($0.concern.rawValue)."

@@ -131,8 +131,15 @@ final class RoutinePlan {
         }
     }
 
+    /// The steps actually scheduled for a given day (base daily steps +
+    /// whichever active treatments fall on that day). This is what the UI
+    /// shows and what completion is measured against.
+    func scheduledSteps(_ block: RoutineBlock, day: Int) -> [RoutineStep] {
+        steps(block).filter { RoutineSchedule.isScheduled($0, on: day) }
+    }
+
     func blockComplete(day: Int, _ block: RoutineBlock) -> Bool {
-        let steps = steps(block)
+        let steps = scheduledSteps(block, day: day)
         guard !steps.isEmpty else { return false }
         return steps.allSatisfy { isDone(day: day, block: block, step: $0) }
     }

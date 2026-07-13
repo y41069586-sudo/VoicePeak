@@ -20,8 +20,8 @@ enum WidgetBridge {
         let snapshot: VeriteWidgetSnapshot
         if let plan {
             let today = plan.dayIndex()
-            let amSteps = plan.steps(.am)
-            let pmSteps = plan.steps(.pm)
+            let amSteps = plan.scheduledSteps(.am, day: today)
+            let pmSteps = plan.scheduledSteps(.pm, day: today)
             let total = amSteps.count + pmSteps.count
             let done = amSteps.filter { plan.isDone(day: today, block: .am, step: $0) }.count
                      + pmSteps.filter { plan.isDone(day: today, block: .pm, step: $0) }.count

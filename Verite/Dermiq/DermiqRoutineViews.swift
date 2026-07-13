@@ -427,9 +427,11 @@ struct DermiqRoutineTab: View {
     }
 
     private func header(_ plan: RoutinePlan, today: Int) -> some View {
-        let total = plan.steps(.am).count + plan.steps(.pm).count
-        let done = plan.steps(.am).filter { plan.isDone(day: today, block: .am, step: $0) }.count
-                 + plan.steps(.pm).filter { plan.isDone(day: today, block: .pm, step: $0) }.count
+        let amSteps = plan.scheduledSteps(.am, day: today)
+        let pmSteps = plan.scheduledSteps(.pm, day: today)
+        let total = amSteps.count + pmSteps.count
+        let done = amSteps.filter { plan.isDone(day: today, block: .am, step: $0) }.count
+                 + pmSteps.filter { plan.isDone(day: today, block: .pm, step: $0) }.count
         let allDone = total > 0 && done == total
         return VStack(alignment: .leading, spacing: 14) {
             HStack(alignment: .firstTextBaseline, spacing: 8) {
@@ -621,7 +623,7 @@ struct DermiqRoutineTab: View {
 
     private func blockCard(_ plan: RoutinePlan, day: Int, block: RoutineBlock,
                            title: String, icon: String) -> some View {
-        let steps = plan.steps(block)
+        let steps = plan.scheduledSteps(block, day: day)
         let doneCount = steps.filter { plan.isDone(day: day, block: block, step: $0) }.count
         let complete = !steps.isEmpty && doneCount == steps.count
         return DQCard {
@@ -721,10 +723,22 @@ private struct DermiqStepRow: View {
                             .contentTransition(.symbolEffect(.replace))
                             .scaleEffect(done ? 1.0 : 0.96)
                         VStack(alignment: .leading, spacing: 2) {
-                            Text(LocalizedStringKey(step.productType))
-                                .font(DQFont.headline)
-                                .foregroundStyle(done ? DQColor.textSecondary : DQColor.textPrimary)
-                                .strikethrough(done, color: DQColor.textSecondary.opacity(0.6))
+                            HStack(spacing: 6) {
+                                Text(LocalizedStringKey(step.productType))
+                                    .font(DQFont.headline)
+                                    .foregroundStyle(done ? DQColor.textSecondary : DQColor.textPrimary)
+                                    .strikethrough(done, color: DQColor.textSecondary.opacity(0.6))
+                                // Cadence pill for non-daily actives, so it's
+                                // clear why this step isn't there every day.
+                                if let freq = RoutineSchedule.frequencyLabel(for: step) {
+                                    Text(LocalizedStringKey(freq))
+                                        .font(.system(size: 9.5, weight: .bold, design: .rounded))
+                                        .foregroundStyle(DQColor.accentBright)
+                                        .padding(.horizontal, 6)
+                                        .padding(.vertical, 2)
+                                        .background(DQColor.accentSoft.opacity(0.8), in: Capsule())
+                                }
+                            }
                             Text(LocalizedStringKey(step.active))
                                 .font(DQFont.mono(11))
                                 .foregroundStyle(DQColor.accentBright)
