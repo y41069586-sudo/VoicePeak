@@ -151,15 +151,108 @@ enum RoutineBlock: String, Codable, CaseIterable, Sendable {
     case am, pm
 }
 
+// ============================================================
+// MARK: — Pre-scan skin questionnaire (2 questions)
+// ============================================================
+
+/// Q1: "How does your skin usually feel?" — steers the BASE products
+/// (cleanser, moisturizers), so two people with the same scores still get
+/// different routines.
+enum SkinFeel: String, Codable, CaseIterable, Identifiable, Sendable {
+    case dry, oily, combo, sensitive, normal
+    var id: String { rawValue }
+
+    var displayName: String {
+        switch self {
+        case .dry: return "Dry & tight"
+        case .oily: return "Oily & shiny"
+        case .combo: return "Combination"
+        case .sensitive: return "Sensitive"
+        case .normal: return "Pretty balanced"
+        }
+    }
+    var icon: String {
+        switch self {
+        case .dry: return "wind"
+        case .oily: return "drop.fill"
+        case .combo: return "circle.lefthalf.filled"
+        case .sensitive: return "exclamationmark.shield"
+        case .normal: return "checkmark.circle"
+        }
+    }
+}
+
+/// Q2: "What describes your skin right now?" — nudges the targeting order.
+enum SkinConcernNow: String, Codable, CaseIterable, Identifiable, Sendable {
+    case breakouts, redness, dull, dehydrated, fine
+    var id: String { rawValue }
+
+    var displayName: String {
+        switch self {
+        case .breakouts: return "Breaking out"
+        case .redness: return "Red & irritated"
+        case .dull: return "Dull, no glow"
+        case .dehydrated: return "Dry patches"
+        case .fine: return "Actually fine"
+        }
+    }
+    var icon: String {
+        switch self {
+        case .breakouts: return "circle.grid.cross"
+        case .redness: return "flame"
+        case .dull: return "cloud"
+        case .dehydrated: return "drop.degreesign"
+        case .fine: return "hand.thumbsup"
+        }
+    }
+
+    /// The score category this concern promotes to the front of targeting.
+    var boostedCategory: DermiqCategory? {
+        switch self {
+        case .breakouts: return .blemishes
+        case .redness: return .redness
+        case .dull: return .glow
+        case .dehydrated: return .hydration
+        case .fine: return nil
+        }
+    }
+}
+
+/// The user's two quiz answers, persisted so rescans prefill them.
+struct SkinPrefs: Sendable {
+    var feel: SkinFeel
+    var concern: SkinConcernNow
+
+    private static let feelKey = "dq.pref.feel"
+    private static let concernKey = "dq.pref.concern"
+
+    static func load() -> SkinPrefs? {
+        let defaults = UserDefaults.standard
+        guard let f = defaults.string(forKey: feelKey).flatMap(SkinFeel.init(rawValue:)),
+              let c = defaults.string(forKey: concernKey).flatMap(SkinConcernNow.init(rawValue:))
+        else { return nil }
+        return SkinPrefs(feel: f, concern: c)
+    }
+
+    func save() {
+        let defaults = UserDefaults.standard
+        defaults.set(feel.rawValue, forKey: Self.feelKey)
+        defaults.set(concern.rawValue, forKey: Self.concernKey)
+    }
+}
+
 /// Derives a 14-day routine from the user's weakest sub-scores. Base steps are
 /// constant; the targeted middle steps come 1:1 from `DermiqIssue`s.
 enum RoutineBuilder {
 
     /// `weightedToward` (rescan iterations): categories that improved least
-    /// get promoted to the front of the targeting order.
+    /// get promoted to the front of the targeting order. `prefs` (the two
+    /// pre-scan questions) personalizes the base products and, when the user
+    /// named an acute concern, promotes its category to the front.
     static func steps(
         targets: [DermiqSubScore],
-        weightedToward: [DermiqCategory] = []
+        weightedToward: [DermiqCategory] = [],
+        prefs: SkinPrefs? = nil
     ) -> (am: [RoutineStep], pm: [RoutineStep]) {
         var ordered = targets
         if !weightedToward.isEmpty {
@@ -169,30 +262,22 @@ enum RoutineBuilder {
                 return ai == bi ? a.value < b.value : ai < bi
             }
         }
+        // "What's bothering you right now" jumps the queue — the routine should
+        // visibly answer the thing the user just told us.
+        if let boosted = prefs?.concern.boostedCategory,
+           let index = ordered.firstIndex(where: { $0.category == boosted }), index > 0 {
+            ordered.insert(ordered.remove(at: index), at: 0)
+        }
 
-        var am: [RoutineStep] = [
-            RoutineStep(
-                key: "am.cleanse",
-                productType: "Gentle gel cleanser",
-                active: "Low-pH surfactants",
-                why: "Preps skin without stripping — protects every step after it.",
-                examples: ["CeraVe Foaming Cleanser · $", "La Roche-Posay Toleriane · $$", "Fresh Soy Cleanser · $$$"]
-            ),
-        ]
-        var pm: [RoutineStep] = [
-            RoutineStep(
-                key: "pm.cleanse",
-                productType: "Cleanser (same as AM)",
-                active: "Low-pH surfactants",
-                why: "Removes the day's oxidized sebum and SPF residue.",
-                examples: ["CeraVe Foaming Cleanser · $", "La Roche-Posay Toleriane · $$"]
-            ),
-        ]
+        let feel = prefs?.feel
+        var am: [RoutineStep] = [baseCleanser(feel: feel, block: .am)]
+        var pm: [RoutineStep] = [baseCleanser(feel: feel, block: .pm)]
 
         // Targeted steps — at most two per block so blocks stay 3–5 steps.
         var amTargets = 0, pmTargets = 0
         for target in ordered {
-            let step = targetedStep(for: target)
+            var step = targetedStep(for: target)
+            if feel == .sensitive { step = soften(step) }
             switch preferredBlock(for: target.category) {
             case .am where amTargets < 2:
                 am.append(step); amTargets += 1
@@ -205,29 +290,128 @@ enum RoutineBuilder {
             }
         }
 
-        am.append(RoutineStep(
-            key: "am.moisturize",
-            productType: "Lightweight moisturizer",
-            active: "Ceramides + glycerin",
-            why: "Seals the actives in and keeps the barrier calm.",
-            examples: ["CeraVe PM Lotion · $", "Neutrogena Hydro Boost · $", "Dr. Jart+ Ceramidin · $$$"]
-        ))
+        am.append(baseMoisturizer(feel: feel, block: .am))
         am.append(RoutineStep(
             key: "am.spf",
-            productType: "SPF 50 broad spectrum",
+            productType: feel == .oily ? "SPF 50, mattifying fluid" : "SPF 50 broad spectrum",
             active: "UV filters",
             why: "UV is the #1 score killer. Non-negotiable, every day.",
-            examples: ["Beauty of Joseon Relief Sun · $", "La Roche-Posay Anthelios · $$", "Supergoop Unseen · $$$"]
+            examples: feel == .oily
+                ? ["La Roche-Posay Anthelios Oil Control · $$", "Beauty of Joseon Matte Sun Stick · $"]
+                : ["Beauty of Joseon Relief Sun · $", "La Roche-Posay Anthelios · $$", "Supergoop Unseen · $$$"]
         ))
-        pm.append(RoutineStep(
-            key: "pm.moisturize",
-            productType: "Barrier moisturizer",
-            active: "Ceramides + panthenol",
-            why: "Overnight is when repair happens — give it the material.",
-            examples: ["CeraVe Moisturizing Cream · $", "Avène Cicalfate+ · $$"]
-        ))
+        pm.append(baseMoisturizer(feel: feel, block: .pm))
 
         return (am, pm)
+    }
+
+    // MARK: Base products by skin feel (the quiz's first question)
+
+    private static func baseCleanser(feel: SkinFeel?, block: RoutineBlock) -> RoutineStep {
+        let key = block == .am ? "am.cleanse" : "pm.cleanse"
+        let pmWhy = "Removes the day's oxidized sebum and SPF residue."
+        let amWhy = "Preps skin without stripping — protects every step after it."
+        let why = block == .am ? amWhy : pmWhy
+        switch feel {
+        case .dry:
+            return RoutineStep(key: key, productType: "Cream cleanser (non-foaming)",
+                active: "Ceramides + glycerin",
+                why: why + " Cream texture, because your skin runs dry.",
+                examples: ["CeraVe Hydrating Cleanser · $", "La Roche-Posay Toleriane Dermo · $$", "Avène Gentle Milk · $$"])
+        case .oily:
+            return RoutineStep(key: key, productType: "Gel cleanser, low-pH",
+                active: "Mild surfactants + zinc",
+                why: why + " Gel formula keeps the shine in check without over-drying.",
+                examples: ["CeraVe Foaming Cleanser · $", "COSRX Low pH Good Morning · $", "Effaclar Purifying Gel · $$"])
+        case .sensitive:
+            return RoutineStep(key: key, productType: "Fragrance-free cream cleanser",
+                active: "Amino-acid surfactants",
+                why: why + " Zero fragrance, zero essential oils — your skin flagged sensitive.",
+                examples: ["La Roche-Posay Toleriane Dermo · $$", "Bioderma Sensibio Gel · $$"])
+        case .combo:
+            return RoutineStep(key: key, productType: "Balancing gel-cream cleanser",
+                active: "Low-pH surfactants + panthenol",
+                why: why + " Balanced texture for a combination T-zone.",
+                examples: ["CeraVe Foaming Cleanser · $", "Krave Matcha Hemp · $$"])
+        default:
+            return RoutineStep(key: key, productType: "Gentle gel cleanser",
+                active: "Low-pH surfactants",
+                why: why,
+                examples: ["CeraVe Foaming Cleanser · $", "La Roche-Posay Toleriane · $$", "Fresh Soy Cleanser · $$$"])
+        }
+    }
+
+    private static func baseMoisturizer(feel: SkinFeel?, block: RoutineBlock) -> RoutineStep {
+        if block == .am {
+            switch feel {
+            case .dry:
+                return RoutineStep(key: "am.moisturize", productType: "Rich day cream",
+                    active: "Ceramides + shea + glycerin",
+                    why: "Dry skin needs the fuller buffer under SPF.",
+                    examples: ["CeraVe Moisturizing Cream · $", "Kiehl's Ultra Facial Cream · $$$"])
+            case .oily:
+                return RoutineStep(key: "am.moisturize", productType: "Oil-free gel moisturizer",
+                    active: "HA + niacinamide",
+                    why: "Hydration without weight — shine stays down.",
+                    examples: ["Neutrogena Hydro Boost · $", "Clinique Dramatically Different Gel · $$"])
+            case .sensitive:
+                return RoutineStep(key: "am.moisturize", productType: "Barrier cream, fragrance-free",
+                    active: "Ceramides + panthenol",
+                    why: "Calm buffer that keeps the actives from nipping.",
+                    examples: ["Avène Tolérance Control · $$", "CeraVe PM Lotion · $"])
+            default:
+                return RoutineStep(key: "am.moisturize", productType: "Lightweight moisturizer",
+                    active: "Ceramides + glycerin",
+                    why: "Seals the actives in and keeps the barrier calm.",
+                    examples: ["CeraVe PM Lotion · $", "Neutrogena Hydro Boost · $", "Dr. Jart+ Ceramidin · $$$"])
+            }
+        } else {
+            switch feel {
+            case .dry:
+                return RoutineStep(key: "pm.moisturize", productType: "Overnight repair cream",
+                    active: "Ceramides + panthenol + squalane",
+                    why: "Overnight is when repair happens — dry skin gets the richest seal.",
+                    examples: ["CeraVe Moisturizing Cream · $", "Weleda Skin Food · $"])
+            case .oily:
+                return RoutineStep(key: "pm.moisturize", productType: "Light night gel-cream",
+                    active: "Ceramides + niacinamide",
+                    why: "Repair material without clogging a shine-prone skin.",
+                    examples: ["CeraVe PM Lotion · $", "Belif Aqua Bomb · $$"])
+            case .sensitive:
+                return RoutineStep(key: "pm.moisturize", productType: "Soothing barrier balm",
+                    active: "Panthenol + madecassoside",
+                    why: "Overnight calm-down — fragrance-free, barrier-first.",
+                    examples: ["Avène Cicalfate+ · $$", "La Roche-Posay Cicaplast B5 · $$"])
+            default:
+                return RoutineStep(key: "pm.moisturize", productType: "Barrier moisturizer",
+                    active: "Ceramides + panthenol",
+                    why: "Overnight is when repair happens — give it the material.",
+                    examples: ["CeraVe Moisturizing Cream · $", "Avène Cicalfate+ · $$"])
+            }
+        }
+    }
+
+    /// Sensitive skin gets the gentler cousin of every harsh active.
+    private static func soften(_ step: RoutineStep) -> RoutineStep {
+        if step.active.contains("Glycolic") {
+            return RoutineStep(key: step.key, productType: "Gentle PHA exfoliant (2×/week)",
+                active: "Gluconolactone (PHA)",
+                why: step.why + " Softened to PHA — sensitive skin flagged.",
+                examples: ["The Inkey List PHA Toner · $", "Naturium PHA Toner · $$"])
+        }
+        if step.active.contains("Adapalene") || step.active.contains("Retinaldehyde") {
+            return RoutineStep(key: step.key, productType: "Gentle retinol (start 2×/week)",
+                active: "Retinol 0.3% encapsulated",
+                why: step.why + " Softened entry dose — sensitive skin flagged.",
+                examples: ["The Inkey List Retinol · $", "Geek & Gorgeous A-Game 5 · $$"])
+        }
+        if step.active.contains("Ascorbic") {
+            return RoutineStep(key: step.key, productType: "Vitamin C derivative serum",
+                active: "Ethylated ascorbic acid 10%",
+                why: step.why + " Derivative form — kinder to reactive skin.",
+                examples: ["Purito CID Serum · $$", "Geek & Gorgeous C-Glow · $$"])
+        }
+        return step
     }
 
     private static func preferredBlock(for category: DermiqCategory) -> RoutineBlock {

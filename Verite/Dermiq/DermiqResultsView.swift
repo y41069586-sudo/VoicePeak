@@ -403,13 +403,15 @@ struct DermiqResultsView: View {
     private func afterUnlock() {
         guard let analysis = model.analysis else { return }
         if shareURL == nil {
-            let card = ReadingShareCard(
+            // v2: the share image mirrors THIS screen — photo over the score
+            // grid — instead of the old porcelain reading card.
+            let card = DermiqShareCard(
                 analysis: analysis,
-                date: .now,
+                photo: model.capturedImage,
                 displayName: profiles.first?.displayName
             )
-            if let image = ShareRenderer.image(for: card, size: ReadingShareCard.size),
-               let url = ShareRenderer.pngURL(for: image, name: "verite-reading") {
+            if let image = ShareRenderer.image(for: card, size: DermiqShareCard.size),
+               let url = ShareRenderer.pngURL(for: image, name: "skin-analysis") {
                 shareURL = url
             }
         }

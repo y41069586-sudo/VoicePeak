@@ -51,15 +51,55 @@ struct DermiqRoutineGenView: View {
                 .padding(.horizontal, 36)
                 .padding(.vertical, 10)
 
-            Text("Morning & evening — aimed at your three weakest scores.")
-                .font(DQFont.caption)
-                .foregroundStyle(DQColor.textSecondary)
-                .multilineTextAlignment(.center)
-                .padding(.horizontal, 40)
-                .padding(.bottom, 46)
+            auditCard
+                .padding(.horizontal, 32)
+                .padding(.bottom, 40)
         }
         .background(DQColor.background.ignoresSafeArea())
         .task { await travel() }
+    }
+
+    /// The receipt: exactly WHICH readings and answers this plan is built
+    /// from. This is what makes the routine feel checked, not templated.
+    private var auditCard: some View {
+        let targets = model.analysis?.weakestThree ?? []
+        let prefs = SkinPrefs.load()
+        return VStack(spacing: 9) {
+            Text("BUILT FROM")
+                .font(DQFont.mono(9, weight: .semibold)).tracking(2)
+                .foregroundStyle(DQColor.textSecondary)
+            HStack(spacing: 6) {
+                ForEach(targets) { target in
+                    HStack(spacing: 4) {
+                        Text(LocalizedStringKey(target.category.displayName))
+                            .font(.system(size: 11, weight: .semibold, design: .rounded))
+                        Text(verbatim: "\(target.value)")
+                            .font(.system(size: 11, weight: .heavy, design: .rounded).monospacedDigit())
+                    }
+                    .foregroundStyle(DQColor.accentBright)
+                    .padding(.horizontal, 9)
+                    .padding(.vertical, 5)
+                    .background(DQColor.accentSoft.opacity(0.7), in: Capsule())
+                }
+            }
+            if let prefs {
+                Text(verbatim: "+ \(prefs.feel.displayName) · \(prefs.concern.displayName)")
+                    .font(.system(size: 11.5, weight: .semibold, design: .rounded))
+                    .foregroundStyle(DQColor.textSecondary)
+            }
+            Text("Every step in your plan is tied to one of these inputs.")
+                .font(DQFont.micro)
+                .foregroundStyle(DQColor.textSecondary)
+                .multilineTextAlignment(.center)
+        }
+        .padding(.vertical, 12)
+        .padding(.horizontal, 14)
+        .frame(maxWidth: .infinity)
+        .background(DQColor.surface, in: RoundedRectangle(cornerRadius: DQRadius.card, style: .continuous))
+        .overlay(
+            RoundedRectangle(cornerRadius: DQRadius.card, style: .continuous)
+                .strokeBorder(DQColor.stroke, lineWidth: 1)
+        )
     }
 
     /// Drives the trip: hold for the screen entrance, pop day 1, then run the

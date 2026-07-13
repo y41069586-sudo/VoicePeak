@@ -15,11 +15,11 @@ import UIKit
 final class ScanFlowModel {
 
     enum Stage {
-        case guide, capture, theater, results, delta, potential, routineGen
+        case quiz, guide, capture, theater, results, delta, potential, routineGen
     }
 
-    // The flow opens on the capture guide (Do's & Don'ts) before the camera.
-    var stage: Stage = .guide
+    // The flow opens on the 2-question skin check, then the capture guide.
+    var stage: Stage = .quiz
     private(set) var capturedImage: UIImage?
     private(set) var analysis: DermiqAnalysis?
     private(set) var potentialImage: UIImage?
@@ -116,7 +116,11 @@ final class ScanFlowModel {
         }
 
         let targets = analysis.weakestThree
-        let steps = RoutineBuilder.steps(targets: targets, weightedToward: weightedToward)
+        let steps = RoutineBuilder.steps(
+            targets: targets,
+            weightedToward: weightedToward,
+            prefs: SkinPrefs.load()   // the two pre-scan questions
+        )
 
         // One active plan at a time.
         let plans = (try? context.fetch(FetchDescriptor<RoutinePlan>())) ?? []
@@ -160,6 +164,11 @@ struct DermiqScanFlowView: View {
             DQColor.background.ignoresSafeArea()
 
             switch model.stage {
+            case .quiz:
+                DermiqPreScanQuiz(
+                    onDone: { _ in model.stage = .guide },
+                    onCancel: { onFinished(false) }
+                )
             case .guide:
                 DermiqCaptureGuideView(
                     onContinue: { model.stage = .capture },
