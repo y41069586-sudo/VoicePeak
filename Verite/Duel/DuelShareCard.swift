@@ -63,7 +63,7 @@ struct DuelChallengeCard: View {
                     .padding(.top, 20)
                     .lineSpacing(2)
 
-                Text("Vérité")
+                Text("SKINMAXX")
                     .font(.system(size: 17, weight: .heavy, design: .rounded))
                     .foregroundStyle(.white)
                     .padding(.top, 22)
@@ -117,7 +117,7 @@ struct DuelResultCard: View {
                     .font(.system(size: 22, weight: .heavy, design: .rounded))
                     .foregroundStyle(DQColor.textPrimary)
 
-                Text("Vérité · 14-day Skin Duel")
+                Text("SKINMAXX · 14-day Skin Duel")
                     .font(.system(size: 13, weight: .semibold, design: .rounded))
                     .foregroundStyle(DQColor.accentBright)
                     .padding(.top, 8)

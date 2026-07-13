@@ -74,7 +74,7 @@ targets:
         SUPPORTS_MACCATALYST: NO
         TARGETED_DEVICE_FAMILY: "1" # iPhone only
         # WidgetKit extensions ship a display name + no launch storyboard.
-        CFBundleDisplayName: Vérité
+        CFBundleDisplayName: SKINMAXX
 
 schemes:
   Verite:

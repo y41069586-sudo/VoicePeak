@@ -189,7 +189,7 @@ struct DQShareButton: View {
             if let rendered {
                 ShareLink(
                     item: rendered,
-                    preview: SharePreview("My Vérité score", image: rendered)
+                    preview: SharePreview("My SKINMAXX score", image: rendered)
                 ) {
                     shareLabel
                 }

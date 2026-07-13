@@ -1,7 +1,7 @@
 import Foundation
 import SwiftData
 
-/// Scan-consistency streak. Consistency (not beauty) is what Vérité rewards.
+/// Scan-consistency streak. Consistency (not beauty) is what SKINMAXX rewards.
 @Model
 final class Streak {
     @Attribute(.unique) var id: UUID

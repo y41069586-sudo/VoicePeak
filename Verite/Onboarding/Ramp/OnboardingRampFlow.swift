@@ -1,7 +1,7 @@
 import SwiftUI
 import SwiftData
 
-/// Vérité onboarding — "Lumière". A soft, editorial ritual: warm porcelain,
+/// SKINMAXX onboarding — "Lumière". A soft, editorial ritual: warm porcelain,
 /// dawn light and film grain, restrained serif headlines, quiet answer tiles.
 /// No mascot, no hero object — the content carries every screen. Same honest
 /// mechanic (score, range, 14-day plan) in a calm shell. Hands off to Guided

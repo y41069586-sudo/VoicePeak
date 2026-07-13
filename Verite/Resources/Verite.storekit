@@ -15,7 +15,7 @@
     {
       "id" : "21500001",
       "localizations" : [],
-      "name" : "Vérité Pro",
+      "name" : "SKINMAXX Pro",
       "subscriptions" : [
         {
           "adHocOffers" : [],
@@ -32,7 +32,7 @@
           "localizations" : [
             {
               "description" : "Unlimited proof for your skin",
-              "displayName" : "Vérité Pro (Yearly)",
+              "displayName" : "SKINMAXX Pro (Yearly)",
               "locale" : "en_US"
             }
           ],
@@ -57,7 +57,7 @@
           "localizations" : [
             {
               "description" : "Unlimited proof for your skin",
-              "displayName" : "Vérité Pro (Monthly)",
+              "displayName" : "SKINMAXX Pro (Monthly)",
               "locale" : "en_US"
             }
           ],

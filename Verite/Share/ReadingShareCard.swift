@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// The shareable "Vérité Reading" — a story-sized (9:16) porcelain card with
+/// The shareable "SKINMAXX Reading" — a story-sized (9:16) porcelain card with
 /// the overall score in serif, all seven metrics, and a verified-scan seal.
 /// This is the app's viral artifact: the same editorial layout the user first
 /// saw as an illustration in onboarding, now filled with THEIR real result.

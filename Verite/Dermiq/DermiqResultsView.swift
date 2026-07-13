@@ -596,7 +596,7 @@ struct DermiqPaywallCard: View {
     /// The text shared by the invite button. No fabricated App Store link —
     /// add a real one here once the app is live.
     private var inviteMessage: String {
-        "I'm using Vérité to track my skin with an honest AI score and a 14-day plan. Come try it with me."
+        "I'm using SKINMAXX to track my skin with an honest AI score and a 14-day plan. Come try it with me."
     }
 
     private func price(for productID: String, fallback: String) -> String {

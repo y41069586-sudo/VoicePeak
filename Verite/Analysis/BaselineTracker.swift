@@ -1,7 +1,7 @@
 import Foundation
 
 /// Confidence model: a verdict is only as trustworthy as the capture quality and
-/// the amount of data behind it. Vérité never shows a verdict before it's earned.
+/// the amount of data behind it. SKINMAXX never shows a verdict before it's earned.
 enum AnalysisConfidence {
     /// Minimum full-face scans before any change verdict is shown.
     static let minScansForChange = 2

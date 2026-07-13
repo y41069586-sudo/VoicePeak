@@ -1,7 +1,7 @@
 import SwiftUI
 
 /// Soft paywall (SCREENS_SPEC A15): clear free-vs-Pro value led by the half-face
-/// proof benefit — the thing that makes Vérité different — a plan selector, a free
+/// proof benefit — the thing that makes SKINMAXX different — a plan selector, a free
 /// trial, honest pricing, Restore, and a real skip to the free experience (no dark
 /// patterns). Purchases are feature-flagged OFF until Milestone 12, so both paths
 /// continue into the app; the StoreKit wiring lights up the CTA when enabled.

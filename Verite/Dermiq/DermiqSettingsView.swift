@@ -166,7 +166,7 @@ struct DermiqSettingsView: View {
                 }
             }
             divider
-            settingsButton(icon: "star", text: "Rate Vérité") {
+            settingsButton(icon: "star", text: "Rate SKINMAXX") {
                 requestReview()
             }
         }

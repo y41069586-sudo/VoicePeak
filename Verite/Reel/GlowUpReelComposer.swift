@@ -271,7 +271,7 @@ enum GlowUpReelComposer {
         UIColor(red: 0.055, green: 0.078, blue: 0.11, alpha: 1).setFill()  // 0E141C
         UIRectFill(CGRect(origin: .zero, size: size))
         let a = clamp01(appear)
-        draw(text: "Vérité", font: rounded(150, .heavy),
+        draw(text: "SKINMAXX", font: rounded(150, .heavy),
              color: .white.withAlphaComponent(a),
              at: CGPoint(x: size.width / 2, y: 800), centered: true)
         if to != from {

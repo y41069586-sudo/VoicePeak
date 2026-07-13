@@ -5,7 +5,7 @@ import os
 // MARK: — Flow steps
 // ============================================================
 
-/// Vérité onboarding — "Lumière". A calm ritual: a soft opening, a serif
+/// SKINMAXX onboarding — "Lumière". A calm ritual: a soft opening, a serif
 /// promise, a personalized score range, and a handoff to the real scan. The
 /// luminous Teint-Orb lives behind every screen and only re-stages between
 /// them.
