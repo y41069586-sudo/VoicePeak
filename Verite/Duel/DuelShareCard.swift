@@ -96,7 +96,7 @@ struct DuelResultCard: View {
 
                 Spacer()
 
-                side(name: duel.myName.isEmpty ? "You" : duel.myName,
+                side(name: duel.myName.isEmpty ? String(localized: "You") : duel.myName,
                      delta: duel.myDelta ?? 0,
                      winner: iWon || draw)
                     .padding(.bottom, 10)
@@ -106,7 +106,7 @@ struct DuelResultCard: View {
                     .foregroundStyle(DQColor.textSecondary)
                     .padding(.vertical, 4)
 
-                side(name: duel.opponentName.isEmpty ? "Rival" : duel.opponentName,
+                side(name: duel.opponentName.isEmpty ? String(localized: "Rival") : duel.opponentName,
                      delta: duel.opponentDelta ?? 0,
                      winner: !iWon || draw)
                     .padding(.top, 10)
@@ -154,7 +154,7 @@ struct DuelResultCard: View {
                 HStack(spacing: 4) {
                     Image(systemName: delta >= 0 ? "arrow.up.right" : "arrow.down.right")
                         .font(.system(size: 13, weight: .heavy))
-                    Text(verbatim: "\(delta >= 0 ? "+" : "")\(delta) pts in 14 days")
+                    Text("\(delta >= 0 ? "+\(delta)" : "\(delta)") pts in 14 days")
                         .font(.system(size: 15, weight: .semibold, design: .rounded).monospacedDigit())
                 }
                 .foregroundStyle(delta >= 0 ? DQColor.deltaUp : DQColor.deltaDown)

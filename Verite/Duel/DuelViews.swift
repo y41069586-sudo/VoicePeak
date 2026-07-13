@@ -31,7 +31,7 @@ struct DuelTab: View {
     private var latestAnalysis: DermiqAnalysis? { scans.first?.analysis }
     private var myName: String {
         let name = profiles.first?.displayName ?? ""
-        return name.isEmpty ? "You" : name
+        return name.isEmpty ? String(localized: "You") : name
     }
 
     // MARK: Step machine
@@ -374,7 +374,7 @@ struct DuelTab: View {
 
     private func stepTitle(number: Int, title: String) -> some View {
         VStack(spacing: 5) {
-            Text(verbatim: "STEP \(number)")
+            Text("STEP \(number)")
                 .font(DQFont.mono(9, weight: .semibold)).tracking(2)
                 .foregroundStyle(DQColor.accentBright)
             Text(LocalizedStringKey(title))
@@ -412,11 +412,11 @@ struct DuelTab: View {
 
     private func versusRow(_ duel: SkinDuel) -> some View {
         HStack(spacing: 10) {
-            playerChip(name: duel.myName.isEmpty ? "You" : duel.myName, done: duel.iSubmitted)
+            playerChip(name: duel.myName.isEmpty ? String(localized: "You") : duel.myName, done: duel.iSubmitted)
             Text(verbatim: "VS")
                 .font(.system(size: 12, weight: .heavy, design: .rounded))
                 .foregroundStyle(DQColor.textSecondary)
-            playerChip(name: duel.opponentName.isEmpty ? "Rival" : duel.opponentName,
+            playerChip(name: duel.opponentName.isEmpty ? String(localized: "Rival") : duel.opponentName,
                        done: duel.opponentSubmitted)
         }
     }
@@ -535,11 +535,11 @@ private struct DuelReveal: View {
                 .scaleEffect(appeared ? 1 : 0.7)
                 .opacity(appeared ? 1 : 0)
 
-            side(name: duel.myName.isEmpty ? "You" : duel.myName,
+            side(name: duel.myName.isEmpty ? String(localized: "You") : duel.myName,
                  delta: duel.myDelta ?? 0, winner: iWon || draw)
             Text(verbatim: "VS").font(.system(size: 13, weight: .heavy, design: .rounded))
                 .foregroundStyle(DQColor.textSecondary)
-            side(name: duel.opponentName.isEmpty ? "Rival" : duel.opponentName,
+            side(name: duel.opponentName.isEmpty ? String(localized: "Rival") : duel.opponentName,
                  delta: duel.opponentDelta ?? 0, winner: !iWon || draw)
 
             if let shareURL {
@@ -594,7 +594,7 @@ private struct DuelReveal: View {
                 HStack(spacing: 3) {
                     Image(systemName: delta >= 0 ? "arrow.up.right" : "arrow.down.right")
                         .font(.system(size: 12, weight: .heavy))
-                    Text(verbatim: "\(delta >= 0 ? "+" : "")\(delta) in 14 days")
+                    Text("\(delta >= 0 ? "+\(delta)" : "\(delta)") in 14 days")
                         .font(.system(size: 14, weight: .semibold, design: .rounded).monospacedDigit())
                 }
                 .foregroundStyle(delta >= 0 ? DQColor.deltaUp : DQColor.deltaDown)

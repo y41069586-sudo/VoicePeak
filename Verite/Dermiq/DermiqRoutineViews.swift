@@ -83,7 +83,10 @@ struct DermiqRoutineGenView: View {
                 }
             }
             if let prefs {
-                Text(verbatim: "+ \(prefs.feel.displayName) · \(prefs.concern.displayName)")
+                // Runtime lookup so the quiz answers appear in the UI language.
+                let feelName = String(localized: String.LocalizationValue(prefs.feel.displayName))
+                let concernName = String(localized: String.LocalizationValue(prefs.concern.displayName))
+                Text(verbatim: "+ \(feelName) · \(concernName)")
                     .font(.system(size: 11.5, weight: .semibold, design: .rounded))
                     .foregroundStyle(DQColor.textSecondary)
             }

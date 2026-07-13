@@ -132,7 +132,9 @@ struct GlowUpReelSheet: View {
     private func factChip(icon: String, text: String) -> some View {
         HStack(spacing: 5) {
             Image(systemName: icon).font(.system(size: 11, weight: .semibold))
-            Text(verbatim: text).font(.system(size: 12, weight: .semibold, design: .rounded))
+            // LocalizedStringKey: "On-device" translates; "9:16"/"~8s" fall
+            // through to their own literal, which is exactly what we want.
+            Text(LocalizedStringKey(text)).font(.system(size: 12, weight: .semibold, design: .rounded))
         }
         .foregroundStyle(DQColor.textSecondary)
         .padding(.horizontal, 11)
