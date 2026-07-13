@@ -1506,6 +1506,41 @@
         }
       }
     },
+    "AI-checked plan": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "KI-geprüfter Plan"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "AI-checked plan"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Plan revisado por IA"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Plan vérifié par l'IA"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Piano verificato dall'IA"
+          }
+        }
+      }
+    },
     "AM and PM — both done.": {
       "extractionState": "manual",
       "localizations": {

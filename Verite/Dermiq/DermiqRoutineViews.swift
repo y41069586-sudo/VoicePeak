@@ -404,6 +404,10 @@ struct DermiqRoutineTab: View {
         return VStack(alignment: .leading, spacing: 20) {
             header(plan, today: today)
                 .vStaggeredAppear(index: 0)
+            if let summary = RoutineAIReview.summary(for: plan) {
+                aiCheckCard(summary)
+                    .vStaggeredAppear(index: 1)
+            }
             dayGrid(plan, today: today)
                 .vStaggeredAppear(index: 1)
 
@@ -496,6 +500,32 @@ struct DermiqRoutineTab: View {
             }
             .animation(VMotion.gentle, value: allDone)
         }
+    }
+
+    /// The Gemini verdict on this plan: badge + personal 2–3 sentence summary.
+    /// Only shows once the background review has landed.
+    private func aiCheckCard(_ summary: String) -> some View {
+        VStack(alignment: .leading, spacing: 7) {
+            HStack(spacing: 6) {
+                Image(systemName: "checkmark.seal.fill")
+                    .font(.system(size: 12, weight: .semibold))
+                    .foregroundStyle(DQColor.accentBright)
+                Text("AI-checked plan")
+                    .font(DQFont.mono(10, weight: .semibold)).tracking(1.5)
+                    .foregroundStyle(DQColor.accentBright)
+            }
+            Text(verbatim: summary)
+                .font(DQFont.caption)
+                .foregroundStyle(DQColor.textPrimary)
+                .fixedSize(horizontal: false, vertical: true)
+        }
+        .padding(14)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(DQColor.accentSoft.opacity(0.45), in: RoundedRectangle(cornerRadius: DQRadius.card, style: .continuous))
+        .overlay(
+            RoundedRectangle(cornerRadius: DQRadius.card, style: .continuous)
+                .strokeBorder(DQColor.accentSoft, lineWidth: 1)
+        )
     }
 
     /// One horizontal, scrollable strip of day pills — roomier than the old

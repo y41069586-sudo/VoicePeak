@@ -135,6 +135,9 @@ final class ScanFlowModel {
         context.insert(plan)
         try? context.save()
         WidgetBridge.publish(plan)
+        // Fire-and-forget: Gemini reviews the plan and personalizes the
+        // why-lines + summary. No key / offline → the plan stays rule-worded.
+        RoutineAIReview.kickoff(plan: plan, analysis: analysis, context: context)
         RampAnalytics.track("plan_created", [
             "targets": targets.map(\.category.rawValue).joined(separator: ","),
         ])
