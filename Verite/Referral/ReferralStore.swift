@@ -144,6 +144,9 @@ enum ScanQuota {
             let weekAgo = Date.now.addingTimeInterval(-7 * 24 * 3600)
             let inWindow = scans.filter { $0.date > weekAgo }
             if inWindow.count < proPerWeek { return .allow(useCredit: false) }
+            // Past the weekly cap: a bought (€1.99) or referral-earned extra
+            // scan lets them through; otherwise it's the countdown.
+            if credits > 0 { return .allow(useCredit: true) }
             let nextScan = inWindow.map(\.date).min()?.addingTimeInterval(7 * 24 * 3600)
             return .blockedProWeekly(nextScan: nextScan)
         }
@@ -164,6 +167,9 @@ struct ScanLimitSheet: View {
     var proCap = false
     var nextScan: Date?
     let onGetPro: (() -> Void)?
+    /// Pro-cap only: buy one more scan now (€1.99). Displayed price passed in.
+    var extraScanPrice: String = "€1.99"
+    var onBuyExtraScan: (() -> Void)? = nil
 
     @Environment(\.dismiss) private var dismiss
 
@@ -179,7 +185,7 @@ struct ScanLimitSheet: View {
                     .font(.system(size: 21, weight: .heavy, design: .rounded))
                     .foregroundStyle(DQColor.textPrimary)
                 Text(proCap
-                     ? "Skin moves week by week — your two weekly readings are in. The next one unlocks soon."
+                     ? "Skin moves week by week — your two weekly readings are in. Need one more now? Grab an extra scan, or the next one unlocks free soon."
                      : "Every scan runs a full AI skin analysis. Go Pro for your score, all seven metrics and your 14-day plan.")
                     .font(DQFont.caption)
                     .foregroundStyle(DQColor.textSecondary)
@@ -209,6 +215,22 @@ struct ScanLimitSheet: View {
                         onGetPro()
                     } label: {
                         Label("Unlock scanning with Pro", systemImage: "sparkles")
+                            .font(.system(size: 16, weight: .bold, design: .rounded))
+                            .foregroundStyle(.white)
+                            .frame(maxWidth: .infinity, minHeight: 54)
+                            .background(DQColor.accentBright,
+                                        in: RoundedRectangle(cornerRadius: 18, style: .continuous))
+                    }
+                    .buttonStyle(PressableStyle())
+                }
+
+                // Pro user past the weekly cap: buy one more scan right now.
+                if proCap, let onBuyExtraScan {
+                    Button {
+                        dismiss()
+                        onBuyExtraScan()
+                    } label: {
+                        Label("Buy 1 extra scan · \(extraScanPrice)", systemImage: "bolt.fill")
                             .font(.system(size: 16, weight: .bold, design: .rounded))
                             .foregroundStyle(.white)
                             .frame(maxWidth: .infinity, minHeight: 54)

@@ -24,9 +24,24 @@ final class PurchaseManager {
 
     /// Load products + current entitlement. Call once when purchases are enabled.
     func load() async {
-        products = (try? await StoreKit.Product.products(for: VeriteProducts.proIDs))?
+        products = (try? await StoreKit.Product.products(for: VeriteProducts.allIDs))?
             .sorted { $0.price < $1.price } ?? []
         await refreshEntitlements()
+    }
+
+    /// Buy a consumable (the €1.99 extra scan). Finishes the transaction and
+    /// returns whether the purchase actually went through — never touches the
+    /// Pro entitlement (a consumable doesn't grant Pro).
+    func purchaseConsumable(_ product: StoreKit.Product) async -> Bool {
+        isPurchasing = true
+        defer { isPurchasing = false }
+        guard let result = try? await product.purchase() else { return false }
+        if case .success(let verification) = result,
+           case .verified(let transaction) = verification {
+            await transaction.finish()
+            return true
+        }
+        return false
     }
 
     @discardableResult

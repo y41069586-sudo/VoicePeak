@@ -3431,6 +3431,41 @@
         }
       }
     },
+    "Buy 1 extra scan · %@": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "1 Extra-Scan kaufen · %@"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Buy 1 extra scan · %@"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Comprar 1 escaneo extra · %@"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Acheter 1 scan en plus · %@"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Acquista 1 scansione extra · %@"
+          }
+        }
+      }
+    },
     "CREATE YOUR ACCOUNT": {
       "extractionState": "manual",
       "localizations": {
@@ -12352,6 +12387,41 @@
           "stringUnit": {
             "state": "translated",
             "value": "SKIN DUEL · RISULTATO"
+          }
+        }
+      }
+    },
+    "Skin moves week by week — your two weekly readings are in. Need one more now? Grab an extra scan, or the next one unlocks free soon.": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Haut verändert sich Woche für Woche — deine zwei wöchentlichen Analysen sind durch. Jetzt noch eine? Hol dir einen Extra-Scan, oder die nächste schaltet bald kostenlos frei."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Skin moves week by week — your two weekly readings are in. Need one more now? Grab an extra scan, or the next one unlocks free soon."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "La piel cambia semana a semana — tus dos análisis semanales están hechos. ¿Necesitas uno más ahora? Consigue un escaneo extra, o el próximo se desbloquea gratis pronto."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "La peau évolue semaine après semaine — tes deux analyses hebdomadaires sont faites. Besoin d'un scan de plus ? Prends-en un en plus, ou le prochain se débloque bientôt gratuitement."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "La pelle cambia settimana dopo settimana — le tue due analisi settimanali sono fatte. Ne serve un'altra ora? Prendi una scansione extra, o la prossima si sblocca presto gratis."
           }
         }
       }

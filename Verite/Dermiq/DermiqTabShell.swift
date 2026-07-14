@@ -31,6 +31,7 @@ struct DermiqTabShell: View {
 
     @Environment(\.modelContext) private var modelContext
     @Environment(PurchaseManager.self) private var purchases
+    @Environment(AppState.self) private var appState
     @Query(sort: \ScanRecord.date, order: .reverse) private var scans: [ScanRecord]
 
     /// Simulated entitlement, set by the paywall while StoreKit products
@@ -69,7 +70,9 @@ struct DermiqTabShell: View {
                            onGetPro: hasPro ? nil : {
                                scanAfterUnlock = true
                                showPaywall = true
-                           })
+                           },
+                           extraScanPrice: extraScanPrice,
+                           onBuyExtraScan: { buyExtraScan() })
         }
         // The ONE paywall — the same card that sits over the blurred results.
         // Presented as a drag-dismissible sheet, so it's never a dead end.
@@ -142,6 +145,35 @@ struct DermiqTabShell: View {
             quotaProCap = true
             quotaNextFree = nextScan
             showQuotaSheet = true
+        }
+    }
+
+    /// StoreKit display price for the €1.99 extra scan, or a sensible fallback
+    /// while products aren't loaded.
+    private var extraScanPrice: String {
+        purchases.products.first { $0.id == VeriteProducts.extraScan }?.displayPrice ?? "€1.99"
+    }
+
+    /// Buy one extra scan (consumable). On success it becomes a scan credit
+    /// and we carry the user straight into the scan they wanted. While
+    /// StoreKit isn't live, grant it immediately (mirrors the paywall).
+    private func buyExtraScan() {
+        Task {
+            var granted = false
+            if appState.featureFlags.purchasesEnabled {
+                if let product = purchases.products.first(where: { $0.id == VeriteProducts.extraScan }),
+                   await purchases.purchaseConsumable(product) {
+                    granted = true
+                }
+            } else {
+                try? await Task.sleep(for: .milliseconds(500))
+                granted = true // simulated purchase
+            }
+            guard granted else { return }
+            ReferralStore.shared.addCredit()
+            RampAnalytics.track("extra_scan_purchased")
+            try? await Task.sleep(for: .milliseconds(250))
+            startScan()
         }
     }
 

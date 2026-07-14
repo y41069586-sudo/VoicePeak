@@ -70,37 +70,40 @@ struct OnboardingRampFlow: View {
         case .name:
             RampNameScreen(name: nameBinding) { advance() }
         case .quizSelfRating:
-            RampSwipeQuizScreen(
+            RampQuizScreen(
                 chapter: "YOUR SKIN · ONE OF THREE",
                 question: personalized("How does your skin feel lately?",
                                        named: "%@, how does your skin feel lately?"),
                 options: RampQuizAnswers.SelfRating.allCases.map {
-                    RampSwipeOption(id: $0.rawValue, label: $0.label,
+                    RampQuizOption(id: $0.rawValue, label: $0.label,
                                     icon: selfRatingIcon($0), sub: selfRatingSub($0))
-                }
+                },
+                selectedID: answers.selfRating?.rawValue
             ) { id in
                 answers.selfRating = RampQuizAnswers.SelfRating(rawValue: id)
                 recordAnswer(question: "self_rating", answer: id)
             }
         case .quizConcern:
-            RampSwipeQuizScreen(
+            RampQuizScreen(
                 chapter: "YOUR SKIN · TWO OF THREE",
                 question: "What draws your eye in the mirror?",
                 options: RampQuizAnswers.MirrorConcern.allCases.map {
-                    RampSwipeOption(id: $0.rawValue, label: $0.label,
+                    RampQuizOption(id: $0.rawValue, label: $0.label,
                                     icon: $0.icon, sub: concernSub($0))
-                }
+                },
+                selectedID: answers.concern?.rawValue
             ) { id in
                 answers.concern = RampQuizAnswers.MirrorConcern(rawValue: id)
                 recordAnswer(question: "mirror_concern", answer: id)
             }
         case .quizAge:
-            RampSwipeQuizScreen(
+            RampQuizScreen(
                 chapter: "YOUR SKIN · THREE OF THREE",
                 question: "Your age group?",
                 options: RampQuizAnswers.AgeBand.allCases.map {
-                    RampSwipeOption(id: $0.rawValue, label: $0.label, icon: ageIcon($0))
-                }
+                    RampQuizOption(id: $0.rawValue, label: $0.label, icon: ageIcon($0))
+                },
+                selectedID: answers.age?.rawValue
             ) { id in
                 answers.age = RampQuizAnswers.AgeBand(rawValue: id)
                 recordAnswer(question: "age_band", answer: id)
@@ -114,34 +117,37 @@ struct OnboardingRampFlow: View {
                     .compactMap { $0 }
             ) { advance() }
         case .quizRoutine:
-            RampSwipeQuizScreen(
+            RampQuizScreen(
                 chapter: "YOUR LIFE · ONE OF THREE",
                 question: "Your routine, honestly?",
                 options: RampQuizAnswers.RoutineLevel.allCases.map {
-                    RampSwipeOption(id: $0.rawValue, label: $0.label, icon: routineIcon($0))
-                }
+                    RampQuizOption(id: $0.rawValue, label: $0.label, icon: routineIcon($0))
+                },
+                selectedID: answers.routine?.rawValue
             ) { id in
                 answers.routine = RampQuizAnswers.RoutineLevel(rawValue: id)
                 recordAnswer(question: "routine_level", answer: id)
             }
         case .quizSleep:
-            RampSwipeQuizScreen(
+            RampQuizScreen(
                 chapter: "YOUR LIFE · TWO OF THREE",
                 question: "Sleep, on an average night?",
                 options: RampQuizAnswers.SleepBucket.allCases.map {
-                    RampSwipeOption(id: $0.rawValue, label: $0.label, icon: sleepIcon($0))
-                }
+                    RampQuizOption(id: $0.rawValue, label: $0.label, icon: sleepIcon($0))
+                },
+                selectedID: answers.sleep?.rawValue
             ) { id in
                 answers.sleep = RampQuizAnswers.SleepBucket(rawValue: id)
                 recordAnswer(question: "sleep", answer: id)
             }
         case .quizSPF:
-            RampSwipeQuizScreen(
+            RampQuizScreen(
                 chapter: "YOUR LIFE · THREE OF THREE",
                 question: "Sun protection?",
                 options: RampQuizAnswers.SunProtection.allCases.map {
-                    RampSwipeOption(id: $0.rawValue, label: $0.label, icon: spfIcon($0))
-                }
+                    RampQuizOption(id: $0.rawValue, label: $0.label, icon: spfIcon($0))
+                },
+                selectedID: answers.spf?.rawValue
             ) { id in
                 answers.spf = RampQuizAnswers.SunProtection(rawValue: id)
                 recordAnswer(question: "sun_protection", answer: id)

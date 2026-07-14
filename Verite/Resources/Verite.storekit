@@ -1,7 +1,23 @@
 {
   "identifier" : "VERITE_STOREKIT",
   "nonRenewingSubscriptions" : [],
-  "products" : [],
+  "products" : [
+    {
+      "displayPrice" : "1.99",
+      "familyShareable" : false,
+      "internalID" : "21500010",
+      "localizations" : [
+        {
+          "description" : "One more skin scan this week",
+          "displayName" : "Extra Scan",
+          "locale" : "en_US"
+        }
+      ],
+      "productID" : "com.verite.app.scan.extra",
+      "referenceName" : "Extra Scan",
+      "type" : "Consumable"
+    }
+  ],
   "settings" : {
     "_applicationInternalID" : "0",
     "_developerTeamID" : "",
@@ -15,7 +31,7 @@
     {
       "id" : "21500001",
       "localizations" : [],
-      "name" : "SKINMAXX Pro",
+      "name" : "Glowé Pro",
       "subscriptions" : [
         {
           "adHocOffers" : [],
@@ -32,7 +48,7 @@
           "localizations" : [
             {
               "description" : "Unlimited proof for your skin",
-              "displayName" : "SKINMAXX Pro (Yearly)",
+              "displayName" : "Glowé Pro (Yearly)",
               "locale" : "en_US"
             }
           ],
@@ -57,7 +73,7 @@
           "localizations" : [
             {
               "description" : "Unlimited proof for your skin",
-              "displayName" : "SKINMAXX Pro (Monthly)",
+              "displayName" : "Glowé Pro (Monthly)",
               "locale" : "en_US"
             }
           ],
