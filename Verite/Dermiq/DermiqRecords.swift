@@ -133,9 +133,14 @@ final class RoutinePlan {
 
     /// The steps actually scheduled for a given day (base daily steps +
     /// whichever active treatments fall on that day). This is what the UI
-    /// shows and what completion is measured against.
+    /// shows and what completion is measured against. During a recovery window
+    /// the strong actives are pulled — the barrier gets a few gentle days.
     func scheduledSteps(_ block: RoutineBlock, day: Int) -> [RoutineStep] {
-        steps(block).filter { RoutineSchedule.isScheduled($0, on: day) }
+        let recovering = RoutineRecovery.isActive(self, on: day)
+        return steps(block).filter { step in
+            if recovering && RoutineSchedule.isStrongActive(step) { return false }
+            return RoutineSchedule.isScheduled(step, on: day)
+        }
     }
 
     func blockComplete(day: Int, _ block: RoutineBlock) -> Bool {

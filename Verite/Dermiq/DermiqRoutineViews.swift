@@ -381,6 +381,10 @@ struct DermiqRoutineTab: View {
     /// user sees is the four products they actually need to start.
     @State private var kitEssentialsOnly = true
 
+    /// Recovery state lives in UserDefaults; bumping this forces the tab to
+    /// re-read it after the user starts or ends a back-off.
+    @State private var recoveryRefresh = 0
+
     /// Asks the shell to start the day-14 rescan flow.
     let onRescan: () -> Void
 
@@ -408,6 +412,8 @@ struct DermiqRoutineTab: View {
         return VStack(alignment: .leading, spacing: 20) {
             header(plan, today: today)
                 .vStaggeredAppear(index: 0)
+            recoveryCard(plan, today: today)
+                .vStaggeredAppear(index: 1)
             if let summary = RoutineAIReview.summary(for: plan) {
                 aiCheckCard(summary)
                     .vStaggeredAppear(index: 1)
@@ -539,6 +545,85 @@ struct DermiqRoutineTab: View {
                 }
             }
             .animation(VMotion.gentle, value: allDone)
+        }
+    }
+
+    /// Adaptive back-off. When calm: a quiet "skin feels irritated?" link that
+    /// pauses the strong actives for a few days. When recovering: a banner with
+    /// the days left and an "all better" escape hatch.
+    @ViewBuilder
+    private func recoveryCard(_ plan: RoutinePlan, today: Int) -> some View {
+        let _ = recoveryRefresh   // re-read UserDefaults after begin/end
+        if RoutineRecovery.isActive(plan, on: today) {
+            let left = RoutineRecovery.daysLeft(plan, on: today)
+            HStack(spacing: 11) {
+                Image(systemName: "cross.case.fill")
+                    .font(.system(size: 15, weight: .semibold))
+                    .foregroundStyle(DQColor.deltaDown)
+                    .frame(width: 34, height: 34)
+                    .background(DQColor.deltaDown.opacity(0.12),
+                                in: RoundedRectangle(cornerRadius: 10, style: .continuous))
+                VStack(alignment: .leading, spacing: 2) {
+                    HStack(spacing: 6) {
+                        Text("Recovery mode")
+                            .font(.system(size: 15, weight: .bold, design: .rounded))
+                            .foregroundStyle(DQColor.textPrimary)
+                        Text(verbatim: "\(left)d")
+                            .font(DQFont.mono(9, weight: .bold))
+                            .foregroundStyle(DQColor.deltaDown)
+                            .padding(.horizontal, 5).padding(.vertical, 1)
+                            .background(DQColor.deltaDown.opacity(0.12), in: Capsule())
+                    }
+                    Text("Strong actives paused — your barrier gets gentle days.")
+                        .font(DQFont.micro)
+                        .foregroundStyle(DQColor.textSecondary)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+                Spacer(minLength: 4)
+                Button {
+                    Haptics.fire(.selection)
+                    RoutineRecovery.end(plan)
+                    WidgetBridge.publish(plan)
+                    withAnimation(VMotion.snappy) { recoveryRefresh += 1 }
+                } label: {
+                    Text("All better")
+                        .font(.system(size: 12, weight: .bold, design: .rounded))
+                        .foregroundStyle(DQColor.accentBright)
+                        .padding(.horizontal, 11).padding(.vertical, 7)
+                        .background(DQColor.accentBright.opacity(0.10), in: Capsule())
+                }
+                .buttonStyle(.plain)
+            }
+            .padding(14)
+            .background(DQColor.surface, in: RoundedRectangle(cornerRadius: DQRadius.card, style: .continuous))
+            .overlay(RoundedRectangle(cornerRadius: DQRadius.card, style: .continuous)
+                .strokeBorder(DQColor.deltaDown.opacity(0.35), lineWidth: 1))
+        } else {
+            Button {
+                Haptics.fire(.selection)
+                RoutineRecovery.begin(plan)
+                WidgetBridge.publish(plan)
+                withAnimation(VMotion.snappy) { recoveryRefresh += 1 }
+            } label: {
+                HStack(spacing: 8) {
+                    Image(systemName: "hand.raised.fill")
+                        .font(.system(size: 12, weight: .semibold))
+                        .foregroundStyle(DQColor.textSecondary)
+                    Text("Skin feels irritated?")
+                        .font(.system(size: 13, weight: .semibold, design: .rounded))
+                        .foregroundStyle(DQColor.textPrimary)
+                    Spacer(minLength: 4)
+                    Text("Pause actives")
+                        .font(DQFont.micro)
+                        .foregroundStyle(DQColor.accentBright)
+                }
+                .padding(.horizontal, 14).padding(.vertical, 11)
+                .frame(maxWidth: .infinity)
+                .background(DQColor.surface, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
+                .overlay(RoundedRectangle(cornerRadius: 14, style: .continuous)
+                    .strokeBorder(DQColor.stroke, lineWidth: 1))
+            }
+            .buttonStyle(.plain)
         }
     }
 
