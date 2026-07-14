@@ -146,9 +146,11 @@ struct RampSwipeQuizScreen: View {
                     )
             }
             .frame(height: 372)
+            .blur(radius: showCoach ? 6 : 0)
             .overlay {
                 if showCoach { RampSwipeCoach() }
             }
+            .animation(.easeOut(duration: 0.3), value: showCoach)
 
             Spacer()
 
@@ -164,6 +166,11 @@ struct RampSwipeQuizScreen: View {
             .font(VType.micro)
             .tracking(1)
             .padding(.bottom, VSpace.xl)
+        }
+        .task {
+            guard showCoach else { return }
+            try? await Task.sleep(for: .seconds(2.6))
+            if showCoach { dismissCoach() }
         }
     }
 
@@ -231,61 +238,35 @@ struct RampSwipeQuizScreen: View {
     }
 }
 
-/// First-run swipe tutorial — a hand that sweeps side to side over the card
-/// with SKIP / PICK hints, like a mobile-game coaching overlay. Non-interactive
-/// so the swipe underneath still works; it fades out on the first drag.
+/// First-run swipe hint. The card behind it is blurred; this just floats a
+/// clean "swipe left or right" label with two nudging arrows. Non-interactive,
+/// and it auto-dismisses after a couple of seconds (or on the first drag).
 private struct RampSwipeCoach: View {
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
-    @State private var swing = false
+    @State private var spread = false
 
     var body: some View {
-        ZStack {
-            RoundedRectangle(cornerRadius: 26, style: .continuous)
-                .fill(RampStage.ink.opacity(0.07))
-
-            // Directional hints, pinned to the sides.
-            HStack {
-                hint("SKIP", "arrow.left", RampStage.textSecondary)
-                Spacer()
-                hint("PICK", "arrow.right", RampStage.accent)
+        VStack(spacing: 12) {
+            HStack(spacing: 34) {
+                Image(systemName: "arrow.left").offset(x: spread ? -6 : 2)
+                Image(systemName: "arrow.right").offset(x: spread ? 6 : -2)
             }
-            .padding(.horizontal, 18)
+            .font(.system(size: 26, weight: .bold))
+            .foregroundStyle(RampStage.accentDeep)
 
-            // The coaching hand + label.
-            VStack(spacing: 14) {
-                Image(systemName: "hand.point.up.left.fill")
-                    .font(.system(size: 44))
-                    .foregroundStyle(RampStage.accentDeep)
-                    .rotationEffect(.degrees(swing ? 14 : -14))
-                    .offset(x: swing ? 48 : -48)
-                    .shadow(color: RampStage.accent.opacity(0.35), radius: 10, y: 4)
-                Text("Swipe left or right")
-                    .font(.system(size: 14, weight: .semibold, design: .rounded))
-                    .foregroundStyle(RampStage.ink)
-                    .padding(.horizontal, 14).padding(.vertical, 7)
-                    .background(Color.white, in: Capsule())
-                    .shadow(color: RampStage.accent.opacity(0.2), radius: 10, y: 4)
-            }
+            Text("Swipe left or right")
+                .font(.system(size: 15, weight: .bold, design: .rounded))
+                .foregroundStyle(RampStage.ink)
         }
+        .padding(.horizontal, 22).padding(.vertical, 16)
+        .background(Color.white.opacity(0.85), in: RoundedRectangle(cornerRadius: 18, style: .continuous))
+        .shadow(color: RampStage.accent.opacity(0.2), radius: 14, y: 6)
         .allowsHitTesting(false)
         .transition(.opacity)
         .onAppear {
             guard !reduceMotion else { return }
-            withAnimation(.easeInOut(duration: 0.9).repeatForever(autoreverses: true)) { swing = true }
+            withAnimation(.easeInOut(duration: 0.8).repeatForever(autoreverses: true)) { spread = true }
         }
-    }
-
-    private func hint(_ text: String, _ icon: String, _ color: Color) -> some View {
-        VStack(spacing: 5) {
-            Image(systemName: icon)
-                .font(.system(size: 16, weight: .bold))
-            Text(LocalizedStringKey(text))
-                .font(.system(size: 11, weight: .heavy, design: .rounded)).tracking(1)
-        }
-        .foregroundStyle(color)
-        .padding(.horizontal, 10).padding(.vertical, 8)
-        .background(Color.white.opacity(0.9), in: RoundedRectangle(cornerRadius: 12, style: .continuous))
-        .shadow(color: RampStage.ink.opacity(0.1), radius: 6, y: 2)
     }
 }
 
