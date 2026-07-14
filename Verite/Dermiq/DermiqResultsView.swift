@@ -569,15 +569,19 @@ struct DermiqPaywallCard: View {
                 .frame(width: 40, height: 4)
                 .padding(.top, 12)
 
-            VStack(spacing: 6) {
+            VStack(spacing: 12) {
                 Text("Your score is ready.")
                     .font(DQFont.title)
                     .foregroundStyle(DQColor.textPrimary)
-                Text("Unlock your number, all seven metrics, your potential, and the 14-day plan built from them.")
-                    .font(DQFont.body)
-                    .foregroundStyle(DQColor.textSecondary)
-                    .multilineTextAlignment(.center)
-                    .fixedSize(horizontal: false, vertical: true)
+
+                // The value stack — what unlocking actually gets you, scannable
+                // in two seconds at the moment of peak curiosity.
+                VStack(alignment: .leading, spacing: 7) {
+                    valueRow("Your score + all 7 metrics revealed")
+                    valueRow("14-day routine, AI-checked for your skin")
+                    valueRow("Zone map & your 14-day potential")
+                    valueRow("Skin Duel, Glow-Up Reel & rescans")
+                }
             }
             .padding(.horizontal, 24)
 
@@ -585,11 +589,13 @@ struct DermiqPaywallCard: View {
                 planRow(.annual,
                         title: "Annual",
                         price: price(for: VeriteProducts.proYearly, fallback: "$39.99 / year"),
-                        badge: "BEST VALUE")
+                        badge: "SAVE 84%",
+                        sub: annualWeeklyEquivalent)
                 planRow(.weekly,
                         title: "Weekly",
                         price: price(for: VeriteProducts.proWeekly, fallback: "$4.99 / week"),
-                        badge: nil)
+                        badge: nil,
+                        sub: nil)
             }
             .padding(.horizontal, 20)
 
@@ -599,12 +605,11 @@ struct DermiqPaywallCard: View {
             }
             .padding(.horizontal, 20)
 
-            // A real invite (opens the system share sheet) — NOT a fake
-            // "invite 3 to unlock" gate. It shares the app; it does not grant
-            // Pro, because we cannot verify installs without referral tracking.
-            // TODO: PRODUCTION — wire real referral tracking + an App Store URL
-            // if invite-to-unlock should actually gate the paywall.
-            ShareLink(item: inviteMessage) {
+            // The real referral link: the friend redeems it for a bonus scan
+            // (ReferralStore), and can send a thank-you link back. Sharing
+            // never unlocks Pro — no fake "invite 3 to unlock" gate.
+            ShareLink(item: ReferralStore.shared.inviteURL,
+                      message: Text("Scan your skin with me — this link gives us both a free scan.")) {
                 HStack(spacing: 8) {
                     Image(systemName: "person.2.fill")
                     Text("Invite friends")
@@ -664,7 +669,29 @@ struct DermiqPaywallCard: View {
         }
     }
 
-    private func planRow(_ plan: PlanChoice, title: String, price: String, badge: String?) -> some View {
+    private func valueRow(_ text: String) -> some View {
+        HStack(spacing: 8) {
+            Image(systemName: "checkmark.circle.fill")
+                .font(.system(size: 13, weight: .semibold))
+                .foregroundStyle(DQColor.accentBright)
+            Text(LocalizedStringKey(text))
+                .font(DQFont.caption)
+                .foregroundStyle(DQColor.textPrimary)
+                .fixedSize(horizontal: false, vertical: true)
+            Spacer(minLength: 0)
+        }
+    }
+
+    /// "≈ $0.77 / week" — the annual price broken down so the anchor lands.
+    private var annualWeeklyEquivalent: String {
+        guard let product = purchases.products.first(where: { $0.id == VeriteProducts.proYearly })
+        else { return "≈ $0.77 / week" }
+        let weekly = product.price / 52
+        return "≈ \(weekly.formatted(product.priceFormatStyle)) / week"
+    }
+
+    private func planRow(_ plan: PlanChoice, title: String, price: String,
+                         badge: String?, sub: String?) -> some View {
         Button {
             Haptics.fire(.selection)
             choice = plan
@@ -687,6 +714,11 @@ struct DermiqPaywallCard: View {
                     Text(price)
                         .font(DQFont.caption)
                         .foregroundStyle(DQColor.textSecondary)
+                    if let sub {
+                        Text(verbatim: sub)
+                            .font(DQFont.micro)
+                            .foregroundStyle(DQColor.accentBright)
+                    }
                 }
                 Spacer()
                 Image(systemName: choice == plan ? "checkmark.circle.fill" : "circle")
@@ -702,12 +734,6 @@ struct DermiqPaywallCard: View {
             )
         }
         .buttonStyle(PressableStyle())
-    }
-
-    /// The text shared by the invite button. No fabricated App Store link —
-    /// add a real one here once the app is live.
-    private var inviteMessage: String {
-        "I'm using SKINMAXX to track my skin with an honest AI score and a 14-day plan. Come try it with me."
     }
 
     private func price(for productID: String, fallback: String) -> String {

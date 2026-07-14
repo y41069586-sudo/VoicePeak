@@ -35040,6 +35040,181 @@
           }
         }
       }
+    },
+    "Your score + all 7 metrics revealed": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Your score + all 7 metrics revealed"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dein Score + alle 7 Metriken enthüllt"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tu puntuación + las 7 métricas reveladas"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ton score + les 7 mesures révélés"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Il tuo punteggio + tutte le 7 metriche"
+          }
+        }
+      }
+    },
+    "14-day routine, AI-checked for your skin": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "14-day routine, AI-checked for your skin"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "14-Tage-Routine, KI-geprüft für deine Haut"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Rutina de 14 días, revisada por IA para tu piel"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Routine de 14 jours, vérifiée par l'IA pour ta peau"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Routine di 14 giorni, verificata dall'IA per la tua pelle"
+          }
+        }
+      }
+    },
+    "Zone map & your 14-day potential": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Zone map & your 14-day potential"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Zonen-Map & dein 14-Tage-Potenzial"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mapa de zonas y tu potencial en 14 días"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Carte des zones & ton potentiel sur 14 jours"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mappa delle zone e il tuo potenziale in 14 giorni"
+          }
+        }
+      }
+    },
+    "Skin Duel, Glow-Up Reel & rescans": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Skin Duel, Glow-Up Reel & rescans"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Skin Duel, Glow-Up-Reel & Rescans"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Skin Duel, Glow-Up Reel y reescaneos"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Skin Duel, Glow-Up Reel & rescans"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Skin Duel, Glow-Up Reel e nuove scansioni"
+          }
+        }
+      }
+    },
+    "SAVE 84%": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "SAVE 84%"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "SPARE 84 %"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "AHORRA 84 %"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ÉCONOMISE 84 %"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "RISPARMIA 84%"
+          }
+        }
+      }
     }
   },
   "version": "1.0"
