@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// The shareable "SKINMAXX Reading" — a story-sized (9:16) porcelain card with
+/// The shareable "Glowé Reading" — a story-sized (9:16) porcelain card with
 /// the overall score in serif, all seven metrics, and a verified-scan seal.
 /// This is the app's viral artifact: the same editorial layout the user first
 /// saw as an illustration in onboarding, now filled with THEIR real result.
@@ -42,7 +42,7 @@ struct ReadingShareCard: View {
 
     private var header: some View {
         VStack(spacing: 6) {
-            Text(verbatim: "SKINMAXX")
+            Text(verbatim: "Glowé")
                 .font(VType.micro).tracking(6)
                 .foregroundStyle(RampStage.accentDeep)
             Text(verbatim: displayName.map { "\($0.uppercased())'S READING" } ?? "SKIN READING")

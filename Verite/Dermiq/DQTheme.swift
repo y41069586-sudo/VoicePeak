@@ -1,7 +1,7 @@
 import SwiftUI
 
 // ============================================================
-// MARK: — SKINMAXX v2 design system (MASTER PROMPT §6)
+// MARK: — Glowé v2 design system (MASTER PROMPT §6)
 // ============================================================
 //
 // Warm GlamUp light world — the app now shares one visual language with the

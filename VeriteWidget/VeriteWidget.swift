@@ -2,7 +2,7 @@ import WidgetKit
 import SwiftUI
 
 // ============================================================
-// MARK: — Vérité routine widget
+// MARK: — Glowé routine widget
 // ============================================================
 //
 // A glanceable Home Screen widget: today's routine ring + streak. Reads the
@@ -142,7 +142,7 @@ struct VeriteWidgetView: View {
                     .foregroundStyle(WColor.up)
             }
             Spacer(minLength: 0)
-            Text("Vérité")
+            Text("Glowé")
                 .font(.system(size: 11, weight: .bold, design: .rounded))
                 .foregroundStyle(WColor.accent.opacity(0.85))
         }
@@ -188,7 +188,7 @@ struct VeriteWidgetView: View {
                 .font(.system(size: 15, weight: .bold, design: .rounded))
                 .multilineTextAlignment(.center)
                 .foregroundStyle(.primary)
-            Text("Vérité")
+            Text("Glowé")
                 .font(.system(size: 11, weight: .bold, design: .rounded))
                 .foregroundStyle(WColor.accent.opacity(0.85))
         }

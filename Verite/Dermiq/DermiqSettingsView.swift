@@ -229,7 +229,7 @@ struct DermiqSettingsView: View {
                 }
             }
             divider
-            settingsButton(icon: "star", text: "Rate SKINMAXX") {
+            settingsButton(icon: "star", text: "Rate Glowé") {
                 requestReview()
             }
         }
@@ -271,7 +271,7 @@ struct DermiqSettingsView: View {
 
     private var footer: some View {
         VStack(spacing: 3) {
-            Text("SKINMAXX")
+            Text("Glowé")
                 .font(DQFont.mono(11, weight: .semibold))
                 .tracking(4)
                 .foregroundStyle(DQColor.textSecondary)

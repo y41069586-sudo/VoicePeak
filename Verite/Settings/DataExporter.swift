@@ -57,7 +57,7 @@ enum DataExporter {
 
         let bundle = Bundle(
             exportedAt: .now,
-            note: "SKINMAXX data export — numeric metrics and routine only. Face photos are never included.",
+            note: "Glowé data export — numeric metrics and routine only. Face photos are never included.",
             profile: profile.map {
                 ProfileExport(skinType: $0.skinType?.rawValue,
                               concerns: $0.concerns.map(\.rawValue),

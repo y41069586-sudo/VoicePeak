@@ -16,7 +16,7 @@ struct RegionMetrics: Sendable {
 
 /// Heuristic calibration. These constants map raw pixel statistics into 0...1.
 /// Their absolute values matter less than their *consistency* across scans —
-/// change-vs-baseline is what SKINMAXX reports, and the same pipeline runs each time.
+/// change-vs-baseline is what Glowé reports, and the same pipeline runs each time.
 private enum Calib {
     static let rednessDivisor = 34.0     // raw red-dominance (0...255) → 0...1
     static let shineLuma = 208.0         // luma above this + low saturation = specular shine

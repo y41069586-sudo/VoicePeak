@@ -7,31 +7,31 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "SKINMAXX uses the camera to analyze your skin and scan product barcodes. Photos are processed on your device and never uploaded."
+            "value": "Glowé uses the camera to analyze your skin and scan product barcodes. Photos are processed on your device and never uploaded."
           }
         },
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "SKINMAXX verwendet die Kamera, um deine Haut zu analysieren und Produkt-Barcodes zu scannen. Fotos werden auf deinem Gerät verarbeitet und niemals hochgeladen."
+            "value": "Glowé verwendet die Kamera, um deine Haut zu analysieren und Produkt-Barcodes zu scannen. Fotos werden auf deinem Gerät verarbeitet und niemals hochgeladen."
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "SKINMAXX usa la cámara para analizar tu piel y escanear códigos de barras de productos. Las fotos se procesan en tu dispositivo y nunca se suben."
+            "value": "Glowé usa la cámara para analizar tu piel y escanear códigos de barras de productos. Las fotos se procesan en tu dispositivo y nunca se suben."
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "SKINMAXX utilise l’appareil photo pour analyser votre peau et scanner les codes-barres des produits. Les photos sont traitées sur votre appareil et ne sont jamais téléchargées."
+            "value": "Glowé utilise l’appareil photo pour analyser votre peau et scanner les codes-barres des produits. Les photos sont traitées sur votre appareil et ne sont jamais téléchargées."
           }
         },
         "it": {
           "stringUnit": {
             "state": "translated",
-            "value": "SKINMAXX usa la fotocamera per analizzare la tua pelle e scansionare i codici a barre dei prodotti. Le foto vengono elaborate sul dispositivo e non vengono mai caricate."
+            "value": "Glowé usa la fotocamera per analizzare la tua pelle e scansionare i codici a barre dei prodotti. Le foto vengono elaborate sul dispositivo e non vengono mai caricate."
           }
         }
       }
