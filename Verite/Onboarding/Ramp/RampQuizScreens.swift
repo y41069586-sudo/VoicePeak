@@ -87,6 +87,8 @@ struct RampSwipeQuizScreen: View {
     @State private var index = 0
     @State private var drag: CGSize = .zero
     @State private var gone = false
+    /// A one-time swipe tutorial — shown on the first swipe screen only.
+    @State private var showCoach = !UserDefaults.standard.bool(forKey: "dq.swipeCoachSeen")
 
     var body: some View {
         VStack(spacing: 0) {
@@ -132,7 +134,10 @@ struct RampSwipeQuizScreen: View {
                         removal: .opacity))
                     .gesture(
                         DragGesture()
-                            .onChanged { drag = $0.translation }
+                            .onChanged { v in
+                                if showCoach { dismissCoach() }
+                                drag = v.translation
+                            }
                             .onEnded { g in
                                 if g.translation.width > 110 { pick(g.translation.height) }
                                 else if g.translation.width < -110 { skip(g.translation.height) }
@@ -141,6 +146,9 @@ struct RampSwipeQuizScreen: View {
                     )
             }
             .frame(height: 372)
+            .overlay {
+                if showCoach { RampSwipeCoach() }
+            }
 
             Spacer()
 
@@ -179,6 +187,11 @@ struct RampSwipeQuizScreen: View {
         }
     }
 
+    private func dismissCoach() {
+        UserDefaults.standard.set(true, forKey: "dq.swipeCoachSeen")
+        withAnimation(.easeOut(duration: 0.25)) { showCoach = false }
+    }
+
     private func cardView(_ option: RampSwipeOption) -> some View {
         VStack(spacing: 14) {
             Image(systemName: option.icon)
@@ -215,6 +228,64 @@ struct RampSwipeQuizScreen: View {
                 .strokeBorder(color, lineWidth: 2))
             .rotationEffect(.degrees(rotate))
             .opacity(show ? 1 : 0)
+    }
+}
+
+/// First-run swipe tutorial — a hand that sweeps side to side over the card
+/// with SKIP / PICK hints, like a mobile-game coaching overlay. Non-interactive
+/// so the swipe underneath still works; it fades out on the first drag.
+private struct RampSwipeCoach: View {
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @State private var swing = false
+
+    var body: some View {
+        ZStack {
+            RoundedRectangle(cornerRadius: 26, style: .continuous)
+                .fill(RampStage.ink.opacity(0.07))
+
+            // Directional hints, pinned to the sides.
+            HStack {
+                hint("SKIP", "arrow.left", RampStage.textSecondary)
+                Spacer()
+                hint("PICK", "arrow.right", RampStage.accent)
+            }
+            .padding(.horizontal, 18)
+
+            // The coaching hand + label.
+            VStack(spacing: 14) {
+                Image(systemName: "hand.point.up.left.fill")
+                    .font(.system(size: 44))
+                    .foregroundStyle(RampStage.accentDeep)
+                    .rotationEffect(.degrees(swing ? 14 : -14))
+                    .offset(x: swing ? 48 : -48)
+                    .shadow(color: RampStage.accent.opacity(0.35), radius: 10, y: 4)
+                Text("Swipe left or right")
+                    .font(.system(size: 14, weight: .semibold, design: .rounded))
+                    .foregroundStyle(RampStage.ink)
+                    .padding(.horizontal, 14).padding(.vertical, 7)
+                    .background(Color.white, in: Capsule())
+                    .shadow(color: RampStage.accent.opacity(0.2), radius: 10, y: 4)
+            }
+        }
+        .allowsHitTesting(false)
+        .transition(.opacity)
+        .onAppear {
+            guard !reduceMotion else { return }
+            withAnimation(.easeInOut(duration: 0.9).repeatForever(autoreverses: true)) { swing = true }
+        }
+    }
+
+    private func hint(_ text: String, _ icon: String, _ color: Color) -> some View {
+        VStack(spacing: 5) {
+            Image(systemName: icon)
+                .font(.system(size: 16, weight: .bold))
+            Text(LocalizedStringKey(text))
+                .font(.system(size: 11, weight: .heavy, design: .rounded)).tracking(1)
+        }
+        .foregroundStyle(color)
+        .padding(.horizontal, 10).padding(.vertical, 8)
+        .background(Color.white.opacity(0.9), in: RoundedRectangle(cornerRadius: 12, style: .continuous))
+        .shadow(color: RampStage.ink.opacity(0.1), radius: 6, y: 2)
     }
 }
 
