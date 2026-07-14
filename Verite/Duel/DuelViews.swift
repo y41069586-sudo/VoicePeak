@@ -79,7 +79,7 @@ struct DuelTab: View {
             }
             .padding(.horizontal, 20)
             .padding(.top, 18)
-            .padding(.bottom, 120)
+            .padding(.bottom, 28)
         }
         .scrollIndicators(.hidden)
         .background(DQColor.background.ignoresSafeArea())

@@ -178,7 +178,7 @@ struct DermiqProgressTab: View {
                 }
             }
             .padding(.horizontal, 20)
-            .padding(.bottom, 132)   // clear the floating tab bar
+            .padding(.bottom, 28)   // breathing room above the system tab bar
         }
         .scrollIndicators(.hidden)
         .background(DQColor.background.ignoresSafeArea())

@@ -44,30 +44,10 @@ struct DermiqTabShell: View {
     @State private var showPaywall = false
 
     var body: some View {
-        ZStack(alignment: .bottom) {
-            Group {
-                switch tab {
-                case .scan:
-                    DermiqScanHome(
-                        scans: scans,
-                        onScan: { startScan() },
-                        onSettings: { showSettings = true },
-                        onRoutine: { withAnimation(VMotion.snappy) { tab = .routine } },
-                        onProgress: { withAnimation(VMotion.snappy) { tab = .progress } },
-                        onDuel: { withAnimation(VMotion.snappy) { tab = .duel } }
-                    )
-                case .routine:
-                    DermiqRoutineTab { startScan() }
-                case .duel:
-                    DuelTab { startScan() }
-                case .progress:
-                    DermiqProgressTab()
-                }
-            }
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
-
-            tabBar
-        }
+        // Stock SwiftUI TabView — no custom bar. Built against the iOS 26 SDK
+        // the system bar renders in Liquid Glass (floating, scroll-aware) on
+        // its own; on earlier iOS it's the familiar native tab bar.
+        nativeTabs
         .background(DQColor.background.ignoresSafeArea())
         .dermiqBadgeAwards()
         .sheet(isPresented: $showSettings) {
@@ -133,38 +113,43 @@ struct DermiqTabShell: View {
         }
     }
 
-    private var tabBar: some View {
-        HStack {
-            ForEach(Tab.allCases, id: \.rawValue) { item in
-                Button {
-                    Haptics.fire(.selection)
-                    withAnimation(VMotion.snappy) { tab = item }
-                } label: {
-                    VStack(spacing: 3) {
-                        Image(systemName: item.icon)
-                            .font(.system(size: 19, weight: tab == item ? .semibold : .regular))
-                        Text(LocalizedStringKey(item.title))
-                            .font(DQFont.micro)
-                    }
-                    .foregroundStyle(tab == item ? DQColor.accentBright : DQColor.textSecondary)
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 6)
-                }
-                .buttonStyle(.plain)
-            }
+    /// The plain, by-the-book TabView. Each tab is tagged with the same enum
+    /// the rest of the shell drives (duel links, post-scan jump), and the bar
+    /// itself is 100% system — which is exactly what makes it Liquid Glass.
+    @ViewBuilder
+    private var nativeTabs: some View {
+        let tabs = TabView(selection: $tab) {
+            DermiqScanHome(
+                scans: scans,
+                onScan: { startScan() },
+                onSettings: { showSettings = true },
+                onRoutine: { tab = .routine },
+                onProgress: { tab = .progress },
+                onDuel: { tab = .duel }
+            )
+            .tabItem { Label(LocalizedStringKey(Tab.scan.title), systemImage: Tab.scan.icon) }
+            .tag(Tab.scan)
+
+            DermiqRoutineTab { startScan() }
+                .tabItem { Label(LocalizedStringKey(Tab.routine.title), systemImage: Tab.routine.icon) }
+                .tag(Tab.routine)
+
+            DuelTab { startScan() }
+                .tabItem { Label(LocalizedStringKey(Tab.duel.title), systemImage: Tab.duel.icon) }
+                .tag(Tab.duel)
+
+            DermiqProgressTab()
+                .tabItem { Label(LocalizedStringKey(Tab.progress.title), systemImage: Tab.progress.icon) }
+                .tag(Tab.progress)
         }
-        .padding(.horizontal, 12)
-        .padding(.vertical, 6)
-        .background(
-            DQColor.surface.opacity(0.94),
-            in: RoundedRectangle(cornerRadius: 22, style: .continuous)
-        )
-        .overlay(
-            RoundedRectangle(cornerRadius: 22, style: .continuous)
-                .strokeBorder(DQColor.stroke, lineWidth: 1)
-        )
-        .padding(.horizontal, 24)
-        .padding(.bottom, 10)
+        .onChange(of: tab) { _, _ in Haptics.fire(.selection) }
+
+        // iOS 26: let the glass bar tuck away while scrolling content.
+        if #available(iOS 26.0, *) {
+            tabs.tabBarMinimizeBehavior(.onScrollDown)
+        } else {
+            tabs
+        }
     }
 }
 
@@ -271,7 +256,7 @@ struct DermiqScanHome: View {
                 tipCard
                     .padding(.horizontal, 24)
             }
-            .padding(.bottom, 110)
+            .padding(.bottom, 28)
         }
         .scrollIndicators(.hidden)
     }

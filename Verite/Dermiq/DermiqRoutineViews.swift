@@ -397,7 +397,7 @@ struct DermiqRoutineTab: View {
         }
         .padding(.horizontal, 20)
         .padding(.top, 18)
-        .padding(.bottom, 110)
+        .padding(.bottom, 28)
     }
 
     private func rampIcon(for day: Int) -> String {
