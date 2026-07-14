@@ -7,8 +7,8 @@ import SwiftUI
 struct RampQuizOption: Identifiable {
     let id: String
     let label: String
-    var sub: String? = nil
     var icon: String? = nil
+    var sub: String? = nil
 }
 
 /// Calm question layout: a chapter eyebrow, a serif question, and a stack of
