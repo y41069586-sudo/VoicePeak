@@ -14,9 +14,9 @@ import SwiftUI
 //            → only the device whose OWN code matches gets +1 (that's the
 //              inviter). Capped so links can't be farmed.
 //
-// Bonus scans matter because free users get ONE scan per week (a real API
-// cost sits behind every scan, and skin doesn't change daily anyway — the
-// plan runs on a 14-day cadence). Pro lifts the cap. If a real backend lands
+// Bonus scans matter because there is NO free tier: a non-Pro install gets
+// exactly one scan (the onboarding one) — a gifted bonus scan is another
+// blurred-score moment, results stay Pro-locked. If a real backend lands
 // later, only this file changes — the links and call sites stay.
 
 @Observable
@@ -114,34 +114,32 @@ final class ReferralStore {
 }
 
 // ============================================================
-// MARK: — Weekly scan quota
+// MARK: — Scan quota (no free tier)
 // ============================================================
 
 enum ScanQuota {
 
-    /// Free tier: one scan per rolling week. Pro: a generous daily cap that
-    /// only exists to protect the analysis API from abuse.
-    static let freePerWeek = 1
+    /// There is NO recurring free tier. A non-Pro user gets exactly ONE scan
+    /// (the onboarding scan — it produces the blurred score that IS the
+    /// paywall moment) plus any referral bonus scans; results stay Pro-locked
+    /// either way. Pro gets a generous daily cap that only exists to protect
+    /// the paid analysis API from abuse.
     static let proPerDay = 3
 
     enum Decision {
         case allow(useCredit: Bool)
-        case blockedFree(nextFree: Date?)
+        case blockedNeedsPro
         case blockedProDaily
     }
 
     static func decide(scans: [ScanRecord], isPro: Bool, credits: Int) -> Decision {
-        let now = Date.now
         if isPro {
-            let today = scans.filter { Calendar.current.isDate($0.date, inSameDayAs: now) }
+            let today = scans.filter { Calendar.current.isDate($0.date, inSameDayAs: .now) }
             return today.count < proPerDay ? .allow(useCredit: false) : .blockedProDaily
         }
-        let weekAgo = now.addingTimeInterval(-7 * 24 * 3600)
-        let inWindow = scans.filter { $0.date > weekAgo }
-        if inWindow.count < freePerWeek { return .allow(useCredit: false) }
+        if scans.isEmpty { return .allow(useCredit: false) }   // the one first scan
         if credits > 0 { return .allow(useCredit: true) }
-        let nextFree = inWindow.map(\.date).min()?.addingTimeInterval(7 * 24 * 3600)
-        return .blockedFree(nextFree: nextFree)
+        return .blockedNeedsPro
     }
 }
 
@@ -149,26 +147,30 @@ enum ScanQuota {
 // MARK: — "Weekly scan used" sheet
 // ============================================================
 
-/// Shown when a free user is out of scans: when the next one unlocks, the
-/// invite-a-friend escape hatch, and (when purchases ship) the Pro upsell.
+/// Two flavours: a non-Pro user tapping scan (the Pro pitch + invite escape
+/// hatch), or a Pro user hitting the daily anti-abuse cap (countdown only).
 struct ScanLimitSheet: View {
-    let nextFree: Date?
+    /// True when a Pro user hit the daily cap; false = scanning needs Pro.
+    var proDaily = false
+    var nextScan: Date?
     let onGetPro: (() -> Void)?
 
     @Environment(\.dismiss) private var dismiss
 
     var body: some View {
         VStack(spacing: 18) {
-            Image(systemName: "camera.badge.clock")
+            Image(systemName: proDaily ? "camera.badge.clock" : "sparkles")
                 .font(.system(size: 40, weight: .semibold))
                 .foregroundStyle(DQColor.accentBright)
                 .padding(.top, 26)
 
             VStack(spacing: 6) {
-                Text("Your weekly scan is used")
+                Text(proDaily ? "Daily scan cap reached" : "Scanning is part of Pro")
                     .font(.system(size: 21, weight: .heavy, design: .rounded))
                     .foregroundStyle(DQColor.textPrimary)
-                Text("Skin changes week by week, not day by day — one honest scan per week keeps the reading meaningful.")
+                Text(proDaily
+                     ? "Fresh readings need time between them — come back tomorrow."
+                     : "Every scan runs a full AI skin analysis. Go Pro for your score, all seven metrics and your 14-day plan.")
                     .font(DQFont.caption)
                     .foregroundStyle(DQColor.textSecondary)
                     .multilineTextAlignment(.center)
@@ -176,12 +178,12 @@ struct ScanLimitSheet: View {
             }
             .padding(.horizontal, 26)
 
-            if let nextFree {
+            if proDaily, let nextScan {
                 HStack(spacing: 6) {
                     Image(systemName: "clock")
                         .font(.system(size: 12, weight: .semibold))
-                    Text("Next free scan:")
-                    Text(nextFree, style: .relative)
+                    Text("Next scan:")
+                    Text(nextScan, style: .relative)
                         .fontWeight(.bold)
                 }
                 .font(DQFont.caption)
@@ -191,7 +193,7 @@ struct ScanLimitSheet: View {
             }
 
             VStack(spacing: 10) {
-                if let onGetPro {
+                if !proDaily, let onGetPro {
                     Button {
                         dismiss()
                         onGetPro()
@@ -206,14 +208,16 @@ struct ScanLimitSheet: View {
                     .buttonStyle(PressableStyle())
                 }
 
-                ShareLink(item: ReferralStore.shared.inviteURL,
-                          message: Text("Scan your skin with me — this link gives us both a free scan.")) {
-                    Label("Invite a friend — you both get a scan", systemImage: "person.2.fill")
-                        .font(.system(size: 15, weight: .semibold, design: .rounded))
-                        .foregroundStyle(DQColor.accentBright)
-                        .frame(maxWidth: .infinity, minHeight: 50)
-                        .background(DQColor.accentBright.opacity(0.10),
-                                    in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+                if !proDaily {
+                    ShareLink(item: ReferralStore.shared.inviteURL,
+                              message: Text("Scan your skin with me — this link gives us both a free scan.")) {
+                        Label("Invite a friend — you both get a scan", systemImage: "person.2.fill")
+                            .font(.system(size: 15, weight: .semibold, design: .rounded))
+                            .foregroundStyle(DQColor.accentBright)
+                            .frame(maxWidth: .infinity, minHeight: 50)
+                            .background(DQColor.accentBright.opacity(0.10),
+                                        in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+                    }
                 }
             }
             .padding(.horizontal, 22)

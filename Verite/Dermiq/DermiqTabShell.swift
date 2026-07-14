@@ -39,6 +39,7 @@ struct DermiqTabShell: View {
     @State private var autoLaunched = false
     @State private var duelInbox = DuelInbox.shared
     @State private var showQuotaSheet = false
+    @State private var quotaProDaily = false
     @State private var quotaNextFree: Date?
     @State private var showPaywall = false
 
@@ -73,7 +74,8 @@ struct DermiqTabShell: View {
             DermiqSettingsView()
         }
         .sheet(isPresented: $showQuotaSheet) {
-            ScanLimitSheet(nextFree: quotaNextFree,
+            ScanLimitSheet(proDaily: quotaProDaily,
+                           nextScan: quotaNextFree,
                            onGetPro: purchases.isPro ? nil : { showPaywall = true })
         }
         .fullScreenCover(isPresented: $showPaywall) {
@@ -110,17 +112,19 @@ struct DermiqTabShell: View {
 
     private func startScan() {
         Haptics.fire(.selection)
-        // Scans are metered: free = 1/week (+ referral bonus scans), Pro = a
-        // generous daily cap. Every scan hits the paid analysis API.
+        // No free tier: non-Pro gets the one onboarding scan (+ referral bonus
+        // scans); everything else is Pro. Pro has a daily anti-abuse cap —
+        // every scan hits the paid analysis API.
         switch ScanQuota.decide(scans: scans, isPro: purchases.isPro,
                                 credits: ReferralStore.shared.credits) {
         case .allow(let useCredit):
             if useCredit { ReferralStore.shared.consumeCredit() }
             showFlow = true
-        case .blockedFree(let nextFree):
-            quotaNextFree = nextFree
+        case .blockedNeedsPro:
+            quotaProDaily = false
             showQuotaSheet = true
         case .blockedProDaily:
+            quotaProDaily = true
             quotaNextFree = Calendar.current.startOfDay(for: .now).addingTimeInterval(24 * 3600)
             showQuotaSheet = true
         }

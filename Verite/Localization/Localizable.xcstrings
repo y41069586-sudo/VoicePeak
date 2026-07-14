@@ -35215,6 +35215,181 @@
           }
         }
       }
+    },
+    "Scanning is part of Pro": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Scanning is part of Pro"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Scannen ist Teil von Pro"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Escanear es parte de Pro"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Le scan fait partie de Pro"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "La scansione fa parte di Pro"
+          }
+        }
+      }
+    },
+    "Every scan runs a full AI skin analysis. Go Pro for your score, all seven metrics and your 14-day plan.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Every scan runs a full AI skin analysis. Go Pro for your score, all seven metrics and your 14-day plan."
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Jeder Scan ist eine vollständige KI-Hautanalyse. Hol dir Pro für deinen Score, alle sieben Metriken und deinen 14-Tage-Plan."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cada escaneo es un análisis completo de piel con IA. Pásate a Pro para tu puntuación, las siete métricas y tu plan de 14 días."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Chaque scan est une analyse de peau complète par IA. Passe à Pro pour ton score, les sept mesures et ton plan de 14 jours."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ogni scansione è un'analisi completa della pelle con IA. Passa a Pro per il tuo punteggio, tutte le sette metriche e il tuo piano di 14 giorni."
+          }
+        }
+      }
+    },
+    "Daily scan cap reached": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Daily scan cap reached"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tageslimit für Scans erreicht"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Límite diario de escaneos alcanzado"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Limite quotidienne de scans atteinte"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Limite giornaliero di scansioni raggiunto"
+          }
+        }
+      }
+    },
+    "Fresh readings need time between them — come back tomorrow.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fresh readings need time between them — come back tomorrow."
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Neue Messungen brauchen Abstand — komm morgen wieder."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Las nuevas lecturas necesitan tiempo entre sí; vuelve mañana."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Les nouvelles mesures ont besoin d'espacement — reviens demain."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Le nuove letture richiedono tempo tra loro — torna domani."
+          }
+        }
+      }
+    },
+    "Next scan:": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Next scan:"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nächster Scan:"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Próximo escaneo:"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Prochain scan :"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Prossima scansione:"
+          }
+        }
+      }
     }
   },
   "version": "1.0"
