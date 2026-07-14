@@ -122,11 +122,12 @@ enum ScanQuota {
     /// There is NO recurring free tier. A non-Pro user gets exactly ONE scan
     /// (the onboarding scan — it produces the blurred score that IS the
     /// paywall moment) plus any referral bonus scans; results stay Pro-locked
-    /// either way. Pro is capped per WEEK, GlamUp-style: 3 covers the honest
-    /// weekly reading, a redo (bad light, hair) and the day-14 rescan. Skin
-    /// moves weekly, not daily — and every analysis is a paid API call, so an
-    /// uncapped heavy user could cost more than a yearly sub earns.
-    static let proPerWeek = 3
+    /// either way. Pro is capped per WEEK, GlamUp-style: 2 covers the honest
+    /// weekly reading plus a redo (bad light, hair) — the day-14 rescan falls
+    /// into its own week anyway. Skin moves weekly, not daily — and every
+    /// analysis is a paid API call, so an uncapped heavy user could cost more
+    /// than a yearly sub earns.
+    static let proPerWeek = 2
 
     enum Decision {
         case allow(useCredit: Bool)
@@ -174,7 +175,7 @@ struct ScanLimitSheet: View {
                     .font(.system(size: 21, weight: .heavy, design: .rounded))
                     .foregroundStyle(DQColor.textPrimary)
                 Text(proCap
-                     ? "Skin moves week by week — your three weekly readings are in. The next one unlocks soon."
+                     ? "Skin moves week by week — your two weekly readings are in. The next one unlocks soon."
                      : "Every scan runs a full AI skin analysis. Go Pro for your score, all seven metrics and your 14-day plan.")
                     .font(DQFont.caption)
                     .foregroundStyle(DQColor.textSecondary)

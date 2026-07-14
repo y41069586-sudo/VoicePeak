@@ -78,9 +78,12 @@ struct DermiqTabShell: View {
                            nextScan: quotaNextFree,
                            onGetPro: purchases.isPro ? nil : { showPaywall = true })
         }
-        .fullScreenCover(isPresented: $showPaywall) {
-            OnboardingPaywallView(onContinue: { showPaywall = false },
-                                  onSkip: { showPaywall = false })
+        // The ONE paywall — the same card that sits over the blurred results.
+        // Presented as a drag-dismissible sheet, so it's never a dead end.
+        .sheet(isPresented: $showPaywall) {
+            DermiqPaywallCard(onUnlocked: { showPaywall = false })
+                .presentationDetents([.large])
+                .presentationDragIndicator(.visible)
         }
         .fullScreenCover(isPresented: $showFlow) {
             DermiqScanFlowView(previousScan: scans.first) { planCreated in
