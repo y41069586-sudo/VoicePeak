@@ -33,6 +33,13 @@ struct DermiqTabShell: View {
     @Environment(PurchaseManager.self) private var purchases
     @Query(sort: \ScanRecord.date, order: .reverse) private var scans: [ScanRecord]
 
+    /// Simulated entitlement, set by the paywall while StoreKit products
+    /// aren't live (`purchasesEnabled == false`). The scan gate MUST honor
+    /// it — otherwise pressing "Unlock" does nothing because `isPro` stays
+    /// false. Single source of truth: `hasPro`.
+    @AppStorage("dermiq.unlocked") private var simulatedUnlock = false
+    private var hasPro: Bool { purchases.isPro || simulatedUnlock }
+
     @State private var tab: Tab = .scan
     @State private var showFlow = false
     @State private var showSettings = false
@@ -42,6 +49,9 @@ struct DermiqTabShell: View {
     @State private var quotaProCap = false
     @State private var quotaNextFree: Date?
     @State private var showPaywall = false
+    /// The user opened the paywall by trying to scan → once they unlock,
+    /// carry them straight into the scan they wanted.
+    @State private var scanAfterUnlock = false
 
     var body: some View {
         // Stock SwiftUI TabView — no custom bar. Built against the iOS 26 SDK
@@ -56,12 +66,25 @@ struct DermiqTabShell: View {
         .sheet(isPresented: $showQuotaSheet) {
             ScanLimitSheet(proCap: quotaProCap,
                            nextScan: quotaNextFree,
-                           onGetPro: purchases.isPro ? nil : { showPaywall = true })
+                           onGetPro: hasPro ? nil : {
+                               scanAfterUnlock = true
+                               showPaywall = true
+                           })
         }
         // The ONE paywall — the same card that sits over the blurred results.
         // Presented as a drag-dismissible sheet, so it's never a dead end.
         .sheet(isPresented: $showPaywall) {
-            DermiqPaywallCard(onUnlocked: { showPaywall = false })
+            DermiqPaywallCard(onUnlocked: {
+                showPaywall = false
+                // They unlocked to scan → start it once the sheet is gone.
+                if scanAfterUnlock {
+                    scanAfterUnlock = false
+                    Task {
+                        try? await Task.sleep(for: .milliseconds(350))
+                        startScan()
+                    }
+                }
+            })
                 .presentationDetents([.large])
                 .presentationDragIndicator(.visible)
         }
@@ -107,7 +130,7 @@ struct DermiqTabShell: View {
         // No free tier: non-Pro gets the one onboarding scan (+ referral bonus
         // scans); everything else is Pro. Pro has a weekly fair-use cap —
         // every scan hits the paid analysis API.
-        switch ScanQuota.decide(scans: scans, isPro: purchases.isPro,
+        switch ScanQuota.decide(scans: scans, isPro: hasPro,
                                 credits: ReferralStore.shared.credits) {
         case .allow(let useCredit):
             if useCredit { ReferralStore.shared.consumeCredit() }
