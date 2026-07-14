@@ -40,15 +40,26 @@ final class GeminiEnhancementEngine: FaceEnhancementEngine {
     strands), facial hair, makeup level, or facial expression.
     - Do not change head pose, camera angle, framing, crop, background, \
     clothing, jewelry, or the lighting's direction and color temperature.
-    - Keep permanent identity marks exactly where they are: moles, freckles, \
-    birthmarks, scars.
     - Do not slim, reshape, or beautify any facial proportions. No \
     digital-art or beauty-filter look.
 
-    CHANGE ONLY THE SKIN CONDITION, as if this person had followed a perfect \
-    skincare routine for two weeks:
-    - Heal active blemishes: pimples, whiteheads, acne spots, and irritation \
-    are cleared.
+    CRITICAL — PRESERVE PERMANENT SKIN FEATURES PIXEL-FOR-PIXEL. These are \
+    NOT blemishes and must stay exactly where they are, same size, shape, \
+    color and count. Do not fade, shrink, blur, or remove any of them:
+    - Moles and beauty marks (raised or flat, any color).
+    - Freckles and the person's natural freckle pattern.
+    - Birthmarks and permanent scars.
+    - Natural skin lines, dimples, and pore structure.
+    If you are unsure whether a mark is a temporary blemish or a permanent \
+    feature, KEEP IT. Removing a mole or freckle destroys the person's \
+    identity — that is a failure, not an improvement.
+
+    CHANGE ONLY THE TEMPORARY SKIN CONDITION, as if this person had followed \
+    a perfect skincare routine for two weeks. Only these transient issues may \
+    be improved — everything else stays untouched:
+    - Heal only active breakouts: pimples, whiteheads, pustules, acne spots, \
+    and inflamed irritation. A flat brown mole or a freckle is never a \
+    "spot" — leave it in place.
     - Calm diffuse redness around the nose, cheeks, and chin to an even, \
     healthy tone.
     - Even out patchy pigmentation and dark post-acne marks, while keeping \
