@@ -53,6 +53,11 @@ struct DermiqResultsView: View {
 
     private var unlocked: Bool { purchases.isPro || simulatedUnlock }
 
+    /// The paywall doesn't pounce: the blurred chart gets ~1.6s alone on
+    /// screen (the tease), THEN the card slides up from the bottom.
+    @State private var paywallShown = false
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
     var body: some View {
         ZStack {
             DQColor.background.ignoresSafeArea()
@@ -61,16 +66,31 @@ struct DermiqResultsView: View {
                 results(analysis, locked: !revealed)
                     .allowsHitTesting(revealed)
 
-                if !revealed {
+                if !revealed && paywallShown {
                     DermiqPaywallCard {
                         unlockAndReveal()
                     }
+                    .transition(.move(edge: .bottom).combined(with: .opacity))
                     closeButton
+                        .transition(.opacity)
                 }
             }
         }
         .onAppear {
             if unlocked { unlockAndReveal() }
+        }
+        .task {
+            guard !unlocked else { return }
+            try? await Task.sleep(for: .milliseconds(1600))
+            guard !Task.isCancelled, !revealed else { return }
+            Haptics.fire(.transition)
+            if reduceMotion {
+                paywallShown = true
+            } else {
+                withAnimation(.spring(response: 0.55, dampingFraction: 0.85)) {
+                    paywallShown = true
+                }
+            }
         }
     }
 
