@@ -494,7 +494,7 @@ struct RampShine: View {
                 .rotationEffect(.degrees(20))
                 .offset(x: travel ? w + 90 : -90)
                 .animation(reduceMotion ? nil :
-                    .easeInOut(duration: 2.4).repeatForever(autoreverses: false).delay(0.8),
+                    Animation.easeInOut(duration: 2.4).repeatForever(autoreverses: false).delay(0.8),
                     value: travel)
         }
         .allowsHitTesting(false)
@@ -562,7 +562,7 @@ private struct RampScoreGauge: View {
                                      center: .center, startRadius: 0, endRadius: 150))
                 .scaleEffect(breathe ? 1.12 : 0.92)
                 .animation(reduceMotion ? nil :
-                    .easeInOut(duration: 2.6).repeatForever(autoreverses: true), value: breathe)
+                    Animation.easeInOut(duration: 2.6).repeatForever(autoreverses: true), value: breathe)
 
             // Fine tick ring.
             ForEach(0..<48, id: \.self) { i in
@@ -588,7 +588,7 @@ private struct RampScoreGauge: View {
                 .rotationEffect(.degrees(spin ? 360 : 0))
                 .shadow(color: RampStage.accent.opacity(0.5), radius: 8)
                 .animation(reduceMotion ? nil :
-                    .linear(duration: 3.2).repeatForever(autoreverses: false), value: spin)
+                    Animation.linear(duration: 3.2).repeatForever(autoreverses: false), value: spin)
 
             // Center: the drifting number.
             VStack(spacing: 2) {
