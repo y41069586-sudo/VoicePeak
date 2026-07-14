@@ -122,9 +122,11 @@ enum ScanQuota {
     /// There is NO recurring free tier. A non-Pro user gets exactly ONE scan
     /// (the onboarding scan — it produces the blurred score that IS the
     /// paywall moment) plus any referral bonus scans; results stay Pro-locked
-    /// either way. Pro gets a generous daily cap that only exists to protect
-    /// the paid analysis API from abuse.
-    static let proPerDay = 3
+    /// either way. Pro gets 2/day: one honest scan + one redo (bad light,
+    /// hair in the face). Skin doesn't change in hours, and every analysis
+    /// is a paid API call — an uncapped heavy user could cost more than a
+    /// yearly sub earns.
+    static let proPerDay = 2
 
     enum Decision {
         case allow(useCredit: Bool)
@@ -198,7 +200,7 @@ struct ScanLimitSheet: View {
                         dismiss()
                         onGetPro()
                     } label: {
-                        Label("Unlock unlimited scans with Pro", systemImage: "sparkles")
+                        Label("Unlock scanning with Pro", systemImage: "sparkles")
                             .font(.system(size: 16, weight: .bold, design: .rounded))
                             .foregroundStyle(.white)
                             .frame(maxWidth: .infinity, minHeight: 54)
