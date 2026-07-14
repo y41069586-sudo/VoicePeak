@@ -9,10 +9,14 @@ import SwiftUI
 //
 //   INVITE   verite://invite?code=<inviter's code>
 //            → the friend redeems once: +1 bonus scan, and the inviter's code
-//              is remembered so a thank-you link can be sent back.
+//              is remembered so a confirm link can be sent back LATER.
 //   CONFIRM  verite://invite?confirm=<code>
 //            → only the device whose OWN code matches gets +1 (that's the
 //              inviter). Capped so links can't be farmed.
+//
+// The inviter's reward is EARNED, not clicked: the confirm link is only
+// offered (Settings) once the invited friend has signed up AND gone Pro —
+// so "my friend converted", never "my friend tapped a link".
 //
 // Bonus scans matter because there is NO free tier: a non-Pro install gets
 // exactly one scan (the onboarding one) — a gifted bonus scan is another

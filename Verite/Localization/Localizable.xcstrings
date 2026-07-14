@@ -36440,6 +36440,181 @@
           }
         }
       }
+    },
+    "Earn bonus scans": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Earn bonus scans"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bonus-Scans verdienen"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Gana escaneos extra"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Gagne des scans bonus"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Guadagna scansioni bonus"
+          }
+        }
+      }
+    },
+    "Your friend gets a free scan right away. Your bonus lands once they sign up and go Pro.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Your friend gets a free scan right away. Your bonus lands once they sign up and go Pro."
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dein Freund bekommt sofort einen Gratis-Scan. Dein Bonus kommt, sobald er sich registriert und Pro holt."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tu amigo recibe un escaneo gratis al instante. Tu bono llega cuando se registre y compre Pro."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ton ami reçoit un scan gratuit tout de suite. Ton bonus arrive quand il s'inscrit et passe à Pro."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Il tuo amico riceve subito una scansione gratis. Il tuo bonus arriva quando si registra e passa a Pro."
+          }
+        }
+      }
+    },
+    "Send your inviter their bonus": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Send your inviter their bonus"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Deinem Einlader den Bonus schicken"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Envía su bono a quien te invitó"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Envoie son bonus à ton parrain"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Invia il bonus a chi ti ha invitato"
+          }
+        }
+      }
+    },
+    "Thanks for the invite — open this so you get your bonus scan!": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Thanks for the invite — open this so you get your bonus scan!"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Danke für die Einladung — öffne das, damit du deinen Bonus-Scan bekommst!"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "¡Gracias por la invitación! Abre esto para recibir tu escaneo extra."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Merci pour l'invitation — ouvre ceci pour recevoir ton scan bonus !"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Grazie per l'invito — apri questo per ricevere la tua scansione bonus!"
+          }
+        }
+      }
+    },
+    "Sign up and go Pro to send your inviter their bonus.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sign up and go Pro to send your inviter their bonus."
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Registriere dich und hol Pro, um deinem Einlader den Bonus zu schicken."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Regístrate y pásate a Pro para enviar su bono a quien te invitó."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Inscris-toi et passe à Pro pour envoyer son bonus à ton parrain."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Registrati e passa a Pro per inviare il bonus a chi ti ha invitato."
+          }
+        }
+      }
     }
   },
   "version": "1.0"

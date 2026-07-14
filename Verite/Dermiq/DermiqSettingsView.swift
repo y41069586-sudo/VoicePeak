@@ -16,6 +16,7 @@ struct DermiqSettingsView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(\.modelContext) private var modelContext
     @Environment(PurchaseManager.self) private var purchases
+    @Environment(AppState.self) private var appState
     @Environment(\.requestReview) private var requestReview
     @Query private var profiles: [UserProfile]
 
@@ -135,7 +136,7 @@ struct DermiqSettingsView: View {
         }
     }
 
-    // MARK: Referral (invite a friend → both get a bonus scan)
+    // MARK: Referral (invite a friend → bonus once they sign up and go Pro)
 
     private var referralSection: some View {
         settingsCard("INVITE A FRIEND") {
@@ -148,7 +149,7 @@ struct DermiqSettingsView: View {
                         .background(DQColor.accentBright.opacity(0.10),
                                     in: RoundedRectangle(cornerRadius: 10, style: .continuous))
                     VStack(alignment: .leading, spacing: 1) {
-                        Text("You both get a bonus scan")
+                        Text("Earn bonus scans")
                             .font(.system(size: 15, weight: .semibold, design: .rounded))
                             .foregroundStyle(DQColor.textPrimary)
                         Text("Bonus scans available: \(ReferralStore.shared.credits)")
@@ -157,6 +158,10 @@ struct DermiqSettingsView: View {
                     }
                     Spacer()
                 }
+                Text("Your friend gets a free scan right away. Your bonus lands once they sign up and go Pro.")
+                    .font(DQFont.micro)
+                    .foregroundStyle(DQColor.textSecondary)
+                    .fixedSize(horizontal: false, vertical: true)
                 ShareLink(item: ReferralStore.shared.inviteURL,
                           message: Text("Scan your skin with me — this link gives us both a free scan.")) {
                     Label("Share invite link", systemImage: "square.and.arrow.up")
@@ -166,13 +171,29 @@ struct DermiqSettingsView: View {
                         .background(DQColor.accentBright.opacity(0.10),
                                     in: RoundedRectangle(cornerRadius: 12, style: .continuous))
                 }
-                if let thanks = ReferralStore.shared.thankYouURL {
-                    ShareLink(item: thanks,
-                              message: Text("Thanks for the invite — open this so you get your free scan too!")) {
-                        Label("Send thank-you scan back", systemImage: "gift")
-                            .font(.system(size: 13, weight: .semibold, design: .rounded))
-                            .foregroundStyle(DQColor.textSecondary)
-                            .frame(maxWidth: .infinity, minHeight: 38)
+                // The pay-back link only unlocks once THIS user is a real,
+                // paying member — signed in AND Pro. That's what makes the
+                // inviter's reward mean "my friend actually converted",
+                // not "my friend tapped a link".
+                if ReferralStore.shared.thankYouURL != nil {
+                    if purchases.isPro && appState.backend.currentUser() != nil,
+                       let thanks = ReferralStore.shared.thankYouURL {
+                        ShareLink(item: thanks,
+                                  message: Text("Thanks for the invite — open this so you get your bonus scan!")) {
+                            Label("Send your inviter their bonus", systemImage: "gift")
+                                .font(.system(size: 13, weight: .semibold, design: .rounded))
+                                .foregroundStyle(DQColor.textSecondary)
+                                .frame(maxWidth: .infinity, minHeight: 38)
+                        }
+                    } else {
+                        HStack(spacing: 6) {
+                            Image(systemName: "lock")
+                                .font(.system(size: 11, weight: .semibold))
+                            Text("Sign up and go Pro to send your inviter their bonus.")
+                                .fixedSize(horizontal: false, vertical: true)
+                        }
+                        .font(DQFont.micro)
+                        .foregroundStyle(DQColor.textSecondary)
                     }
                 }
             }
