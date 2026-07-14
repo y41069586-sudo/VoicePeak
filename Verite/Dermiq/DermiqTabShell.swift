@@ -91,6 +91,15 @@ struct DermiqTabShell: View {
         .onChange(of: duelInbox.pending?.id) { _, id in
             if id != nil { withAnimation(VMotion.snappy) { tab = .duel } }
         }
+        // Widget taps: verite://routine → the plan, verite://scan → home.
+        .onOpenURL { url in
+            guard url.scheme == "verite" else { return }
+            switch url.host {
+            case "routine": withAnimation(VMotion.snappy) { tab = .routine }
+            case "scan": withAnimation(VMotion.snappy) { tab = .scan }
+            default: break
+            }
+        }
     }
 
     private func startScan() {

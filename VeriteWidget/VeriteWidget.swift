@@ -71,13 +71,18 @@ struct VeriteWidgetView: View {
     let snapshot: VeriteWidgetSnapshot
 
     var body: some View {
-        if !snapshot.hasPlan {
-            emptyState
-        } else if family == .systemMedium {
-            mediumBody
-        } else {
-            smallBody
+        Group {
+            if !snapshot.hasPlan {
+                emptyState
+            } else if family == .systemMedium {
+                mediumBody
+            } else {
+                smallBody
+            }
         }
+        // Tapping the widget lands on the plan (Routine tab), not wherever
+        // the app happened to be. No plan yet → the scan/home tab.
+        .widgetURL(URL(string: snapshot.hasPlan ? "verite://routine" : "verite://scan"))
     }
 
     // Small: the ring, front and centre.

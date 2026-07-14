@@ -8,8 +8,11 @@ struct RootView: View {
     @Environment(\.modelContext) private var modelContext
     @Query private var profiles: [UserProfile]
 
+    /// ANY completed profile counts — `.first` on an unsorted query is
+    /// nondeterministic, and a stray second profile row must never bounce a
+    /// finished user back into onboarding (e.g. on a widget cold launch).
     private var onboardingComplete: Bool {
-        profiles.first?.onboardingComplete ?? false
+        profiles.contains { $0.onboardingComplete }
     }
 
     var body: some View {
