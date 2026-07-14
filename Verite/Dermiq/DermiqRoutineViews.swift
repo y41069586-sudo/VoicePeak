@@ -1,5 +1,6 @@
 import SwiftUI
 import SwiftData
+import StoreKit
 
 // ============================================================
 // MARK: — Screen 6: Routine Generation (2s transition)
@@ -334,7 +335,13 @@ private struct PlanRouteView: View {
 /// never punished — the tile just stays unfilled.
 struct DermiqRoutineTab: View {
     @Environment(\.modelContext) private var modelContext
+    @Environment(\.requestReview) private var requestReview
     @Query(sort: \RoutinePlan.createdAt, order: .reverse) private var plans: [RoutinePlan]
+
+    /// The native rating ask fires at most once from here, ever — right after
+    /// the user completes their FIRST full routine day (AM + PM checked). A
+    /// genuine "it's working" moment, and the system throttles on top anyway.
+    @AppStorage("dermiq.reviewAskedRoutine") private var routineReviewAsked = false
 
     /// Kit card starts on the lean "Essentials" view so the first thing the
     /// user sees is the four products they actually need to start.
@@ -908,6 +915,16 @@ struct DermiqRoutineTab: View {
             Haptics.fire(.capture)
             RampAnalytics.track("routine_block_complete", ["day": String(day), "block": block.rawValue])
             BadgeCenter.shared.evaluateRoutineMilestones(plan: plan, day: day)
+
+            // First FULL day done (AM + PM) → the native Apple rating card,
+            // slightly delayed so the completion animation lands first.
+            if !routineReviewAsked && plan.dayComplete(day) {
+                routineReviewAsked = true
+                Task {
+                    try? await Task.sleep(for: .milliseconds(1800))
+                    requestReview()
+                }
+            }
         }
     }
 
