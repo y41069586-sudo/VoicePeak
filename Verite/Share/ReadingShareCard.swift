@@ -42,7 +42,7 @@ struct ReadingShareCard: View {
 
     private var header: some View {
         VStack(spacing: 6) {
-            Text(verbatim: "VÉRITÉ")
+            Text(verbatim: "SKINMAXX")
                 .font(VType.micro).tracking(6)
                 .foregroundStyle(RampStage.accentDeep)
             Text(verbatim: displayName.map { "\($0.uppercased())'S READING" } ?? "SKIN READING")

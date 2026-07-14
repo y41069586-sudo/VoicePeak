@@ -250,7 +250,7 @@ struct DQShareCard: View {
                         .foregroundStyle(DQColor.textPrimary)
                 }
                 Spacer()
-                Text("VÉRITÉ")
+                Text("SKINMAXX")
                     .font(.system(size: 17, weight: .semibold, design: .monospaced))
                     .tracking(5)
                     .foregroundStyle(DQColor.textPrimary)

@@ -229,7 +229,7 @@ enum GlowUpReelComposer {
     }
 
     private static func drawBrandTag() {
-        draw(text: "VÉRITÉ", font: rounded(38, .heavy), color: .white.withAlphaComponent(0.8),
+        draw(text: "SKINMAXX", font: rounded(38, .heavy), color: .white.withAlphaComponent(0.8),
              at: CGPoint(x: 64, y: 92), tracking: 7)
     }
 

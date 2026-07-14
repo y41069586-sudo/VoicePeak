@@ -208,7 +208,7 @@ struct DermiqSettingsView: View {
 
     private var footer: some View {
         VStack(spacing: 3) {
-            Text("VÉRITÉ")
+            Text("SKINMAXX")
                 .font(DQFont.mono(11, weight: .semibold))
                 .tracking(4)
                 .foregroundStyle(DQColor.textSecondary)

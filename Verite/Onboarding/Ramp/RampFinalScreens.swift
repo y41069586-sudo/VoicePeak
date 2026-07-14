@@ -230,7 +230,7 @@ struct RampDailyReportScreen: View {
                 )
             VStack(alignment: .leading, spacing: 1) {
                 HStack {
-                    Text(verbatim: "VÉRITÉ")
+                    Text(verbatim: "SKINMAXX")
                         .font(.system(size: 12, weight: .bold, design: .rounded))
                         .foregroundStyle(RampStage.ink)
                     Spacer()
