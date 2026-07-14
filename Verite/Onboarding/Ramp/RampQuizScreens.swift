@@ -144,18 +144,26 @@ struct RampInsightScreen: View {
     let eyebrow: String
     let insight: String
     var photoName: String = "GlowTexture"
+    /// The user's own answers, echoed back as chips that pop in one by one.
+    var chips: [String] = []
     let onAdvance: () -> Void
 
-    @State private var shown = false
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @State private var photoIn = false
+    @State private var eyebrowIn = false
+    @State private var chipsShown = 0
+    @State private var textIn = false
+    @State private var buttonIn = false
 
     var body: some View {
         VStack(spacing: 0) {
-            Spacer().frame(height: VSpace.xxl * 1.4)
+            Spacer().frame(height: VSpace.xxl * 1.3)
 
             RampPhoto(name: photoName, cornerRadius: 24)
-                .frame(width: 228, height: 304) // 3:4, no crop
-                .opacity(shown ? 1 : 0)
-                .scaleEffect(shown ? 1 : 0.97)
+                .frame(width: 220, height: 293) // 3:4, no crop
+                .opacity(photoIn ? 1 : 0)
+                .scaleEffect(photoIn ? 1 : 0.94)
+                .blur(radius: photoIn ? 0 : 8)
 
             Spacer()
 
@@ -164,6 +172,24 @@ struct RampInsightScreen: View {
                     .font(VType.micro)
                     .tracking(3)
                     .foregroundStyle(RampStage.accentDeep)
+                    .opacity(eyebrowIn ? 1 : 0)
+                    .offset(y: eyebrowIn ? 0 : 6)
+
+                // The user's answers, echoed back — each pops in on its own.
+                if !chips.isEmpty {
+                    HStack(spacing: 7) {
+                        ForEach(chips.indices, id: \.self) { i in
+                            Text(LocalizedStringKey(chips[i]))
+                                .font(.system(size: 12.5, weight: .semibold, design: .rounded))
+                                .foregroundStyle(RampStage.accentDeep)
+                                .lineLimit(1)
+                                .padding(.horizontal, 11).padding(.vertical, 6)
+                                .background(RampStage.accentSoft, in: Capsule())
+                                .opacity(i < chipsShown ? 1 : 0)
+                                .scaleEffect(i < chipsShown ? 1 : 0.6)
+                        }
+                    }
+                }
 
                 Text(LocalizedStringKey(insight))
                     .font(RampStage.serif(21, weight: .semibold))
@@ -171,22 +197,40 @@ struct RampInsightScreen: View {
                     .multilineTextAlignment(.center)
                     .lineSpacing(4)
                     .fixedSize(horizontal: false, vertical: true)
+                    .opacity(textIn ? 1 : 0)
+                    .offset(y: textIn ? 0 : 10)
             }
             .padding(.horizontal, VSpace.xl)
-            .opacity(shown ? 1 : 0)
-            .offset(y: shown ? 0 : 10)
 
             Spacer()
 
             RampPrimaryButton(title: "Continue") { onAdvance() }
                 .padding(.horizontal, VSpace.lg)
-                .opacity(shown ? 1 : 0)
+                .opacity(buttonIn ? 1 : 0)
             Spacer().frame(height: VSpace.xxl)
         }
         .task {
-            try? await Task.sleep(for: .milliseconds(200))
-            withAnimation(.easeOut(duration: 0.8)) { shown = true }
+            if reduceMotion {
+                photoIn = true; eyebrowIn = true
+                chipsShown = chips.count; textIn = true; buttonIn = true
+                return
+            }
+            withAnimation(.easeOut(duration: 0.7)) { photoIn = true }
+            try? await Task.sleep(for: .milliseconds(450))
+            withAnimation(.easeOut(duration: 0.4)) { eyebrowIn = true }
             Haptics.fire(.selection)
+            try? await Task.sleep(for: .milliseconds(240))
+            if chips.count > 0 {
+                for i in 1...chips.count {
+                    withAnimation(.spring(response: 0.35, dampingFraction: 0.62)) { chipsShown = i }
+                    Haptics.fire(.tick)
+                    try? await Task.sleep(for: .milliseconds(270))
+                    if Task.isCancelled { return }
+                }
+            }
+            withAnimation(.easeOut(duration: 0.6)) { textIn = true }
+            try? await Task.sleep(for: .milliseconds(320))
+            withAnimation(.easeOut(duration: 0.4)) { buttonIn = true }
         }
     }
 }

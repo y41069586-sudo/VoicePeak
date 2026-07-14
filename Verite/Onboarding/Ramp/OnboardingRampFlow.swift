@@ -110,7 +110,9 @@ struct OnboardingRampFlow: View {
             RampInsightScreen(
                 eyebrow: "WHAT WE HEAR SO FAR",
                 insight: answers.skinInsight,
-                photoName: "GlowTexture"
+                photoName: "GlowTexture",
+                chips: [answers.selfRating?.chip, answers.concern.flatMap { $0.chip }, answers.age?.chip]
+                    .compactMap { $0 }
             ) { advance() }
         case .quizRoutine:
             RampQuizScreen(
@@ -152,7 +154,9 @@ struct OnboardingRampFlow: View {
             RampInsightScreen(
                 eyebrow: "THE LEVERS IN YOUR ANSWERS",
                 insight: answers.lifeInsight,
-                photoName: "GlowRitual"
+                photoName: "GlowRitual",
+                chips: [answers.routine?.label, answers.sleep?.label, answers.spf?.label]
+                    .compactMap { $0 }
             ) { advance() }
         case .theReading:
             RampRevealScreen(answers: answers) { advance() }
