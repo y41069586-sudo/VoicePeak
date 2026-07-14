@@ -2066,6 +2066,41 @@
         }
       }
     },
+    "And look slightly up": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Und schau leicht nach oben"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "And look slightly up"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Y mira ligeramente hacia arriba"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Et regarde légèrement vers le haut"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "E guarda leggermente in alto"
+          }
+        }
+      }
+    },
     "Annual": {
       "extractionState": "manual",
       "localizations": {
@@ -9976,6 +10011,41 @@
         }
       }
     },
+    "Now slightly to the right": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Jetzt leicht nach rechts"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Now slightly to the right"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ahora ligeramente a la derecha"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Maintenant légèrement vers la droite"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ora leggermente a destra"
+          }
+        }
+      }
+    },
     "Now, the\nreal you.": {
       "extractionState": "manual",
       "localizations": {
@@ -10392,6 +10462,41 @@
           "stringUnit": {
             "state": "translated",
             "value": "La riparazione avviene di notte — dalle il materiale."
+          }
+        }
+      }
+    },
+    "Perfect — hold still": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Perfekt — halt kurz still"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Perfect — hold still"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Perfecto — quédate quieto"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Parfait — ne bouge plus"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Perfetto — resta fermo"
           }
         }
       }
@@ -14386,6 +14491,41 @@
         }
       }
     },
+    "This tunes your scan for a sharper analysis.": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Das kalibriert deinen Scan für eine schärfere Analyse."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This tunes your scan for a sharper analysis."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Esto calibra tu escaneo para un análisis más nítido."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cela calibre ton scan pour une analyse plus précise."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Questo calibra la tua scansione per un'analisi più nitida."
+          }
+        }
+      }
+    },
     "TODAY'S TIP": {
       "extractionState": "manual",
       "localizations": {
@@ -15327,6 +15467,41 @@
           "stringUnit": {
             "state": "translated",
             "value": "Trasforma le tue %lld scansioni in un video da condividere"
+          }
+        }
+      }
+    },
+    "Turn your head slightly to the left": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dreh den Kopf leicht nach links"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Turn your head slightly to the left"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Gira la cabeza ligeramente a la izquierda"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tourne légèrement la tête vers la gauche"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Gira leggermente la testa a sinistra"
           }
         }
       }

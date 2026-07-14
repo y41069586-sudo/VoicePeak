@@ -19,6 +19,14 @@ struct DermiqCaptureView: View {
     @State private var capturing = false
     @State private var flash = false
 
+    // Guided quality calibration (runs once, before the shutter appears).
+    @State private var poseStepIndex = 0
+    @State private var stepFill: Double = 0
+    @State private var firstYawSign: Double = 0
+    @State private var faceVisibleSince: Date?
+    @State private var finishingCalibration = false
+    @State private var calibrated = false
+
     private var quality: CaptureQuality { camera.quality }
     private var allPass: Bool { quality.isStandardized && quality.eyesOK }
 
@@ -36,8 +44,13 @@ struct DermiqCaptureView: View {
             } else {
                 CameraPreviewView(session: camera.session)
                     .ignoresSafeArea()
-                faceOval
-                overlayChrome
+                if calibrated {
+                    faceOval
+                    overlayChrome
+                } else {
+                    calibrationOverlay
+                        .transition(.opacity)
+                }
             }
 
             // Front-fill flash: a bright white sheet on capture that lights the
@@ -49,9 +62,171 @@ struct DermiqCaptureView: View {
                 .allowsHitTesting(false)
         }
         .task { await startCamera() }
+        .onReceive(camera.$quality) { tickCalibration($0) }
         .onDisappear {
             camera.stop()
             restoreBrightness()
+        }
+    }
+
+    // MARK: Guided quality calibration
+    //
+    // A short pose ritual on the live feed (lightly frosted, no oval): turn
+    // left → turn right → look up. Each held pose fills the edge ring; at
+    // 100% the veil lifts and the normal checklist + shutter appear. This is
+    // purely a QUALITY step — it warms up Vision's tracking, proves a live
+    // face, and gets the user consciously posing before the one photo that
+    // matters. The analysis itself still runs on the single frontal capture.
+
+    private enum PoseStep: Int, CaseIterable {
+        case left, right, up
+
+        var instruction: LocalizedStringKey {
+            switch self {
+            case .left: "Turn your head slightly to the left"
+            case .right: "Now slightly to the right"
+            case .up: "And look slightly up"
+            }
+        }
+
+        var icon: String {
+            switch self {
+            case .left: "chevron.compact.left"
+            case .right: "chevron.compact.right"
+            case .up: "chevron.compact.up"
+            }
+        }
+    }
+
+    /// 0...1 across all three steps — drives the edge ring and the % readout.
+    private var calibrationProgress: Double {
+        if finishingCalibration || calibrated { return 1 }
+        return (Double(poseStepIndex) + min(stepFill, 1)) / Double(PoseStep.allCases.count)
+    }
+
+    private func tickCalibration(_ q: CaptureQuality) {
+        guard !calibrated, !finishingCalibration, frozenFrame == nil else { return }
+        guard poseStepIndex < PoseStep.allCases.count else { return }
+
+        guard q.faceDetected else {
+            faceVisibleSince = nil
+            return
+        }
+        if faceVisibleSince == nil { faceVisibleSince = .now }
+
+        // Sign-agnostic on purpose: Vision's yaw sign flips with mirroring, so
+        // "left" accepts the first side turned and "right" demands the OTHER
+        // side — following the arrows always works, on every device.
+        let step = PoseStep.allCases[poseStepIndex]
+        var matches = false
+        switch step {
+        case .left:
+            if abs(q.yaw) > 0.22 {
+                matches = true
+                if firstYawSign == 0 { firstYawSign = q.yaw > 0 ? 1 : -1 }
+            }
+        case .right:
+            matches = abs(q.yaw) > 0.22 && (q.yaw > 0 ? 1.0 : -1.0) != firstYawSign
+        case .up:
+            matches = abs(q.pitch) > 0.12
+        }
+
+        if matches {
+            withAnimation(.linear(duration: 0.22)) { stepFill += 0.34 }
+            Haptics.fire(.tick)
+            if stepFill >= 1 { advanceCalibrationStep() }
+        } else if let since = faceVisibleSince, Date.now.timeIntervalSince(since) > 8 {
+            // Pose estimation varies by device/light — never strand anyone.
+            advanceCalibrationStep()
+        }
+    }
+
+    private func advanceCalibrationStep() {
+        stepFill = 0
+        faceVisibleSince = .now
+        poseStepIndex += 1
+        guard poseStepIndex >= PoseStep.allCases.count else {
+            Haptics.fire(.selection)
+            return
+        }
+        finishingCalibration = true
+        Haptics.fire(.milestone)
+        Task {
+            try? await Task.sleep(for: .milliseconds(900))
+            withAnimation(.easeOut(duration: 0.5)) { calibrated = true }
+        }
+    }
+
+    private var calibrationOverlay: some View {
+        ZStack {
+            // Light frosted veil — the live face stays visible underneath.
+            Rectangle()
+                .fill(.ultraThinMaterial)
+                .opacity(0.62)
+                .ignoresSafeArea()
+
+            // Edge ring that fills toward 100%.
+            RoundedRectangle(cornerRadius: 44, style: .continuous)
+                .strokeBorder(DQColor.stroke.opacity(0.5), lineWidth: 5)
+                .padding(8)
+            RoundedRectangle(cornerRadius: 44, style: .continuous)
+                .inset(by: 2.5)
+                .trim(from: 0, to: calibrationProgress)
+                .stroke(DQColor.accentGradient,
+                        style: StrokeStyle(lineWidth: 5, lineCap: .round))
+                .padding(8)
+                .animation(.easeOut(duration: 0.3), value: calibrationProgress)
+
+            VStack(spacing: 0) {
+                HStack {
+                    Button(action: onCancel) {
+                        Image(systemName: "xmark")
+                            .font(.system(size: 15, weight: .semibold))
+                            .foregroundStyle(DQColor.textPrimary)
+                            .frame(width: 38, height: 38)
+                            .background(DQColor.surface.opacity(0.7), in: Circle())
+                    }
+                    Spacer()
+                }
+                .padding(.horizontal, 24)
+                .padding(.top, 16)
+
+                Spacer()
+
+                // Big % readout + the current instruction.
+                Text(verbatim: "\(Int((calibrationProgress * 100).rounded()))%")
+                    .font(DQFont.mono(56, weight: .heavy))
+                    .foregroundStyle(DQColor.textPrimary)
+                    .contentTransition(.numericText())
+                    .animation(.snappy, value: calibrationProgress)
+
+                Group {
+                    if finishingCalibration {
+                        Label("Perfect — hold still", systemImage: "checkmark.seal.fill")
+                            .foregroundStyle(DQColor.deltaUp)
+                    } else if !quality.faceDetected {
+                        Text("scan.guide.noFace")
+                            .foregroundStyle(DQColor.textSecondary)
+                    } else if poseStepIndex < PoseStep.allCases.count {
+                        let step = PoseStep.allCases[poseStepIndex]
+                        Label(step.instruction, systemImage: step.icon)
+                            .foregroundStyle(DQColor.textPrimary)
+                    }
+                }
+                .font(.system(size: 19, weight: .bold, design: .rounded))
+                .multilineTextAlignment(.center)
+                .padding(.horizontal, 40)
+                .padding(.top, 10)
+                .animation(VMotion.crossfade, value: poseStepIndex)
+                .animation(VMotion.crossfade, value: finishingCalibration)
+
+                Spacer()
+
+                Text("This tunes your scan for a sharper analysis.")
+                    .font(DQFont.caption)
+                    .foregroundStyle(DQColor.textSecondary)
+                    .padding(.bottom, 34)
+            }
         }
     }
 
