@@ -35425,6 +35425,76 @@
           }
         }
       }
+    },
+    "Weekly scan cap reached": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Weekly scan cap reached"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Wochenlimit für Scans erreicht"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Límite semanal de escaneos alcanzado"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Limite hebdomadaire de scans atteinte"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Limite settimanale di scansioni raggiunto"
+          }
+        }
+      }
+    },
+    "Skin moves week by week — your three weekly readings are in. The next one unlocks soon.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Skin moves week by week — your three weekly readings are in. The next one unlocks soon."
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Haut verändert sich Woche für Woche — deine drei Wochen-Messungen sind drin. Die nächste schaltet bald frei."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "La piel cambia semana a semana: tus tres lecturas semanales ya están. La próxima se desbloquea pronto."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "La peau évolue de semaine en semaine — tes trois mesures hebdo sont faites. La prochaine se débloque bientôt."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "La pelle cambia di settimana in settimana — le tue tre letture settimanali sono fatte. La prossima si sblocca presto."
+          }
+        }
+      }
     }
   },
   "version": "1.0"

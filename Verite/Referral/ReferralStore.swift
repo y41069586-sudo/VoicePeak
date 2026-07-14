@@ -122,22 +122,25 @@ enum ScanQuota {
     /// There is NO recurring free tier. A non-Pro user gets exactly ONE scan
     /// (the onboarding scan — it produces the blurred score that IS the
     /// paywall moment) plus any referral bonus scans; results stay Pro-locked
-    /// either way. Pro gets 2/day: one honest scan + one redo (bad light,
-    /// hair in the face). Skin doesn't change in hours, and every analysis
-    /// is a paid API call — an uncapped heavy user could cost more than a
-    /// yearly sub earns.
-    static let proPerDay = 2
+    /// either way. Pro is capped per WEEK, GlamUp-style: 3 covers the honest
+    /// weekly reading, a redo (bad light, hair) and the day-14 rescan. Skin
+    /// moves weekly, not daily — and every analysis is a paid API call, so an
+    /// uncapped heavy user could cost more than a yearly sub earns.
+    static let proPerWeek = 3
 
     enum Decision {
         case allow(useCredit: Bool)
         case blockedNeedsPro
-        case blockedProDaily
+        case blockedProWeekly(nextScan: Date?)
     }
 
     static func decide(scans: [ScanRecord], isPro: Bool, credits: Int) -> Decision {
         if isPro {
-            let today = scans.filter { Calendar.current.isDate($0.date, inSameDayAs: .now) }
-            return today.count < proPerDay ? .allow(useCredit: false) : .blockedProDaily
+            let weekAgo = Date.now.addingTimeInterval(-7 * 24 * 3600)
+            let inWindow = scans.filter { $0.date > weekAgo }
+            if inWindow.count < proPerWeek { return .allow(useCredit: false) }
+            let nextScan = inWindow.map(\.date).min()?.addingTimeInterval(7 * 24 * 3600)
+            return .blockedProWeekly(nextScan: nextScan)
         }
         if scans.isEmpty { return .allow(useCredit: false) }   // the one first scan
         if credits > 0 { return .allow(useCredit: true) }
@@ -150,10 +153,10 @@ enum ScanQuota {
 // ============================================================
 
 /// Two flavours: a non-Pro user tapping scan (the Pro pitch + invite escape
-/// hatch), or a Pro user hitting the daily anti-abuse cap (countdown only).
+/// hatch), or a Pro user hitting the weekly fair-use cap (countdown only).
 struct ScanLimitSheet: View {
-    /// True when a Pro user hit the daily cap; false = scanning needs Pro.
-    var proDaily = false
+    /// True when a Pro user hit the weekly cap; false = scanning needs Pro.
+    var proCap = false
     var nextScan: Date?
     let onGetPro: (() -> Void)?
 
@@ -161,17 +164,17 @@ struct ScanLimitSheet: View {
 
     var body: some View {
         VStack(spacing: 18) {
-            Image(systemName: proDaily ? "camera.badge.clock" : "sparkles")
+            Image(systemName: proCap ? "camera.badge.clock" : "sparkles")
                 .font(.system(size: 40, weight: .semibold))
                 .foregroundStyle(DQColor.accentBright)
                 .padding(.top, 26)
 
             VStack(spacing: 6) {
-                Text(proDaily ? "Daily scan cap reached" : "Scanning is part of Pro")
+                Text(proCap ? "Weekly scan cap reached" : "Scanning is part of Pro")
                     .font(.system(size: 21, weight: .heavy, design: .rounded))
                     .foregroundStyle(DQColor.textPrimary)
-                Text(proDaily
-                     ? "Fresh readings need time between them — come back tomorrow."
+                Text(proCap
+                     ? "Skin moves week by week — your three weekly readings are in. The next one unlocks soon."
                      : "Every scan runs a full AI skin analysis. Go Pro for your score, all seven metrics and your 14-day plan.")
                     .font(DQFont.caption)
                     .foregroundStyle(DQColor.textSecondary)
@@ -180,7 +183,7 @@ struct ScanLimitSheet: View {
             }
             .padding(.horizontal, 26)
 
-            if proDaily, let nextScan {
+            if proCap, let nextScan {
                 HStack(spacing: 6) {
                     Image(systemName: "clock")
                         .font(.system(size: 12, weight: .semibold))
@@ -195,7 +198,7 @@ struct ScanLimitSheet: View {
             }
 
             VStack(spacing: 10) {
-                if !proDaily, let onGetPro {
+                if !proCap, let onGetPro {
                     Button {
                         dismiss()
                         onGetPro()
@@ -210,7 +213,7 @@ struct ScanLimitSheet: View {
                     .buttonStyle(PressableStyle())
                 }
 
-                if !proDaily {
+                if !proCap {
                     ShareLink(item: ReferralStore.shared.inviteURL,
                               message: Text("Scan your skin with me — this link gives us both a free scan.")) {
                         Label("Invite a friend — you both get a scan", systemImage: "person.2.fill")

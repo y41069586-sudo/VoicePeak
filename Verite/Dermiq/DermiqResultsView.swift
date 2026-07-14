@@ -142,11 +142,25 @@ struct DermiqResultsView: View {
                     summaryBlock(analysis)
                     shareRow
                     // Leads to the Potential reveal (the before/after image);
-                    // the plan CTA lives on THAT screen.
+                    // the plan CTA lives on THAT screen. "Done" is the repeat
+                    // scanner's exit — check the reading, keep the current
+                    // plan, no regeneration every time.
                     if countUpFinished {
-                        DQPrimaryButton(title: "Make me a 10/10",
-                                        systemImage: "sparkles") { onContinue() }
-                            .animation(VMotion.gentle, value: countUpFinished)
+                        VStack(spacing: 10) {
+                            DQPrimaryButton(title: "Make me a 10/10",
+                                            systemImage: "sparkles") { onContinue() }
+                            Button {
+                                Haptics.fire(.selection)
+                                onClose()
+                            } label: {
+                                Text("Done")
+                                    .font(.system(size: 16, weight: .semibold, design: .rounded))
+                                    .foregroundStyle(DQColor.textSecondary)
+                                    .frame(maxWidth: .infinity, minHeight: 44)
+                            }
+                            .buttonStyle(PressableStyle())
+                        }
+                        .animation(VMotion.gentle, value: countUpFinished)
                     }
                 }
             }
