@@ -306,33 +306,39 @@ struct RampPlanPreviewScreen: View {
     let answers: RampQuizAnswers
     let onAdvance: () -> Void
 
-    /// "Targeted active" becomes THEIR concern's active line.
-    private var eveningSteps: String {
+    private struct Step { let title: String; let sub: String }
+
+    private var morning: [Step] {
+        [Step(title: "Gentle cleanser", sub: "Low-pH, non-stripping"),
+         Step(title: "Hydrating serum", sub: "Hyaluronic acid + B5"),
+         answers.spf == .daily
+            ? Step(title: "Your SPF, kept", sub: "SPF 30+, every morning")
+            : Step(title: "SPF 50", sub: "New — your biggest lever")]
+    }
+
+    private var evening: [Step] {
+        [Step(title: "Cleanser", sub: "Lifts the day's residue"),
+         concernActive,
+         Step(title: "Moisturizer", sub: "Barrier repair, overnight")]
+    }
+
+    /// The middle evening step is THEIR concern's active.
+    private var concernActive: Step {
         switch answers.concern {
-        case .breakouts?: return "Cleanse · Blemish active (BHA) · Moisturizer"
-        case .redness?:   return "Cleanse · Calming active (azelaic) · Moisturizer"
-        case .pores?:     return "Cleanse · Pore active (niacinamide) · Moisturizer"
-        case .texture?:   return "Cleanse · Texture active (retinal) · Moisturizer"
-        case .dullness?:  return "Cleanse · Glow active (vitamin C) · Moisturizer"
-        case .nothing?, nil:
-            return "Cleanse · Targeted active · Moisturizer"
+        case .breakouts?: return Step(title: "Blemish active", sub: "Salicylic acid · BHA")
+        case .redness?:   return Step(title: "Calming active", sub: "Azelaic acid")
+        case .pores?:     return Step(title: "Pore active", sub: "Niacinamide + zinc")
+        case .texture?:   return Step(title: "Texture active", sub: "Retinal")
+        case .dullness?:  return Step(title: "Glow active", sub: "Vitamin C")
+        case .nothing?, nil: return Step(title: "Targeted active", sub: "Chosen from your scan")
         }
     }
 
-    /// The AM line acknowledges their SPF answer.
-    private var morningSteps: String {
-        answers.spf == .daily
-            ? "Gentle cleanse · Hydrating serum · Your SPF, kept"
-            : "Gentle cleanse · Hydrating serum · SPF 30+ (new)"
-    }
-
-    private var focusChip: String? {
-        answers.concern?.chip
-    }
+    private var focusChip: String? { answers.concern?.chip }
 
     var body: some View {
         VStack(spacing: 0) {
-            Spacer().frame(height: VSpace.xxl * 1.6)
+            Spacer().frame(height: VSpace.xxl * 1.1)
 
             VStack(spacing: VSpace.sm) {
                 Text("AFTER YOUR SCAN")
@@ -340,58 +346,47 @@ struct RampPlanPreviewScreen: View {
                     .tracking(3)
                     .foregroundStyle(RampStage.accentDeep)
                 Text("Your first plan,\nready in seconds.")
-                    .font(RampStage.serif(28))
+                    .font(RampStage.serif(27))
                     .foregroundStyle(RampStage.ink)
                     .multilineTextAlignment(.center)
                     .lineSpacing(2)
-                Text("14 days, morning and evening — every step aimed at your three weakest scores.")
-                    .font(VType.body)
-                    .foregroundStyle(RampStage.textSecondary)
-                    .multilineTextAlignment(.center)
-                    .fixedSize(horizontal: false, vertical: true)
             }
             .padding(.horizontal, VSpace.xl)
 
+            // Day-1 + focus chip row.
+            HStack(spacing: 8) {
+                Text("DAY 1")
+                    .font(VType.micro).tracking(2)
+                    .foregroundStyle(RampStage.textTertiary)
+                if let focusChip {
+                    Text(verbatim: "FOR: \(focusChip.uppercased())")
+                        .font(VType.micro).tracking(1.5)
+                        .foregroundStyle(RampStage.accentDeep)
+                        .padding(.horizontal, 8).padding(.vertical, 3)
+                        .background(RampStage.accentSoft, in: Capsule())
+                }
+            }
+            .padding(.top, VSpace.md)
+
             Spacer()
 
-            // Day-1 sample card, seeded with their own answers.
-            VStack(alignment: .leading, spacing: 12) {
-                HStack {
-                    Text("DAY 1 · PREVIEW")
-                        .font(VType.micro).tracking(3)
-                        .foregroundStyle(RampStage.accentDeep)
-                    Spacer()
-                    if let focusChip {
-                        Text(verbatim: "FOR: \(focusChip.uppercased())")
-                            .font(VType.micro).tracking(2)
-                            .foregroundStyle(RampStage.accentDeep)
-                            .padding(.horizontal, 8).padding(.vertical, 3)
-                            .background(RampStage.accentSoft, in: Capsule())
-                    } else {
-                        Text("ILLUSTRATIVE")
-                            .font(VType.micro).tracking(2)
-                            .foregroundStyle(RampStage.textTertiary)
-                    }
-                }
-                previewRow(icon: "sun.max.fill", title: "Morning", steps: morningSteps)
-                previewRow(icon: "moon.stars.fill", title: "Evening", steps: eveningSteps)
-                HStack(spacing: 6) {
-                    Image(systemName: "checkmark.seal")
-                        .font(.system(size: 11, weight: .semibold))
-                    Text("Yours is built from your scan — not a template.")
-                        .font(VType.micro)
-                        .fixedSize(horizontal: false, vertical: true)
-                }
-                .foregroundStyle(RampStage.accentDeep)
+            VStack(spacing: 14) {
+                blockCard(icon: "sun.max.fill", title: "Morning",
+                          subtitle: "After you wake up", steps: morning)
+                blockCard(icon: "moon.stars.fill", title: "Evening",
+                          subtitle: "Before bed", steps: evening)
             }
-            .padding(VSpace.lg)
-            .background(Color.white.opacity(0.75), in: RoundedRectangle(cornerRadius: 22, style: .continuous))
-            .overlay(
-                RoundedRectangle(cornerRadius: 22, style: .continuous)
-                    .strokeBorder(RampStage.hairline, lineWidth: 1)
-            )
-            .shadow(color: RampStage.accent.opacity(0.16), radius: 20, y: 10)
             .padding(.horizontal, VSpace.lg)
+
+            HStack(spacing: 6) {
+                Image(systemName: "checkmark.seal")
+                    .font(.system(size: 11, weight: .semibold))
+                Text("Built from your scan — not a template.")
+                    .font(VType.micro)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+            .foregroundStyle(RampStage.accentDeep)
+            .padding(.top, VSpace.md)
 
             Spacer()
 
@@ -401,22 +396,50 @@ struct RampPlanPreviewScreen: View {
         }
     }
 
-    private func previewRow(icon: String, title: String, steps: String) -> some View {
-        HStack(alignment: .top, spacing: 10) {
-            Image(systemName: icon)
-                .font(.system(size: 14, weight: .semibold))
-                .foregroundStyle(RampStage.accentDeep)
-                .frame(width: 22)
-            VStack(alignment: .leading, spacing: 2) {
-                Text(title)
-                    .font(VType.bodyMedium)
-                    .foregroundStyle(RampStage.ink)
-                Text(steps)
-                    .font(VType.caption)
-                    .foregroundStyle(RampStage.textSecondary)
-                    .fixedSize(horizontal: false, vertical: true)
+    /// One AM/PM block, mirroring the real routine tab's card.
+    private func blockCard(icon: String, title: LocalizedStringKey,
+                           subtitle: LocalizedStringKey, steps: [Step]) -> some View {
+        VStack(alignment: .leading, spacing: 12) {
+            HStack(spacing: 10) {
+                Image(systemName: icon)
+                    .font(.system(size: 14, weight: .semibold))
+                    .foregroundStyle(RampStage.accentDeep)
+                    .frame(width: 32, height: 32)
+                    .background(RampStage.accentSoft,
+                                in: RoundedRectangle(cornerRadius: 10, style: .continuous))
+                VStack(alignment: .leading, spacing: 1) {
+                    Text(title)
+                        .font(.system(size: 16, weight: .bold, design: .rounded))
+                        .foregroundStyle(RampStage.ink)
+                    Text(subtitle)
+                        .font(VType.micro)
+                        .foregroundStyle(RampStage.textTertiary)
+                }
+                Spacer()
+            }
+            ForEach(steps.indices, id: \.self) { i in
+                HStack(spacing: 11) {
+                    Circle()
+                        .strokeBorder(RampStage.hair, lineWidth: 1.5)
+                        .frame(width: 20, height: 20)
+                    VStack(alignment: .leading, spacing: 1) {
+                        Text(LocalizedStringKey(steps[i].title))
+                            .font(.system(size: 14, weight: .semibold, design: .rounded))
+                            .foregroundStyle(RampStage.ink)
+                        Text(LocalizedStringKey(steps[i].sub))
+                            .font(VType.micro)
+                            .foregroundStyle(RampStage.textSecondary)
+                    }
+                    Spacer(minLength: 0)
+                }
             }
         }
+        .padding(VSpace.lg)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(Color.white, in: RoundedRectangle(cornerRadius: 20, style: .continuous))
+        .overlay(RoundedRectangle(cornerRadius: 20, style: .continuous)
+            .strokeBorder(RampStage.hairline, lineWidth: 1))
+        .shadow(color: RampStage.accent.opacity(0.12), radius: 16, y: 8)
     }
 }
 

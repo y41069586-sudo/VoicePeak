@@ -17,9 +17,8 @@ import os
 /// the routing stay compatible with earlier builds.)
 enum RampStep: Int, CaseIterable {
     case boot            // 0  — opening
-    case sampleReading   // 1  — an illustrative reading card (the outcome, first)
-    case theNumber       // 2  — the number, calmly
-    case theSplit        // 3  — what 14 days moves (interactive bars)
+    case sampleReading   // 1  — the real results chart, previewed
+    case theSplit        // 2  — what 14 days moves (interactive bars)
     case name            // 4  — "what should we call you?" (optional)
     case quizSelfRating  // 5  — Q1 · your skin
     case quizConcern     // 6  — Q2 · your skin
@@ -50,14 +49,13 @@ enum RampStep: Int, CaseIterable {
         }
     }
 
-    /// Conceptual screen index (0…19) for the progress hairline.
+    /// Conceptual screen index (0…18) for the progress hairline.
     var screenIndex: Int { rawValue }
 
     var analyticsName: String {
         switch self {
         case .boot:           return "boot"
         case .sampleReading:  return "sample_reading"
-        case .theNumber:      return "the_number"
         case .theSplit:       return "the_split"
         case .name:           return "name"
         case .quizSelfRating: return "quiz_self_rating"

@@ -65,8 +65,6 @@ struct OnboardingRampFlow: View {
             RampBootScreen { advance() }
         case .sampleReading:
             RampSampleReadingScreen { advance() }
-        case .theNumber:
-            RampNumberScreen { advance() }
         case .theSplit:
             RampSplitScreen { advance() }
         case .name:
