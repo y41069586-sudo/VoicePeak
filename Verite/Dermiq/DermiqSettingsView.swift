@@ -57,6 +57,7 @@ struct DermiqSettingsView: View {
                 VStack(spacing: 18) {
                     preferencesSection
                     subscriptionSection
+                    referralSection
                     diagnosticsSection
                     legalSection
                     supportSection
@@ -131,6 +132,51 @@ struct DermiqSettingsView: View {
                     restoring = false
                 }
             }
+        }
+    }
+
+    // MARK: Referral (invite a friend → both get a bonus scan)
+
+    private var referralSection: some View {
+        settingsCard("INVITE A FRIEND") {
+            VStack(alignment: .leading, spacing: 10) {
+                HStack(spacing: 10) {
+                    Image(systemName: "person.2.fill")
+                        .font(.system(size: 14, weight: .semibold))
+                        .foregroundStyle(DQColor.accentBright)
+                        .frame(width: 32, height: 32)
+                        .background(DQColor.accentBright.opacity(0.10),
+                                    in: RoundedRectangle(cornerRadius: 10, style: .continuous))
+                    VStack(alignment: .leading, spacing: 1) {
+                        Text("You both get a bonus scan")
+                            .font(.system(size: 15, weight: .semibold, design: .rounded))
+                            .foregroundStyle(DQColor.textPrimary)
+                        Text("Bonus scans available: \(ReferralStore.shared.credits)")
+                            .font(DQFont.micro)
+                            .foregroundStyle(DQColor.textSecondary)
+                    }
+                    Spacer()
+                }
+                ShareLink(item: ReferralStore.shared.inviteURL,
+                          message: Text("Scan your skin with me — this link gives us both a free scan.")) {
+                    Label("Share invite link", systemImage: "square.and.arrow.up")
+                        .font(.system(size: 14, weight: .semibold, design: .rounded))
+                        .foregroundStyle(DQColor.accentBright)
+                        .frame(maxWidth: .infinity, minHeight: 42)
+                        .background(DQColor.accentBright.opacity(0.10),
+                                    in: RoundedRectangle(cornerRadius: 12, style: .continuous))
+                }
+                if let thanks = ReferralStore.shared.thankYouURL {
+                    ShareLink(item: thanks,
+                              message: Text("Thanks for the invite — open this so you get your free scan too!")) {
+                        Label("Send thank-you scan back", systemImage: "gift")
+                            .font(.system(size: 13, weight: .semibold, design: .rounded))
+                            .foregroundStyle(DQColor.textSecondary)
+                            .frame(maxWidth: .infinity, minHeight: 38)
+                    }
+                }
+            }
+            .padding(.vertical, 4)
         }
     }
 

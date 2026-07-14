@@ -30,6 +30,7 @@ struct DermiqTabShell: View {
     }
 
     @Environment(\.modelContext) private var modelContext
+    @Environment(PurchaseManager.self) private var purchases
     @Query(sort: \ScanRecord.date, order: .reverse) private var scans: [ScanRecord]
 
     @State private var tab: Tab = .scan
@@ -37,6 +38,9 @@ struct DermiqTabShell: View {
     @State private var showSettings = false
     @State private var autoLaunched = false
     @State private var duelInbox = DuelInbox.shared
+    @State private var showQuotaSheet = false
+    @State private var quotaNextFree: Date?
+    @State private var showPaywall = false
 
     var body: some View {
         ZStack(alignment: .bottom) {
@@ -68,6 +72,14 @@ struct DermiqTabShell: View {
         .sheet(isPresented: $showSettings) {
             DermiqSettingsView()
         }
+        .sheet(isPresented: $showQuotaSheet) {
+            ScanLimitSheet(nextFree: quotaNextFree,
+                           onGetPro: purchases.isPro ? nil : { showPaywall = true })
+        }
+        .fullScreenCover(isPresented: $showPaywall) {
+            OnboardingPaywallView(onContinue: { showPaywall = false },
+                                  onSkip: { showPaywall = false })
+        }
         .fullScreenCover(isPresented: $showFlow) {
             DermiqScanFlowView(previousScan: scans.first) { planCreated in
                 showFlow = false
@@ -98,7 +110,20 @@ struct DermiqTabShell: View {
 
     private func startScan() {
         Haptics.fire(.selection)
-        showFlow = true
+        // Scans are metered: free = 1/week (+ referral bonus scans), Pro = a
+        // generous daily cap. Every scan hits the paid analysis API.
+        switch ScanQuota.decide(scans: scans, isPro: purchases.isPro,
+                                credits: ReferralStore.shared.credits) {
+        case .allow(let useCredit):
+            if useCredit { ReferralStore.shared.consumeCredit() }
+            showFlow = true
+        case .blockedFree(let nextFree):
+            quotaNextFree = nextFree
+            showQuotaSheet = true
+        case .blockedProDaily:
+            quotaNextFree = Calendar.current.startOfDay(for: .now).addingTimeInterval(24 * 3600)
+            showQuotaSheet = true
+        }
     }
 
     private var tabBar: some View {

@@ -34446,66 +34446,66 @@
         }
       }
     },
-    "SKIN AGE": {
+    "YOUR STANDING": {
       "extractionState": "manual",
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "SKIN AGE"
+            "value": "YOUR STANDING"
           }
         },
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "HAUTALTER"
+            "value": "DEIN RANG"
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "EDAD DE LA PIEL"
+            "value": "TU POSICIÓN"
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "ÂGE DE LA PEAU"
+            "value": "TON CLASSEMENT"
           }
         },
         "it": {
           "stringUnit": {
             "state": "translated",
-            "value": "ETÀ DELLA PELLE"
+            "value": "LA TUA POSIZIONE"
           }
         }
       }
     },
-    "estimate": {
+    "est.": {
       "extractionState": "manual",
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "estimate"
+            "value": "est."
           }
         },
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "Schätzung"
+            "value": "ca."
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "estimación"
+            "value": "est."
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "estimation"
+            "value": "est."
           }
         },
         "it": {
@@ -34516,177 +34516,527 @@
         }
       }
     },
-    "years": {
+    "Top": {
       "extractionState": "manual",
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "years"
+            "value": "Top"
           }
         },
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "Jahre"
+            "value": "Top"
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "años"
+            "value": "Top"
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "ans"
+            "value": "Top"
           }
         },
         "it": {
           "stringUnit": {
             "state": "translated",
-            "value": "anni"
+            "value": "Top"
           }
         }
       }
     },
-    "How old your skin looks — from texture, tone and glow.": {
+    "Your strongest:": {
       "extractionState": "manual",
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "How old your skin looks — from texture, tone and glow."
+            "value": "Your strongest:"
           }
         },
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "Wie alt deine Haut wirkt — aus Textur, Ton und Glow."
+            "value": "Deine Stärke:"
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "La edad que aparenta tu piel, según textura, tono y luminosidad."
+            "value": "Tu punto fuerte:"
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "L'âge qu'a ta peau — d'après la texture, le teint et l'éclat."
+            "value": "Ton point fort :"
           }
         },
         "it": {
           "stringUnit": {
             "state": "translated",
-            "value": "L'età che dimostra la tua pelle — da texture, tono e luminosità."
+            "value": "Il tuo punto forte:"
           }
         }
       }
     },
-    "%lld years younger than your real age.": {
+    "Estimated against a typical score distribution — not a live ranking.": {
       "extractionState": "manual",
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "%lld years younger than your real age."
+            "value": "Estimated against a typical score distribution — not a live ranking."
           }
         },
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "%lld Jahre jünger als dein echtes Alter."
+            "value": "Geschätzt anhand einer typischen Score-Verteilung — kein Live-Ranking."
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "%lld años más joven que tu edad real."
+            "value": "Estimado según una distribución típica de puntuaciones, no un ranking en vivo."
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "%lld ans de moins que ton âge réel."
+            "value": "Estimé d'après une distribution de scores typique — pas un classement en direct."
           }
         },
         "it": {
           "stringUnit": {
             "state": "translated",
-            "value": "%lld anni più giovane della tua età reale."
+            "value": "Stimato su una distribuzione tipica dei punteggi — non una classifica in tempo reale."
           }
         }
       }
     },
-    "%lld years to shave off — your plan targets exactly this.": {
+    "Your weekly scan is used": {
       "extractionState": "manual",
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "%lld years to shave off — your plan targets exactly this."
+            "value": "Your weekly scan is used"
           }
         },
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "%lld Jahre zum Abbauen — genau darauf zielt dein Plan."
+            "value": "Dein Wochen-Scan ist verbraucht"
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "%lld años que reducir: tu plan apunta justo a esto."
+            "value": "Tu escaneo semanal ya se usó"
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "%lld ans à gommer — ton plan vise exactement ça."
+            "value": "Ton scan hebdo est utilisé"
           }
         },
         "it": {
           "stringUnit": {
             "state": "translated",
-            "value": "%lld anni da togliere — il tuo piano punta proprio a questo."
+            "value": "La tua scansione settimanale è esaurita"
           }
         }
       }
     },
-    "Right on track for your age.": {
+    "Skin changes week by week, not day by day — one honest scan per week keeps the reading meaningful.": {
       "extractionState": "manual",
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Right on track for your age."
+            "value": "Skin changes week by week, not day by day — one honest scan per week keeps the reading meaningful."
           }
         },
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "Genau im Rahmen für dein Alter."
+            "value": "Haut verändert sich Woche für Woche, nicht Tag für Tag — ein ehrlicher Scan pro Woche hält die Messung aussagekräftig."
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Justo en línea con tu edad."
+            "value": "La piel cambia semana a semana, no día a día: un escaneo honesto por semana mantiene la lectura fiable."
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Pile dans la moyenne pour ton âge."
+            "value": "La peau change de semaine en semaine, pas de jour en jour — un scan honnête par semaine garde la mesure fiable."
           }
         },
         "it": {
           "stringUnit": {
             "state": "translated",
-            "value": "In perfetta linea con la tua età."
+            "value": "La pelle cambia di settimana in settimana, non di giorno in giorno — una scansione onesta a settimana mantiene la lettura significativa."
+          }
+        }
+      }
+    },
+    "Next free scan:": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Next free scan:"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nächster Gratis-Scan:"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Próximo escaneo gratis:"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Prochain scan gratuit :"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Prossima scansione gratuita:"
+          }
+        }
+      }
+    },
+    "Unlock unlimited scans with Pro": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Unlock unlimited scans with Pro"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Unbegrenzte Scans mit Pro freischalten"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Desbloquea escaneos ilimitados con Pro"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Débloque les scans illimités avec Pro"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sblocca scansioni illimitate con Pro"
+          }
+        }
+      }
+    },
+    "Invite a friend — you both get a scan": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Invite a friend — you both get a scan"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Lade jemanden ein — ihr bekommt beide einen Scan"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Invita a alguien: ambos recibís un escaneo"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Invite quelqu'un — vous recevez chacun un scan"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Invita un amico — ricevete entrambi una scansione"
+          }
+        }
+      }
+    },
+    "Scan your skin with me — this link gives us both a free scan.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Scan your skin with me — this link gives us both a free scan."
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Scanne deine Haut mit mir — dieser Link gibt uns beiden einen Gratis-Scan."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Escanea tu piel conmigo: este enlace nos da un escaneo gratis a ambos."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Scanne ta peau avec moi — ce lien nous offre un scan gratuit à tous les deux."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Scansiona la tua pelle con me — questo link regala una scansione gratis a entrambi."
+          }
+        }
+      }
+    },
+    "INVITE A FRIEND": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "INVITE A FRIEND"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "FREUND:IN EINLADEN"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "INVITA A ALGUIEN"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "INVITER QUELQU'UN"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "INVITA UN AMICO"
+          }
+        }
+      }
+    },
+    "You both get a bonus scan": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You both get a bonus scan"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ihr bekommt beide einen Bonus-Scan"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ambos recibís un escaneo extra"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vous recevez chacun un scan bonus"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ricevete entrambi una scansione bonus"
+          }
+        }
+      }
+    },
+    "Bonus scans available: %lld": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bonus scans available: %lld"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Verfügbare Bonus-Scans: %lld"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Escaneos extra disponibles: %lld"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Scans bonus disponibles : %lld"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Scansioni bonus disponibili: %lld"
+          }
+        }
+      }
+    },
+    "Share invite link": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Share invite link"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Einladungslink teilen"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Compartir enlace de invitación"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Partager le lien d'invitation"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Condividi il link di invito"
+          }
+        }
+      }
+    },
+    "Send thank-you scan back": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Send thank-you scan back"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Danke-Scan zurückschicken"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Devolver el escaneo de agradecimiento"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Renvoyer le scan de remerciement"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Rimanda la scansione di ringraziamento"
+          }
+        }
+      }
+    },
+    "Thanks for the invite — open this so you get your free scan too!": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Thanks for the invite — open this so you get your free scan too!"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Danke für die Einladung — öffne das, damit du auch deinen Gratis-Scan bekommst!"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "¡Gracias por la invitación! Abre esto para recibir también tu escaneo gratis."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Merci pour l'invitation — ouvre ceci pour recevoir aussi ton scan gratuit !"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Grazie per l'invito — apri questo così ricevi anche tu la tua scansione gratis!"
           }
         }
       }

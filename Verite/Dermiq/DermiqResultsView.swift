@@ -132,7 +132,7 @@ struct DermiqResultsView: View {
                 gridCard(analysis, projection: projection, locked: locked)
 
                 if !locked {
-                    skinAgeCard(analysis)
+                    percentileCard(analysis)
                     potentialNote
                     expectationsCard(analysis)
                 }
@@ -322,50 +322,60 @@ struct DermiqResultsView: View {
         .background(DQColor.surfaceElevated, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
     }
 
-    /// The shareable hook: how old the skin *looks*, anchored to the user's real
-    /// age band when known. Framed as an estimate.
-    private func skinAgeCard(_ analysis: DermiqAnalysis) -> some View {
-        let est = DermiqSkinAge.estimate(analysis, ageBand: profiles.first?.ageBand)
+    /// The competitive hook: estimated standing. Overall "Top X%" plus the
+    /// user's STRONGEST metric called out ("Top 8% Glow"). Clearly labeled as
+    /// an estimate against a reference distribution — no fake live leaderboard.
+    private func percentileCard(_ analysis: DermiqAnalysis) -> some View {
+        let top = DermiqPercentile.topPercent(overall: analysis.overall)
+        let best = analysis.subScores.max { $0.value < $1.value }
         return DQCard {
             VStack(alignment: .leading, spacing: 8) {
                 HStack {
-                    Text("SKIN AGE")
+                    Text("YOUR STANDING")
                         .font(DQFont.mono(11, weight: .semibold))
                         .foregroundStyle(DQColor.accentBright)
                     Spacer()
-                    Text("estimate")
+                    Text("est.")
                         .font(DQFont.mono(9, weight: .semibold))
                         .foregroundStyle(DQColor.textSecondary)
                 }
                 HStack(alignment: .firstTextBaseline, spacing: 8) {
-                    Text(verbatim: "\(est.age)")
-                        .font(.system(size: 48, weight: .heavy, design: .rounded).monospacedDigit())
-                        .foregroundStyle(DQColor.accentBright)
-                    Text("years")
-                        .font(DQFont.caption)
-                        .foregroundStyle(DQColor.textSecondary)
+                    HStack(alignment: .firstTextBaseline, spacing: 6) {
+                        Text("Top")
+                        Text(verbatim: "\(top)%")
+                    }
+                    .font(.system(size: 40, weight: .heavy, design: .rounded).monospacedDigit())
+                    .foregroundStyle(DQColor.accentBright)
                     Spacer()
-                    if let d = est.delta, d > 2 {
-                        Image(systemName: "sparkles")
+                    if top <= 25 {
+                        Image(systemName: "trophy.fill")
                             .font(.system(size: 22))
                             .foregroundStyle(DQColor.accentBright)
                     }
                 }
-                Text(skinAgeLine(est.delta))
-                    .font(DQFont.caption)
+                if let best {
+                    let bestTop = DermiqPercentile.topPercent(overall: best.value)
+                    HStack(spacing: 6) {
+                        Image(systemName: "flame.fill")
+                            .font(.system(size: 11, weight: .semibold))
+                            .foregroundStyle(DQColor.accentBright)
+                        Text("Your strongest:")
+                            .font(DQFont.caption)
+                            .foregroundStyle(DQColor.textSecondary)
+                        Text(LocalizedStringKey(best.category.displayName))
+                            .font(DQFont.caption.weight(.semibold))
+                            .foregroundStyle(DQColor.textPrimary)
+                        Text(verbatim: "· Top \(bestTop)%")
+                            .font(DQFont.caption.weight(.semibold))
+                            .foregroundStyle(DQColor.accentBright)
+                    }
+                }
+                Text("Estimated against a typical score distribution — not a live ranking.")
+                    .font(DQFont.micro)
                     .foregroundStyle(DQColor.textSecondary)
                     .fixedSize(horizontal: false, vertical: true)
             }
         }
-    }
-
-    private func skinAgeLine(_ delta: Int?) -> LocalizedStringKey {
-        guard let d = delta else {
-            return "How old your skin looks — from texture, tone and glow."
-        }
-        if d > 2 { return "\(d) years younger than your real age." }
-        if d < -2 { return "\(-d) years to shave off — your plan targets exactly this." }
-        return "Right on track for your age."
     }
 
     /// Honest per-area timeline: the plan targets the three weakest scores, and
