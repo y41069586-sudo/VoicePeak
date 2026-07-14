@@ -56,7 +56,6 @@ struct DermiqResultsView: View {
     /// The paywall doesn't pounce: the blurred chart gets ~1.6s alone on
     /// screen (the tease), THEN the card slides up from the bottom.
     @State private var paywallShown = false
-    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     var body: some View {
         ZStack {
