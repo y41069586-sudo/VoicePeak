@@ -32660,6 +32660,321 @@
           }
         }
       }
+    },
+    "Watch your skin\nget read.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Watch your skin\nget read."
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sieh zu, wie deine\nHaut gelesen wird."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mira cómo se lee\ntu piel."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Regarde ta peau\nse faire lire."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Guarda la tua pelle\nvenire letta."
+          }
+        }
+      }
+    },
+    "A live example. Yours is built from your own scan.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A live example. Yours is built from your own scan."
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ein Live-Beispiel. Deins entsteht aus deinem eigenen Scan."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Un ejemplo en vivo. El tuyo se crea con tu propio escaneo."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Un exemple en direct. Le tien vient de ton propre scan."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Un esempio dal vivo. Il tuo nasce dalla tua scansione."
+          }
+        }
+      }
+    },
+    "Find your\nnumber.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Find your\nnumber."
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Finde deine\nZahl."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Encuentra tu\nnúmero."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Trouve ton\nchiffre."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Trova il tuo\nnumero."
+          }
+        }
+      }
+    },
+    "That was a guess. Yours is measured — one honest scan.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "That was a guess. Yours is measured — one honest scan."
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Das war geraten. Deine wird gemessen — ein ehrlicher Scan."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Eso fue una suposición. El tuyo se mide: un escaneo honesto."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "C'était une supposition. Le tien est mesuré — un scan honnête."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Era un'ipotesi. Il tuo è misurato — una scansione onesta."
+          }
+        }
+      }
+    },
+    "Tap the dial. Watch it hunt for a number it can't really know.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tap the dial. Watch it hunt for a number it can't really know."
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tippe aufs Rad. Sieh zu, wie es eine Zahl sucht, die es nicht kennen kann."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Toca el dial. Míralo buscar un número que no puede saber."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Touche le cadran. Regarde-le chercher un chiffre qu'il ne peut pas connaître."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tocca il quadrante. Guardalo cercare un numero che non può sapere."
+          }
+        }
+      }
+    },
+    "TAP": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "TAP"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "TIPP"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "TOCA"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "TAP"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "TOCCA"
+          }
+        }
+      }
+    },
+    "See your\n14-day glow.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "See your\n14-day glow."
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sieh deinen\n14-Tage-Glow."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mira tu\nglow de 14 días."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vois ton\néclat en 14 jours."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Guarda il tuo\nglow in 14 giorni."
+          }
+        }
+      }
+    },
+    "Some things shift in two weeks, some take longer. Drag to see it — honestly.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Some things shift in two weeks, some take longer. Drag to see it — honestly."
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Manches ändert sich in zwei Wochen, manches dauert länger. Zieh und sieh es — ehrlich."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Algunas cosas cambian en dos semanas, otras tardan más. Arrastra y míralo, con honestidad."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Certaines choses bougent en deux semaines, d'autres prennent plus de temps. Fais glisser pour voir — honnêtement."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Alcune cose cambiano in due settimane, altre richiedono più tempo. Trascina per vederlo — onestamente."
+          }
+        }
+      }
+    },
+    "Drag to reveal your 14 days": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Drag to reveal your 14 days"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Zieh, um deine 14 Tage zu enthüllen"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Arrastra para revelar tus 14 días"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fais glisser pour révéler tes 14 jours"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Trascina per rivelare i tuoi 14 giorni"
+          }
+        }
+      }
     }
   },
   "version": "1.0"
