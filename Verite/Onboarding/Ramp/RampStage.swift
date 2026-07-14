@@ -324,6 +324,87 @@ struct RampGhostButton: View {
     }
 }
 
+/// Press-and-HOLD to commit. The capsule fills left→right while held, haptics
+/// ramp with the fill, and at 100% it fires `onComplete`. Releasing early
+/// drains it back. `onProgress` lets the parent flood the whole screen in sync.
+/// A screen-reader user can trigger it with the accessibility activate action.
+struct RampHoldButton: View {
+    let title: String
+    var systemImage: String? = nil
+    var onProgress: (Double) -> Void = { _ in }
+    let onComplete: () -> Void
+
+    private let holdDuration = 1.3   // seconds to fill
+
+    @State private var pressing = false
+    @State private var progress: Double = 0
+    @State private var lastStep = 0
+    @State private var done = false
+
+    var body: some View {
+        ZStack {
+            Capsule().fill(RampStage.accent.opacity(0.14))
+            GeometryReader { geo in
+                Capsule()
+                    .fill(LinearGradient(colors: [RampStage.accent, RampStage.accentDeep],
+                                         startPoint: .leading, endPoint: .trailing))
+                    .frame(width: geo.size.width * progress)
+            }
+            HStack(spacing: 8) {
+                if let systemImage { Image(systemName: systemImage) }
+                Text(LocalizedStringKey(title))
+            }
+            .font(.system(size: 17, weight: .bold, design: .rounded))
+            .foregroundStyle(progress > 0.5 ? Color.white : RampStage.accentDeep)
+        }
+        .frame(maxWidth: .infinity, minHeight: 58)
+        .clipShape(Capsule())
+        .overlay(Capsule().strokeBorder(RampStage.accent, lineWidth: 1.5))
+        .scaleEffect(pressing ? 0.98 : 1)
+        .animation(.easeOut(duration: 0.15), value: pressing)
+        .contentShape(Capsule())
+        .gesture(
+            DragGesture(minimumDistance: 0)
+                .onChanged { _ in if !pressing { pressing = true } }
+                .onEnded { _ in pressing = false }
+        )
+        .task(id: pressing) { await drive() }
+        .accessibilityElement()
+        .accessibilityLabel(Text(LocalizedStringKey(title)))
+        .accessibilityHint(Text(LocalizedStringKey("Press and hold to start")))
+        .accessibilityAction { fire() }
+    }
+
+    private func drive() async {
+        if pressing {
+            while progress < 1 {
+                try? await Task.sleep(for: .milliseconds(16))
+                if !pressing || Task.isCancelled { return }
+                progress = min(1, progress + 0.016 / holdDuration)
+                onProgress(progress)
+                let step = Int(progress * 5)
+                if step != lastStep { lastStep = step; Haptics.fire(.tick) }
+            }
+            fire()
+        } else {
+            while progress > 0 {
+                try? await Task.sleep(for: .milliseconds(16))
+                if pressing || Task.isCancelled { return }
+                progress = max(0, progress - 0.06)
+                onProgress(progress)
+            }
+            lastStep = 0
+        }
+    }
+
+    private func fire() {
+        guard !done else { return }
+        done = true
+        Haptics.fire(.milestone)
+        onComplete()
+    }
+}
+
 // ============================================================
 // MARK: — Answer tile (the heart of the redesign)
 // ============================================================

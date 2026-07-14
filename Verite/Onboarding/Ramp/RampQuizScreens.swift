@@ -64,6 +64,172 @@ struct RampQuizScreen: View {
 }
 
 // ============================================================
+// MARK: — Swipe-stack concern picker (tactile single-select)
+// ============================================================
+
+/// The mirror-concern question as a swipeable card deck: swipe a card RIGHT to
+/// pick it (that IS the answer + advance), LEFT to skip to the next. Far more
+/// tactile than a list, and it makes the choice feel like a decision.
+struct RampSwipeConcernScreen: View {
+    var chapter: String? = nil
+    let question: String
+    let onSelect: (String) -> Void
+
+    private let concerns = RampQuizAnswers.MirrorConcern.allCases
+
+    @State private var index = 0
+    @State private var drag: CGSize = .zero
+    @State private var gone = false
+
+    var body: some View {
+        VStack(spacing: 0) {
+            Spacer().frame(height: VSpace.xxl * 1.3)
+
+            if let chapter {
+                Text(LocalizedStringKey(chapter))
+                    .font(VType.micro).tracking(3)
+                    .foregroundStyle(RampStage.accentDeep)
+            }
+            Text(LocalizedStringKey(question))
+                .font(RampStage.serif(24))
+                .foregroundStyle(RampStage.ink)
+                .multilineTextAlignment(.center)
+                .fixedSize(horizontal: false, vertical: true)
+                .padding(.horizontal, VSpace.lg)
+                .padding(.top, VSpace.sm)
+
+            Spacer()
+
+            ZStack {
+                // The next card peeks behind.
+                cardView(concerns[(index + 1) % concerns.count])
+                    .scaleEffect(0.93)
+                    .offset(y: 18)
+                    .opacity(0.55)
+
+                // The active card — draggable.
+                cardView(concerns[index])
+                    .offset(drag)
+                    .rotationEffect(.degrees(Double(drag.width) / 18))
+                    .overlay(alignment: .topLeading) {
+                        badge("SKIP", color: RampStage.textTertiary,
+                              show: drag.width < -30, rotate: -12).padding(20)
+                    }
+                    .overlay(alignment: .topTrailing) {
+                        badge("PICK", color: RampStage.accent,
+                              show: drag.width > 30, rotate: 12).padding(20)
+                    }
+                    .id(index)
+                    .transition(.asymmetric(
+                        insertion: .scale(scale: 0.92).combined(with: .opacity),
+                        removal: .opacity))
+                    .gesture(
+                        DragGesture()
+                            .onChanged { drag = $0.translation }
+                            .onEnded { g in
+                                if g.translation.width > 110 { pick(g.translation.height) }
+                                else if g.translation.width < -110 { skip(g.translation.height) }
+                                else { withAnimation(.spring(response: 0.35, dampingFraction: 0.7)) { drag = .zero } }
+                            }
+                    )
+            }
+            .frame(height: 372)
+
+            Spacer()
+
+            HStack(spacing: 22) {
+                Label("SKIP", systemImage: "arrow.left")
+                    .foregroundStyle(RampStage.textTertiary)
+                Text(verbatim: "\(index + 1) / \(concerns.count)")
+                    .foregroundStyle(RampStage.textSecondary).monospacedDigit()
+                Label("PICK", systemImage: "arrow.right")
+                    .labelStyle(.trailingIcon)
+                    .foregroundStyle(RampStage.accentDeep)
+            }
+            .font(VType.micro)
+            .tracking(1)
+            .padding(.bottom, VSpace.xl)
+        }
+    }
+
+    private func pick(_ dy: CGFloat) {
+        guard !gone else { return }
+        gone = true
+        Haptics.fire(.selection)
+        withAnimation(.easeIn(duration: 0.28)) { drag = CGSize(width: 720, height: dy) }
+        onSelect(concerns[index].rawValue)
+    }
+
+    private func skip(_ dy: CGFloat) {
+        Haptics.fire(.tick)
+        withAnimation(.easeIn(duration: 0.24), completion: {
+            withAnimation(.spring(response: 0.32, dampingFraction: 0.78)) {
+                index = (index + 1) % concerns.count
+                drag = .zero
+            }
+        }) {
+            drag = CGSize(width: -720, height: dy)
+        }
+    }
+
+    private func cardView(_ concern: RampQuizAnswers.MirrorConcern) -> some View {
+        VStack(spacing: 16) {
+            Image(systemName: concern.icon)
+                .font(.system(size: 38, weight: .regular))
+                .foregroundStyle(RampStage.accentDeep)
+                .frame(width: 92, height: 92)
+                .background(RampStage.accentSoft, in: Circle())
+            Text(LocalizedStringKey(concern.label))
+                .font(RampStage.serif(24, weight: .semibold))
+                .foregroundStyle(RampStage.ink)
+            Text(LocalizedStringKey(descriptor(concern)))
+                .font(VType.body)
+                .foregroundStyle(RampStage.textSecondary)
+                .multilineTextAlignment(.center)
+                .fixedSize(horizontal: false, vertical: true)
+        }
+        .padding(28)
+        .frame(width: 282, height: 336)
+        .background(Color.white, in: RoundedRectangle(cornerRadius: 26, style: .continuous))
+        .overlay(RoundedRectangle(cornerRadius: 26, style: .continuous)
+            .strokeBorder(RampStage.hairline, lineWidth: 1))
+        .shadow(color: RampStage.accent.opacity(0.16), radius: 22, y: 12)
+    }
+
+    private func badge(_ text: String, color: Color, show: Bool, rotate: Double) -> some View {
+        Text(LocalizedStringKey(text))
+            .font(.system(size: 15, weight: .heavy, design: .rounded)).tracking(1)
+            .foregroundStyle(color)
+            .padding(.horizontal, 12).padding(.vertical, 6)
+            .overlay(RoundedRectangle(cornerRadius: 8, style: .continuous)
+                .strokeBorder(color, lineWidth: 2))
+            .rotationEffect(.degrees(rotate))
+            .opacity(show ? 1 : 0)
+    }
+
+    private func descriptor(_ c: RampQuizAnswers.MirrorConcern) -> String {
+        switch c {
+        case .breakouts: return "Spots and congestion"
+        case .redness:   return "Flushing and irritation"
+        case .pores:     return "Visible pores and oil"
+        case .texture:   return "Rough, uneven surface"
+        case .dullness:  return "Tired, lacking glow"
+        case .nothing:   return "Nothing jumps out"
+        }
+    }
+}
+
+/// A label with its icon on the trailing side (used by the swipe hints).
+private struct TrailingIconLabelStyle: LabelStyle {
+    func makeBody(configuration: Configuration) -> some View {
+        HStack(spacing: 4) { configuration.title; configuration.icon }
+    }
+}
+extension LabelStyle where Self == TrailingIconLabelStyle {
+    static var trailingIcon: TrailingIconLabelStyle { TrailingIconLabelStyle() }
+}
+
+// ============================================================
 // MARK: — The Name (optional, personalizes everything after)
 // ============================================================
 

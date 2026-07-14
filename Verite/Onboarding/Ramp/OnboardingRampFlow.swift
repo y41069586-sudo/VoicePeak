@@ -83,13 +83,9 @@ struct OnboardingRampFlow: View {
                 recordAnswer(question: "self_rating", answer: id)
             }
         case .quizConcern:
-            RampQuizScreen(
+            RampSwipeConcernScreen(
                 chapter: "YOUR SKIN · TWO OF THREE",
-                question: "What draws your eye in the mirror?",
-                options: RampQuizAnswers.MirrorConcern.allCases.map {
-                    RampQuizOption(id: $0.rawValue, label: $0.label, icon: $0.icon)
-                },
-                selectedID: answers.concern?.rawValue
+                question: "What draws your eye in the mirror?"
             ) { id in
                 answers.concern = RampQuizAnswers.MirrorConcern(rawValue: id)
                 recordAnswer(question: "mirror_concern", answer: id)

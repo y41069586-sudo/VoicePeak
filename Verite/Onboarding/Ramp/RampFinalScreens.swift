@@ -807,52 +807,66 @@ struct RampHandoffScreen: View {
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var shown = false
     @State private var starting = false
+    @State private var holdProgress: Double = 0
 
     var body: some View {
-        VStack(spacing: 0) {
-            Spacer()
+        ZStack(alignment: .bottom) {
+            // The screen floods with blue from the bottom as the user holds.
+            Rectangle()
+                .fill(LinearGradient(colors: [RampStage.accent.opacity(0),
+                                              RampStage.accent.opacity(0.42)],
+                                     startPoint: .top, endPoint: .bottom))
+                .frame(maxWidth: .infinity)
+                .frame(height: 900 * holdProgress)
+                .ignoresSafeArea()
+                .allowsHitTesting(false)
 
-            VStack(spacing: VSpace.md) {
-                Text("READY WHEN YOU ARE")
-                    .font(VType.micro)
-                    .tracking(3)
-                    .foregroundStyle(RampStage.accentDeep)
-                Text("Now, the\nreal you.")
-                    .font(RampStage.serif(32))
-                    .foregroundStyle(RampStage.ink)
-                    .multilineTextAlignment(.center)
-                    .lineSpacing(3)
-                Text("Good light, no filter. One photo, and the estimate becomes your number.")
-                    .font(VType.body)
-                    .foregroundStyle(RampStage.textSecondary)
-                    .multilineTextAlignment(.center)
-                    .fixedSize(horizontal: false, vertical: true)
-            }
-            .padding(.horizontal, VSpace.xl)
-            .opacity(shown ? 1 : 0)
-            .offset(y: shown ? 0 : 12)
+            VStack(spacing: 0) {
+                Spacer()
 
-            Spacer()
-
-            VStack(spacing: VSpace.sm) {
-                RampPrimaryButton(title: "Scan my skin", systemImage: "camera.fill") {
-                    guard !starting else { return }
-                    starting = true
-                    Task {
-                        let granted = await CameraPermission.request()
-                        RampAnalytics.track("onboarding_camera_permission",
-                                            ["granted": String(granted)])
-                        onComplete()
-                    }
+                VStack(spacing: VSpace.md) {
+                    Text("READY WHEN YOU ARE")
+                        .font(VType.micro)
+                        .tracking(3)
+                        .foregroundStyle(RampStage.accentDeep)
+                    Text("Now, the\nreal you.")
+                        .font(RampStage.serif(32))
+                        .foregroundStyle(RampStage.ink)
+                        .multilineTextAlignment(.center)
+                        .lineSpacing(3)
+                    Text("Good light, no filter. One photo, and the estimate becomes your number.")
+                        .font(VType.body)
+                        .foregroundStyle(RampStage.textSecondary)
+                        .multilineTextAlignment(.center)
+                        .fixedSize(horizontal: false, vertical: true)
                 }
-                Text("Your reading card and 14-day plan are built from this first scan.")
-                    .font(VType.micro)
-                    .foregroundStyle(RampStage.textTertiary)
-                    .multilineTextAlignment(.center)
-            }
-            .padding(.horizontal, VSpace.lg)
+                .padding(.horizontal, VSpace.xl)
+                .opacity(shown ? 1 : 0)
+                .offset(y: shown ? 0 : 12)
 
-            Spacer().frame(height: VSpace.xxl)
+                Spacer()
+
+                VStack(spacing: VSpace.sm) {
+                    RampHoldButton(title: "Hold to scan", systemImage: "camera.fill",
+                                   onProgress: { holdProgress = $0 }) {
+                        guard !starting else { return }
+                        starting = true
+                        Task {
+                            let granted = await CameraPermission.request()
+                            RampAnalytics.track("onboarding_camera_permission",
+                                                ["granted": String(granted)])
+                            onComplete()
+                        }
+                    }
+                    Text("Your reading card and 14-day plan are built from this first scan.")
+                        .font(VType.micro)
+                        .foregroundStyle(RampStage.textTertiary)
+                        .multilineTextAlignment(.center)
+                }
+                .padding(.horizontal, VSpace.lg)
+
+                Spacer().frame(height: VSpace.xxl)
+            }
         }
         .task {
             try? await Task.sleep(for: .milliseconds(reduceMotion ? 100 : 500))
