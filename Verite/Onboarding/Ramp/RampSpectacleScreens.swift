@@ -1,4 +1,7 @@
 import SwiftUI
+#if canImport(UIKit)
+import UIKit
+#endif
 
 // ============================================================
 // MARK: — Screen 0: Opening
@@ -280,153 +283,142 @@ private struct RampIntroSmile: Shape {
 }
 
 // ============================================================
-// MARK: — Screen 1: A Reading (the outcome, shown first)
+// MARK: — Screen 1: A Reading (the real results chart, previewed)
 // ============================================================
 
-/// The genre's strongest opener: show the artifact the user will own BEFORE
-/// asking for anything. An illustrative reading card — clearly labeled, no
-/// invented people, no faces — cycles through a few example scores.
+/// The strongest opener: the exact chart the app produces after a scan — a
+/// circular photo above a two-column metric grid, the numbers counting up from
+/// zero and resolving from a blur, just like the real reveal. Illustrative
+/// data + a stock example face; the user's own is built from their scan.
 struct RampSampleReadingScreen: View {
     let onAdvance: () -> Void
 
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
-    @State private var index = 0
+    @State private var reveal: Double = 0        // 0 → 1 count-up driver
+    @State private var blurAmount: CGFloat = 12  // resolves to 0 as it lands
 
-    private let samples = RampSampleReading.samples
+    // Illustrative reading — Overall leads, then five sub-scores.
+    private let cells: [(String, Int, Bool)] = [
+        ("Overall", 78, true),
+        ("Glow", 83, false),
+        ("Hydration", 71, false),
+        ("Texture", 74, false),
+        ("Redness", 69, false),
+        ("Evenness", 76, false),
+    ]
+
+    private let columns = [GridItem(.flexible(), spacing: 20),
+                           GridItem(.flexible(), spacing: 20)]
 
     var body: some View {
         VStack(spacing: 0) {
-            Spacer().frame(height: VSpace.xxl * 1.6)
+            Spacer().frame(height: VSpace.xxl * 1.1)
 
-            Text("Your skin, as a\nsingle honest page.")
-                .font(RampStage.serif(25))
+            Text("Your skin,\nfully read.")
+                .font(RampStage.serif(26))
                 .foregroundStyle(RampStage.ink)
                 .multilineTextAlignment(.center)
                 .lineSpacing(2)
 
+            Text("The exact chart your first scan builds — photo and all.")
+                .font(VType.caption)
+                .foregroundStyle(RampStage.textSecondary)
+                .multilineTextAlignment(.center)
+                .fixedSize(horizontal: false, vertical: true)
+                .padding(.horizontal, VSpace.xl)
+                .padding(.top, VSpace.sm)
+
             Spacer()
 
-            RampSampleReadingCard(sample: samples[index])
-                .id(index)
-                .transition(.opacity)
+            chartCard
+                .padding(.horizontal, VSpace.xl)
 
-            // Cycle dots
-            HStack(spacing: 6) {
-                ForEach(samples.indices, id: \.self) { i in
-                    Capsule()
-                        .fill(i == index ? RampStage.accent : RampStage.hair)
-                        .frame(width: i == index ? 18 : 6, height: 4)
-                }
-            }
-            .padding(.top, VSpace.md)
+            Spacer()
 
             Text("Illustrative reading. Yours is built from your scan.")
                 .font(VType.micro)
                 .foregroundStyle(RampStage.textTertiary)
-                .padding(.top, VSpace.xs)
-
-            Spacer()
 
             RampPrimaryButton(title: "I want mine") { onAdvance() }
                 .padding(.horizontal, VSpace.lg)
+                .padding(.top, VSpace.md)
             Spacer().frame(height: VSpace.xxl)
         }
         .task {
-            guard !reduceMotion else { return }
-            while !Task.isCancelled {
-                try? await Task.sleep(for: .milliseconds(1500))
-                guard !Task.isCancelled else { return }
-                withAnimation(.easeInOut(duration: 0.5)) {
-                    index = (index + 1) % samples.count
-                }
-            }
+            if reduceMotion { reveal = 1; blurAmount = 0; return }
+            try? await Task.sleep(for: .milliseconds(320))
+            withAnimation(.easeOut(duration: 1.15)) { reveal = 1 }
+            withAnimation(.easeOut(duration: 1.3)) { blurAmount = 0 }
         }
     }
-}
 
-/// One illustrative reading: an overall score + per-metric levels.
-struct RampSampleReading {
-    let overall: Int
-    let metrics: [(String, Double)] // label, 0…1
-
-    static let samples: [RampSampleReading] = [
-        RampSampleReading(overall: 74, metrics: [
-            ("Texture", 0.71), ("Redness", 0.66), ("Pores", 0.78),
-            ("Evenness", 0.73), ("Glow", 0.81), ("Hydration", 0.69), ("Blemishes", 0.84),
-        ]),
-        RampSampleReading(overall: 62, metrics: [
-            ("Texture", 0.55), ("Redness", 0.48), ("Pores", 0.66),
-            ("Evenness", 0.61), ("Glow", 0.58), ("Hydration", 0.72), ("Blemishes", 0.70),
-        ]),
-        RampSampleReading(overall: 86, metrics: [
-            ("Texture", 0.84), ("Redness", 0.88), ("Pores", 0.82),
-            ("Evenness", 0.87), ("Glow", 0.90), ("Hydration", 0.83), ("Blemishes", 0.89),
-        ]),
-    ]
-}
-
-/// The card itself — white paper on the porcelain stage, serif score,
-/// seven quiet metric rows. This exact layout returns as the user's own
-/// shareable Reading Card after the first scan.
-struct RampSampleReadingCard: View {
-    let sample: RampSampleReading
-
-    var body: some View {
-        VStack(spacing: 0) {
-            HStack {
-                Text(verbatim: Brand.name.uppercased())
-                    .font(VType.micro).tracking(4)
-                    .foregroundStyle(RampStage.accentDeep)
-                Spacer()
-                Text("READING")
-                    .font(VType.micro).tracking(4)
-                    .foregroundStyle(RampStage.textTertiary)
-            }
-
-            HStack(alignment: .firstTextBaseline, spacing: 6) {
-                Text(verbatim: "\(sample.overall)")
-                    .font(RampStage.serif(56))
-                    .foregroundStyle(RampStage.ink)
-                    .contentTransition(.numericText())
-                Text(verbatim: "/ 100")
-                    .font(VType.caption)
-                    .foregroundStyle(RampStage.textTertiary)
-            }
-            .padding(.vertical, VSpace.sm)
-
-            VStack(spacing: 9) {
-                ForEach(sample.metrics, id: \.0) { metric in
-                    HStack(spacing: 10) {
-                        Text(metric.0)
-                            .font(VType.caption)
-                            .foregroundStyle(RampStage.textSecondary)
-                            .frame(width: 74, alignment: .leading)
-                        GeometryReader { proxy in
-                            ZStack(alignment: .leading) {
-                                Capsule().fill(RampStage.hair.opacity(0.55))
-                                Capsule()
-                                    .fill(RampStage.accent)
-                                    .frame(width: proxy.size.width * metric.1)
-                            }
-                        }
-                        .frame(height: 4)
-                        Text(verbatim: "\(Int(metric.1 * 100))")
-                            .font(VType.captionBold)
-                            .foregroundStyle(RampStage.accentDeep)
-                            .monospacedDigit()
-                            .frame(width: 24, alignment: .trailing)
-                    }
+    /// The card: circular photo straddling the top of a metric grid — the
+    /// real results layout.
+    private var chartCard: some View {
+        ZStack(alignment: .top) {
+            LazyVGrid(columns: columns, alignment: .leading, spacing: 18) {
+                ForEach(cells.indices, id: \.self) { i in
+                    metricCell(cells[i].0, cells[i].1, lead: cells[i].2)
                 }
             }
+            .padding(.horizontal, 20)
+            .padding(.top, 74)
+            .padding(.bottom, 22)
+            .frame(maxWidth: .infinity)
+            .background(Color.white, in: RoundedRectangle(cornerRadius: 26, style: .continuous))
+            .overlay(RoundedRectangle(cornerRadius: 26, style: .continuous)
+                .strokeBorder(RampStage.hairline, lineWidth: 1))
+            .shadow(color: RampStage.accent.opacity(0.16), radius: 26, y: 14)
+
+            avatar
+                .offset(y: -56)
         }
-        .padding(VSpace.lg)
-        .frame(width: 290)
-        .background(Color.white.opacity(0.72), in: RoundedRectangle(cornerRadius: 22, style: .continuous))
-        .overlay(
-            RoundedRectangle(cornerRadius: 22, style: .continuous)
-                .strokeBorder(RampStage.hairline, lineWidth: 1)
-        )
-        .shadow(color: RampStage.accent.opacity(0.18), radius: 26, y: 14)
+        .padding(.top, 56)
+    }
+
+    private func metricCell(_ label: String, _ value: Int, lead: Bool) -> some View {
+        let shown = Int((Double(value) * reveal).rounded())
+        return VStack(alignment: .leading, spacing: 6) {
+            Text(LocalizedStringKey(label))
+                .font(.system(size: 13, weight: .semibold, design: .rounded))
+                .foregroundStyle(RampStage.textSecondary)
+                .lineLimit(1)
+            Text(verbatim: "\(shown)")
+                .font(.system(size: 26, weight: .heavy, design: .rounded).monospacedDigit())
+                .foregroundStyle(lead ? RampStage.accentDeep : RampStage.ink)
+                .contentTransition(.numericText(value: Double(shown)))
+                .blur(radius: blurAmount)
+            GeometryReader { proxy in
+                ZStack(alignment: .leading) {
+                    Capsule().fill(RampStage.hair.opacity(0.7))
+                    Capsule()
+                        .fill(lead ? RampStage.accentDeep : RampStage.accent)
+                        .frame(width: proxy.size.width * CGFloat(shown) / 100)
+                }
+            }
+            .frame(height: 6)
+        }
+    }
+
+    /// The example face, in a ringed circle — exactly like the captured avatar
+    /// on the real results screen.
+    private var avatar: some View {
+        Group {
+            #if canImport(UIKit)
+            if let ui = RampPhoto.load("SampleFace") {
+                Image(uiImage: ui).resizable().scaledToFill()
+            } else {
+                Circle().fill(RampStage.accentSoft)
+            }
+            #else
+            Circle().fill(RampStage.accentSoft)
+            #endif
+        }
+        .frame(width: 108, height: 108)
+        .clipShape(Circle())
+        .overlay(Circle().strokeBorder(Color.white, lineWidth: 4))
+        .overlay(Circle().strokeBorder(RampStage.accentSoft, lineWidth: 4).padding(-4))
+        .shadow(color: RampStage.accent.opacity(0.28), radius: 14, y: 8)
     }
 }
 

@@ -32975,6 +32975,76 @@
           }
         }
       }
+    },
+    "Your skin,\nfully read.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Your skin,\nfully read."
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Deine Haut,\nkomplett gelesen."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tu piel,\ncompletamente leída."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ta peau,\nentièrement lue."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "La tua pelle,\nletta a fondo."
+          }
+        }
+      }
+    },
+    "The exact chart your first scan builds — photo and all.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The exact chart your first scan builds — photo and all."
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Genau die Auswertung, die dein erster Scan erstellt — mit Foto."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "El gráfico exacto que crea tu primer escaneo, con foto incluida."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Le graphique exact que ton premier scan crée — photo comprise."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Il grafico esatto che crea la tua prima scansione — foto inclusa."
+          }
+        }
+      }
     }
   },
   "version": "1.0"
