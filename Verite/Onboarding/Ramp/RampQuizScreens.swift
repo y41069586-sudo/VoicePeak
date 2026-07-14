@@ -169,13 +169,13 @@ struct RampSwipeQuizScreen: View {
 
     private func skip(_ dy: CGFloat) {
         Haptics.fire(.tick)
-        withAnimation(.easeIn(duration: 0.24), completion: {
+        withAnimation(.easeIn(duration: 0.24)) {
+            drag = CGSize(width: -720, height: dy)
+        } completion: {
             withAnimation(.spring(response: 0.32, dampingFraction: 0.78)) {
                 index = (index + 1) % options.count
                 drag = .zero
             }
-        }) {
-            drag = CGSize(width: -720, height: dy)
         }
     }
 
