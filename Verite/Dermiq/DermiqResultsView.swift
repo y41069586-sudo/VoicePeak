@@ -327,8 +327,9 @@ struct DermiqResultsView: View {
     /// as "everything fixed in two weeks".
     private func expectationsCard(_ analysis: DermiqAnalysis) -> some View {
         let targeted = analysis.weakestThree
+        let order: [DermiqProjection.Horizon] = [.fast, .gradual, .slow]
         let groups: [(DermiqProjection.Horizon, [DermiqSubScore])] =
-            [.fast, .gradual, .slow].compactMap { horizon in
+            order.compactMap { horizon in
                 let scores = targeted.filter { DermiqProjection.horizon(for: $0.category) == horizon }
                 return scores.isEmpty ? nil : (horizon, scores)
             }
