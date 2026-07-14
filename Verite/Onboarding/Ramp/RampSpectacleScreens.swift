@@ -528,16 +528,32 @@ struct RampSplitScreen: View {
                 .multilineTextAlignment(.center)
                 .lineSpacing(2)
 
-            Spacer().frame(height: VSpace.xxl * 1.4)
+            Text("Some things shift in two weeks. Some take longer. We'll be honest about which.")
+                .font(VType.caption)
+                .foregroundStyle(RampStage.textSecondary)
+                .multilineTextAlignment(.center)
+                .fixedSize(horizontal: false, vertical: true)
+                .padding(.horizontal, VSpace.xl)
+                .padding(.top, VSpace.sm)
+
+            Spacer().frame(height: VSpace.xxl * 1.1)
 
             VStack(spacing: VSpace.md) {
                 ForEach(RampSplitMetric.samples.indices, id: \.self) { i in
                     let metric = RampSplitMetric.samples[i]
                     VStack(alignment: .leading, spacing: 6) {
-                        HStack {
-                            Text(metric.label)
+                        HStack(spacing: 7) {
+                            Text(LocalizedStringKey(metric.label))
                                 .font(VType.caption)
                                 .foregroundStyle(RampStage.textSecondary)
+                            Text(LocalizedStringKey(metric.tag))
+                                .font(VType.micro)
+                                .foregroundStyle(metric.tag == "Slower"
+                                                 ? RampStage.textTertiary : RampStage.accentDeep)
+                                .padding(.horizontal, 6).padding(.vertical, 1)
+                                .background((metric.tag == "Slower"
+                                             ? RampStage.hair : RampStage.accent.opacity(0.14)),
+                                            in: Capsule())
                             Spacer()
                             Text(verbatim: "\(Int(metric.value(at: t) * 100))")
                                 .font(VType.captionBold)
@@ -609,8 +625,12 @@ struct RampSplitScreen: View {
 }
 
 /// One metric bar on the Split screen — interpolates before→after by `t`.
+/// The after-values are deliberately UNEVEN: fast movers (hydration, glow)
+/// climb a lot in two weeks, slow ones (texture) barely — the honest message
+/// is built into the bars, not just the caption.
 private struct RampSplitMetric {
     let label: String
+    let tag: String      // "Fast" / "Gradual" / "Slower"
     let before: Double
     let after: Double
 
@@ -619,10 +639,10 @@ private struct RampSplitMetric {
     }
 
     static let samples: [RampSplitMetric] = [
-        RampSplitMetric(label: "Texture",  before: 0.42, after: 0.83),
-        RampSplitMetric(label: "Redness",  before: 0.50, after: 0.79),
-        RampSplitMetric(label: "Evenness", before: 0.46, after: 0.81),
-        RampSplitMetric(label: "Glow",     before: 0.38, after: 0.87),
+        RampSplitMetric(label: "Hydration", tag: "Fast",    before: 0.40, after: 0.78),
+        RampSplitMetric(label: "Glow",      tag: "Fast",    before: 0.38, after: 0.72),
+        RampSplitMetric(label: "Redness",   tag: "Gradual", before: 0.50, after: 0.67),
+        RampSplitMetric(label: "Texture",   tag: "Slower",  before: 0.44, after: 0.55),
     ]
 }
 
