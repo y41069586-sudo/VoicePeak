@@ -236,19 +236,32 @@ struct DermiqResultsView: View {
         let columns = [GridItem(.flexible(), spacing: 22),
                        GridItem(.flexible(), spacing: 22)]
         return ZStack(alignment: .top) {
-            LazyVGrid(columns: columns, alignment: .leading, spacing: 20) {
-                metricCell(label: "Overall",
-                           now: analysis.overall,
-                           projected: projection.overall,
-                           lead: true, locked: locked,
-                           reveal: countReveal, pulse: overallPulse)
-                ForEach(analysis.subScores) { score in
-                    metricCell(label: score.category.displayName,
-                               now: score.value,
-                               projected: projection.value(for: score.category) ?? score.value,
-                               lead: false, locked: locked,
-                               reveal: countReveal)
+            VStack(spacing: 14) {
+                LazyVGrid(columns: columns, alignment: .leading, spacing: 20) {
+                    metricCell(label: "Overall",
+                               now: analysis.overall,
+                               projected: projection.overall,
+                               lead: true, locked: locked,
+                               reveal: countReveal, pulse: overallPulse)
+                    ForEach(analysis.subScores) { score in
+                        metricCell(label: score.category.displayName,
+                                   now: score.value,
+                                   projected: projection.value(for: score.category) ?? score.value,
+                                   lead: false, locked: locked,
+                                   reveal: countReveal)
+                    }
                 }
+                // Reading key — without this, "Blemishes 80" reads like a lot
+                // of blemishes. Every metric is scored the same way up.
+                HStack(spacing: 5) {
+                    Image(systemName: "arrow.up.circle.fill")
+                        .font(.system(size: 10, weight: .semibold))
+                        .foregroundStyle(DQColor.accentBright)
+                    Text("Every score runs 0–100 — higher is always better.")
+                        .font(DQFont.micro)
+                        .foregroundStyle(DQColor.textSecondary)
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
             }
             .padding(.horizontal, 20)
             .padding(.top, 76)

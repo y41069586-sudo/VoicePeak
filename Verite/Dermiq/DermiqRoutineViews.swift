@@ -51,58 +51,17 @@ struct DermiqRoutineGenView: View {
                 .padding(.horizontal, 36)
                 .padding(.vertical, 10)
 
-            auditCard
+            // One quiet line instead of the old "BUILT FROM" receipt card —
+            // the plan reads ALL seven metrics now, not a shortlist.
+            Text("Built from all seven of your readings.")
+                .font(DQFont.micro)
+                .foregroundStyle(DQColor.textSecondary)
+                .multilineTextAlignment(.center)
                 .padding(.horizontal, 32)
                 .padding(.bottom, 40)
         }
         .background(DQColor.background.ignoresSafeArea())
         .task { await travel() }
-    }
-
-    /// The receipt: exactly WHICH readings and answers this plan is built
-    /// from. This is what makes the routine feel checked, not templated.
-    private var auditCard: some View {
-        let targets = model.analysis?.weakestThree ?? []
-        let prefs = SkinPrefs.load()
-        return VStack(spacing: 9) {
-            Text("BUILT FROM")
-                .font(DQFont.mono(9, weight: .semibold)).tracking(2)
-                .foregroundStyle(DQColor.textSecondary)
-            HStack(spacing: 6) {
-                ForEach(targets) { target in
-                    HStack(spacing: 4) {
-                        Text(LocalizedStringKey(target.category.displayName))
-                            .font(.system(size: 11, weight: .semibold, design: .rounded))
-                        Text(verbatim: "\(target.value)")
-                            .font(.system(size: 11, weight: .heavy, design: .rounded).monospacedDigit())
-                    }
-                    .foregroundStyle(DQColor.accentBright)
-                    .padding(.horizontal, 9)
-                    .padding(.vertical, 5)
-                    .background(DQColor.accentSoft.opacity(0.7), in: Capsule())
-                }
-            }
-            if let prefs {
-                // Runtime lookup so the quiz answers appear in the UI language.
-                let feelName = String(localized: String.LocalizationValue(prefs.feel.displayName))
-                let concernName = String(localized: String.LocalizationValue(prefs.concern.displayName))
-                Text(verbatim: "+ \(feelName) · \(concernName)")
-                    .font(.system(size: 11.5, weight: .semibold, design: .rounded))
-                    .foregroundStyle(DQColor.textSecondary)
-            }
-            Text("Every step in your plan is tied to one of these inputs.")
-                .font(DQFont.micro)
-                .foregroundStyle(DQColor.textSecondary)
-                .multilineTextAlignment(.center)
-        }
-        .padding(.vertical, 12)
-        .padding(.horizontal, 14)
-        .frame(maxWidth: .infinity)
-        .background(DQColor.surface, in: RoundedRectangle(cornerRadius: DQRadius.card, style: .continuous))
-        .overlay(
-            RoundedRectangle(cornerRadius: DQRadius.card, style: .continuous)
-                .strokeBorder(DQColor.stroke, lineWidth: 1)
-        )
     }
 
     /// Drives the trip: hold for the screen entrance, pop day 1, then run the
@@ -410,28 +369,31 @@ struct DermiqRoutineTab: View {
     private func activePlan(_ plan: RoutinePlan) -> some View {
         let today = plan.dayIndex()
         return VStack(alignment: .leading, spacing: 20) {
+            // Structure: what do I do TODAY first (header → days → AM/PM),
+            // then the meta layer (kit, irritation, AI verdict) below it.
             header(plan, today: today)
                 .vStaggeredAppear(index: 0)
-            recoveryCard(plan, today: today)
-                .vStaggeredAppear(index: 1)
-            if let summary = RoutineAIReview.summary(for: plan) {
-                aiCheckCard(summary)
-                    .vStaggeredAppear(index: 1)
-            }
-            kitCard(plan)
-                .vStaggeredAppear(index: 1)
             dayGrid(plan, today: today)
                 .vStaggeredAppear(index: 1)
 
             if plan.rescanUnlocked {
                 rescanCard
-                    .vStaggeredAppear(index: 2)
+                    .vStaggeredAppear(index: 1)
             }
 
             blockCard(plan, day: today, block: .am, title: "Morning", icon: "sun.max.fill")
-                .vStaggeredAppear(index: 2)
+                .vStaggeredAppear(index: 1)
             blockCard(plan, day: today, block: .pm, title: "Evening", icon: "moon.stars.fill")
+                .vStaggeredAppear(index: 2)
+
+            kitCard(plan)
                 .vStaggeredAppear(index: 3)
+            recoveryCard(plan, today: today)
+                .vStaggeredAppear(index: 3)
+            if let summary = RoutineAIReview.summary(for: plan) {
+                aiCheckCard(summary)
+                    .vStaggeredAppear(index: 3)
+            }
         }
         .padding(.horizontal, 20)
         .padding(.top, 18)
@@ -458,7 +420,7 @@ struct DermiqRoutineTab: View {
                 Text("Day \(today)")
                     .font(.system(size: 34, weight: .heavy, design: .rounded))
                     .foregroundStyle(DQColor.textPrimary)
-                Text(verbatim: "of 14")
+                Text("of 14")
                     .font(.system(size: 17, weight: .semibold, design: .rounded))
                     .foregroundStyle(DQColor.textSecondary)
                 Spacer()
@@ -477,9 +439,10 @@ struct DermiqRoutineTab: View {
                 }
             }
 
-            // The three targets — quiet little chips, no borders shouting.
+            // Focus chips: the plan reads all seven metrics, the header shows
+            // the top-priority three so the row never overflows.
             HStack(spacing: 6) {
-                ForEach(plan.targets) { target in
+                ForEach(Array(plan.targets.prefix(3))) { target in
                     Text(LocalizedStringKey(target.category.displayName))
                         .font(.system(size: 11.5, weight: .semibold, design: .rounded))
                         .foregroundStyle(DQColor.accentBright)
@@ -487,6 +450,14 @@ struct DermiqRoutineTab: View {
                         .padding(.horizontal, 9)
                         .padding(.vertical, 5)
                         .background(DQColor.accentSoft.opacity(0.7), in: Capsule())
+                }
+                if plan.targets.count > 3 {
+                    Text(verbatim: "+\(plan.targets.count - 3)")
+                        .font(.system(size: 11.5, weight: .bold, design: .rounded))
+                        .foregroundStyle(DQColor.textSecondary)
+                        .padding(.horizontal, 8)
+                        .padding(.vertical, 5)
+                        .background(DQColor.stroke.opacity(0.6), in: Capsule())
                 }
             }
 
@@ -538,7 +509,7 @@ struct DermiqRoutineTab: View {
                     .foregroundStyle(DQColor.deltaUp)
                     .transition(.opacity.combined(with: .move(edge: .top)))
                 } else {
-                    Text(verbatim: "\(done) of \(total) steps today")
+                    Text("\(done) of \(total) steps today")
                         .font(DQFont.micro)
                         .foregroundStyle(DQColor.textSecondary)
                         .contentTransition(.numericText(value: Double(done)))

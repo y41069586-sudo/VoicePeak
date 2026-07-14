@@ -115,7 +115,9 @@ final class ScanFlowModel {
                 .map(\.0)
         }
 
-        let targets = analysis.weakestThree
+        // ALL seven readings feed the plan, worst first — the builder fills
+        // its treatment slots from the full picture, not a 3-metric shortlist.
+        let targets = analysis.subScores.sorted { $0.value < $1.value }
         let steps = RoutineBuilder.steps(
             targets: targets,
             weightedToward: weightedToward,

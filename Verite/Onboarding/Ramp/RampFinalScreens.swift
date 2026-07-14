@@ -338,7 +338,7 @@ struct RampPlanPreviewScreen: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            Spacer().frame(height: VSpace.xxl * 1.1)
+            Spacer().frame(height: VSpace.xl)
 
             VStack(spacing: VSpace.sm) {
                 Text("AFTER YOUR SCAN")
@@ -346,10 +346,14 @@ struct RampPlanPreviewScreen: View {
                     .tracking(3)
                     .foregroundStyle(RampStage.accentDeep)
                 Text("Your first plan,\nready in seconds.")
-                    .font(RampStage.serif(27))
+                    .font(RampStage.serif(25))
                     .foregroundStyle(RampStage.ink)
                     .multilineTextAlignment(.center)
                     .lineSpacing(2)
+                    // Never let the vertical squeeze truncate the headline —
+                    // the two block cards below flex instead.
+                    .fixedSize(horizontal: false, vertical: true)
+                    .layoutPriority(1)
             }
             .padding(.horizontal, VSpace.xl)
 

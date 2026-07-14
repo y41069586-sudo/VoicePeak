@@ -158,9 +158,6 @@ struct OnboardingRampFlow: View {
             RampRevealScreen(answers: answers) { advance() }
         case .theCurve:
             RampCurveScreen(answers: answers) { advance() }
-        case .drawCurve:
-            RampDrawCurveScreen(low: answers.predictedRange.low,
-                                high: answers.predictedRange.high) { advance() }
         case .planPreview:
             RampPlanPreviewScreen(answers: answers) { advance() }
         case .commitment:

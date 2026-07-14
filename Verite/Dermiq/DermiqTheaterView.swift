@@ -295,15 +295,27 @@ struct FaceField: Sendable {
                         polygon = jaw
                         // Close across the forehead: quadratic arc from the last
                         // contour point (one temple) over a peak above the brows
-                        // back to the first (other temple).
+                        // back to the first (other temple). The peak sits lower
+                        // than the hairline so a fringe doesn't collect dots.
                         if let start = jaw.last, let end = jaw.first {
                             let peak = CGPoint(x: (start.x + end.x) / 2,
-                                               y: box.minY + box.height * 0.02)
+                                               y: box.minY + box.height * 0.12)
                             for i in 1..<12 {
                                 let t = CGFloat(i) / 12
                                 let x = (1-t)*(1-t)*start.x + 2*(1-t)*t*peak.x + t*t*end.x
                                 let y = (1-t)*(1-t)*start.y + 2*(1-t)*t*peak.y + t*t*end.y
                                 polygon.append(CGPoint(x: x, y: y))
+                            }
+                        }
+                        // Inset the whole polygon ~10% toward its centroid so
+                        // dots sit clearly ON skin — never touching the jawline,
+                        // ears or hair edge.
+                        if polygon.count >= 8 {
+                            let cx = polygon.map(\.x).reduce(0, +) / CGFloat(polygon.count)
+                            let cy = polygon.map(\.y).reduce(0, +) / CGFloat(polygon.count)
+                            polygon = polygon.map { p in
+                                CGPoint(x: cx + (p.x - cx) * 0.90,
+                                        y: cy + (p.y - cy) * 0.90)
                             }
                         }
                     }

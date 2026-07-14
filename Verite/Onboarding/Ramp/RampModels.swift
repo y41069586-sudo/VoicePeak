@@ -30,8 +30,7 @@ enum RampStep: Int, CaseIterable {
     case insightLife     // 12 — mirrored insight, chapter 2
     case theReading      // 13 — visible processing + prediction range
     case theCurve        // 14 — where do you land?
-    case drawCurve       // 15 — draw your own 14-day trajectory
-    case planPreview     // 16 — your first plan, previewed
+    case planPreview     // 15 — your first plan, previewed
     case commitment      // 16 — sign your 14-day commitment
     case dailyRitual     // 17 — time choice + notifications
     case signIn          // 18 — register before the first scan
@@ -69,7 +68,6 @@ enum RampStep: Int, CaseIterable {
         case .insightLife:    return "insight_life"
         case .theReading:     return "the_reading"
         case .theCurve:       return "the_curve"
-        case .drawCurve:      return "draw_curve"
         case .planPreview:    return "plan_preview"
         case .commitment:     return "commitment"
         case .dailyRitual:    return "daily_ritual"
