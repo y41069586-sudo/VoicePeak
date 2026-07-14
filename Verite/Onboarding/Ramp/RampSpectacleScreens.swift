@@ -280,226 +280,185 @@ private struct RampIntroSmile: Shape {
 }
 
 // ============================================================
-// MARK: — Screen 1: The Scan (watch your skin get read)
+// MARK: — Screen 1: A Reading (the outcome, shown first)
 // ============================================================
 
-/// The genre's strongest opener, reimagined as a LIVE diagnostic: an abstract
-/// face inside a scanner HUD, a beam sweeping it, detection chips popping in one
-/// by one at each region, and a skin score materialising at the end. No real
-/// people, no faces — pure, cinematic "the machine is reading you".
+/// The genre's strongest opener: show the artifact the user will own BEFORE
+/// asking for anything. An illustrative reading card — clearly labeled, no
+/// invented people, no faces — cycles through a few example scores.
 struct RampSampleReadingScreen: View {
     let onAdvance: () -> Void
 
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
-    @State private var beam = false
-    @State private var chipsIn = 0
-    @State private var scored = false
-    @State private var shownScore = 0
+    @State private var index = 0
 
-    // Detection points around the face: label, value, x-offset, y-offset.
-    private let nodes: [(String, Int, CGFloat, CGFloat)] = [
-        ("Texture", 82, -66, -84),
-        ("Pores",   78,  72, -40),
-        ("Redness", 80, -74,  40),
-        ("Glow",    88,  58,  92),
-    ]
+    private let samples = RampSampleReading.samples
 
     var body: some View {
         VStack(spacing: 0) {
-            Spacer().frame(height: VSpace.xxl * 1.1)
+            Spacer().frame(height: VSpace.xxl * 1.6)
 
-            Text("Watch your skin\nget read.")
-                .font(RampStage.serif(26))
+            Text("Your skin, as a\nsingle honest page.")
+                .font(RampStage.serif(25))
                 .foregroundStyle(RampStage.ink)
                 .multilineTextAlignment(.center)
                 .lineSpacing(2)
 
             Spacer()
 
-            ZStack {
-                Circle()
-                    .fill(RadialGradient(colors: [RampStage.accent.opacity(0.22), .clear],
-                                         center: .center, startRadius: 0, endRadius: 200))
-                    .frame(width: 320, height: 320)
+            RampSampleReadingCard(sample: samples[index])
+                .id(index)
+                .transition(.opacity)
 
-                RampScanFaceArt()
-                    .frame(width: 190, height: 190)
-
-                // The beam sweeps the face, forever.
-                ZStack {
-                    Rectangle().fill(RampStage.accent.opacity(0.12))
-                        .frame(width: 210, height: 42).blur(radius: 7)
-                    Rectangle()
-                        .fill(LinearGradient(colors: [.clear, RampStage.accent, .clear],
-                                             startPoint: .leading, endPoint: .trailing))
-                        .frame(width: 210, height: 2)
-                }
-                .offset(y: beam ? 104 : -104)
-                .animation(reduceMotion ? nil :
-                    Animation.easeInOut(duration: 2.0).repeatForever(autoreverses: true), value: beam)
-
-                // Detection chips pop in, region by region.
-                ForEach(nodes.indices, id: \.self) { i in
-                    let node = nodes[i]
-                    RampScanChip(label: node.0, value: node.1)
-                        .offset(x: node.2, y: node.3)
-                        .opacity(i < chipsIn ? 1 : 0)
-                        .scaleEffect(i < chipsIn ? 1 : 0.6)
-                        .animation(.spring(response: 0.4, dampingFraction: 0.7), value: chipsIn)
+            // Cycle dots
+            HStack(spacing: 6) {
+                ForEach(samples.indices, id: \.self) { i in
+                    Capsule()
+                        .fill(i == index ? RampStage.accent : RampStage.hair)
+                        .frame(width: i == index ? 18 : 6, height: 4)
                 }
             }
-            .frame(width: 320, height: 320)
+            .padding(.top, VSpace.md)
 
-            Spacer().frame(height: VSpace.md)
-
-            // The verdict badge — dashes until the scan lands a number.
-            HStack(spacing: 8) {
-                Image(systemName: "sparkles")
-                    .font(.system(size: 13, weight: .bold))
-                Text("Skin score")
-                    .font(.system(size: 14, weight: .semibold, design: .rounded))
-                Text(verbatim: scored ? "\(shownScore)" : "· ·")
-                    .font(.system(size: 16, weight: .heavy, design: .rounded))
-                    .monospacedDigit()
-                    .contentTransition(.numericText(value: Double(shownScore)))
-            }
-            .foregroundStyle(.white)
-            .padding(.horizontal, 16).padding(.vertical, 10)
-            .background(RampStage.accent, in: Capsule())
-            .shadow(color: RampStage.accent.opacity(0.4), radius: 12, y: 5)
-
-            Spacer()
-
-            Text("A live example. Yours is built from your own scan.")
+            Text("Illustrative reading. Yours is built from your scan.")
                 .font(VType.micro)
                 .foregroundStyle(RampStage.textTertiary)
+                .padding(.top, VSpace.xs)
+
+            Spacer()
 
             RampPrimaryButton(title: "I want mine") { onAdvance() }
                 .padding(.horizontal, VSpace.lg)
-                .padding(.top, VSpace.md)
             Spacer().frame(height: VSpace.xxl)
         }
-        .onAppear { beam = true }
         .task {
-            if reduceMotion { chipsIn = nodes.count; scored = true; shownScore = 88; return }
-            try? await Task.sleep(for: .milliseconds(700))
-            for i in 1...nodes.count {
-                withAnimation { chipsIn = i }
-                Haptics.fire(.tick)
-                try? await Task.sleep(for: .milliseconds(520))
-                if Task.isCancelled { return }
+            guard !reduceMotion else { return }
+            while !Task.isCancelled {
+                try? await Task.sleep(for: .milliseconds(1500))
+                guard !Task.isCancelled else { return }
+                withAnimation(.easeInOut(duration: 0.5)) {
+                    index = (index + 1) % samples.count
+                }
             }
-            withAnimation { scored = true }
-            let target = 88
-            let steps = 24
-            for i in 0...steps {
-                shownScore = Int((Double(target) * Double(i) / Double(steps)).rounded())
-                try? await Task.sleep(for: .milliseconds(22))
-                if Task.isCancelled { return }
-            }
-            shownScore = target
         }
     }
 }
 
-/// A small detection chip that pops onto a face region during the scan.
-private struct RampScanChip: View {
-    let label: String
-    let value: Int
+/// One illustrative reading: an overall score + per-metric levels.
+struct RampSampleReading {
+    let overall: Int
+    let metrics: [(String, Double)] // label, 0…1
 
-    var body: some View {
-        HStack(spacing: 6) {
-            Circle().fill(RampStage.accent).frame(width: 5, height: 5)
-            Text(LocalizedStringKey(label))
-                .font(.system(size: 11, weight: .semibold, design: .rounded))
-                .foregroundStyle(RampStage.ink)
-            Text(verbatim: "\(value)")
-                .font(.system(size: 11, weight: .heavy, design: .rounded))
-                .foregroundStyle(RampStage.accentDeep)
-                .monospacedDigit()
-        }
-        .padding(.horizontal, 9).padding(.vertical, 5)
-        .background(Color.white, in: Capsule())
-        .overlay(Capsule().strokeBorder(RampStage.hair, lineWidth: 1))
-        .shadow(color: RampStage.accent.opacity(0.18), radius: 8, y: 3)
-    }
+    static let samples: [RampSampleReading] = [
+        RampSampleReading(overall: 74, metrics: [
+            ("Texture", 0.71), ("Redness", 0.66), ("Pores", 0.78),
+            ("Evenness", 0.73), ("Glow", 0.81), ("Hydration", 0.69), ("Blemishes", 0.84),
+        ]),
+        RampSampleReading(overall: 62, metrics: [
+            ("Texture", 0.55), ("Redness", 0.48), ("Pores", 0.66),
+            ("Evenness", 0.61), ("Glow", 0.58), ("Hydration", 0.72), ("Blemishes", 0.70),
+        ]),
+        RampSampleReading(overall: 86, metrics: [
+            ("Texture", 0.84), ("Redness", 0.88), ("Pores", 0.82),
+            ("Evenness", 0.87), ("Glow", 0.90), ("Hydration", 0.83), ("Blemishes", 0.89),
+        ]),
+    ]
 }
 
-/// A soft diagonal light that sweeps across a surface, forever. Clipped by the
-/// caller to whatever shape it sits on. The signature "live glass" touch.
-struct RampShine: View {
-    @Environment(\.accessibilityReduceMotion) private var reduceMotion
-    @State private var travel = false
+/// The card itself — white paper on the porcelain stage, serif score,
+/// seven quiet metric rows. This exact layout returns as the user's own
+/// shareable Reading Card after the first scan.
+struct RampSampleReadingCard: View {
+    let sample: RampSampleReading
 
     var body: some View {
-        GeometryReader { geo in
-            let w = geo.size.width
-            Rectangle()
-                .fill(LinearGradient(
-                    colors: [.clear, Color.white.opacity(0.55), .clear],
-                    startPoint: .top, endPoint: .bottom))
-                .frame(width: 60)
-                .rotationEffect(.degrees(20))
-                .offset(x: travel ? w + 90 : -90)
-                .animation(reduceMotion ? nil :
-                    Animation.easeInOut(duration: 2.4).repeatForever(autoreverses: false).delay(0.8),
-                    value: travel)
+        VStack(spacing: 0) {
+            HStack {
+                Text(verbatim: Brand.name.uppercased())
+                    .font(VType.micro).tracking(4)
+                    .foregroundStyle(RampStage.accentDeep)
+                Spacer()
+                Text("READING")
+                    .font(VType.micro).tracking(4)
+                    .foregroundStyle(RampStage.textTertiary)
+            }
+
+            HStack(alignment: .firstTextBaseline, spacing: 6) {
+                Text(verbatim: "\(sample.overall)")
+                    .font(RampStage.serif(56))
+                    .foregroundStyle(RampStage.ink)
+                    .contentTransition(.numericText())
+                Text(verbatim: "/ 100")
+                    .font(VType.caption)
+                    .foregroundStyle(RampStage.textTertiary)
+            }
+            .padding(.vertical, VSpace.sm)
+
+            VStack(spacing: 9) {
+                ForEach(sample.metrics, id: \.0) { metric in
+                    HStack(spacing: 10) {
+                        Text(metric.0)
+                            .font(VType.caption)
+                            .foregroundStyle(RampStage.textSecondary)
+                            .frame(width: 74, alignment: .leading)
+                        GeometryReader { proxy in
+                            ZStack(alignment: .leading) {
+                                Capsule().fill(RampStage.hair.opacity(0.55))
+                                Capsule()
+                                    .fill(RampStage.accent)
+                                    .frame(width: proxy.size.width * metric.1)
+                            }
+                        }
+                        .frame(height: 4)
+                        Text(verbatim: "\(Int(metric.1 * 100))")
+                            .font(VType.captionBold)
+                            .foregroundStyle(RampStage.accentDeep)
+                            .monospacedDigit()
+                            .frame(width: 24, alignment: .trailing)
+                    }
+                }
+            }
         }
-        .allowsHitTesting(false)
-        .accessibilityHidden(true)
-        .onAppear { travel = true }
+        .padding(VSpace.lg)
+        .frame(width: 290)
+        .background(Color.white.opacity(0.72), in: RoundedRectangle(cornerRadius: 22, style: .continuous))
+        .overlay(
+            RoundedRectangle(cornerRadius: 22, style: .continuous)
+                .strokeBorder(RampStage.hairline, lineWidth: 1)
+        )
+        .shadow(color: RampStage.accent.opacity(0.18), radius: 26, y: 14)
     }
 }
 
 // ============================================================
-// MARK: — Screen 2: The Number (spin it yourself)
+// MARK: — Screen 1: The Number (curiosity, calmly)
 // ============================================================
 
-/// Interactive dopamine: the user TAPS the dial and it whirls through scores —
-/// fast, then slowing, haptic on every tick — and lands on a number it was
-/// never really entitled to. The caption then flips: that was a guess; yours is
-/// measured. Tactile, playful, and it makes the point better than any sentence.
 struct RampNumberScreen: View {
     let onAdvance: () -> Void
-    @Environment(\.accessibilityReduceMotion) private var reduceMotion
-
-    @State private var spinToken = 0
-    @State private var spinning = false
-    @State private var landed = false
-    @State private var display = 0
 
     var body: some View {
         VStack(spacing: 0) {
             Spacer()
+            Spacer()
 
-            Text("Find your\nnumber.")
-                .font(RampStage.serif(30))
-                .foregroundStyle(RampStage.ink)
-                .multilineTextAlignment(.center)
-                .lineSpacing(2)
-
-            Spacer().frame(height: VSpace.xl)
-
-            Button {
-                guard !spinning else { return }
-                spinToken += 1
-            } label: {
-                dial
+            VStack(spacing: VSpace.md) {
+                RampCalmFigure()
+                    .vStaggeredAppear(index: 0)
+                Text("Every complexion\nhas a number.")
+                    .font(RampStage.serif(29))
+                    .foregroundStyle(RampStage.ink)
+                    .multilineTextAlignment(.center)
+                    .lineSpacing(2)
+                    .vStaggeredAppear(index: 0)
+                Text("Most people never learn theirs.\nYours takes one honest scan.")
+                    .font(VType.bodyLarge)
+                    .foregroundStyle(RampStage.textSecondary)
+                    .multilineTextAlignment(.center)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .vStaggeredAppear(index: 1)
             }
-            .buttonStyle(PressableStyle())
-            .disabled(spinning)
-
-            Spacer().frame(height: VSpace.lg)
-
-            Text(landed
-                 ? "That was a guess. Yours is measured — one honest scan."
-                 : "Tap the dial. Watch it hunt for a number it can't really know.")
-                .font(VType.bodyLarge)
-                .foregroundStyle(RampStage.textSecondary)
-                .multilineTextAlignment(.center)
-                .fixedSize(horizontal: false, vertical: true)
-                .padding(.horizontal, VSpace.xl)
-                .animation(.easeInOut, value: landed)
+            .padding(.horizontal, VSpace.xl)
 
             Spacer()
 
@@ -507,93 +466,51 @@ struct RampNumberScreen: View {
                 .padding(.horizontal, VSpace.lg)
             Spacer().frame(height: VSpace.xxl)
         }
-        .task(id: spinToken) {
-            guard spinToken > 0 else { return }
-            await runSpin()
+    }
+}
+
+/// A serif figure that never settles — it drifts through plausible scores
+/// every couple of seconds, ending nowhere. Calm cousin of the slot-machine:
+/// the number exists, it just isn't yours yet. Reduce Motion pins "· · ·".
+private struct RampCalmFigure: View {
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
+    var body: some View {
+        Group {
+            if reduceMotion {
+                figure("· · ·")
+            } else {
+                TimelineView(.periodic(from: .now, by: 0.8)) { timeline in
+                    let tick = Int(timeline.date.timeIntervalSinceReferenceDate / 0.8)
+                    figure(String(44 + Int(Self.hash(tick) * 51)))
+                        .contentTransition(.numericText())
+                        .animation(.easeInOut(duration: 0.4), value: tick)
+                }
+            }
         }
+        .accessibilityHidden(true)
     }
 
-    private var dial: some View {
-        ZStack {
-            Circle()
-                .fill(RadialGradient(colors: [RampStage.accent.opacity(spinning ? 0.36 : 0.20), .clear],
-                                     center: .center, startRadius: 0, endRadius: 150))
-
-            ForEach(0..<48, id: \.self) { i in
-                Capsule()
-                    .fill(RampStage.hair)
-                    .frame(width: 2, height: i % 4 == 0 ? 10 : 5)
-                    .offset(y: -104)
-                    .rotationEffect(.degrees(Double(i) / 48 * 360))
-            }
-
-            Circle()
-                .stroke(RampStage.hair, lineWidth: 10)
-                .frame(width: 196, height: 196)
-
-            // The arc tracks whatever the dial currently reads.
-            Circle()
-                .trim(from: 0, to: CGFloat(display) / 100)
-                .stroke(LinearGradient(colors: [RampStage.accent, RampStage.accentDeep],
-                                       startPoint: .leading, endPoint: .trailing),
-                        style: StrokeStyle(lineWidth: 10, lineCap: .round))
-                .frame(width: 196, height: 196)
-                .rotationEffect(.degrees(-90))
-                .shadow(color: RampStage.accent.opacity(0.5), radius: 8)
-                .animation(.easeOut(duration: 0.12), value: display)
-
-            VStack(spacing: 2) {
-                Text(verbatim: (landed || spinning) ? "\(display)" : "?")
-                    .font(RampStage.serif(64))
-                    .foregroundStyle(RampStage.ink)
-                    .monospacedDigit()
-                    .contentTransition(.numericText(value: Double(display)))
-                Text(verbatim: "/ 100")
-                    .font(VType.caption)
-                    .foregroundStyle(RampStage.textTertiary)
-            }
-
-            if !landed && !spinning {
-                Text("TAP")
-                    .font(VType.micro).fontWeight(.bold).tracking(2)
-                    .foregroundStyle(RampStage.accentDeep)
-                    .offset(y: 66)
-            }
-        }
-        .frame(width: 240, height: 240)
+    private func figure(_ text: String) -> some View {
+        Text(verbatim: text)
+            .font(RampStage.serif(58))
+            .foregroundStyle(RampStage.ink.opacity(0.85))
+            .monospacedDigit()
+            .frame(minWidth: 92)
     }
 
-    @MainActor
-    private func runSpin() async {
-        if reduceMotion {
-            display = 84; landed = true; Haptics.fire(.milestone); return
-        }
-        spinning = true
-        landed = false
-        let target = 76 + (spinToken * 7) % 16   // 76…91, varies per spin
-        var delay = 40
-        for step in 0..<26 {
-            display = 40 + (step * 7 + spinToken * 13) % 55   // churns 40…94
-            Haptics.fire(.tick)
-            try? await Task.sleep(for: .milliseconds(delay))
-            delay += 8 + step                                  // decelerate
-            if Task.isCancelled { spinning = false; return }
-        }
-        withAnimation(.spring(response: 0.4, dampingFraction: 0.6)) { display = target }
-        spinning = false
-        landed = true
-        Haptics.fire(.milestone)
+    private static func hash(_ i: Int) -> Double {
+        let v = sin(Double(i) * 127.1) * 43758.5453
+        return v - floor(v)
     }
 }
 
 // ============================================================
-// MARK: — Screen 3: The Reveal (before → after glow)
+// MARK: — Screen 2: The Split (what 14 days moves)
 // ============================================================
 
-/// The transformation, in your own hand: drag and a dull, flat skin orb blooms
-/// into a radiant one, the projected gain climbing with it. Endpoints are
-/// labelled DAY 1 / DAY 14, and the honest fast/slow tags stay in view so the
-/// promise never overreaches.
+/// Proof you make with your own thumb: dragging the slider climbs the metric
+/// bars from "day 1" to "day 14" in lockstep. Interactive, quiet.
 struct RampSplitScreen: View {
     let onAdvance: () -> Void
 
@@ -603,15 +520,15 @@ struct RampSplitScreen: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            Spacer().frame(height: VSpace.xxl * 1.0)
+            Spacer().frame(height: VSpace.xxl * 1.2)
 
-            Text("See your\n14-day glow.")
+            Text("What fourteen\ndays can move.")
                 .font(RampStage.serif(26))
                 .foregroundStyle(RampStage.ink)
                 .multilineTextAlignment(.center)
                 .lineSpacing(2)
 
-            Text("Some things shift in two weeks, some take longer. Drag to see it — honestly.")
+            Text("Some things shift in two weeks. Some take longer. We'll be honest about which.")
                 .font(VType.caption)
                 .foregroundStyle(RampStage.textSecondary)
                 .multilineTextAlignment(.center)
@@ -619,24 +536,63 @@ struct RampSplitScreen: View {
                 .padding(.horizontal, VSpace.xl)
                 .padding(.top, VSpace.sm)
 
-            Spacer().frame(height: VSpace.xl)
+            Spacer().frame(height: VSpace.xxl * 1.1)
 
-            RampRevealOrb(t: t)
-                .frame(width: 220, height: 220)
-                .overlay(alignment: .top) {
-                    Text(verbatim: "+\(Int((18 * t).rounded()))")
-                        .font(.system(size: 15, weight: .heavy, design: .rounded))
-                        .foregroundStyle(.white)
-                        .monospacedDigit()
-                        .padding(.horizontal, 12).padding(.vertical, 6)
-                        .background(RampStage.accent, in: Capsule())
-                        .shadow(color: RampStage.accent.opacity(0.4), radius: 8, y: 3)
-                        .opacity(t > 0.12 ? 1 : 0)
-                        .offset(y: -6)
-                        .animation(.easeOut(duration: 0.2), value: t > 0.12)
+            VStack(spacing: VSpace.md) {
+                ForEach(RampSplitMetric.samples.indices, id: \.self) { i in
+                    let metric = RampSplitMetric.samples[i]
+                    VStack(alignment: .leading, spacing: 6) {
+                        HStack(spacing: 7) {
+                            Text(LocalizedStringKey(metric.label))
+                                .font(VType.caption)
+                                .foregroundStyle(RampStage.textSecondary)
+                            Text(LocalizedStringKey(metric.tag))
+                                .font(VType.micro)
+                                .foregroundStyle(metric.tag == "Slower"
+                                                 ? RampStage.textTertiary : RampStage.accentDeep)
+                                .padding(.horizontal, 6).padding(.vertical, 1)
+                                .background((metric.tag == "Slower"
+                                             ? RampStage.hair : RampStage.accent.opacity(0.14)),
+                                            in: Capsule())
+                            Spacer()
+                            Text(verbatim: "\(Int(metric.value(at: t) * 100))")
+                                .font(VType.captionBold)
+                                .foregroundStyle(RampStage.accentDeep)
+                                .monospacedDigit()
+                        }
+                        GeometryReader { proxy in
+                            ZStack(alignment: .leading) {
+                                Capsule().fill(RampStage.hair.opacity(0.6))
+                                Capsule()
+                                    .fill(RampStage.accent)
+                                    .frame(width: proxy.size.width * metric.value(at: t))
+                            }
+                        }
+                        .frame(height: 6)
+                    }
                 }
+            }
+            .padding(.horizontal, VSpace.xl)
 
-            Spacer().frame(height: VSpace.lg)
+            RampMorphSlider(value: $t) {
+                withAnimation(VMotion.gentle) { showHint = false }
+            }
+            .padding(.horizontal, VSpace.xl)
+            .padding(.top, VSpace.lg)
+
+            // "You can touch this" — visible until the first real drag.
+            HStack(spacing: 6) {
+                Image(systemName: "arrow.left.and.right")
+                    .font(.system(size: 11, weight: .bold))
+                Text("Try dragging the slider")
+                    .font(VType.captionBold)
+            }
+            .foregroundStyle(RampStage.accentDeep)
+            .padding(.horizontal, VSpace.md)
+            .padding(.vertical, 6)
+            .background(RampStage.accent.opacity(0.12), in: Capsule())
+            .opacity(showHint ? 1 : 0)
+            .padding(.top, VSpace.xs)
 
             HStack {
                 Text("DAY 1")
@@ -648,43 +604,7 @@ struct RampSplitScreen: View {
             .font(VType.micro)
             .tracking(1.5)
             .padding(.horizontal, VSpace.xl)
-
-            RampMorphSlider(value: $t) {
-                withAnimation(VMotion.gentle) { showHint = false }
-            }
-            .padding(.horizontal, VSpace.xl)
             .padding(.top, VSpace.sm)
-
-            HStack(spacing: 6) {
-                Image(systemName: "hand.draw")
-                    .font(.system(size: 11, weight: .bold))
-                Text("Drag to reveal your 14 days")
-                    .font(VType.captionBold)
-            }
-            .foregroundStyle(RampStage.accentDeep)
-            .padding(.horizontal, VSpace.md)
-            .padding(.vertical, 6)
-            .background(RampStage.accent.opacity(0.12), in: Capsule())
-            .opacity(showHint ? 1 : 0)
-            .padding(.top, VSpace.md)
-
-            Spacer().frame(height: VSpace.lg)
-
-            // Honest tags stay visible — fast vs. slow is never hidden.
-            HStack(spacing: 8) {
-                ForEach(RampSplitMetric.samples.indices, id: \.self) { i in
-                    let metric = RampSplitMetric.samples[i]
-                    HStack(spacing: 5) {
-                        Circle()
-                            .fill(metric.tag == "Slower" ? RampStage.textTertiary : RampStage.accent)
-                            .frame(width: 5, height: 5)
-                        Text(LocalizedStringKey(metric.label))
-                            .font(.system(size: 10.5, weight: .semibold, design: .rounded))
-                            .foregroundStyle(RampStage.textSecondary)
-                    }
-                }
-            }
-            .padding(.horizontal, VSpace.lg)
 
             Spacer()
 
@@ -696,59 +616,11 @@ struct RampSplitScreen: View {
             guard !reduceMotion else { t = 0.6; return }
             Task {
                 try? await Task.sleep(for: .milliseconds(700))
-                withAnimation(.easeInOut(duration: 1.3)) { t = 0.78 }
-                try? await Task.sleep(for: .milliseconds(1500))
-                withAnimation(.easeInOut(duration: 0.9)) { t = 0.22 }
+                withAnimation(.easeInOut(duration: 1.2)) { t = 0.72 }
+                try? await Task.sleep(for: .milliseconds(1400))
+                withAnimation(.easeInOut(duration: 0.9)) { t = 0.2 }
             }
         }
-    }
-}
-
-/// The skin orb that blooms from flat and dull (t=0) to radiant (t=1) — two
-/// cross-fading spheres plus an aura and sparkles that rise with t.
-private struct RampRevealOrb: View {
-    let t: Double
-
-    var body: some View {
-        ZStack {
-            // Aura — grows and brightens toward day 14.
-            Circle()
-                .fill(RadialGradient(colors: [RampStage.accent.opacity(0.45), .clear],
-                                     center: .center, startRadius: 0, endRadius: 150))
-                .scaleEffect(0.85 + 0.3 * t)
-                .opacity(t)
-
-            // Dull "now" sphere.
-            Circle()
-                .fill(RadialGradient(colors: [Color(hex: "DCE3EC"), Color(hex: "9AA7B5")],
-                                     center: UnitPoint(x: 0.36, y: 0.30),
-                                     startRadius: 4, endRadius: 150))
-                .frame(width: 190, height: 190)
-                .opacity(1 - t)
-
-            // Radiant "day 14" sphere.
-            Circle()
-                .fill(RadialGradient(colors: [Color.white, RampStage.accent, RampStage.accentDeep],
-                                     center: UnitPoint(x: 0.33, y: 0.28),
-                                     startRadius: 2, endRadius: 170))
-                .frame(width: 190, height: 190)
-                .opacity(t)
-
-            // Rim light + sparkles bloom in.
-            Circle()
-                .strokeBorder(Color.white.opacity(0.55 * t), lineWidth: 2)
-                .frame(width: 190, height: 190)
-
-            Image(systemName: "sparkle")
-                .font(.system(size: 18, weight: .bold))
-                .foregroundStyle(.white)
-                .offset(x: -46, y: -52).opacity(t)
-            Image(systemName: "sparkle")
-                .font(.system(size: 12, weight: .bold))
-                .foregroundStyle(.white)
-                .offset(x: 54, y: 30).opacity(t)
-        }
-        .frame(width: 220, height: 220)
     }
 }
 
@@ -794,15 +666,13 @@ struct RampMorphSlider: View {
                     .fill(RampStage.hair.opacity(0.6))
                     .frame(height: 5)
                 Capsule()
-                    .fill(LinearGradient(colors: [RampStage.accent, RampStage.accentDeep],
-                                         startPoint: .leading, endPoint: .trailing))
+                    .fill(RampStage.accent)
                     .frame(width: x + knob / 2, height: 5)
                 Circle()
                     .fill(Color.white)
                     .frame(width: knob, height: knob)
                     .overlay(Circle().strokeBorder(RampStage.accent, lineWidth: 2))
-                    .overlay(Circle().fill(RampStage.accent).frame(width: 7, height: 7))
-                    .shadow(color: RampStage.accent.opacity(0.55), radius: 12, y: 3)
+                    .shadow(color: RampStage.accent.opacity(0.35), radius: 8, y: 3)
                     .offset(x: x)
             }
             .frame(maxHeight: .infinity, alignment: .center)
