@@ -132,6 +132,7 @@ struct DermiqResultsView: View {
                 gridCard(analysis, projection: projection, locked: locked)
 
                 if !locked {
+                    skinAgeCard(analysis)
                     potentialNote
                     expectationsCard(analysis)
                 }
@@ -319,6 +320,52 @@ struct DermiqResultsView: View {
         .padding(.vertical, 10)
         .frame(maxWidth: .infinity)
         .background(DQColor.surfaceElevated, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+    }
+
+    /// The shareable hook: how old the skin *looks*, anchored to the user's real
+    /// age band when known. Framed as an estimate.
+    private func skinAgeCard(_ analysis: DermiqAnalysis) -> some View {
+        let est = DermiqSkinAge.estimate(analysis, ageBand: profiles.first?.ageBand)
+        return DQCard {
+            VStack(alignment: .leading, spacing: 8) {
+                HStack {
+                    Text("SKIN AGE")
+                        .font(DQFont.mono(11, weight: .semibold))
+                        .foregroundStyle(DQColor.accentBright)
+                    Spacer()
+                    Text("estimate")
+                        .font(DQFont.mono(9, weight: .semibold))
+                        .foregroundStyle(DQColor.textSecondary)
+                }
+                HStack(alignment: .firstTextBaseline, spacing: 8) {
+                    Text(verbatim: "\(est.age)")
+                        .font(.system(size: 48, weight: .heavy, design: .rounded).monospacedDigit())
+                        .foregroundStyle(DQColor.accentBright)
+                    Text("years")
+                        .font(DQFont.caption)
+                        .foregroundStyle(DQColor.textSecondary)
+                    Spacer()
+                    if let d = est.delta, d > 2 {
+                        Image(systemName: "sparkles")
+                            .font(.system(size: 22))
+                            .foregroundStyle(DQColor.accentBright)
+                    }
+                }
+                Text(skinAgeLine(est.delta))
+                    .font(DQFont.caption)
+                    .foregroundStyle(DQColor.textSecondary)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+        }
+    }
+
+    private func skinAgeLine(_ delta: Int?) -> LocalizedStringKey {
+        guard let d = delta else {
+            return "How old your skin looks — from texture, tone and glow."
+        }
+        if d > 2 { return "\(d) years younger than your real age." }
+        if d < -2 { return "\(-d) years to shave off — your plan targets exactly this." }
+        return "Right on track for your age."
     }
 
     /// Honest per-area timeline: the plan targets the three weakest scores, and
