@@ -457,6 +457,7 @@ struct RampCommitmentScreen: View {
 
     @State private var strokes: [[CGPoint]] = []
     @State private var sealed = false
+    @State private var holdProgress: Double = 0
 
     private var signed: Bool {
         strokes.reduce(0) { $0 + $1.count } >= 12
@@ -468,7 +469,18 @@ struct RampCommitmentScreen: View {
     }
 
     var body: some View {
-        VStack(spacing: 0) {
+        ZStack(alignment: .bottom) {
+            // Holding the commit button floods the screen with blue.
+            Rectangle()
+                .fill(LinearGradient(colors: [RampStage.accent.opacity(0),
+                                              RampStage.accent.opacity(0.42)],
+                                     startPoint: .top, endPoint: .bottom))
+                .frame(maxWidth: .infinity)
+                .frame(height: 900 * holdProgress)
+                .ignoresSafeArea()
+                .allowsHitTesting(false)
+
+            VStack(spacing: 0) {
             Spacer()
 
             VStack(spacing: VSpace.md) {
@@ -508,10 +520,10 @@ struct RampCommitmentScreen: View {
             Spacer()
 
             VStack(spacing: VSpace.sm) {
-                RampPrimaryButton(title: "I'm in for 14 days", isEnabled: signed && !sealed) {
+                RampHoldButton(title: "Hold to commit", isEnabled: signed && !sealed,
+                               onProgress: { holdProgress = $0 }) {
                     guard !sealed else { return }
                     sealed = true
-                    Haptics.fire(.verdictReveal)
                     RampAnalytics.track("onboarding_commitment", ["signed": "true"])
                     onAdvance()
                 }
@@ -522,8 +534,9 @@ struct RampCommitmentScreen: View {
             }
             .padding(.horizontal, VSpace.lg)
             Spacer().frame(height: VSpace.xxl)
+            }
+            .animation(VMotion.gentle, value: signed)
         }
-        .animation(VMotion.gentle, value: signed)
     }
 
     // MARK: The pad

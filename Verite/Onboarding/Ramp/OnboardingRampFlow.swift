@@ -70,34 +70,37 @@ struct OnboardingRampFlow: View {
         case .name:
             RampNameScreen(name: nameBinding) { advance() }
         case .quizSelfRating:
-            RampQuizScreen(
+            RampSwipeQuizScreen(
                 chapter: "YOUR SKIN · ONE OF THREE",
                 question: personalized("How does your skin feel lately?",
                                        named: "%@, how does your skin feel lately?"),
                 options: RampQuizAnswers.SelfRating.allCases.map {
-                    RampQuizOption(id: $0.rawValue, label: $0.label, sub: selfRatingSub($0))
-                },
-                selectedID: answers.selfRating?.rawValue
+                    RampSwipeOption(id: $0.rawValue, label: $0.label,
+                                    icon: selfRatingIcon($0), sub: selfRatingSub($0))
+                }
             ) { id in
                 answers.selfRating = RampQuizAnswers.SelfRating(rawValue: id)
                 recordAnswer(question: "self_rating", answer: id)
             }
         case .quizConcern:
-            RampSwipeConcernScreen(
+            RampSwipeQuizScreen(
                 chapter: "YOUR SKIN · TWO OF THREE",
-                question: "What draws your eye in the mirror?"
+                question: "What draws your eye in the mirror?",
+                options: RampQuizAnswers.MirrorConcern.allCases.map {
+                    RampSwipeOption(id: $0.rawValue, label: $0.label,
+                                    icon: $0.icon, sub: concernSub($0))
+                }
             ) { id in
                 answers.concern = RampQuizAnswers.MirrorConcern(rawValue: id)
                 recordAnswer(question: "mirror_concern", answer: id)
             }
         case .quizAge:
-            RampQuizScreen(
+            RampSwipeQuizScreen(
                 chapter: "YOUR SKIN · THREE OF THREE",
                 question: "Your age group?",
                 options: RampQuizAnswers.AgeBand.allCases.map {
-                    RampQuizOption(id: $0.rawValue, label: $0.label)
-                },
-                selectedID: answers.age?.rawValue
+                    RampSwipeOption(id: $0.rawValue, label: $0.label, icon: ageIcon($0))
+                }
             ) { id in
                 answers.age = RampQuizAnswers.AgeBand(rawValue: id)
                 recordAnswer(question: "age_band", answer: id)
@@ -111,37 +114,34 @@ struct OnboardingRampFlow: View {
                     .compactMap { $0 }
             ) { advance() }
         case .quizRoutine:
-            RampQuizScreen(
+            RampSwipeQuizScreen(
                 chapter: "YOUR LIFE · ONE OF THREE",
                 question: "Your routine, honestly?",
                 options: RampQuizAnswers.RoutineLevel.allCases.map {
-                    RampQuizOption(id: $0.rawValue, label: $0.label)
-                },
-                selectedID: answers.routine?.rawValue
+                    RampSwipeOption(id: $0.rawValue, label: $0.label, icon: routineIcon($0))
+                }
             ) { id in
                 answers.routine = RampQuizAnswers.RoutineLevel(rawValue: id)
                 recordAnswer(question: "routine_level", answer: id)
             }
         case .quizSleep:
-            RampQuizScreen(
+            RampSwipeQuizScreen(
                 chapter: "YOUR LIFE · TWO OF THREE",
                 question: "Sleep, on an average night?",
                 options: RampQuizAnswers.SleepBucket.allCases.map {
-                    RampQuizOption(id: $0.rawValue, label: $0.label)
-                },
-                selectedID: answers.sleep?.rawValue
+                    RampSwipeOption(id: $0.rawValue, label: $0.label, icon: sleepIcon($0))
+                }
             ) { id in
                 answers.sleep = RampQuizAnswers.SleepBucket(rawValue: id)
                 recordAnswer(question: "sleep", answer: id)
             }
         case .quizSPF:
-            RampQuizScreen(
+            RampSwipeQuizScreen(
                 chapter: "YOUR LIFE · THREE OF THREE",
                 question: "Sun protection?",
                 options: RampQuizAnswers.SunProtection.allCases.map {
-                    RampQuizOption(id: $0.rawValue, label: $0.label)
-                },
-                selectedID: answers.spf?.rawValue
+                    RampSwipeOption(id: $0.rawValue, label: $0.label, icon: spfIcon($0))
+                }
             ) { id in
                 answers.spf = RampQuizAnswers.SunProtection(rawValue: id)
                 recordAnswer(question: "sun_protection", answer: id)
@@ -199,6 +199,63 @@ struct OnboardingRampFlow: View {
         case .average:      return "Some good days, some off"
         case .decent:       return "Mostly calm and clear"
         case .honestlyGood: return "Honestly glowing"
+        }
+    }
+
+    // MARK: Swipe-card icons + descriptors
+
+    private func selfRatingIcon(_ r: RampQuizAnswers.SelfRating) -> String {
+        switch r {
+        case .rough:        return "cloud.rain"
+        case .average:      return "cloud.sun"
+        case .decent:       return "sun.min"
+        case .honestlyGood: return "sun.max.fill"
+        }
+    }
+
+    private func ageIcon(_ a: RampQuizAnswers.AgeBand) -> String {
+        switch a {
+        case .under25:    return "1.circle.fill"
+        case .from25to34: return "2.circle.fill"
+        case .from35to44: return "3.circle.fill"
+        case .over45:     return "4.circle.fill"
+        }
+    }
+
+    private func routineIcon(_ r: RampQuizAnswers.RoutineLevel) -> String {
+        switch r {
+        case .nothing:      return "xmark.circle"
+        case .cleanserOnly: return "drop"
+        case .threePlus:    return "square.stack"
+        case .fullStack:    return "square.stack.3d.up.fill"
+        }
+    }
+
+    private func sleepIcon(_ s: RampQuizAnswers.SleepBucket) -> String {
+        switch s {
+        case .under6:       return "moon"
+        case .sixToSeven:   return "moon.stars"
+        case .sevenToEight: return "bed.double"
+        case .eightPlus:    return "bed.double.fill"
+        }
+    }
+
+    private func spfIcon(_ s: RampQuizAnswers.SunProtection) -> String {
+        switch s {
+        case .daily:     return "sun.max.fill"
+        case .sometimes: return "sun.min"
+        case .whatsSPF:  return "questionmark.circle"
+        }
+    }
+
+    private func concernSub(_ c: RampQuizAnswers.MirrorConcern) -> String {
+        switch c {
+        case .breakouts: return "Spots and congestion"
+        case .redness:   return "Flushing and irritation"
+        case .pores:     return "Visible pores and oil"
+        case .texture:   return "Rough, uneven surface"
+        case .dullness:  return "Tired, lacking glow"
+        case .nothing:   return "Nothing jumps out"
         }
     }
 

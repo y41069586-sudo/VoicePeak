@@ -331,6 +331,7 @@ struct RampGhostButton: View {
 struct RampHoldButton: View {
     let title: String
     var systemImage: String? = nil
+    var isEnabled: Bool = true
     var onProgress: (Double) -> Void = { _ in }
     let onComplete: () -> Void
 
@@ -360,6 +361,7 @@ struct RampHoldButton: View {
         .frame(maxWidth: .infinity, minHeight: 58)
         .clipShape(Capsule())
         .overlay(Capsule().strokeBorder(RampStage.accent, lineWidth: 1.5))
+        .opacity(isEnabled ? 1 : 0.4)
         .scaleEffect(pressing ? 0.98 : 1)
         .animation(.easeOut(duration: 0.15), value: pressing)
         .contentShape(Capsule())
@@ -368,6 +370,7 @@ struct RampHoldButton: View {
                 .onChanged { _ in if !pressing { pressing = true } }
                 .onEnded { _ in pressing = false }
         )
+        .disabled(!isEnabled)
         .task(id: pressing) { await drive() }
         .accessibilityElement()
         .accessibilityLabel(Text(LocalizedStringKey(title)))

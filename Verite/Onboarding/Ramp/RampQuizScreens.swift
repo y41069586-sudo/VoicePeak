@@ -64,18 +64,25 @@ struct RampQuizScreen: View {
 }
 
 // ============================================================
-// MARK: — Swipe-stack concern picker (tactile single-select)
+// MARK: — Swipe-stack quiz (tactile single-select)
 // ============================================================
 
-/// The mirror-concern question as a swipeable card deck: swipe a card RIGHT to
+/// One card in the swipe deck.
+struct RampSwipeOption: Identifiable {
+    let id: String
+    let label: String
+    var icon: String = "circle.fill"
+    var sub: String? = nil
+}
+
+/// Any single-select question as a swipeable card deck: swipe a card RIGHT to
 /// pick it (that IS the answer + advance), LEFT to skip to the next. Far more
 /// tactile than a list, and it makes the choice feel like a decision.
-struct RampSwipeConcernScreen: View {
+struct RampSwipeQuizScreen: View {
     var chapter: String? = nil
     let question: String
+    let options: [RampSwipeOption]
     let onSelect: (String) -> Void
-
-    private let concerns = RampQuizAnswers.MirrorConcern.allCases
 
     @State private var index = 0
     @State private var drag: CGSize = .zero
@@ -102,13 +109,13 @@ struct RampSwipeConcernScreen: View {
 
             ZStack {
                 // The next card peeks behind.
-                cardView(concerns[(index + 1) % concerns.count])
+                cardView(options[(index + 1) % options.count])
                     .scaleEffect(0.93)
                     .offset(y: 18)
                     .opacity(0.55)
 
                 // The active card — draggable.
-                cardView(concerns[index])
+                cardView(options[index])
                     .offset(drag)
                     .rotationEffect(.degrees(Double(drag.width) / 18))
                     .overlay(alignment: .topLeading) {
@@ -140,7 +147,7 @@ struct RampSwipeConcernScreen: View {
             HStack(spacing: 22) {
                 Label("SKIP", systemImage: "arrow.left")
                     .foregroundStyle(RampStage.textTertiary)
-                Text(verbatim: "\(index + 1) / \(concerns.count)")
+                Text(verbatim: "\(index + 1) / \(options.count)")
                     .foregroundStyle(RampStage.textSecondary).monospacedDigit()
                 Label("PICK", systemImage: "arrow.right")
                     .labelStyle(.trailingIcon)
@@ -157,14 +164,14 @@ struct RampSwipeConcernScreen: View {
         gone = true
         Haptics.fire(.selection)
         withAnimation(.easeIn(duration: 0.28)) { drag = CGSize(width: 720, height: dy) }
-        onSelect(concerns[index].rawValue)
+        onSelect(options[index].id)
     }
 
     private func skip(_ dy: CGFloat) {
         Haptics.fire(.tick)
         withAnimation(.easeIn(duration: 0.24), completion: {
             withAnimation(.spring(response: 0.32, dampingFraction: 0.78)) {
-                index = (index + 1) % concerns.count
+                index = (index + 1) % options.count
                 drag = .zero
             }
         }) {
@@ -172,21 +179,24 @@ struct RampSwipeConcernScreen: View {
         }
     }
 
-    private func cardView(_ concern: RampQuizAnswers.MirrorConcern) -> some View {
-        VStack(spacing: 16) {
-            Image(systemName: concern.icon)
+    private func cardView(_ option: RampSwipeOption) -> some View {
+        VStack(spacing: 14) {
+            Image(systemName: option.icon)
                 .font(.system(size: 38, weight: .regular))
                 .foregroundStyle(RampStage.accentDeep)
                 .frame(width: 92, height: 92)
                 .background(RampStage.accentSoft, in: Circle())
-            Text(LocalizedStringKey(concern.label))
-                .font(RampStage.serif(24, weight: .semibold))
+            Text(LocalizedStringKey(option.label))
+                .font(RampStage.serif(23, weight: .semibold))
                 .foregroundStyle(RampStage.ink)
-            Text(LocalizedStringKey(descriptor(concern)))
-                .font(VType.body)
-                .foregroundStyle(RampStage.textSecondary)
                 .multilineTextAlignment(.center)
-                .fixedSize(horizontal: false, vertical: true)
+            if let sub = option.sub {
+                Text(LocalizedStringKey(sub))
+                    .font(VType.body)
+                    .foregroundStyle(RampStage.textSecondary)
+                    .multilineTextAlignment(.center)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
         }
         .padding(28)
         .frame(width: 282, height: 336)
@@ -205,17 +215,6 @@ struct RampSwipeConcernScreen: View {
                 .strokeBorder(color, lineWidth: 2))
             .rotationEffect(.degrees(rotate))
             .opacity(show ? 1 : 0)
-    }
-
-    private func descriptor(_ c: RampQuizAnswers.MirrorConcern) -> String {
-        switch c {
-        case .breakouts: return "Spots and congestion"
-        case .redness:   return "Flushing and irritation"
-        case .pores:     return "Visible pores and oil"
-        case .texture:   return "Rough, uneven surface"
-        case .dullness:  return "Tired, lacking glow"
-        case .nothing:   return "Nothing jumps out"
-        }
     }
 }
 
