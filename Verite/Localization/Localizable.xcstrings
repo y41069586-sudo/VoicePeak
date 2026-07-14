@@ -32135,6 +32135,216 @@
           }
         }
       }
+    },
+    "Settling in": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Settling in"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Eingewöhnung"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Adaptación"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mise en route"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Rodaggio"
+          }
+        }
+      }
+    },
+    "Easing in actives": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Easing in actives"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Wirkstoffe schleichen ein"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Introduciendo activos"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Introduction des actifs"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Introduzione degli attivi"
+          }
+        }
+      }
+    },
+    "Full strength": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Full strength"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Volle Stärke"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Máxima potencia"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pleine puissance"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Piena intensità"
+          }
+        }
+      }
+    },
+    "Barrier first — cleanse, moisturise, SPF. Actives start day 4.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Barrier first — cleanse, moisturise, SPF. Actives start day 4."
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Barriere zuerst — reinigen, pflegen, SPF. Wirkstoffe ab Tag 4."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Primero la barrera: limpiar, hidratar, SPF. Los activos empiezan el día 4."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "La barrière d’abord — nettoyer, hydrater, SPF. Les actifs commencent au jour 4."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Prima la barriera — detergere, idratare, SPF. Gli attivi partono dal giorno 4."
+          }
+        }
+      }
+    },
+    "Actives come in gently, a few nights a week — no overload.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Actives come in gently, a few nights a week — no overload."
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Wirkstoffe kommen sanft, ein paar Nächte pro Woche — keine Überlastung."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Los activos entran suave, unas noches por semana, sin sobrecarga."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Les actifs arrivent en douceur, quelques soirs par semaine — sans surcharge."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Gli attivi entrano con delicatezza, poche sere a settimana — senza sovraccarico."
+          }
+        }
+      }
+    },
+    "Your skin has settled in — actives at their planned pace.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Your skin has settled in — actives at their planned pace."
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Deine Haut hat sich eingewöhnt — Wirkstoffe im geplanten Takt."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tu piel ya se ha adaptado; los activos van a su ritmo previsto."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ta peau s’est adaptée — les actifs à leur rythme prévu."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "La tua pelle si è adattata — attivi al ritmo previsto."
+          }
+        }
+      }
     }
   },
   "version": "1.0"

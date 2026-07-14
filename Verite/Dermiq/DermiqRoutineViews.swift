@@ -432,6 +432,14 @@ struct DermiqRoutineTab: View {
         .padding(.bottom, 110)
     }
 
+    private func rampIcon(for day: Int) -> String {
+        switch RoutineSchedule.phase(for: day) {
+        case .reset:  return "leaf.fill"
+        case .easing: return "arrow.up.forward"
+        case .full:   return "bolt.fill"
+        }
+    }
+
     private func header(_ plan: RoutinePlan, today: Int) -> some View {
         let amSteps = plan.scheduledSteps(.am, day: today)
         let pmSteps = plan.scheduledSteps(.pm, day: today)
@@ -475,6 +483,30 @@ struct DermiqRoutineTab: View {
                         .background(DQColor.accentSoft.opacity(0.7), in: Capsule())
                 }
             }
+
+            // Ramp phase — makes "why so few steps on day 2" read as a
+            // deliberate barrier-reset, not a broken plan.
+            HStack(spacing: 9) {
+                Image(systemName: rampIcon(for: today))
+                    .font(.system(size: 12, weight: .bold))
+                    .foregroundStyle(DQColor.accentBright)
+                    .frame(width: 20)
+                VStack(alignment: .leading, spacing: 1) {
+                    Text(LocalizedStringKey(RoutineSchedule.phaseTitle(for: today)))
+                        .font(.system(size: 13, weight: .bold, design: .rounded))
+                        .foregroundStyle(DQColor.textPrimary)
+                    Text(LocalizedStringKey(RoutineSchedule.phaseDetail(for: today)))
+                        .font(DQFont.micro)
+                        .foregroundStyle(DQColor.textSecondary)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+                Spacer(minLength: 0)
+            }
+            .padding(.horizontal, 11)
+            .padding(.vertical, 9)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background(DQColor.accentSoft.opacity(0.45),
+                        in: RoundedRectangle(cornerRadius: 12, style: .continuous))
 
             // Today at a glance: one thin line, one quiet caption — and a small
             // moment when the day is done.
