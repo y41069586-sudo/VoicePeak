@@ -156,7 +156,7 @@ struct CompareView: View {
     // MARK: The chart card (round photo + two columns) — the real look
 
     private func chartCard(name: String, overall: Int,
-                           subValue: (DermiqCategory) -> Int?,
+                           subValue: @escaping (DermiqCategory) -> Int?,
                            photo: UIImage?, lead: Bool) -> some View {
         let columns = [GridItem(.flexible(), spacing: 16), GridItem(.flexible(), spacing: 16)]
         return ZStack(alignment: .top) {
