@@ -35,6 +35,7 @@ struct RootView: View {
         // links (verite://duel?d=…) land in the inbox for the Duel tab.
         .onOpenURL { url in
             if ReferralStore.shared.handle(url) { return }
+            if CompareInbox.shared.handle(url) { return }
             DuelInbox.shared.handle(url)
         }
     }

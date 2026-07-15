@@ -50,6 +50,8 @@ struct DermiqTabShell: View {
     /// The user opened the paywall by trying to scan → once they unlock,
     /// carry them straight into the scan they wanted.
     @State private var scanAfterUnlock = false
+    /// A tapped compare link (verite://compare) lands here.
+    @State private var compareInbox = CompareInbox.shared
 
     var body: some View {
         // Stock SwiftUI TabView — no custom bar. Built against the iOS 26 SDK
@@ -117,6 +119,15 @@ struct DermiqTabShell: View {
             case "routine": withAnimation(VMotion.snappy) { tab = .routine }
             case "scan": withAnimation(VMotion.snappy) { tab = .scan }
             default: break
+            }
+        }
+        // A tapped compare link opens the face-off sheet.
+        .sheet(isPresented: Binding(
+            get: { compareInbox.pending != nil },
+            set: { if !$0 { compareInbox.consume() } }
+        )) {
+            if let opponent = compareInbox.pending {
+                CompareView(opponent: opponent, onScanFirst: { startScan() })
             }
         }
     }
@@ -302,6 +313,8 @@ struct DermiqScanHome: View {
                 if let latest = scans.first {
                     lastReadingRow(latest)
                         .padding(.horizontal, 24)
+                    compareRow(latest)
+                        .padding(.horizontal, 24)
                 }
 
                 tipCard
@@ -310,6 +323,48 @@ struct DermiqScanHome: View {
             .padding(.bottom, 28)
         }
         .scrollIndicators(.hidden)
+    }
+
+    /// Invite a friend to a score face-off: shares your card (verite://compare)
+    /// so they can scan and see how you both stack up. Only when you've scanned.
+    private func compareRow(_ scan: ScanRecord) -> some View {
+        let name = profiles.first?.displayName ?? ""
+        return Group {
+            if let analysis = scan.analysis,
+               let url = CompareLink.url(for: ComparePayload.mine(
+                   name: name, analysis: analysis,
+                   photo: DermiqImageStore.load(scan.photoFilename))) {
+                ShareLink(item: url,
+                          message: Text("I scanned my skin — see how yours compares.")) {
+                    HStack(spacing: 12) {
+                        Image(systemName: "person.2.fill")
+                            .font(.system(size: 16, weight: .semibold))
+                            .foregroundStyle(DQColor.accentBright)
+                            .frame(width: 40, height: 40)
+                            .background(DQColor.accentBright.opacity(0.10),
+                                        in: RoundedRectangle(cornerRadius: 12, style: .continuous))
+                        VStack(alignment: .leading, spacing: 1) {
+                            Text("Compare with a friend")
+                                .font(.system(size: 16, weight: .bold, design: .rounded))
+                                .foregroundStyle(DQColor.textPrimary)
+                            Text("Send your card — higher score wins.")
+                                .font(DQFont.micro)
+                                .foregroundStyle(DQColor.textSecondary)
+                                .lineLimit(1)
+                        }
+                        Spacer()
+                        Image(systemName: "square.and.arrow.up")
+                            .font(.system(size: 15, weight: .semibold))
+                            .foregroundStyle(DQColor.textSecondary)
+                    }
+                    .padding(14)
+                    .background(DQColor.surface, in: RoundedRectangle(cornerRadius: DQRadius.card, style: .continuous))
+                    .overlay(RoundedRectangle(cornerRadius: DQRadius.card, style: .continuous)
+                        .strokeBorder(DQColor.stroke, lineWidth: 1))
+                }
+                .buttonStyle(PressableStyle())
+            }
+        }
     }
 
     /// The home hero — a full-bleed scan photo (the UMax pattern) with a dark

@@ -71,6 +71,41 @@
         }
       }
     },
+    "%@ challenged you": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ fordert dich heraus"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ challenged you"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ te ha retado"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ te défie"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ ti ha sfidato"
+          }
+        }
+      }
+    },
     "%@ in 14 days": {
       "extractionState": "manual",
       "localizations": {
@@ -102,6 +137,41 @@
           "stringUnit": {
             "state": "translated",
             "value": "%@ in 14 giorni"
+          }
+        }
+      }
+    },
+    "%@ is ahead": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ führt"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ is ahead"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ va ganando"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ est en tête"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ è in vantaggio"
           }
         }
       }
@@ -3501,6 +3571,41 @@
         }
       }
     },
+    "Compare with a friend": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mit Freund vergleichen"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Compare with a friend"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Comparar con un amigo"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Comparer avec un ami"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Confronta con un amico"
+          }
+        }
+      }
+    },
     "CREATE YOUR ACCOUNT": {
       "extractionState": "manual",
       "localizations": {
@@ -6266,6 +6371,41 @@
         }
       }
     },
+    "Face-off": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Face-off"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Face-off"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Duelo"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Face-à-face"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sfida"
+          }
+        }
+      }
+    },
     "For:": {
       "extractionState": "manual",
       "localizations": {
@@ -7386,6 +7526,41 @@
         }
       }
     },
+    "Here's my skin score — see how we compare.": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hier ist mein Haut-Score — schau, wie wir abschneiden."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Here's my skin score — see how we compare."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aquí está mi puntuación de piel: mira cómo comparamos."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Voici mon score de peau — regarde comment on se compare."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ecco il mio punteggio pelle — guarda come ci confrontiamo."
+          }
+        }
+      }
+    },
     "HOW TO USE": {
       "extractionState": "manual",
       "localizations": {
@@ -7876,6 +8051,41 @@
         }
       }
     },
+    "I scanned my skin — see how yours compares.": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ich hab meine Haut gescannt — schau, wie deine abschneidet."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "I scanned my skin — see how yours compares."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Escaneé mi piel: mira cómo se compara la tuya."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "J'ai scanné ma peau — vois comment la tienne se compare."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ho scansionato la mia pelle — guarda come si confronta la tua."
+          }
+        }
+      }
+    },
     "I want mine": {
       "extractionState": "manual",
       "localizations": {
@@ -8222,6 +8432,41 @@
           "stringUnit": {
             "state": "translated",
             "value": "Invita amici"
+          }
+        }
+      }
+    },
+    "It's a tie": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Unentschieden"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "It's a tie"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Empate"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Égalité"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pareggio"
           }
         }
       }
@@ -12426,6 +12671,41 @@
         }
       }
     },
+    "Scan my face": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Gesicht scannen"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Scan my face"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Escanear mi cara"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Scanner mon visage"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Scansiona il mio viso"
+          }
+        }
+      }
+    },
     "SCAN TIMELINE": {
       "extractionState": "manual",
       "localizations": {
@@ -12461,6 +12741,41 @@
         }
       }
     },
+    "Scan your face to see how your skin scores stack up.": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Scanne dein Gesicht und sieh, wie eure Haut-Scores abschneiden."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Scan your face to see how your skin scores stack up."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Escanea tu cara para ver cómo se comparan vuestras puntuaciones."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Scanne ton visage pour voir comment vos scores se comparent."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Scansiona il viso per vedere come si confrontano i punteggi."
+          }
+        }
+      }
+    },
     "SCORE OVER TIME": {
       "extractionState": "manual",
       "localizations": {
@@ -12492,6 +12807,76 @@
           "stringUnit": {
             "state": "translated",
             "value": "PUNTEGGIO NEL TEMPO"
+          }
+        }
+      }
+    },
+    "Send my card back": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Meine Karte zurückschicken"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Send my card back"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Devolver mi tarjeta"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Renvoyer ma carte"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Rimanda la mia card"
+          }
+        }
+      }
+    },
+    "Send your card — higher score wins.": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Schick deine Karte — höherer Score gewinnt."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Send your card — higher score wins."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Envía tu tarjeta: gana la puntuación más alta."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Envoie ta carte — le meilleur score gagne."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Invia la tua card — vince il punteggio più alto."
           }
         }
       }
@@ -12912,41 +13297,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "Acido salicilico 2%"
-          }
-        }
-      }
-    },
-    "Scan my face": {
-      "extractionState": "manual",
-      "localizations": {
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Gesicht scannen"
-          }
-        },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Scan my face"
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Escanear mi cara"
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Scanner mon visage"
-          }
-        },
-        "it": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Scansiona il mio viso"
           }
         }
       }
@@ -16762,6 +17112,41 @@
           "stringUnit": {
             "state": "translated",
             "value": "Hai completato 14 giorni"
+          }
+        }
+      }
+    },
+    "You're ahead": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Du führst"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You're ahead"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vas ganando"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tu es en tête"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sei in vantaggio"
           }
         }
       }
