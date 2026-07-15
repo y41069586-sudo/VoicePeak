@@ -953,6 +953,8 @@ private struct DermiqStepRow: View {
     let onToggle: () -> Void
 
     @State private var expanded = false
+    /// Second disclosure stage: the why + product examples.
+    @State private var showWhy = false
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
@@ -1005,7 +1007,10 @@ private struct DermiqStepRow: View {
                 // The chevron opens the detail (why + examples) — quiet, no chrome.
                 Button {
                     Haptics.fire(.tick)
-                    withAnimation(VMotion.snappy) { expanded.toggle() }
+                    withAnimation(VMotion.snappy) {
+                        expanded.toggle()
+                        if !expanded { showWhy = false }   // fresh next time
+                    }
                 } label: {
                     Image(systemName: "chevron.down")
                         .font(.system(size: 12, weight: .semibold))
@@ -1018,8 +1023,11 @@ private struct DermiqStepRow: View {
                 .accessibilityLabel(expanded ? "Hide details" : "Show details")
             }
 
+            // Two-stage disclosure: expanding shows ONLY the application —
+            // the thing you need in the bathroom. "Why?" (+ products) hides
+            // behind its own small chevron so it never floods the row.
             if expanded {
-                VStack(alignment: .leading, spacing: 12) {
+                VStack(alignment: .leading, spacing: 10) {
                     // HOW TO USE — the practical instruction, front and centre.
                     VStack(alignment: .leading, spacing: 4) {
                         Label("HOW TO USE", systemImage: "hand.draw")
@@ -1032,30 +1040,51 @@ private struct DermiqStepRow: View {
                             .fixedSize(horizontal: false, vertical: true)
                     }
 
-                    // WHY — the personal, score-tied reason.
-                    VStack(alignment: .leading, spacing: 4) {
-                        Text("WHY THIS")
-                            .font(DQFont.mono(9, weight: .bold))
-                            .foregroundStyle(DQColor.textSecondary)
-                            .tracking(1.5)
-                        Text(step.why)
-                            .font(DQFont.caption)
-                            .foregroundStyle(DQColor.textSecondary)
-                            .fixedSize(horizontal: false, vertical: true)
+                    // The second stage — quiet text button with its own arrow.
+                    Button {
+                        Haptics.fire(.tick)
+                        withAnimation(VMotion.snappy) { showWhy.toggle() }
+                    } label: {
+                        HStack(spacing: 4) {
+                            Text("Why this?")
+                                .font(.system(size: 12, weight: .semibold, design: .rounded))
+                            Image(systemName: "chevron.down")
+                                .font(.system(size: 9, weight: .bold))
+                                .rotationEffect(.degrees(showWhy ? 180 : 0))
+                        }
+                        .foregroundStyle(DQColor.textSecondary)
                     }
+                    .buttonStyle(.plain)
 
-                    if !step.examples.isEmpty {
-                        VStack(alignment: .leading, spacing: 3) {
-                            Text("PRODUCTS ($ → $$$)")
-                                .font(DQFont.mono(9, weight: .bold))
-                                .foregroundStyle(DQColor.textSecondary)
-                                .tracking(1.5)
-                            ForEach(step.examples, id: \.self) { example in
-                                Text(LocalizedStringKey(example))
+                    if showWhy {
+                        VStack(alignment: .leading, spacing: 12) {
+                            // WHY — the personal, score-tied reason.
+                            VStack(alignment: .leading, spacing: 4) {
+                                Text("WHY THIS")
+                                    .font(DQFont.mono(9, weight: .bold))
+                                    .foregroundStyle(DQColor.textSecondary)
+                                    .tracking(1.5)
+                                Text(step.why)
                                     .font(DQFont.caption)
                                     .foregroundStyle(DQColor.textSecondary)
+                                    .fixedSize(horizontal: false, vertical: true)
+                            }
+
+                            if !step.examples.isEmpty {
+                                VStack(alignment: .leading, spacing: 3) {
+                                    Text("PRODUCTS ($ → $$$)")
+                                        .font(DQFont.mono(9, weight: .bold))
+                                        .foregroundStyle(DQColor.textSecondary)
+                                        .tracking(1.5)
+                                    ForEach(step.examples, id: \.self) { example in
+                                        Text(LocalizedStringKey(example))
+                                            .font(DQFont.caption)
+                                            .foregroundStyle(DQColor.textSecondary)
+                                    }
+                                }
                             }
                         }
+                        .transition(.opacity.combined(with: .move(edge: .top)))
                     }
                 }
                 .padding(.leading, 34)
