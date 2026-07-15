@@ -615,52 +615,66 @@ struct DermiqRoutineTab: View {
         let extras = kit.filter { !$0.isEssential }
         let visible = kitEssentialsOnly ? essentials : kit
         DisclosureGroup {
-            VStack(spacing: 0) {
+            // Airy layout: every product is its own breathing mini-card —
+            // name row, usage chips, a HOW-TO line, and the budget pick —
+            // instead of dense divider-rows.
+            VStack(spacing: 10) {
                 if !extras.isEmpty {
                     kitSegment(essentialCount: essentials.count, totalCount: kit.count)
-                        .padding(.top, 4)
-                        .padding(.bottom, 6)
+                        .padding(.top, 8)
                 }
                 ForEach(visible) { product in
-                    HStack(alignment: .top, spacing: 10) {
-                        Image(systemName: "bag")
-                            .font(.system(size: 12, weight: .semibold))
-                            .foregroundStyle(DQColor.accentBright)
-                            .frame(width: 22, height: 22)
-                            .background(DQColor.accentSoft.opacity(0.7), in: Circle())
-                            .padding(.top, 2)
-                        VStack(alignment: .leading, spacing: 2) {
-                            HStack(spacing: 6) {
-                                Text(LocalizedStringKey(product.productType))
-                                    .font(.system(size: 14, weight: .semibold, design: .rounded))
-                                    .foregroundStyle(DQColor.textPrimary)
-                                if !product.isEssential {
-                                    Text("Add later")
-                                        .font(DQFont.mono(8, weight: .bold))
-                                        .tracking(0.5)
-                                        .foregroundStyle(DQColor.textSecondary)
-                                        .padding(.horizontal, 5).padding(.vertical, 2)
-                                        .background(DQColor.stroke, in: Capsule())
-                                }
-                                Spacer(minLength: 4)
-                                Text(verbatim: product.tiers)
-                                    .font(DQFont.mono(10, weight: .semibold))
-                                    .foregroundStyle(DQColor.textSecondary)
-                            }
-                            Text(verbatim: product.usage)
-                                .font(DQFont.micro)
+                    VStack(alignment: .leading, spacing: 8) {
+                        HStack(alignment: .firstTextBaseline, spacing: 10) {
+                            Image(systemName: "bag")
+                                .font(.system(size: 12, weight: .semibold))
                                 .foregroundStyle(DQColor.accentBright)
-                            if let cheapest = product.cheapest {
-                                Text(LocalizedStringKey(cheapest))
-                                    .font(DQFont.micro)
+                                .frame(width: 24, height: 24)
+                                .background(DQColor.accentSoft.opacity(0.7), in: Circle())
+                            Text(LocalizedStringKey(product.productType))
+                                .font(.system(size: 15, weight: .bold, design: .rounded))
+                                .foregroundStyle(DQColor.textPrimary)
+                                .fixedSize(horizontal: false, vertical: true)
+                            Spacer(minLength: 6)
+                            Text(verbatim: product.tiers)
+                                .font(DQFont.mono(10, weight: .semibold))
+                                .foregroundStyle(DQColor.textSecondary)
+                        }
+
+                        HStack(spacing: 6) {
+                            Text(verbatim: product.usage)
+                                .font(.system(size: 11, weight: .semibold, design: .rounded))
+                                .foregroundStyle(DQColor.accentBright)
+                                .padding(.horizontal, 8).padding(.vertical, 3)
+                                .background(DQColor.accentSoft.opacity(0.7), in: Capsule())
+                            if !product.isEssential {
+                                Text("Add later")
+                                    .font(.system(size: 11, weight: .semibold, design: .rounded))
                                     .foregroundStyle(DQColor.textSecondary)
+                                    .padding(.horizontal, 8).padding(.vertical, 3)
+                                    .overlay(Capsule().strokeBorder(DQColor.stroke, lineWidth: 1))
                             }
                         }
+
+                        Text(LocalizedStringKey(product.howTo))
+                            .font(DQFont.caption)
+                            .foregroundStyle(DQColor.textSecondary)
+                            .fixedSize(horizontal: false, vertical: true)
+
+                        if let cheapest = product.cheapest {
+                            HStack(spacing: 5) {
+                                Image(systemName: "tag")
+                                    .font(.system(size: 10, weight: .semibold))
+                                Text(LocalizedStringKey(cheapest))
+                            }
+                            .font(DQFont.micro)
+                            .foregroundStyle(DQColor.textSecondary)
+                        }
                     }
-                    .padding(.vertical, 9)
-                    if product.id != visible.last?.id {
-                        Divider().overlay(DQColor.stroke)
-                    }
+                    .padding(14)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .background(DQColor.background,
+                                in: RoundedRectangle(cornerRadius: 14, style: .continuous))
                 }
                 Group {
                     if kitEssentialsOnly && !extras.isEmpty {
@@ -673,7 +687,7 @@ struct DermiqRoutineTab: View {
                 .foregroundStyle(DQColor.textSecondary)
                 .fixedSize(horizontal: false, vertical: true)
                 .frame(maxWidth: .infinity, alignment: .leading)
-                .padding(.top, 8)
+                .padding(.top, 2)
             }
         } label: {
             HStack(spacing: 10) {

@@ -64,6 +64,7 @@ struct KitProduct: Identifiable {
     let productType: String
     let active: String
     let usage: String         // "AM + PM", "PM · 2×/week", …
+    let howTo: String         // one-line application instruction
     let cheapest: String?     // first example (the $ tier)
     let tiers: String         // "$ – $$$"
     /// The starter four: cleanser, moisturizer, SPF + the single highest-
@@ -126,6 +127,7 @@ extension RoutinePlan {
                 productType: step.productType,
                 active: step.active,
                 usage: usage,
+                howTo: RoutineHowTo.instruction(for: step),
                 cheapest: step.examples.first,
                 tiers: priceTier,
                 isEssential: isEssential
