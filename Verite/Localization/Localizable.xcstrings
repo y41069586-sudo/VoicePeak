@@ -2451,6 +2451,41 @@
         }
       }
     },
+    "At %lld, breakouts need a retinoid — the proven route, no prescription needed.": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bei %lld brauchen Unreinheiten ein Retinoid — der bewiesene Weg, rezeptfrei erhältlich."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "At %lld, breakouts need a retinoid — the proven route, no prescription needed."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Con %lld, los brotes necesitan un retinoide — la vía probada, sin receta."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "À %lld, les imperfections demandent un rétinoïde — la voie prouvée, sans ordonnance."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A %lld, le imperfezioni richiedono un retinoide — la via provata, senza ricetta."
+          }
+        }
+      }
+    },
     "At %lld, glow needs real resurfacing — glycolic delivers it.": {
       "extractionState": "manual",
       "localizations": {
@@ -12461,6 +12496,41 @@
         }
       }
     },
+    "Retinal treatment": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Retinal-Behandlung"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Retinal treatment"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tratamiento con retinal"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Soin au rétinal"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Trattamento al retinale"
+          }
+        }
+      }
+    },
     "Retinaldehyde 0.05%": {
       "extractionState": "manual",
       "localizations": {
@@ -12492,6 +12562,41 @@
           "stringUnit": {
             "state": "translated",
             "value": "Retinaldeide 0.05%"
+          }
+        }
+      }
+    },
+    "Retinaldehyde 0.1%": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Retinaldehyd 0,1 %"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Retinaldehyde 0.1%"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Retinaldehído 0,1 %"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Rétinaldéhyde 0,1 %"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Retinaldeide 0,1%"
           }
         }
       }

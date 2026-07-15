@@ -274,19 +274,36 @@ enum RoutineBuilder {
         var pm: [RoutineStep] = [baseCleanser(feel: feel, block: .pm)]
 
         // Targeted steps — at most two per block so blocks stay 3–5 steps.
+        // Sensitive skin gets HALF the active load (one per block): stacking
+        // four actives on reactive skin is how barriers break and users quit.
+        let totalCap = feel == .sensitive ? 2 : 4
+        // One product per active FAMILY: without this, two low scores could
+        // both resolve to salicylic (texture + blemishes), niacinamide
+        // (redness + pores) or two retinoids (texture + blemishes severe) —
+        // duplicate products at best, a double retinoid dose at worst.
+        var usedFamilies: Set<String> = []
         var amTargets = 0, pmTargets = 0
         for target in ordered {
+            guard amTargets + pmTargets < totalCap else { break }
             var step = targetedStep(for: target)
             if feel == .sensitive { step = soften(step) }
+            let family = activeFamily(of: step)
+            guard !usedFamilies.contains(family) else { continue }
             switch preferredBlock(for: target.category) {
             case .am where amTargets < 2:
-                am.append(step); amTargets += 1
+                am.append(step); amTargets += 1; usedFamilies.insert(family)
             case .pm where pmTargets < 2:
-                pm.append(step); pmTargets += 1
+                pm.append(step); pmTargets += 1; usedFamilies.insert(family)
             default:
-                // Preferred block is full — put it in the other one if it has room.
-                if pmTargets < 2 { pm.append(step); pmTargets += 1 }
-                else if amTargets < 2 { am.append(step); amTargets += 1 }
+                // Preferred block is full — overflow to the other one, EXCEPT
+                // that photolabile / photosensitizing actives (retinoids, AHAs)
+                // never move into the morning. Better a skipped step than a
+                // retinoid under the sun.
+                if pmTargets < 2 {
+                    pm.append(step); pmTargets += 1; usedFamilies.insert(family)
+                } else if amTargets < 2, !isEveningOnly(step) {
+                    am.append(step); amTargets += 1; usedFamilies.insert(family)
+                }
             }
         }
 
@@ -412,6 +429,27 @@ enum RoutineBuilder {
         }
     }
 
+    /// Coarse active family for deduping (one retinoid, one BHA, one
+    /// niacinamide … per plan, regardless of which score selected it).
+    private static func activeFamily(of step: RoutineStep) -> String {
+        let a = step.active.lowercased()
+        if a.contains("retina") || a.contains("retinol") || a.contains("adapalene") { return "retinoid" }
+        if a.contains("salicylic") || a.contains("bha") { return "bha" }
+        if a.contains("glycolic") || a.contains("lactic") || a.contains("gluconolactone") { return "aha" }
+        if a.contains("niacinamide") { return "niacinamide" }
+        if a.contains("ascorbic") || a.contains("vitamin c") { return "vitc" }
+        if a.contains("azelaic") { return "azelaic" }
+        if a.contains("tranexamic") { return "txa" }
+        if a.contains("hyaluronic") || a.contains("squalane") { return "hydrators" }
+        return a
+    }
+
+    /// Retinoids are photolabile, AHAs photosensitizing — evening only, ever.
+    private static func isEveningOnly(_ step: RoutineStep) -> Bool {
+        let family = activeFamily(of: step)
+        return family == "retinoid" || family == "aha"
+    }
+
     /// Below this, a metric counts as SEVERE and gets the stronger option.
     private static let severeThreshold = 55
 
@@ -519,13 +557,17 @@ enum RoutineBuilder {
                 examples: ["The Ordinary HA 2% · $", "La Roche-Posay Hyalu B5 · $$$"]
             )
         case .blemishes:
+            // Retinal, not adapalene: adapalene is prescription-only in the EU
+            // (incl. Germany) — recommending it OTC would dead-end most users.
+            // Retinaldehyde is the strongest retinoid freely available there,
+            // with solid acne evidence.
             return severe
             ? RoutineStep(
                 key: "t.blemishes",
-                productType: "Retinoid treatment",
-                active: "Adapalene 0.1%",
-                why: "At \(score), blemishes need the proven prescription-grade route.",
-                examples: ["Differin Gel · $$", "La Roche-Posay Effaclar Adapalene · $$"]
+                productType: "Retinal treatment",
+                active: "Retinaldehyde 0.1%",
+                why: "At \(score), breakouts need a retinoid — the proven route, no prescription needed.",
+                examples: ["Geek & Gorgeous A-Game 10 · $$", "Avène Retrinal 0.1 · $$$"]
             )
             : RoutineStep(
                 key: "t.blemishes",
