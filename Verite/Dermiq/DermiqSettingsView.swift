@@ -308,12 +308,6 @@ struct DermiqSettingsView: View {
         try? modelContext.delete(model: ScanRecord.self)
         try? modelContext.delete(model: RoutinePlan.self)
         try? modelContext.delete(model: UserProfile.self)
-        try? modelContext.delete(model: Scan.self)
-        try? modelContext.delete(model: HalfFaceTest.self)
-        try? modelContext.delete(model: RoutineItem.self)
-        try? modelContext.delete(model: Streak.self)
-        try? modelContext.delete(model: SavingsLedger.self)
-        try? modelContext.delete(model: Product.self) // seed catalog reseeds on next launch
         try? modelContext.save()
 
         DermiqImageStore.wipeAll()

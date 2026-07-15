@@ -30,7 +30,6 @@ struct RootView: View {
         .veriteAnimation(value: onboardingComplete)
         .tint(DQColor.accent)
         .preferredColorScheme(.light) // warm GlamUp light, app-wide
-        .task { SeedData.seedCatalogIfNeeded(modelContext) }
         // Referral links (verite://invite?…) credit bonus scans; compare
         // links (verite://compare?d=…) open the friend face-off sheet.
         .onOpenURL { url in

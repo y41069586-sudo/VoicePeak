@@ -7,8 +7,6 @@ import SwiftUI
 @Observable
 @MainActor
 final class PurchaseManager {
-    // Fully qualified: the app also declares a SwiftData `Product` model, which
-    // would otherwise shadow StoreKit's `Product` within this module.
     private(set) var products: [StoreKit.Product] = []
     private(set) var isPro = false
     private(set) var isPurchasing = false
