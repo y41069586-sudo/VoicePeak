@@ -295,9 +295,6 @@ struct RampSampleReadingScreen: View {
 
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var reveal: Double = 0        // 0 → 1 count-up driver
-    /// The numbers count up but STAY blurred — the same locked teaser the
-    /// real results wear behind the paywall. It never resolves to sharp.
-    private let blurAmount: CGFloat = 8
 
     // Illustrative reading — Overall leads, then five sub-scores.
     private let cells: [(String, Int, Bool)] = [
@@ -348,8 +345,21 @@ struct RampSampleReadingScreen: View {
         }
         .task {
             if reduceMotion { reveal = 1; return }
-            try? await Task.sleep(for: .milliseconds(320))
-            withAnimation(.easeOut(duration: 1.15)) { reveal = 1 }
+            try? await Task.sleep(for: .milliseconds(420))
+            // The SAME stepped count-up the real results run: discrete ticks
+            // through withAnimation so the monospaced digits genuinely roll,
+            // decelerating as they land — not one long linear morph.
+            let steps = 26
+            for i in 1...steps {
+                let t = Double(i) / Double(steps)
+                withAnimation(.linear(duration: 0.05)) {
+                    reveal = 1 - pow(1 - t, 2.4)
+                }
+                if i % 2 == 0 { Haptics.fire(.tick) }
+                try? await Task.sleep(for: .seconds(0.026 + 0.055 * t))
+                if Task.isCancelled { return }
+            }
+            withAnimation(.easeOut(duration: 0.12)) { reveal = 1 }
         }
     }
 
@@ -384,11 +394,14 @@ struct RampSampleReadingScreen: View {
                 .font(.system(size: 13, weight: .semibold, design: .rounded))
                 .foregroundStyle(RampStage.textSecondary)
                 .lineLimit(1)
+            // Exactly the locked-results treatment: number blurred at 9,
+            // bar softly blurred + dimmed — the familiar iOS-teaser look,
+            // not a flat smudge over everything.
             Text(verbatim: "\(shown)")
                 .font(.system(size: 26, weight: .heavy, design: .rounded).monospacedDigit())
                 .foregroundStyle(lead ? RampStage.accentDeep : RampStage.ink)
                 .contentTransition(.numericText(value: Double(shown)))
-                .blur(radius: blurAmount)
+                .blur(radius: 9)
             GeometryReader { proxy in
                 ZStack(alignment: .leading) {
                     Capsule().fill(RampStage.hair.opacity(0.7))
@@ -398,6 +411,8 @@ struct RampSampleReadingScreen: View {
                 }
             }
             .frame(height: 6)
+            .blur(radius: 4)
+            .opacity(0.7)
         }
     }
 
