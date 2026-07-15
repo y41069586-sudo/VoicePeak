@@ -273,10 +273,11 @@ enum RoutineBuilder {
         var am: [RoutineStep] = [baseCleanser(feel: feel, block: .am)]
         var pm: [RoutineStep] = [baseCleanser(feel: feel, block: .pm)]
 
-        // Targeted steps — at most two per block so blocks stay 3–5 steps.
-        // Sensitive skin gets HALF the active load (one per block): stacking
-        // four actives on reactive skin is how barriers break and users quit.
-        let totalCap = feel == .sensitive ? 2 : 4
+        // Targeted steps — ONE active per block, for everyone. A lean routine
+        // (cleanse → one treatment → moisturize → SPF) is what people actually
+        // stick to, and consistency beats stacking; the two slots still go to
+        // the two worst-scoring families, so the plan stays personal.
+        let totalCap = 2
         // One product per active FAMILY: without this, two low scores could
         // both resolve to salicylic (texture + blemishes), niacinamide
         // (redness + pores) or two retinoids (texture + blemishes severe) —
@@ -290,18 +291,18 @@ enum RoutineBuilder {
             let family = activeFamily(of: step)
             guard !usedFamilies.contains(family) else { continue }
             switch preferredBlock(for: target.category) {
-            case .am where amTargets < 2:
+            case .am where amTargets < 1:
                 am.append(step); amTargets += 1; usedFamilies.insert(family)
-            case .pm where pmTargets < 2:
+            case .pm where pmTargets < 1:
                 pm.append(step); pmTargets += 1; usedFamilies.insert(family)
             default:
                 // Preferred block is full — overflow to the other one, EXCEPT
                 // that photolabile / photosensitizing actives (retinoids, AHAs)
                 // never move into the morning. Better a skipped step than a
                 // retinoid under the sun.
-                if pmTargets < 2 {
+                if pmTargets < 1 {
                     pm.append(step); pmTargets += 1; usedFamilies.insert(family)
-                } else if amTargets < 2, !isEveningOnly(step) {
+                } else if amTargets < 1, !isEveningOnly(step) {
                     am.append(step); amTargets += 1; usedFamilies.insert(family)
                 }
             }

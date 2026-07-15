@@ -884,9 +884,10 @@ struct DermiqRoutineTab: View {
                 .padding(.bottom, 8)
                 .animation(VMotion.gentle, value: complete)
 
-                ForEach(steps) { step in
+                ForEach(Array(steps.enumerated()), id: \.element.id) { index, step in
                     DermiqStepRow(
                         step: step,
+                        order: index + 1,
                         done: plan.isDone(day: day, block: block, step: step)
                     ) {
                         toggle(plan, day: day, block: block, step: step)
@@ -946,6 +947,8 @@ struct DermiqRoutineTab: View {
 /// and product examples live behind a chevron.
 private struct DermiqStepRow: View {
     let step: RoutineStep
+    /// 1-based position inside the block — the visible "do this Nth" order.
+    var order: Int = 0
     let done: Bool
     let onToggle: () -> Void
 
@@ -962,6 +965,15 @@ private struct DermiqStepRow: View {
                             .foregroundStyle(done ? DQColor.deltaUp : DQColor.stroke)
                             .contentTransition(.symbolEffect(.replace))
                             .scaleEffect(done ? 1.0 : 0.96)
+                        // The ORDER — answers "when?" at a glance: steps run
+                        // top to bottom, 1 → n.
+                        if order > 0 {
+                            Text(verbatim: "\(order)")
+                                .font(.system(size: 12, weight: .bold, design: .rounded).monospacedDigit())
+                                .foregroundStyle(done ? DQColor.textSecondary : DQColor.accentBright)
+                                .frame(width: 22, height: 22)
+                                .background(DQColor.accentSoft.opacity(done ? 0.4 : 0.8), in: Circle())
+                        }
                         VStack(alignment: .leading, spacing: 2) {
                             HStack(spacing: 6) {
                                 Text(LocalizedStringKey(step.productType))
