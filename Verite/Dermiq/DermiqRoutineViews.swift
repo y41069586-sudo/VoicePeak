@@ -446,28 +446,6 @@ struct DermiqRoutineTab: View {
                 }
             }
 
-            // Focus chips: the plan reads all seven metrics, the header shows
-            // the top-priority three so the row never overflows.
-            HStack(spacing: 6) {
-                ForEach(Array(plan.targets.prefix(3))) { target in
-                    Text(LocalizedStringKey(target.category.displayName))
-                        .font(.system(size: 11.5, weight: .semibold, design: .rounded))
-                        .foregroundStyle(DQColor.accentBright)
-                        .lineLimit(1)
-                        .padding(.horizontal, 9)
-                        .padding(.vertical, 5)
-                        .background(DQColor.accentSoft.opacity(0.7), in: Capsule())
-                }
-                if plan.targets.count > 3 {
-                    Text(verbatim: "+\(plan.targets.count - 3)")
-                        .font(.system(size: 11.5, weight: .bold, design: .rounded))
-                        .foregroundStyle(DQColor.textSecondary)
-                        .padding(.horizontal, 8)
-                        .padding(.vertical, 5)
-                        .background(DQColor.stroke.opacity(0.6), in: Capsule())
-                }
-            }
-
             // Ramp phase — makes "why so few steps on day 2" read as a
             // deliberate barrier-reset, not a broken plan.
             HStack(spacing: 9) {
