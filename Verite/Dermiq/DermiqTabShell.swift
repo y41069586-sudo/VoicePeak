@@ -143,8 +143,12 @@ struct DermiqTabShell: View {
             if useCredit { ReferralStore.shared.consumeCredit() }
             showFlow = true
         case .blockedNeedsPro:
-            quotaProCap = false
-            showQuotaSheet = true
+            // Non-Pro out of free scans → the Pro paywall directly. It's the
+            // real "get Pro" surface (score, 7 metrics, plan, plans to buy);
+            // inviting a friend stays as a small secondary link inside it, not
+            // the headline.
+            scanAfterUnlock = true
+            showPaywall = true
         case .blockedProWeekly(let nextScan):
             quotaProCap = true
             quotaNextFree = nextScan
