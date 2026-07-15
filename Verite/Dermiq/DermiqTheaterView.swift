@@ -268,11 +268,7 @@ struct FaceField: Sendable {
         await Task.detached(priority: .userInitiated) {
             // Face box fallback (y-down) so the field always draws.
             var box = CGRect(x: 0.28, y: 0.20, width: 0.44, height: 0.52)
-            // The REAL face outline: Vision's faceContour (ear→chin→ear) closed
-            // with an arc over the forehead. Dots are kept inside this polygon,
-            // so they sit on actual skin — not on hair, ears or background.
-            var polygon: [CGPoint] = []
-
+            // Face box (y-down whole-image coords).
             if let cgImage = image.cgImage {
                 let request = VNDetectFaceLandmarksRequest()
                 let handler = VNImageRequestHandler(
@@ -284,47 +280,21 @@ struct FaceField: Sendable {
                 if let face = request.results?.max(by: { $0.boundingBox.height < $1.boundingBox.height }) {
                     let b = face.boundingBox
                     box = CGRect(x: b.minX, y: 1 - b.minY - b.height, width: b.width, height: b.height)
-
-                    if let contour = face.landmarks?.faceContour, contour.pointCount >= 5 {
-                        // Landmark points are normalized INSIDE the bounding box,
-                        // y-up. Map to whole-image, y-down coordinates.
-                        let jaw = contour.normalizedPoints.map { p in
-                            CGPoint(x: b.minX + p.x * b.width,
-                                    y: 1 - (b.minY + p.y * b.height))
-                        }
-                        polygon = jaw
-                        // Close across the forehead: quadratic arc from the last
-                        // contour point (one temple) over a peak above the brows
-                        // back to the first (other temple). The peak sits lower
-                        // than the hairline so a fringe doesn't collect dots.
-                        if let start = jaw.last, let end = jaw.first {
-                            let peak = CGPoint(x: (start.x + end.x) / 2,
-                                               y: box.minY + box.height * 0.12)
-                            for i in 1..<12 {
-                                let t = CGFloat(i) / 12
-                                let x = (1-t)*(1-t)*start.x + 2*(1-t)*t*peak.x + t*t*end.x
-                                let y = (1-t)*(1-t)*start.y + 2*(1-t)*t*peak.y + t*t*end.y
-                                polygon.append(CGPoint(x: x, y: y))
-                            }
-                        }
-                        // Inset the whole polygon ~10% toward its centroid so
-                        // dots sit clearly ON skin — never touching the jawline,
-                        // ears or hair edge.
-                        if polygon.count >= 8 {
-                            let cx = polygon.map(\.x).reduce(0, +) / CGFloat(polygon.count)
-                            let cy = polygon.map(\.y).reduce(0, +) / CGFloat(polygon.count)
-                            polygon = polygon.map { p in
-                                CGPoint(x: cx + (p.x - cx) * 0.90,
-                                        y: cy + (p.y - cy) * 0.90)
-                            }
-                        }
-                    }
                 }
             }
 
-            // Jittered sampling grid over the face box; keep a point only if it
-            // lies on the face — inside the contour polygon when we have one,
-            // else inside the inscribed ellipse (fallback).
+            // Vision's box runs roughly brow→chin. Lift the top to take in the
+            // forehead so the field covers the WHOLE face, not just nose→chin.
+            let lift = box.height * 0.22
+            let newTop = max(0, box.minY - lift)
+            box = CGRect(x: box.minX, y: newTop,
+                         width: box.width,
+                         height: min(1 - newTop, box.height + (box.minY - newTop)))
+
+            // Jittered grid across the box; keep a point only inside the
+            // inscribed ellipse — it hugs the face and drops the ear/hair
+            // corners on its own. Horizontal radius trimmed a touch so the
+            // cheek edges stay on skin, never on the ears.
             let cols = 10, rows = 14
             var points: [CGPoint] = []
             for r in 0..<rows {
@@ -334,53 +304,16 @@ struct FaceField: Sendable {
                     let jy = (pseudo(seed, 78.233) - 0.5) * 0.7
                     let u = (CGFloat(c) + 0.5) / CGFloat(cols) + jx / CGFloat(cols)
                     let v = (CGFloat(r) + 0.5) / CGFloat(rows) + jy / CGFloat(rows)
-                    let p = CGPoint(x: box.minX + u * box.width,
-                                    y: box.minY + v * box.height)
-                    if polygon.count >= 8 {
-                        guard contains(polygon, p) else { continue }
-                    } else {
-                        let dx = (u - 0.5) / 0.5, dy = (v - 0.5) / 0.5
-                        guard dx * dx + dy * dy <= 1.0 else { continue }
-                    }
-                    points.append(p)
-                }
-            }
-            // A landmark hiccup shouldn't blank the theater — fall back to the
-            // ellipse fill if the polygon filtered almost everything away.
-            if points.count < 20 {
-                points.removeAll()
-                for r in 0..<rows {
-                    for c in 0..<cols {
-                        let seed = r * cols + c
-                        let jx = (pseudo(seed, 12.9898) - 0.5) * 0.7
-                        let jy = (pseudo(seed, 78.233) - 0.5) * 0.7
-                        let u = (CGFloat(c) + 0.5) / CGFloat(cols) + jx / CGFloat(cols)
-                        let v = (CGFloat(r) + 0.5) / CGFloat(rows) + jy / CGFloat(rows)
-                        let dx = (u - 0.5) / 0.5, dy = (v - 0.5) / 0.5
-                        guard dx * dx + dy * dy <= 1.0 else { continue }
-                        points.append(CGPoint(x: box.minX + u * box.width,
-                                              y: box.minY + v * box.height))
-                    }
+                    let dx = (u - 0.5) / 0.5 / 0.92
+                    let dy = (v - 0.5) / 0.5
+                    guard dx * dx + dy * dy <= 1.0 else { continue }
+                    points.append(CGPoint(x: box.minX + u * box.width,
+                                          y: box.minY + v * box.height))
                 }
             }
             return FaceField(points: points,
                              anchor: UnitPoint(x: box.midX, y: box.midY))
         }.value
-    }
-
-    /// Ray-casting point-in-polygon (even-odd), good enough for a face outline.
-    private static func contains(_ polygon: [CGPoint], _ p: CGPoint) -> Bool {
-        var inside = false
-        var j = polygon.count - 1
-        for i in 0..<polygon.count {
-            let a = polygon[i], b = polygon[j]
-            if (a.y > p.y) != (b.y > p.y),
-               p.x < (b.x - a.x) * (p.y - a.y) / (b.y - a.y) + a.x {
-                inside.toggle()
-            }
-            j = i
-        }
-        return inside
     }
 
     /// Deterministic pseudo-random in 0…1.
