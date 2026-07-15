@@ -241,8 +241,42 @@ struct SkinPrefs: Sendable {
     }
 }
 
-/// Derives a 14-day routine from the user's weakest sub-scores. Base steps are
-/// constant; the targeted middle steps come 1:1 from `DermiqIssue`s.
+// ============================================================
+// MARK: — THE CANONICAL ROUTINE (locked, evidence-based)
+// ============================================================
+//
+// This is THE structure. It is the dermatological consensus, not a style
+// choice — do not "improve" it without a study. Sources: AAD skin-care basics;
+// derm-consensus reporting (NBC/Healthline) that a 3–4-step routine done daily
+// beats a long one, ordered thin → thick.
+//
+//   FIXED SKELETON (same for everyone):
+//     AM  ·  Cleanser → [1 treatment] → Moisturizer → SPF     (≤ 4 steps)
+//     PM  ·  Cleanser → [1 treatment] → Moisturizer            (≤ 3 steps)
+//
+//   THE RULES:
+//   1. The core three — cleanser, moisturizer, SPF — are non-negotiable and
+//      daily, forever. SPF is the single best-proven anti-aging step.
+//   2. ONE leave-on active per session, max. Never stack. Consistency beats
+//      intensity; stacking is what breaks barriers and makes people quit.
+//   3. Skin type changes ONLY the texture of the cleanser + moisturizer,
+//      never the actives:
+//        dry        → cream cleanser · rich cream (lighter AM, richer PM)
+//        oily       → gel cleanser   · oil-free gel moisturizer
+//        combination→ balanced gel-cream both
+//        sensitive  → fragrance-free everything · gentler active forms
+//        normal     → gentle gel cleanser · ceramide moisturizer
+//   4. The (up to two) actives target the two worst-scoring metrics — one for
+//      the AM slot, one for the PM slot. Photolabile / photosensitizing
+//      actives (retinoids, AHAs) are PM-ONLY; a slot is skipped before one is
+//      ever put under the sun.
+//   5. Ease-in: days 1–3 are a barrier reset (core only); actives ramp in from
+//      day 4 (see RoutineSchedule). Retinoid / BHA / AHA / mask never share an
+//      evening.
+//
+/// Derives the 14-day routine from the user's weakest sub-scores, following the
+/// canonical structure above. Base steps are constant per skin type; the one
+/// targeted step per block comes 1:1 from the worst-scoring `DermiqCategory`s.
 enum RoutineBuilder {
 
     /// `weightedToward` (rescan iterations): categories that improved least
