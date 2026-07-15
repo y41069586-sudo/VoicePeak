@@ -15,10 +15,6 @@ struct CaptureQuality: Equatable {
     /// Both eyes read as open (landmark aspect-ratio heuristic). Used by the
     /// v2 guided capture checklist; not part of `isStandardized` (v1 semantics).
     var eyesOpen: Bool = false
-    /// Head pose in radians (Vision estimate). Drives the guided quality
-    /// calibration before capture; not part of any pass/fail gate.
-    var yaw: Double = 0
-    var pitch: Double = 0
 
     // Target bands. Forgiving on purpose — guidance, not a lab rig.
     static let minFaceHeight = 0.70

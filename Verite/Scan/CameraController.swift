@@ -140,7 +140,7 @@ final class CameraController: NSObject, ObservableObject, @unchecked Sendable,
         guard let pixelBuffer = CMSampleBufferGetImageBuffer(sampleBuffer) else { return }
 
         let brightness = averageLuminance(of: pixelBuffer)
-        let (detected, height, offset, eyesOpen, yaw, pitch) = detectFace(in: pixelBuffer)
+        let (detected, height, offset, eyesOpen) = detectFace(in: pixelBuffer)
 
         var updated = CaptureQuality()
         updated.faceDetected = detected
@@ -148,8 +148,6 @@ final class CameraController: NSObject, ObservableObject, @unchecked Sendable,
         updated.faceCenterOffset = offset
         updated.brightness = brightness
         updated.eyesOpen = eyesOpen
-        updated.yaw = yaw
-        updated.pitch = pitch
 
         DispatchQueue.main.async { [weak self] in
             guard let self, self.quality != updated else { return }
@@ -158,30 +156,19 @@ final class CameraController: NSObject, ObservableObject, @unchecked Sendable,
     }
 
     /// Largest-face bounding-box height + center offset in normalized
-    /// coordinates, an eyes-open estimate from the eye landmarks, and the
-    /// head pose (yaw/pitch, radians) for the guided quality calibration.
-    private func detectFace(in pixelBuffer: CVPixelBuffer) -> (Bool, Double, Double, Bool, Double, Double) {
+    /// coordinates, plus an eyes-open estimate from the eye landmarks.
+    private func detectFace(in pixelBuffer: CVPixelBuffer) -> (Bool, Double, Double, Bool) {
         let request = VNDetectFaceLandmarksRequest()
-        // Rectangles rev 3 is what actually populates yaw/pitch on the
-        // observation — landmarks alone often leaves pitch nil.
-        let poseRequest = VNDetectFaceRectanglesRequest()
         // Front camera in portrait: the sensor buffer maps to `.leftMirrored`.
         let handler = VNImageRequestHandler(cvPixelBuffer: pixelBuffer, orientation: .leftMirrored, options: [:])
-        try? handler.perform([request, poseRequest])
+        try? handler.perform([request])
 
         guard let face = (request.results ?? []).max(by: { $0.boundingBox.height < $1.boundingBox.height }) else {
-            return (false, 0, 1, false, 0, 0)
+            return (false, 0, 1, false)
         }
         let box = face.boundingBox
         let offset = hypot(box.midX - 0.5, box.midY - 0.5)
-
-        // Pose from the rectangles pass (largest face there too); fall back to
-        // whatever the landmarks observation carries.
-        let poseFace = (poseRequest.results ?? []).max(by: { $0.boundingBox.height < $1.boundingBox.height }) ?? face
-        let yaw = poseFace.yaw?.doubleValue ?? face.yaw?.doubleValue ?? 0
-        let pitch = poseFace.pitch?.doubleValue ?? face.pitch?.doubleValue ?? 0
-
-        return (true, Double(box.height), Double(offset), eyesLookOpen(face), yaw, pitch)
+        return (true, Double(box.height), Double(offset), eyesLookOpen(face))
     }
 
     /// Eye openness heuristic: height/width aspect ratio of both eye outlines.

@@ -806,6 +806,41 @@
         }
       }
     },
+    "2 fresh skin scans every week": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "2 frische Haut-Scans pro Woche"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "2 fresh skin scans every week"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "2 escaneos de piel nuevos cada semana"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "2 nouveaux scans de peau chaque semaine"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "2 nuove scansioni della pelle ogni settimana"
+          }
+        }
+      }
+    },
     "25 – 34": {
       "extractionState": "manual",
       "localizations": {

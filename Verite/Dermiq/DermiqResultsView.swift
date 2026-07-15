@@ -571,6 +571,7 @@ struct DermiqPaywallCard: View {
                 // in two seconds at the moment of peak curiosity.
                 VStack(alignment: .leading, spacing: 7) {
                     valueRow("Your score + all 7 metrics revealed")
+                    valueRow("2 fresh skin scans every week")
                     valueRow("14-day routine, AI-checked for your skin")
                     valueRow("Zone map & your 14-day potential")
                     valueRow("Skin Duel, Glow-Up Reel & rescans")
