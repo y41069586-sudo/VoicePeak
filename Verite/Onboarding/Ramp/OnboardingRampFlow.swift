@@ -168,6 +168,8 @@ struct OnboardingRampFlow: View {
             RampCurveScreen(answers: answers) { advance() }
         case .planPreview:
             RampPlanPreviewScreen(answers: answers) { advance() }
+        case .evidence:
+            RampEvidenceScreen { advance() }
         case .commitment:
             RampCommitmentScreen(name: answers.displayName) { advance() }
         case .dailyRitual:

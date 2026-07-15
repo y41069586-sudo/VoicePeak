@@ -1191,6 +1191,41 @@
         }
       }
     },
+    "51% improvement across 1,624 patients in a meta-analysis.": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "51 % Verbesserung bei 1.624 Patienten in einer Meta-Analyse."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "51% improvement across 1,624 patients in a meta-analysis."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "51 % de mejora en 1.624 pacientes en un metaanálisis."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "51 % d'amélioration chez 1 624 patients dans une méta-analyse."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "51% di miglioramento su 1.624 pazienti in una meta-analisi."
+          }
+        }
+      }
+    },
     "6–7h": {
       "extractionState": "manual",
       "localizations": {
@@ -2731,6 +2766,41 @@
         }
       }
     },
+    "Azelaic acid": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Azelaic acid"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Azelainsäure"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ácido azelaico"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Acide azélaïque"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Acido azelaico"
+          }
+        }
+      }
+    },
     "Azelaic acid 10%": {
       "extractionState": "manual",
       "localizations": {
@@ -2797,6 +2867,41 @@
           "stringUnit": {
             "state": "translated",
             "value": "Trattamento all'acido azelaico"
+          }
+        }
+      }
+    },
+    "BACKED BY SCIENCE": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "WISSENSCHAFTLICH BELEGT"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "BACKED BY SCIENCE"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "AVALADO POR LA CIENCIA"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "VALIDÉ PAR LA SCIENCE"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "SUPPORTATO DALLA SCIENZA"
           }
         }
       }
@@ -4831,6 +4936,41 @@
         }
       }
     },
+    "Daily SPF": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Täglicher SPF"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Daily SPF"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "SPF diario"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "SPF quotidien"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "SPF quotidiano"
+          }
+        }
+      }
+    },
     "DAY 1": {
       "extractionState": "manual",
       "localizations": {
@@ -5877,6 +6017,41 @@
           "stringUnit": {
             "state": "translated",
             "value": "L'opacità è accumulo e idratazione — un successo rapido."
+          }
+        }
+      }
+    },
+    "Every active in your plan comes from published, peer-reviewed research.": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Jeder Wirkstoff in deinem Plan stammt aus veröffentlichter, begutachteter Forschung."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Every active in your plan comes from published, peer-reviewed research."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cada activo de tu plan proviene de investigación publicada y revisada por pares."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Chaque actif de ton plan vient de recherches publiées et évaluées par des pairs."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ogni attivo del tuo piano deriva da ricerca pubblicata e sottoposta a revisione."
           }
         }
       }
@@ -7557,6 +7732,41 @@
           "stringUnit": {
             "state": "translated",
             "value": "Buongiorno"
+          }
+        }
+      }
+    },
+    "Good to know": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Gut zu wissen"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Good to know"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bueno saberlo"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bon à savoir"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Buono a sapersi"
           }
         }
       }
@@ -9342,6 +9552,41 @@
           "stringUnit": {
             "state": "translated",
             "value": "Tensioattivi a pH basso"
+          }
+        }
+      }
+    },
+    "Matched the gold-standard spot fader — with fewer side effects.": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ebenbürtig mit dem Goldstandard gegen Flecken — bei weniger Nebenwirkungen."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Matched the gold-standard spot fader — with fewer side effects."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Igualó al tratamiento de referencia contra manchas — con menos efectos secundarios."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A égalé la référence anti-taches — avec moins d'effets secondaires."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ha eguagliato il riferimento anti-macchie — con meno effetti collaterali."
           }
         }
       }
@@ -11691,6 +11936,41 @@
         }
       }
     },
+    "Proven actives,\nnot promises.": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bewiesene Wirkstoffe,\nkeine Versprechen."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Proven actives,\nnot promises."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Activos probados,\nno promesas."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Des actifs prouvés,\npas des promesses."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Attivi provati,\nnon promesse."
+          }
+        }
+      }
+    },
     "QUICK CHECK · %lld/2": {
       "extractionState": "manual",
       "localizations": {
@@ -12636,6 +12916,41 @@
         }
       }
     },
+    "Retinal": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Retinal"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Retinal"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Retinal"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Rétinal"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Retinaldeide"
+          }
+        }
+      }
+    },
     "Retinal night serum": {
       "extractionState": "manual",
       "localizations": {
@@ -13231,6 +13546,41 @@
         }
       }
     },
+    "Significantly cleared breakouts in an 8-week randomized trial.": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reduzierte Unreinheiten signifikant in einer randomisierten 8-Wochen-Studie."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Significantly cleared breakouts in an 8-week randomized trial."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Redujo significativamente los brotes en un ensayo aleatorizado de 8 semanas."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A significativement réduit les imperfections dans un essai randomisé de 8 semaines."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ha ridotto significativamente le imperfezioni in uno studio randomizzato di 8 settimane."
+          }
+        }
+      }
+    },
     "SKIN DUEL · RESULT": {
       "extractionState": "manual",
       "localizations": {
@@ -13507,6 +13857,41 @@
           "stringUnit": {
             "state": "translated",
             "value": "PASSO %lld"
+          }
+        }
+      }
+    },
+    "Studies open in your browser.": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Studien öffnen sich in deinem Browser."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Studies open in your browser."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Los estudios se abren en tu navegador."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Les études s'ouvrent dans ton navigateur."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Gli studi si aprono nel browser."
           }
         }
       }
@@ -15401,6 +15786,41 @@
         }
       }
     },
+    "The only step proven to slow visible skin aging in a randomized trial.": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Der einzige Schritt, der in einer randomisierten Studie sichtbare Hautalterung nachweislich verlangsamt."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The only step proven to slow visible skin aging in a randomized trial."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "El único paso que ha demostrado frenar el envejecimiento visible en un ensayo aleatorizado."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "La seule étape prouvée pour ralentir le vieillissement visible dans un essai randomisé."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "L'unico passo che ha dimostrato di rallentare l'invecchiamento visibile in uno studio randomizzato."
+          }
+        }
+      }
+    },
     "This tunes your scan for a sharper analysis.": {
       "extractionState": "manual",
       "localizations": {
@@ -16237,6 +16657,41 @@
           "stringUnit": {
             "state": "translated",
             "value": "La routine di oggi richiede due minuti. La riscansione è vicina."
+          }
+        }
+      }
+    },
+    "Tranexamic acid": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tranexamsäure"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tranexamic acid"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ácido tranexámico"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Acide tranexamique"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Acido tranexamico"
           }
         }
       }
@@ -34726,41 +35181,6 @@
         }
       }
     },
-    "Azelaic acid": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Azelaic acid"
-          }
-        },
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Azelainsäure"
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Ácido azelaico"
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Acide azélaïque"
-          }
-        },
-        "it": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Acido azelaico"
-          }
-        }
-      }
-    },
     "Pore active": {
       "extractionState": "manual",
       "localizations": {
@@ -34862,41 +35282,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "Attivo per la texture"
-          }
-        }
-      }
-    },
-    "Retinal": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Retinal"
-          }
-        },
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Retinal"
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Retinal"
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Rétinal"
-          }
-        },
-        "it": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Retinaldeide"
           }
         }
       }

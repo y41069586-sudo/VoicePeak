@@ -124,6 +124,135 @@ private struct RampMiniClaim: View {
 }
 
 // ============================================================
+// MARK: — Screen: The science (proven actives, tappable sources)
+// ============================================================
+
+/// Right after the plan preview: WHY this plan is trustworthy. Each row is a
+/// real, peer-reviewed finding behind one of the plan's actives, with the
+/// actual study tappable (opens in the browser). No vague "dermatologist
+/// approved" fluff — named journals, real trials.
+struct RampEvidenceScreen: View {
+    let onAdvance: () -> Void
+
+    private struct Evidence: Identifiable {
+        let icon: String
+        let active: String
+        let claim: String
+        let source: String
+        let url: URL
+        var id: String { active }
+    }
+
+    private let items: [Evidence] = [
+        Evidence(icon: "sun.max.fill",
+                 active: "Daily SPF",
+                 claim: "The only step proven to slow visible skin aging in a randomized trial.",
+                 source: "Annals of Internal Medicine",
+                 url: URL(string: "https://pubmed.ncbi.nlm.nih.gov/23732711/")!),
+        Evidence(icon: "moon.stars.fill",
+                 active: "Retinal",
+                 claim: "Significantly cleared breakouts in an 8-week randomized trial.",
+                 source: "Clinical & Experimental Dermatology",
+                 url: URL(string: "https://academic.oup.com/ced/article-abstract/24/5/354/6627773")!),
+        Evidence(icon: "drop.halffull",
+                 active: "Azelaic acid",
+                 claim: "51% improvement across 1,624 patients in a meta-analysis.",
+                 source: "Systematic review · PubMed",
+                 url: URL(string: "https://pubmed.ncbi.nlm.nih.gov/37550898/")!),
+        Evidence(icon: "circle.lefthalf.filled",
+                 active: "Tranexamic acid",
+                 claim: "Matched the gold-standard spot fader — with fewer side effects.",
+                 source: "Systematic review · PMC",
+                 url: URL(string: "https://pmc.ncbi.nlm.nih.gov/articles/PMC9805721/")!),
+    ]
+
+    var body: some View {
+        VStack(spacing: 0) {
+            Spacer().frame(height: VSpace.xxl + VSpace.md)
+
+            VStack(spacing: VSpace.sm) {
+                Text("BACKED BY SCIENCE")
+                    .font(VType.micro)
+                    .tracking(3)
+                    .foregroundStyle(RampStage.accentDeep)
+                Text("Proven actives,\nnot promises.")
+                    .font(RampStage.serif(25))
+                    .foregroundStyle(RampStage.ink)
+                    .multilineTextAlignment(.center)
+                    .lineSpacing(2)
+                Text("Every active in your plan comes from published, peer-reviewed research.")
+                    .font(VType.caption)
+                    .foregroundStyle(RampStage.textSecondary)
+                    .multilineTextAlignment(.center)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .padding(.horizontal, VSpace.xl)
+            }
+
+            Spacer()
+
+            VStack(spacing: 10) {
+                ForEach(items) { item in
+                    evidenceCard(item)
+                }
+            }
+            .padding(.horizontal, VSpace.lg)
+
+            Text("Studies open in your browser.")
+                .font(VType.micro)
+                .foregroundStyle(RampStage.textTertiary)
+                .padding(.top, VSpace.sm)
+
+            Spacer()
+
+            RampPrimaryButton(title: "Good to know") { onAdvance() }
+                .padding(.horizontal, VSpace.lg)
+            Spacer().frame(height: VSpace.xxl)
+        }
+    }
+
+    private func evidenceCard(_ item: Evidence) -> some View {
+        VStack(alignment: .leading, spacing: 6) {
+            HStack(spacing: 10) {
+                Image(systemName: item.icon)
+                    .font(.system(size: 14, weight: .semibold))
+                    .foregroundStyle(RampStage.accentDeep)
+                    .frame(width: 30, height: 30)
+                    .background(RampStage.accentSoft, in: RoundedRectangle(cornerRadius: 9, style: .continuous))
+                Text(LocalizedStringKey(item.active))
+                    .font(.system(size: 16, weight: .bold, design: .rounded))
+                    .foregroundStyle(RampStage.ink)
+                Spacer(minLength: 0)
+            }
+            Text(LocalizedStringKey(item.claim))
+                .font(VType.caption)
+                .foregroundStyle(RampStage.textSecondary)
+                .fixedSize(horizontal: false, vertical: true)
+
+            // The actual study — tappable, clearly marked as external.
+            Link(destination: item.url) {
+                HStack(spacing: 5) {
+                    Image(systemName: "doc.text.magnifyingglass")
+                        .font(.system(size: 10, weight: .semibold))
+                    Text(verbatim: item.source)
+                        .font(.system(size: 12, weight: .semibold, design: .rounded))
+                        .lineLimit(1)
+                    Image(systemName: "arrow.up.right")
+                        .font(.system(size: 9, weight: .bold))
+                }
+                .foregroundStyle(RampStage.accentDeep)
+                .padding(.horizontal, 9).padding(.vertical, 5)
+                .background(RampStage.accentSoft.opacity(0.7), in: Capsule())
+            }
+        }
+        .padding(13)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(RampStage.card, in: RoundedRectangle(cornerRadius: 18, style: .continuous))
+        .overlay(RoundedRectangle(cornerRadius: 18, style: .continuous)
+            .strokeBorder(RampStage.hairline, lineWidth: 1))
+    }
+}
+
+// ============================================================
 // MARK: — Screen 10: Daily ritual (notifications, reframed)
 // ============================================================
 
