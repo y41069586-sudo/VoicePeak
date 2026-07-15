@@ -13,8 +13,8 @@ import SwiftUI
 // MARK: Palette (mirrors DQColor, standalone for the extension)
 
 private enum WColor {
-    static let accent = Color(red: 0x2E / 255, green: 0x7D / 255, blue: 0xF6 / 255)
-    static let accentBright = Color(red: 0x1F / 255, green: 0x6B / 255, blue: 0xE0 / 255)
+    static let accent = Color(red: 0x9B / 255, green: 0x6B / 255, blue: 0xD3 / 255)
+    static let accentBright = Color(red: 0x7C / 255, green: 0x4F / 255, blue: 0xB0 / 255)
     static let up = Color(red: 0x2F / 255, green: 0xB8 / 255, blue: 0x7A / 255)
     static let track = Color.primary.opacity(0.08)
     static let secondary = Color.secondary

@@ -15,17 +15,17 @@ import SwiftUI
 //   .light  → count-up ticks            (Haptics.fire(.tick))
 
 enum DQColor {
-    static let background      = Color(hex: "F4F8FC")
+    static let background      = Color(hex: "F8F5FC")
     static let surface         = Color(hex: "FFFFFF")
-    static let surfaceElevated = Color(hex: "EEF4FB")
-    static let accent          = Color(hex: "2E7DF6")
+    static let surfaceElevated = Color(hex: "F1EAFB")
+    static let accent          = Color(hex: "9B6BD3")
     /// On the light ground the "bright" accent role needs the DEEPER blue for
     /// contrast — it is used for accent text and small indicators.
-    static let accentBright    = Color(hex: "1B5FD0")
+    static let accentBright    = Color(hex: "7C4FB0")
     /// Soft accent tint for icon chips, segmented backgrounds, soft fills.
-    static let accentSoft      = Color(hex: "E4EEFE")
-    static let textPrimary     = Color(hex: "0E141C")
-    static let textSecondary   = Color(hex: "5A6774")
+    static let accentSoft      = Color(hex: "EFE5FA")
+    static let textPrimary     = Color(hex: "1A1225")
+    static let textSecondary   = Color(hex: "6B5F7A")
     static let deltaUp         = Color(hex: "1F9D6B")
     static let deltaDown       = Color(hex: "DE5B4E")
 
@@ -36,7 +36,7 @@ enum DQColor {
     )
 
     /// Hairline stroke on cards (derived, not a new hue).
-    static let stroke = Color(hex: "0E141C").opacity(0.10)
+    static let stroke = Color(hex: "1A1225").opacity(0.10)
 }
 
 enum DQFont {

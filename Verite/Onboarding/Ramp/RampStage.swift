@@ -16,26 +16,26 @@ import UIKit
 enum RampStage {
     // Ground & ink — modern, airy "baby-blue" world with a near-black slate
     // ink for crisp, high-contrast, app-modern typography.
-    static let porcelain = Color(hex: "F4F8FC") // light blue-white background (name kept for call sites)
-    static let recess     = Color(hex: "E9EFF6") // recessed panel
-    static let ink        = Color(hex: "0E141C") // near-black slate, maximum contrast
-    static let inkSoft    = Color(hex: "5A6774") // secondary text
-    static let inkFaint   = Color(hex: "93A0AD") // tertiary text
-    static let hair       = Color(hex: "E7EDF4") // cool hairline
+    static let porcelain = Color(hex: "F8F5FC") // light blue-white background (name kept for call sites)
+    static let recess     = Color(hex: "EFE7F8") // recessed panel
+    static let ink        = Color(hex: "1A1225") // near-black slate, maximum contrast
+    static let inkSoft    = Color(hex: "6B5F7A") // secondary text
+    static let inkFaint   = Color(hex: "9C93AC") // tertiary text
+    static let hair       = Color(hex: "ECE6F4") // cool hairline
 
     // The single accent (modern blue) + a deeper shade for on-light text and
     // a soft tint used as fills/pools.
-    static let accent     = Color(hex: "2E7DF6")
-    static let accentDeep = Color(hex: "1B5FD0")
-    static let glow       = Color(hex: "CFE0F6")
+    static let accent     = Color(hex: "9B6BD3")
+    static let accentDeep = Color(hex: "7C4FB0")
+    static let glow       = Color(hex: "E2D3F5")
 
     // Cool light pools layered behind the content (names kept for call sites).
-    static let dawnPeach  = Color(hex: "DDE9FB")
-    static let dawnLilac  = Color(hex: "E7EFFA") // (name kept for call sites)
-    static let dawnSky    = Color(hex: "F0F5FC") // (name kept for call sites)
+    static let dawnPeach  = Color(hex: "E4D8F5")
+    static let dawnLilac  = Color(hex: "EDE4F8") // (name kept for call sites)
+    static let dawnSky    = Color(hex: "F5F0FB") // (name kept for call sites)
 
     /// Soft accent tint for icon chips, segmented backgrounds, soft buttons.
-    static let accentSoft = Color(hex: "E4EEFE")
+    static let accentSoft = Color(hex: "EFE5FA")
 
     // Named text roles.
     static let textPrimary   = ink
@@ -133,7 +133,7 @@ struct RampPhoto: View {
             RadialGradient(colors: [.white.opacity(0.55), .clear],
                            center: UnitPoint(x: 0.25, y: 0.2),
                            startRadius: 0, endRadius: 220)
-            RadialGradient(colors: [Color(hex: "CFE0F6").opacity(0.8), .clear],
+            RadialGradient(colors: [Color(hex: "E2D3F5").opacity(0.8), .clear],
                            center: UnitPoint(x: 0.85, y: 0.85),
                            startRadius: 0, endRadius: 260)
         }
