@@ -5,7 +5,7 @@ import SwiftUI
 // MARK: — Referral loop + weekly scan quota
 // ============================================================
 //
-// Serverless, like the Skin Duel: rewards travel inside `verite://` links.
+// Serverless, like the friend compare: rewards travel inside `verite://` links.
 //
 //   INVITE   verite://invite?code=<inviter's code>
 //            → the friend redeems once: +1 bonus scan, and the inviter's code

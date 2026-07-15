@@ -10,11 +10,21 @@ import SwiftUI
 // thumbnail — so both people see the real chart (photo + two columns) and who
 // leads. No backend, no account.
 
+/// A flat per-category score, small enough to ride inside a share link.
+struct CompareScore: Codable, Hashable {
+    var c: String   // DermiqCategory.rawValue
+    var v: Int      // 0…100
+
+    static func from(_ subs: [DermiqSubScore]) -> [CompareScore] {
+        subs.map { CompareScore(c: $0.category.rawValue, v: $0.value) }
+    }
+}
+
 struct ComparePayload: Codable, Identifiable {
     var v = 1
     var name: String
     var overall: Int
-    var subs: [DuelScore]        // reuses the flat {c, v} score from SkinDuel
+    var subs: [CompareScore]
     var thumb: String?           // base64 of a small JPEG (optional)
 
     var id: String { "\(name)-\(overall)-\(subs.count)" }
@@ -37,7 +47,7 @@ struct ComparePayload: Codable, Identifiable {
         ComparePayload(
             name: name.isEmpty ? "A friend" : name,
             overall: analysis.overall,
-            subs: DuelScore.from(analysis.subScores),
+            subs: CompareScore.from(analysis.subScores),
             thumb: photo.flatMap { thumbToken(from: $0) }
         )
     }

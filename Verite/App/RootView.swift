@@ -31,12 +31,11 @@ struct RootView: View {
         .tint(DQColor.accent)
         .preferredColorScheme(.light) // warm GlamUp light, app-wide
         .task { SeedData.seedCatalogIfNeeded(modelContext) }
-        // Referral links (verite://invite?…) credit bonus scans; Skin Duel
-        // links (verite://duel?d=…) land in the inbox for the Duel tab.
+        // Referral links (verite://invite?…) credit bonus scans; compare
+        // links (verite://compare?d=…) open the friend face-off sheet.
         .onOpenURL { url in
             if ReferralStore.shared.handle(url) { return }
-            if CompareInbox.shared.handle(url) { return }
-            DuelInbox.shared.handle(url)
+            _ = CompareInbox.shared.handle(url)
         }
     }
 }
