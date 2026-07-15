@@ -321,6 +321,9 @@ struct DermiqScanHome: View {
                         .padding(.horizontal, 24)
                 }
 
+                pasteLinkRow
+                    .padding(.horizontal, 24)
+
                 tipCard
                     .padding(.horizontal, 24)
             }
@@ -339,7 +342,7 @@ struct DermiqScanHome: View {
                    name: name, analysis: analysis,
                    photo: DermiqImageStore.load(scan.photoFilename))) {
                 ShareLink(item: url,
-                          message: Text("I scanned my skin — see how yours compares.")) {
+                          message: Text("I scanned my skin — see how yours compares. Copy this whole message and paste it in Glowé.")) {
                     HStack(spacing: 12) {
                         Image(systemName: "person.2.fill")
                             .font(.system(size: 16, weight: .semibold))
@@ -368,6 +371,57 @@ struct DermiqScanHome: View {
                 }
                 .buttonStyle(PressableStyle())
             }
+        }
+    }
+
+    /// Chats never make verite:// links tappable — friends copy the whole
+    /// message instead, and this row redeems whatever is on the pasteboard
+    /// (a compare card or an invite). User-initiated, so the system paste
+    /// banner is expected.
+    @State private var pasteFailed = false
+    private var pasteLinkRow: some View {
+        Button {
+            Haptics.fire(.selection)
+            let text = UIPasteboard.general.string ?? ""
+            if let payload = CompareLink.payload(fromPastedText: text) {
+                CompareInbox.shared.pending = payload
+            } else if ReferralStore.shared.handlePasted(text) {
+                // Bonus scan credited — ReferralStore already fired the haptic.
+            } else {
+                pasteFailed = true
+            }
+        } label: {
+            HStack(spacing: 12) {
+                Image(systemName: "doc.on.clipboard")
+                    .font(.system(size: 15, weight: .semibold))
+                    .foregroundStyle(DQColor.accentBright)
+                    .frame(width: 40, height: 40)
+                    .background(DQColor.accentBright.opacity(0.10),
+                                in: RoundedRectangle(cornerRadius: 12, style: .continuous))
+                VStack(alignment: .leading, spacing: 1) {
+                    Text("Got a link from a friend?")
+                        .font(.system(size: 16, weight: .bold, design: .rounded))
+                        .foregroundStyle(DQColor.textPrimary)
+                    Text("Copy their message, then tap here.")
+                        .font(DQFont.micro)
+                        .foregroundStyle(DQColor.textSecondary)
+                        .lineLimit(1)
+                }
+                Spacer()
+                Image(systemName: "arrow.down.doc")
+                    .font(.system(size: 15, weight: .semibold))
+                    .foregroundStyle(DQColor.textSecondary)
+            }
+            .padding(14)
+            .background(DQColor.surface, in: RoundedRectangle(cornerRadius: DQRadius.card, style: .continuous))
+            .overlay(RoundedRectangle(cornerRadius: DQRadius.card, style: .continuous)
+                .strokeBorder(DQColor.stroke, lineWidth: 1))
+        }
+        .buttonStyle(PressableStyle())
+        .alert("No Glowé link found", isPresented: $pasteFailed) {
+            Button("OK", role: .cancel) {}
+        } message: {
+            Text("Copy your friend's whole message, then try again.")
         }
     }
 

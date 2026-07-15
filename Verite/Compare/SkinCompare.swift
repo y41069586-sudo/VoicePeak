@@ -104,6 +104,16 @@ enum CompareLink {
         return payload
     }
 
+    /// Messengers never make custom-scheme links tappable — the friend copies
+    /// the whole message instead. Fish the compare link out of arbitrary text.
+    static func payload(fromPastedText text: String) -> ComparePayload? {
+        guard let range = text.range(of: #"verite://compare\?d=[A-Za-z0-9\-_=]+"#,
+                                     options: .regularExpression),
+              let url = URL(string: String(text[range]))
+        else { return nil }
+        return payload(from: url)
+    }
+
     private static func base64url(_ data: Data) -> String {
         data.base64EncodedString()
             .replacingOccurrences(of: "+", with: "-")

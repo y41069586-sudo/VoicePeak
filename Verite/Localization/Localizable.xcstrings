@@ -3641,6 +3641,76 @@
         }
       }
     },
+    "Copy their message, then tap here.": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nachricht kopieren, dann hier tippen."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Copy their message, then tap here."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Copia su mensaje y toca aquí."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Copie son message, puis touche ici."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Copia il suo messaggio, poi tocca qui."
+          }
+        }
+      }
+    },
+    "Copy your friend's whole message, then try again.": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kopiere die ganze Nachricht deines Freundes und versuch's nochmal."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Copy your friend's whole message, then try again."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Copia el mensaje completo de tu amigo e inténtalo de nuevo."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Copie tout le message de ton ami, puis réessaie."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Copia l'intero messaggio del tuo amico e riprova."
+          }
+        }
+      }
+    },
     "CREATE YOUR ACCOUNT": {
       "extractionState": "manual",
       "localizations": {
@@ -7509,19 +7579,19 @@
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "¿Tienes un enlace de un amigo?"
+            "value": "¿Recibiste un enlace de un amigo?"
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Un lien reçu d'un ami ?"
+            "value": "Tu as reçu un lien d'un ami ?"
           }
         },
         "it": {
           "stringUnit": {
             "state": "translated",
-            "value": "Hai un link da un amico?"
+            "value": "Hai ricevuto un link da un amico?"
           }
         }
       }
@@ -7557,6 +7627,41 @@
           "stringUnit": {
             "state": "translated",
             "value": "HA + squalano + pantenolo"
+          }
+        }
+      }
+    },
+    "Here's my skin score — copy this whole message and paste it in Glowé to see how we compare.": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hier ist mein Haut-Score — kopiere diese ganze Nachricht und füg sie in Glowé ein, um uns zu vergleichen."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Here's my skin score — copy this whole message and paste it in Glowé to see how we compare."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aquí está mi puntuación — copia este mensaje completo y pégalo en Glowé para compararnos."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Voici mon score — copie tout ce message et colle-le dans Glowé pour nous comparer."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ecco il mio punteggio — copia tutto questo messaggio e incollalo in Glowé per confrontarci."
           }
         }
       }
@@ -8117,6 +8222,41 @@
           "stringUnit": {
             "state": "translated",
             "value": "Ho scansionato la mia pelle — guarda come si confronta la tua."
+          }
+        }
+      }
+    },
+    "I scanned my skin — see how yours compares. Copy this whole message and paste it in Glowé.": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ich hab meine Haut gescannt — schau, wie deine abschneidet. Kopiere diese ganze Nachricht und füg sie in Glowé ein."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "I scanned my skin — see how yours compares. Copy this whole message and paste it in Glowé."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Escaneé mi piel — mira cómo se compara la tuya. Copia este mensaje completo y pégalo en Glowé."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "J'ai scanné ma peau — vois comment la tienne se compare. Copie tout ce message et colle-le dans Glowé."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ho scansionato la mia pelle — guarda come si confronta la tua. Copia tutto questo messaggio e incollalo in Glowé."
           }
         }
       }
@@ -9797,6 +9937,41 @@
           "stringUnit": {
             "state": "translated",
             "value": "Il mio punteggio Glowé"
+          }
+        }
+      }
+    },
+    "No Glowé link found": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kein Glowé-Link gefunden"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No Glowé link found"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No se encontró un enlace de Glowé"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aucun lien Glowé trouvé"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nessun link Glowé trovato"
           }
         }
       }
@@ -12877,6 +13052,41 @@
           "stringUnit": {
             "state": "translated",
             "value": "Scansiona il viso per vedere come si confrontano i punteggi."
+          }
+        }
+      }
+    },
+    "Scan your skin with me — copy this whole message and paste it in Glowé for a free scan.": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Scan deine Haut mit mir — kopiere diese ganze Nachricht und füg sie in Glowé ein für einen Gratis-Scan."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Scan your skin with me — copy this whole message and paste it in Glowé for a free scan."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Escanea tu piel conmigo — copia este mensaje completo y pégalo en Glowé para un escaneo gratis."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Scanne ta peau avec moi — copie tout ce message et colle-le dans Glowé pour un scan gratuit."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Scansiona la pelle con me — copia tutto questo messaggio e incollalo in Glowé per una scansione gratis."
           }
         }
       }

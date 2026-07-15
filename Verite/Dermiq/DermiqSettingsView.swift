@@ -158,7 +158,7 @@ struct DermiqSettingsView: View {
                     .foregroundStyle(DQColor.textSecondary)
                     .fixedSize(horizontal: false, vertical: true)
                 ShareLink(item: ReferralStore.shared.inviteURL,
-                          message: Text("Scan your skin with me — this link gives you a free scan.")) {
+                          message: Text("Scan your skin with me — copy this whole message and paste it in Glowé for a free scan.")) {
                     Label("Share invite link", systemImage: "square.and.arrow.up")
                         .font(.system(size: 14, weight: .semibold, design: .rounded))
                         .foregroundStyle(DQColor.accentBright)

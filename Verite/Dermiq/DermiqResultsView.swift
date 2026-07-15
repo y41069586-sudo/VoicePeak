@@ -586,7 +586,7 @@ struct DermiqPaywallCard: View {
             // (ReferralStore), and can send a thank-you link back. Sharing
             // never unlocks Pro — no fake "invite 3 to unlock" gate.
             ShareLink(item: ReferralStore.shared.inviteURL,
-                      message: Text("Scan your skin with me — this link gives you a free scan.")) {
+                      message: Text("Scan your skin with me — copy this whole message and paste it in Glowé for a free scan.")) {
                 HStack(spacing: 8) {
                     Image(systemName: "person.2.fill")
                     Text("Invite friends")

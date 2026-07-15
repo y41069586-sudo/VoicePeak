@@ -77,6 +77,16 @@ final class ReferralStore {
 
     // MARK: Link handling
 
+    /// Pasted-text redemption: chats never linkify verite:// URLs, so the
+    /// friend copies the whole message and we fish the link out of it.
+    func handlePasted(_ text: String) -> Bool {
+        guard let range = text.range(of: #"verite://invite\?[A-Za-z0-9\-_=&]+"#,
+                                     options: .regularExpression),
+              let url = URL(string: String(text[range]))
+        else { return false }
+        return handle(url)
+    }
+
     /// Returns true when the URL was a referral link (handled here).
     func handle(_ url: URL) -> Bool {
         guard url.scheme == "verite", url.host == "invite",
@@ -242,7 +252,7 @@ struct ScanLimitSheet: View {
 
                 if !proCap {
                     ShareLink(item: ReferralStore.shared.inviteURL,
-                              message: Text("Scan your skin with me — this link gives you a free scan.")) {
+                              message: Text("Scan your skin with me — copy this whole message and paste it in Glowé for a free scan.")) {
                         Label("Invite a friend — you both get a scan", systemImage: "person.2.fill")
                             .font(.system(size: 15, weight: .semibold, design: .rounded))
                             .foregroundStyle(DQColor.accentBright)
