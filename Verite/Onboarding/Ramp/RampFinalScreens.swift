@@ -338,7 +338,8 @@ struct RampPlanPreviewScreen: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            Spacer().frame(height: VSpace.xl)
+            // Clear the status bar + progress line so the eyebrow never clips.
+            Spacer().frame(height: VSpace.xxl + VSpace.md)
 
             VStack(spacing: VSpace.sm) {
                 Text("AFTER YOUR SCAN")
@@ -363,8 +364,9 @@ struct RampPlanPreviewScreen: View {
                     .font(VType.micro).tracking(2)
                     .foregroundStyle(RampStage.textTertiary)
                 if let focusChip {
-                    Text(verbatim: "FOR: \(focusChip.uppercased())")
+                    (Text("For:") + Text(verbatim: " ") + Text(LocalizedStringKey(focusChip)))
                         .font(VType.micro).tracking(1.5)
+                        .textCase(.uppercase)
                         .foregroundStyle(RampStage.accentDeep)
                         .padding(.horizontal, 8).padding(.vertical, 3)
                         .background(RampStage.accentSoft, in: Capsule())

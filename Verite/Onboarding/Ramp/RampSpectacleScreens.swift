@@ -295,7 +295,9 @@ struct RampSampleReadingScreen: View {
 
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var reveal: Double = 0        // 0 → 1 count-up driver
-    @State private var blurAmount: CGFloat = 12  // resolves to 0 as it lands
+    /// The numbers count up but STAY blurred — the same locked teaser the
+    /// real results wear behind the paywall. It never resolves to sharp.
+    private let blurAmount: CGFloat = 8
 
     // Illustrative reading — Overall leads, then five sub-scores.
     private let cells: [(String, Int, Bool)] = [
@@ -345,10 +347,9 @@ struct RampSampleReadingScreen: View {
             Spacer().frame(height: VSpace.xxl)
         }
         .task {
-            if reduceMotion { reveal = 1; blurAmount = 0; return }
+            if reduceMotion { reveal = 1; return }
             try? await Task.sleep(for: .milliseconds(320))
             withAnimation(.easeOut(duration: 1.15)) { reveal = 1 }
-            withAnimation(.easeOut(duration: 1.3)) { blurAmount = 0 }
         }
     }
 
