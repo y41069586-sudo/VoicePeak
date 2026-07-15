@@ -43,8 +43,11 @@ struct RampQuizScreen: View {
 
             Spacer().frame(height: VSpace.xl)
 
+            // No per-tile stagger: the tiles ride in with the screen's own
+            // push. A second entrance animation on top of the transition is
+            // exactly what made the advance feel glitchy.
             VStack(spacing: VSpace.sm) {
-                ForEach(Array(options.enumerated()), id: \.element.id) { index, option in
+                ForEach(options) { option in
                     RampOptionCard(
                         label: option.label,
                         sub: option.sub,
@@ -53,7 +56,6 @@ struct RampQuizScreen: View {
                     ) {
                         onSelect(option.id)
                     }
-                    .vStaggeredAppear(index: index)
                 }
             }
             .padding(.horizontal, VSpace.lg)

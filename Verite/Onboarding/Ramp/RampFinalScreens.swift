@@ -36,20 +36,17 @@ struct RampCurveScreen: View {
                     .foregroundStyle(RampStage.ink)
                     .multilineTextAlignment(.center)
                     .lineSpacing(2)
-                    .vStaggeredAppear(index: 0)
                 Text("Every score forms a curve. Yours is the one point still missing.")
                     .font(VType.bodyLarge)
                     .foregroundStyle(RampStage.textSecondary)
                     .multilineTextAlignment(.center)
                     .fixedSize(horizontal: false, vertical: true)
-                    .vStaggeredAppear(index: 1)
             }
             .padding(.horizontal, VSpace.xl)
 
             RampDistributionCurve(range: range, startDelay: Self.drawStartDelay)
                 .padding(.horizontal, VSpace.lg)
                 .padding(.top, VSpace.lg)
-                .vStaggeredAppear(index: 2)
 
             // The estimate echoed under its own band — lands with the pulse.
             Text(verbatim: "Your estimated range: \(range.low) – \(range.high)")
@@ -66,7 +63,6 @@ struct RampCurveScreen: View {
             }
             .padding(.horizontal, VSpace.lg)
             .padding(.top, VSpace.lg)
-            .vStaggeredAppear(index: 3)
 
             Spacer()
 
@@ -168,7 +164,6 @@ struct RampDailyReportScreen: View {
                     .fixedSize(horizontal: false, vertical: true)
             }
             .padding(.horizontal, VSpace.xl)
-            .vStaggeredAppear(index: 0)
 
             Spacer().frame(height: VSpace.xl)
 
@@ -178,14 +173,12 @@ struct RampDailyReportScreen: View {
                 }
             }
             .padding(.horizontal, VSpace.lg)
-            .vStaggeredAppear(index: 1)
 
             // What you'll actually receive — an honest preview of the nudge,
             // rendered as a system-style banner. Updates with the choice.
             notificationPreview
                 .padding(.horizontal, VSpace.lg)
                 .padding(.top, VSpace.md)
-                .vStaggeredAppear(index: 2)
 
             Spacer()
 
@@ -495,13 +488,11 @@ struct RampCommitmentScreen: View {
                     .fixedSize(horizontal: false, vertical: true)
             }
             .padding(.horizontal, VSpace.xl)
-            .vStaggeredAppear(index: 0)
 
             Spacer().frame(height: VSpace.xl)
 
             signaturePad
                 .padding(.horizontal, VSpace.lg)
-                .vStaggeredAppear(index: 1)
 
             Text("Your signature stays on this screen — never stored, never uploaded.")
                 .font(VType.micro)
@@ -509,7 +500,6 @@ struct RampCommitmentScreen: View {
                 .multilineTextAlignment(.center)
                 .padding(.horizontal, VSpace.xl)
                 .padding(.top, VSpace.sm)
-                .vStaggeredAppear(index: 2)
 
             Spacer()
 

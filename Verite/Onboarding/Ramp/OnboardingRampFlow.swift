@@ -19,14 +19,17 @@ struct OnboardingRampFlow: View {
         ZStack {
             RampBackdrop()
 
+            // A single horizontal push, like a pager: the old screen glides out
+            // to the left while the new one glides in from the right — one
+            // spring, one direction, nothing pops or re-animates on top.
             currentScreen
                 .id(step)
                 .transition(
                     reduceMotion
                         ? AnyTransition.opacity
                         : AnyTransition.asymmetric(
-                            insertion: .opacity.combined(with: .offset(y: 14)),
-                            removal: .opacity
+                            insertion: .move(edge: .trailing).combined(with: .opacity),
+                            removal: .move(edge: .leading).combined(with: .opacity)
                         )
                 )
 
@@ -41,9 +44,9 @@ struct OnboardingRampFlow: View {
                 Spacer()
             }
         }
-        // One smooth spring for every step change — the new screen rises in
-        // while the old one dissolves, no hard easing.
-        .animation(reduceMotion ? VMotion.crossfade : .spring(response: 0.55, dampingFraction: 0.9),
+        // One smooth spring for every step change. Damping ~1 → no overshoot,
+        // so the push reads as a glide, never a bounce.
+        .animation(reduceMotion ? VMotion.crossfade : .spring(response: 0.48, dampingFraction: 0.98),
                    value: step)
         .onAppear { RampAnalytics.screen(step) }
         .onChange(of: step) { _, newStep in
@@ -264,13 +267,15 @@ struct OnboardingRampFlow: View {
 
     // MARK: Navigation
 
-    /// Selection is the advance: a soft haptic, then a gentle auto-advance.
+    /// Selection is the advance — but never a jump: the tile gets a real beat
+    /// to settle (fill, dot, haptic) before the screen glides on. Re-tapping a
+    /// different answer within the beat re-arms cleanly via the step guard.
     private func recordAnswer(question: String, answer: String) {
         Haptics.fire(.selection)
         RampAnalytics.quizAnswer(question: question, answer: answer)
         let current = step
         Task {
-            try? await Task.sleep(for: .milliseconds(420))
+            try? await Task.sleep(for: .milliseconds(700))
             guard step == current else { return }
             advance()
         }
