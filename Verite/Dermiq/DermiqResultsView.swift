@@ -574,7 +574,7 @@ struct DermiqPaywallCard: View {
                     valueRow("2 fresh skin scans every week")
                     valueRow("14-day routine, AI-checked for your skin")
                     valueRow("Zone map & your 14-day potential")
-                    valueRow("Skin Duel, Glow-Up Reel & rescans")
+                    valueRow("Glow-Up Reel, share cards & rescans")
                 }
             }
             .padding(.horizontal, 24)

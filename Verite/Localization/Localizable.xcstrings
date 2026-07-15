@@ -7106,6 +7106,41 @@
         }
       }
     },
+    "Glow-Up Reel, share cards & rescans": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Glow-Up-Reel, Share-Cards & Rescans"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Glow-Up Reel, share cards & rescans"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Glow-Up Reel, tarjetas para compartir y reescaneos"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Glow-Up Reel, cartes à partager et rescans"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Glow-Up Reel, card da condividere e nuove scansioni"
+          }
+        }
+      }
+    },
     "Glycolic acid 7%": {
       "extractionState": "manual",
       "localizations": {
@@ -11971,6 +12006,41 @@
         }
       }
     },
+    "Rescan to see your delta — then your next 14 days begin.": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Scanne neu für dein Delta — dann starten deine nächsten 14 Tage."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Rescan to see your delta — then your next 14 days begin."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vuelve a escanear para ver tu progreso — luego empiezan tus próximos 14 días."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Rescanne pour voir ton évolution — puis tes 14 prochains jours commencent."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Riscansiona per vedere il tuo progresso — poi iniziano i tuoi prossimi 14 giorni."
+          }
+        }
+      }
+    },
     "Restore": {
       "extractionState": "manual",
       "localizations": {
@@ -16657,6 +16727,41 @@
           "stringUnit": {
             "state": "translated",
             "value": "Con la tua routine, 8:00"
+          }
+        }
+      }
+    },
+    "You finished 14 days": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Du hast 14 Tage geschafft"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You finished 14 days"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Terminaste 14 días"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tu as terminé 14 jours"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hai completato 14 giorni"
           }
         }
       }

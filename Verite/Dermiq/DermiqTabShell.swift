@@ -8,13 +8,12 @@ import UIKit
 
 struct DermiqTabShell: View {
     enum Tab: String, CaseIterable {
-        case scan, routine, duel, progress
+        case scan, routine, progress
 
         var title: String {
             switch self {
             case .scan: return "Home"
             case .routine: return "Routine"
-            case .duel: return "Duel"
             case .progress: return "Progress"
             }
         }
@@ -23,7 +22,6 @@ struct DermiqTabShell: View {
             switch self {
             case .scan: return "house.fill"
             case .routine: return "checklist"
-            case .duel: return "flag.checkered.2.crossed"
             case .progress: return "chart.line.uptrend.xyaxis"
             }
         }
@@ -45,7 +43,6 @@ struct DermiqTabShell: View {
     @State private var showFlow = false
     @State private var showSettings = false
     @State private var autoLaunched = false
-    @State private var duelInbox = DuelInbox.shared
     @State private var showQuotaSheet = false
     @State private var quotaProCap = false
     @State private var quotaNextFree: Date?
@@ -113,10 +110,6 @@ struct DermiqTabShell: View {
             transaction.disablesAnimations = true
             withTransaction(transaction) { showFlow = true }
         }
-        // A tapped duel link jumps straight to the Duel tab, which consumes it.
-        .onChange(of: duelInbox.pending?.id) { _, id in
-            if id != nil { withAnimation(VMotion.snappy) { tab = .duel } }
-        }
         // Widget taps: verite://routine → the plan, verite://scan → home.
         .onOpenURL { url in
             guard url.scheme == "verite" else { return }
@@ -178,8 +171,8 @@ struct DermiqTabShell: View {
     }
 
     /// The plain, by-the-book TabView. Each tab is tagged with the same enum
-    /// the rest of the shell drives (duel links, post-scan jump), and the bar
-    /// itself is 100% system — which is exactly what makes it Liquid Glass.
+    /// the rest of the shell drives (post-scan jump to Routine, widget links),
+    /// and the bar itself is 100% system — which is what makes it Liquid Glass.
     @ViewBuilder
     private var nativeTabs: some View {
         let tabs = TabView(selection: $tab) {
@@ -188,8 +181,7 @@ struct DermiqTabShell: View {
                 onScan: { startScan() },
                 onSettings: { showSettings = true },
                 onRoutine: { tab = .routine },
-                onProgress: { tab = .progress },
-                onDuel: { tab = .duel }
+                onProgress: { tab = .progress }
             )
             .tabItem { Label(LocalizedStringKey(Tab.scan.title), systemImage: Tab.scan.icon) }
             .tag(Tab.scan)
@@ -197,10 +189,6 @@ struct DermiqTabShell: View {
             DermiqRoutineTab { startScan() }
                 .tabItem { Label(LocalizedStringKey(Tab.routine.title), systemImage: Tab.routine.icon) }
                 .tag(Tab.routine)
-
-            DuelTab { startScan() }
-                .tabItem { Label(LocalizedStringKey(Tab.duel.title), systemImage: Tab.duel.icon) }
-                .tag(Tab.duel)
 
             DermiqProgressTab()
                 .tabItem { Label(LocalizedStringKey(Tab.progress.title), systemImage: Tab.progress.icon) }
@@ -231,10 +219,8 @@ struct DermiqScanHome: View {
     let onSettings: () -> Void
     var onRoutine: () -> Void = {}
     var onProgress: () -> Void = {}
-    var onDuel: () -> Void = {}
 
     @Query private var profiles: [UserProfile]
-    @State private var heroPage = 0
 
     private var greeting: String {
         let hour = Calendar.current.component(.hour, from: .now)
@@ -310,7 +296,8 @@ struct DermiqScanHome: View {
                     .padding(.horizontal, 24)
                     .padding(.top, 6)
 
-                heroCarousel
+                scanCard
+                    .padding(.horizontal, 24)
 
                 if let latest = scans.first {
                     lastReadingRow(latest)
@@ -323,124 +310,6 @@ struct DermiqScanHome: View {
             .padding(.bottom, 28)
         }
         .scrollIndicators(.hidden)
-    }
-
-    /// A swipeable hero: the scan card, then the 1v1 duel poster. Page dots
-    /// sit underneath. Same height on both pages so the frame never jumps.
-    private var heroCarousel: some View {
-        VStack(spacing: 12) {
-            TabView(selection: $heroPage) {
-                scanCard
-                    .padding(.horizontal, 24)
-                    .tag(0)
-                duelCard
-                    .padding(.horizontal, 24)
-                    .tag(1)
-            }
-            .tabViewStyle(.page(indexDisplayMode: .never))
-            .frame(height: 460)
-
-            HStack(spacing: 7) {
-                ForEach(0..<2, id: \.self) { index in
-                    Capsule()
-                        .fill(heroPage == index ? DQColor.accent : DQColor.stroke)
-                        .frame(width: heroPage == index ? 20 : 7, height: 7)
-                }
-            }
-            .animation(VMotion.snappy, value: heroPage)
-        }
-    }
-
-    /// Page 2 — the 1v1 poster. Your face on the left, a mystery rival on the
-    /// right, split by a VS badge. Taps straight into the Duel tab.
-    private var duelCard: some View {
-        Button {
-            Haptics.fire(.selection)
-            onDuel()
-        } label: {
-            ZStack(alignment: .bottom) {
-                LinearGradient(
-                    colors: [DQColor.accent, DQColor.accentBright, Color(red: 0.12, green: 0.20, blue: 0.55)],
-                    startPoint: .topLeading, endPoint: .bottomTrailing
-                )
-
-                // Avatars + VS, sitting in the upper two-thirds.
-                VStack {
-                    Spacer()
-                    HStack(spacing: 14) {
-                        duelAvatar(mine: true)
-                        Text("VS")
-                            .font(.system(size: 22, weight: .heavy, design: .rounded))
-                            .foregroundStyle(.white)
-                            .shadow(color: .black.opacity(0.25), radius: 6, y: 2)
-                        duelAvatar(mine: false)
-                    }
-                    Spacer()
-                    Spacer()
-                }
-
-                LinearGradient(
-                    gradient: Gradient(stops: [
-                        .init(color: .clear, location: 0.45),
-                        .init(color: .black.opacity(0.30), location: 0.7),
-                        .init(color: .black.opacity(0.75), location: 1.0),
-                    ]),
-                    startPoint: .top, endPoint: .bottom
-                )
-
-                VStack(spacing: 14) {
-                    VStack(spacing: 6) {
-                        Text("1v1 a friend")
-                            .font(.system(size: 26, weight: .heavy, design: .rounded))
-                            .foregroundStyle(.white)
-                            .shadow(color: .black.opacity(0.4), radius: 8, y: 2)
-                        Text("14-day skin duel — biggest glow-up wins")
-                            .font(.system(size: 14, weight: .semibold, design: .rounded))
-                            .foregroundStyle(.white.opacity(0.9))
-                            .multilineTextAlignment(.center)
-                    }
-                    HStack(spacing: 8) {
-                        Image(systemName: "flag.checkered.2.crossed")
-                        Text("Start a duel")
-                    }
-                    .font(.system(size: 16, weight: .bold, design: .rounded))
-                    .foregroundStyle(DQColor.accentBright)
-                    .frame(maxWidth: .infinity, minHeight: 52)
-                    .background(.white, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
-                }
-                .padding(.horizontal, 20)
-                .padding(.bottom, 22)
-            }
-            .frame(maxWidth: .infinity)
-            .frame(height: 460)
-            .clipShape(RoundedRectangle(cornerRadius: 28, style: .continuous))
-            .overlay(
-                RoundedRectangle(cornerRadius: 28, style: .continuous)
-                    .strokeBorder(DQColor.stroke, lineWidth: 1)
-            )
-            .shadow(color: DQColor.accent.opacity(0.18), radius: 18, y: 8)
-        }
-        .buttonStyle(PressableStyle())
-    }
-
-    /// One duel avatar: your latest scan on the left, a mystery "?" on the right.
-    private func duelAvatar(mine: Bool) -> some View {
-        ZStack {
-            if mine, let image = DermiqImageStore.load(scans.first?.photoFilename) {
-                Image(uiImage: image).resizable().scaledToFill()
-            } else if mine {
-                DeckFaceSketch().padding(14).background(DQColor.surface)
-            } else {
-                Color.white.opacity(0.14)
-                Image(systemName: "questionmark")
-                    .font(.system(size: 34, weight: .bold))
-                    .foregroundStyle(.white.opacity(0.85))
-            }
-        }
-        .frame(width: 104, height: 104)
-        .clipShape(Circle())
-        .overlay(Circle().strokeBorder(.white.opacity(mine ? 0.9 : 0.4), lineWidth: 3))
-        .shadow(color: .black.opacity(0.2), radius: 8, y: 4)
     }
 
     /// The home hero — a full-bleed scan photo (the UMax pattern) with a dark

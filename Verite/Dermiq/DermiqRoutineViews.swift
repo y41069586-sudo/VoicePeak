@@ -827,12 +827,13 @@ struct DermiqRoutineTab: View {
                     .font(.system(size: 24, weight: .light))
                     .foregroundStyle(DQColor.accentBright)
                 VStack(alignment: .leading, spacing: 2) {
-                    Text("Day 14 — rescan unlocked")
+                    Text("You finished 14 days")
                         .font(DQFont.headline)
                         .foregroundStyle(DQColor.textPrimary)
-                    Text("Time to measure the delta.")
+                    Text("Rescan to see your delta — then your next 14 days begin.")
                         .font(DQFont.caption)
                         .foregroundStyle(DQColor.textSecondary)
+                        .fixedSize(horizontal: false, vertical: true)
                 }
                 Spacer()
                 Button {
