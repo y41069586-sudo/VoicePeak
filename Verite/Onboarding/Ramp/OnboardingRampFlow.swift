@@ -8,7 +8,6 @@ import SwiftData
 /// Capture.
 struct OnboardingRampFlow: View {
     @Environment(\.modelContext) private var modelContext
-    @Environment(AppState.self) private var appState
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @Query private var profiles: [UserProfile]
 
@@ -295,7 +294,6 @@ struct OnboardingRampFlow: View {
         profile.onboardingComplete = true
         try? modelContext.save()
 
-        appState.selectedTab = .analyze
         Haptics.fire(.verdictReveal)
         RampAnalytics.track("onboarding_complete")
     }

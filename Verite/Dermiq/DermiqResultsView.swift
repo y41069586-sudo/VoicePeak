@@ -152,7 +152,6 @@ struct DermiqResultsView: View {
 
                 if !locked {
                     percentileCard(analysis)
-                    potentialNote
                 }
 
                 if !locked {
@@ -349,22 +348,6 @@ struct DermiqResultsView: View {
         .foregroundStyle(up ? DQColor.deltaUp : DQColor.deltaDown)
         .padding(.horizontal, 5).padding(.vertical, 1)
         .background((up ? DQColor.deltaUp : DQColor.deltaDown).opacity(0.12), in: Capsule())
-    }
-
-    /// Honest note under the grid — Potential is a projection, never a promise.
-    private var potentialNote: some View {
-        HStack(spacing: 8) {
-            Image(systemName: "sparkles")
-                .font(.system(size: 12, weight: .semibold))
-            Text("“In 14 days” is a careful projection if you follow your plan — not a promise.")
-                .font(DQFont.micro)
-                .fixedSize(horizontal: false, vertical: true)
-        }
-        .foregroundStyle(DQColor.accentBright)
-        .padding(.horizontal, 14)
-        .padding(.vertical, 10)
-        .frame(maxWidth: .infinity)
-        .background(DQColor.surfaceElevated, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
     }
 
     /// The competitive hook: estimated standing. Overall "Top X%" plus the
@@ -603,7 +586,7 @@ struct DermiqPaywallCard: View {
             // (ReferralStore), and can send a thank-you link back. Sharing
             // never unlocks Pro — no fake "invite 3 to unlock" gate.
             ShareLink(item: ReferralStore.shared.inviteURL,
-                      message: Text("Scan your skin with me — this link gives us both a free scan.")) {
+                      message: Text("Scan your skin with me — this link gives you a free scan.")) {
                 HStack(spacing: 8) {
                     Image(systemName: "person.2.fill")
                     Text("Invite friends")

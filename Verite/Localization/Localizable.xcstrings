@@ -12881,6 +12881,41 @@
         }
       }
     },
+    "Scan your skin with me — this link gives you a free scan.": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Scan deine Haut mit mir — dieser Link schenkt dir einen Gratis-Scan."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Scan your skin with me — this link gives you a free scan."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Escanea tu piel conmigo — este enlace te regala un escaneo gratis."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Scanne ta peau avec moi — ce lien t'offre un scan gratuit."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Scansiona la pelle con me — questo link ti regala una scansione gratis."
+          }
+        }
+      }
+    },
     "SCORE OVER TIME": {
       "extractionState": "manual",
       "localizations": {
@@ -17287,6 +17322,41 @@
           "stringUnit": {
             "state": "translated",
             "value": "IL TUO IMPEGNO DI 14 GIORNI"
+          }
+        }
+      }
+    },
+    "Your friend gets a free scan right away. Your bonus lands once they go Pro.": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dein Freund bekommt sofort einen Gratis-Scan. Dein Bonus kommt, sobald er Pro holt."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Your friend gets a free scan right away. Your bonus lands once they go Pro."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tu amigo recibe un escaneo gratis al instante. Tu bono llega cuando se pase a Pro."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ton ami reçoit un scan gratuit tout de suite. Ton bonus arrive dès qu'il passe Pro."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Il tuo amico riceve subito una scansione gratis. Il tuo bonus arriva quando passa a Pro."
           }
         }
       }

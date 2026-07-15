@@ -242,7 +242,7 @@ struct ScanLimitSheet: View {
 
                 if !proCap {
                     ShareLink(item: ReferralStore.shared.inviteURL,
-                              message: Text("Scan your skin with me — this link gives us both a free scan.")) {
+                              message: Text("Scan your skin with me — this link gives you a free scan.")) {
                         Label("Invite a friend — you both get a scan", systemImage: "person.2.fill")
                             .font(.system(size: 15, weight: .semibold, design: .rounded))
                             .foregroundStyle(DQColor.accentBright)

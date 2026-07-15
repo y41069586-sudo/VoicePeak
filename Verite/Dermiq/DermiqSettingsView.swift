@@ -16,7 +16,6 @@ struct DermiqSettingsView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(\.modelContext) private var modelContext
     @Environment(PurchaseManager.self) private var purchases
-    @Environment(AppState.self) private var appState
     @Environment(\.requestReview) private var requestReview
     @Query private var profiles: [UserProfile]
 
@@ -154,12 +153,12 @@ struct DermiqSettingsView: View {
                     }
                     Spacer()
                 }
-                Text("Your friend gets a free scan right away. Your bonus lands once they sign up and go Pro.")
+                Text("Your friend gets a free scan right away. Your bonus lands once they go Pro.")
                     .font(DQFont.micro)
                     .foregroundStyle(DQColor.textSecondary)
                     .fixedSize(horizontal: false, vertical: true)
                 ShareLink(item: ReferralStore.shared.inviteURL,
-                          message: Text("Scan your skin with me — this link gives us both a free scan.")) {
+                          message: Text("Scan your skin with me — this link gives you a free scan.")) {
                     Label("Share invite link", systemImage: "square.and.arrow.up")
                         .font(.system(size: 14, weight: .semibold, design: .rounded))
                         .foregroundStyle(DQColor.accentBright)
@@ -167,12 +166,13 @@ struct DermiqSettingsView: View {
                         .background(DQColor.accentBright.opacity(0.10),
                                     in: RoundedRectangle(cornerRadius: 12, style: .continuous))
                 }
-                // The pay-back link only unlocks once THIS user is a real,
-                // paying member — signed in AND Pro. That's what makes the
-                // inviter's reward mean "my friend actually converted",
-                // not "my friend tapped a link".
+                // The pay-back link only unlocks once THIS user actually
+                // CONVERTED (went Pro) — that's what makes the inviter's
+                // reward mean "my friend bought", not "my friend tapped a
+                // link". (No sign-in requirement: accounts aren't live, so
+                // gating on currentUser() made the bonus unreachable.)
                 if ReferralStore.shared.thankYouURL != nil {
-                    if purchases.isPro && appState.backend.currentUser() != nil,
+                    if purchases.isPro || simulatedUnlock,
                        let thanks = ReferralStore.shared.thankYouURL {
                         ShareLink(item: thanks,
                                   message: Text("Thanks for the invite — open this so you get your bonus scan!")) {
