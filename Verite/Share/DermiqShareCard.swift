@@ -57,7 +57,7 @@ struct DermiqShareCard: View {
             Text(verbatim: Brand.name.uppercased())
                 .font(DQFont.mono(11, weight: .semibold)).tracking(5)
                 .foregroundStyle(DQColor.accentBright)
-            Text(verbatim: displayName.map { "\($0.uppercased())'S SKIN ANALYSIS" } ?? "SKIN ANALYSIS")
+            (displayName.map { Text("\($0.uppercased())'S SKIN ANALYSIS") } ?? Text("SKIN ANALYSIS"))
                 .font(DQFont.mono(9, weight: .semibold)).tracking(2.5)
                 .foregroundStyle(DQColor.textSecondary)
         }
@@ -136,7 +136,7 @@ struct DermiqShareCard: View {
         HStack(spacing: 6) {
             Image(systemName: "sparkles")
                 .font(.system(size: 11, weight: .semibold))
-            Text(verbatim: "14-day potential · \(projection.overall)")
+            Text("14-day potential · \(projection.overall)")
                 .font(.system(size: 13, weight: .bold, design: .rounded).monospacedDigit())
             Image(systemName: "arrow.up.right")
                 .font(.system(size: 10, weight: .heavy))

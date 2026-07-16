@@ -197,12 +197,12 @@ struct GlowUpReelSheet: View {
     }
 
     private func dayLabel(for index: Int) -> String {
-        guard let first = scans.first else { return "DAY 1" }
+        guard let first = scans.first else { return String(localized: "DAY \(1)") }
         let days = Calendar.current.dateComponents(
             [.day], from: Calendar.current.startOfDay(for: first.date),
             to: Calendar.current.startOfDay(for: scans[index].date)
         ).day ?? 0
-        return "DAY \(days + 1)"
+        return String(localized: "DAY \(days + 1)")
     }
 
     private func startExport() {

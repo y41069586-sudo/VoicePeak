@@ -103,9 +103,9 @@ extension RoutinePlan {
             let step = entry.step
             let freq = RoutineSchedule.frequencyLabel(for: step)
             let time: String
-            if entry.blocks.count == 2 { time = "AM + PM" }
-            else if entry.blocks.contains(.am) { time = "AM" }
-            else { time = "PM" }
+            if entry.blocks.count == 2 { time = String(localized: "AM + PM") }
+            else if entry.blocks.contains(.am) { time = String(localized: "AM") }
+            else { time = String(localized: "PM") }
             let usage = freq.map { "\(time) · \($0)" } ?? time
             let priceTier: String = {
                 let count = step.examples.count

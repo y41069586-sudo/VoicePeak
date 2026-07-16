@@ -123,7 +123,7 @@ struct DermiqResultsView: View {
             VStack(spacing: 20) {
                 // ---- Header (the UMax "reveal" pattern) ----
                 VStack(spacing: 8) {
-                    Text(locked ? "👀 Reveal your results" : "Your skin analysis")
+                    (locked ? Text("👀 Reveal your results") : Text("Your skin analysis"))
                         .font(.system(size: 26, weight: .heavy, design: .rounded))
                         .foregroundStyle(DQColor.textPrimary)
                         .multilineTextAlignment(.center)

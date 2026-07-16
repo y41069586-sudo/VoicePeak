@@ -191,7 +191,7 @@ struct ScanLimitSheet: View {
                 .padding(.top, 26)
 
             VStack(spacing: 6) {
-                Text(proCap ? "Weekly scan cap reached" : "Scanning is part of Pro")
+                (proCap ? Text("Weekly scan cap reached") : Text("Scanning is part of Pro"))
                     .font(.system(size: 21, weight: .heavy, design: .rounded))
                     .foregroundStyle(DQColor.textPrimary)
                 Text(proCap

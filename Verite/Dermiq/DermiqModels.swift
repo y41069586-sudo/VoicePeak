@@ -107,26 +107,29 @@ enum HonestSummaryBuilder {
     static func summary(overall: Int, weakest: DermiqSubScore) -> String {
         let achievable = min(overall + max(8, (88 - overall) / 2), 92)
         return state(for: weakest.category)
-            + " That's your single biggest lever."
-            + " Fix it and you're a \(achievable), not a \(overall)."
+            + " " + String(localized: "That's your single biggest lever.")
+            + " " + String(localized: "Fix it and you're a \(achievable), not a \(overall).")
     }
 
+    // Localized at build time (String(localized:)) because the summary is a
+    // plain String by the time it reaches the results card — a raw literal
+    // here would render as English on every device.
     private static func state(for category: DermiqCategory) -> String {
         switch category {
         case .texture:
-            return "Texture is holding your score back — visible congestion on the forehead and chin."
+            return String(localized: "Texture is holding your score back — visible congestion on the forehead and chin.")
         case .redness:
-            return "Redness is your weak point, concentrated around the nose and cheeks."
+            return String(localized: "Redness is your weak point, concentrated around the nose and cheeks.")
         case .pores:
-            return "Pore visibility is dragging the whole picture down, mostly through the T-zone."
+            return String(localized: "Pore visibility is dragging the whole picture down, mostly through the T-zone.")
         case .evenness:
-            return "Uneven tone is the main thing standing between you and a higher score."
+            return String(localized: "Uneven tone is the main thing standing between you and a higher score.")
         case .glow:
-            return "Your skin reads flat right now — the glow score is the drag."
+            return String(localized: "Your skin reads flat right now — the glow score is the drag.")
         case .hydration:
-            return "Your skin is running dry, and it pulls down every other metric."
+            return String(localized: "Your skin is running dry, and it pulls down every other metric.")
         case .blemishes:
-            return "Active breakouts are the single biggest drag on your score."
+            return String(localized: "Active breakouts are the single biggest drag on your score.")
         }
     }
 }
@@ -347,7 +350,7 @@ enum RoutineBuilder {
             key: "am.spf",
             productType: feel == .oily ? "SPF 50, mattifying fluid" : "SPF 50 broad spectrum",
             active: "UV filters",
-            why: "UV is the #1 score killer. Non-negotiable, every day.",
+            why: String(localized: "UV is the #1 score killer. Non-negotiable, every day."),
             examples: feel == .oily
                 ? ["La Roche-Posay Anthelios Oil Control · $$", "Beauty of Joseon Matte Sun Stick · $"]
                 : ["Beauty of Joseon Relief Sun · $", "La Roche-Posay Anthelios · $$", "Supergoop Unseen · $$$"]
@@ -361,29 +364,29 @@ enum RoutineBuilder {
 
     private static func baseCleanser(feel: SkinFeel?, block: RoutineBlock) -> RoutineStep {
         let key = block == .am ? "am.cleanse" : "pm.cleanse"
-        let pmWhy = "Removes the day's oxidized sebum and SPF residue."
-        let amWhy = "Preps skin without stripping — protects every step after it."
+        let pmWhy = String(localized: "Removes the day's oxidized sebum and SPF residue.")
+        let amWhy = String(localized: "Preps skin without stripping — protects every step after it.")
         let why = block == .am ? amWhy : pmWhy
         switch feel {
         case .dry:
             return RoutineStep(key: key, productType: "Cream cleanser (non-foaming)",
                 active: "Ceramides + glycerin",
-                why: why + " Cream texture, because your skin runs dry.",
+                why: why + " " + String(localized: "Cream texture, because your skin runs dry."),
                 examples: ["CeraVe Hydrating Cleanser · $", "La Roche-Posay Toleriane Dermo · $$", "Avène Gentle Milk · $$"])
         case .oily:
             return RoutineStep(key: key, productType: "Gel cleanser, low-pH",
                 active: "Mild surfactants + zinc",
-                why: why + " Gel formula keeps the shine in check without over-drying.",
+                why: why + " " + String(localized: "Gel formula keeps the shine in check without over-drying."),
                 examples: ["CeraVe Foaming Cleanser · $", "COSRX Low pH Good Morning · $", "Effaclar Purifying Gel · $$"])
         case .sensitive:
             return RoutineStep(key: key, productType: "Fragrance-free cream cleanser",
                 active: "Amino-acid surfactants",
-                why: why + " Zero fragrance, zero essential oils — your skin flagged sensitive.",
+                why: why + " " + String(localized: "Zero fragrance, zero essential oils — your skin flagged sensitive."),
                 examples: ["La Roche-Posay Toleriane Dermo · $$", "Bioderma Sensibio Gel · $$"])
         case .combo:
             return RoutineStep(key: key, productType: "Balancing gel-cream cleanser",
                 active: "Low-pH surfactants + panthenol",
-                why: why + " Balanced texture for a combination T-zone.",
+                why: why + " " + String(localized: "Balanced texture for a combination T-zone."),
                 examples: ["CeraVe Foaming Cleanser · $", "Krave Matcha Hemp · $$"])
         default:
             return RoutineStep(key: key, productType: "Gentle gel cleanser",
@@ -403,33 +406,33 @@ enum RoutineBuilder {
         case .dry where block == .am:
             return RoutineStep(key: key, productType: "Rich day cream",
                 active: "Ceramides + shea + glycerin",
-                why: "Dry skin needs the fuller buffer under SPF.",
+                why: String(localized: "Dry skin needs the fuller buffer under SPF."),
                 examples: ["CeraVe Moisturizing Cream · $", "Kiehl's Ultra Facial Cream · $$$"])
         case .dry:
             return RoutineStep(key: key, productType: "Overnight repair cream",
                 active: "Ceramides + panthenol + squalane",
-                why: "Overnight is when repair happens — dry skin gets the richest seal.",
+                why: String(localized: "Overnight is when repair happens — dry skin gets the richest seal."),
                 examples: ["CeraVe Moisturizing Cream · $", "Weleda Skin Food · $"])
         case .oily:
             return RoutineStep(key: key, productType: "Oil-free gel moisturizer",
                 active: "Ceramides + niacinamide + HA",
                 why: block == .am
-                    ? "Hydration without weight — shine stays down."
-                    : "Same gel at night — repair material without clogging.",
+                    ? String(localized: "Hydration without weight — shine stays down.")
+                    : String(localized: "Same gel at night — repair material without clogging."),
                 examples: ["Neutrogena Hydro Boost · $", "CeraVe PM Lotion · $", "Belif Aqua Bomb · $$"])
         case .sensitive:
             return RoutineStep(key: key, productType: "Barrier cream, fragrance-free",
                 active: "Ceramides + panthenol",
                 why: block == .am
-                    ? "Calm buffer that keeps the actives from nipping."
-                    : "The same fragrance-free barrier for an overnight calm-down.",
+                    ? String(localized: "Calm buffer that keeps the actives from nipping.")
+                    : String(localized: "The same fragrance-free barrier for an overnight calm-down."),
                 examples: ["Avène Tolérance Control · $$", "La Roche-Posay Cicaplast B5 · $$", "CeraVe PM Lotion · $"])
         default:
             return RoutineStep(key: key, productType: "Ceramide moisturizer",
                 active: "Ceramides + glycerin",
                 why: block == .am
-                    ? "Seals the actives in and keeps the barrier calm."
-                    : "The same barrier cream at night — that's when repair happens.",
+                    ? String(localized: "Seals the actives in and keeps the barrier calm.")
+                    : String(localized: "The same barrier cream at night — that's when repair happens."),
                 examples: ["CeraVe PM Lotion · $", "Neutrogena Hydro Boost · $", "Dr. Jart+ Ceramidin · $$$"])
         }
     }
@@ -439,19 +442,19 @@ enum RoutineBuilder {
         if step.active.contains("Glycolic") {
             return RoutineStep(key: step.key, productType: "Gentle PHA exfoliant (2×/week)",
                 active: "Gluconolactone (PHA)",
-                why: step.why + " Softened to PHA — sensitive skin flagged.",
+                why: step.why + " " + String(localized: "Softened to PHA — sensitive skin flagged."),
                 examples: ["The Inkey List PHA Toner · $", "Naturium PHA Toner · $$"])
         }
         if step.active.contains("Adapalene") || step.active.contains("Retinaldehyde") {
             return RoutineStep(key: step.key, productType: "Gentle retinol (start 2×/week)",
                 active: "Retinol 0.3% encapsulated",
-                why: step.why + " Softened entry dose — sensitive skin flagged.",
+                why: step.why + " " + String(localized: "Softened entry dose — sensitive skin flagged."),
                 examples: ["The Inkey List Retinol · $", "Geek & Gorgeous A-Game 5 · $$"])
         }
         if step.active.contains("Ascorbic") {
             return RoutineStep(key: step.key, productType: "Vitamin C derivative serum",
                 active: "Ethylated ascorbic acid 10%",
-                why: step.why + " Derivative form — kinder to reactive skin.",
+                why: step.why + " " + String(localized: "Derivative form — kinder to reactive skin."),
                 examples: ["Purito CID Serum · $$", "Geek & Gorgeous C-Glow · $$"])
         }
         return step
@@ -501,14 +504,14 @@ enum RoutineBuilder {
                 key: "t.texture",
                 productType: "Retinal night serum",
                 active: "Retinaldehyde 0.05%",
-                why: "At \(score), texture is your biggest lever — retinoids are the proven route.",
+                why: String(localized: "At \(score), texture is your biggest lever — retinoids are the proven route."),
                 examples: ["Geek & Gorgeous A-Game 5 · $$", "Avène Retrinal 0.05 · $$$"]
             )
             : RoutineStep(
                 key: "t.texture",
                 productType: "BHA exfoliant",
                 active: "Salicylic acid 2%",
-                why: "Clears the congestion dragging your texture score (\(score)).",
+                why: String(localized: "Clears the congestion dragging your texture score (\(score))."),
                 examples: ["The Ordinary Salicylic 2% · $", "COSRX BHA Power Liquid · $$", "Paula's Choice 2% BHA · $$$"]
             )
         case .redness:
@@ -517,14 +520,14 @@ enum RoutineBuilder {
                 key: "t.redness",
                 productType: "Azelaic acid treatment",
                 active: "Azelaic acid 10%",
-                why: "At \(score), redness needs the stronger calmer — azelaic is it.",
+                why: String(localized: "At \(score), redness needs the stronger calmer — azelaic is it."),
                 examples: ["The Ordinary Azelaic 10% · $", "Paula's Choice Azelaic Booster · $$$"]
             )
             : RoutineStep(
                 key: "t.redness",
                 productType: "Niacinamide serum",
                 active: "Niacinamide 10%",
-                why: "Targets your redness score (\(score)).",
+                why: String(localized: "Targets your redness score (\(score))."),
                 examples: ["The Ordinary Niacinamide · $", "Naturium Niacinamide · $$", "Paula's Choice 10% · $$$"]
             )
         case .pores:
@@ -533,14 +536,14 @@ enum RoutineBuilder {
                 key: "t.pores",
                 productType: "Clay + BHA mask (2×/week)",
                 active: "Kaolin + salicylic acid",
-                why: "At \(score), pores need the deep-clean combo, not just a serum.",
+                why: String(localized: "At \(score), pores need the deep-clean combo, not just a serum."),
                 examples: ["Paula's Choice Pore Clarifying Mask · $$", "Innisfree Volcanic Clay · $"]
             )
             : RoutineStep(
                 key: "t.pores",
                 productType: "Niacinamide + zinc serum",
                 active: "Niacinamide 10% + Zinc 1%",
-                why: "Tightens the pore visibility pulling your score down (\(score)).",
+                why: String(localized: "Tightens the pore visibility pulling your score down (\(score))."),
                 examples: ["The Ordinary Niacinamide+Zinc · $", "Geek & Gorgeous B-Bomb · $$"]
             )
         case .evenness:
@@ -549,14 +552,14 @@ enum RoutineBuilder {
                 key: "t.evenness",
                 productType: "Tranexamic acid serum",
                 active: "Tranexamic acid 3% + niacinamide",
-                why: "At \(score), tone needs the targeted fader — tranexamic acid.",
+                why: String(localized: "At \(score), tone needs the targeted fader — tranexamic acid."),
                 examples: ["Naturium Tranexamic 5% · $$", "La Roche-Posay Mela B3 · $$$"]
             )
             : RoutineStep(
                 key: "t.evenness",
                 productType: "Vitamin C serum",
                 active: "Ascorbic acid 10–15%",
-                why: "Evens the tone variance behind your evenness score (\(score)).",
+                why: String(localized: "Evens the tone variance behind your evenness score (\(score))."),
                 examples: ["Timeless 10% C · $", "Geek & Gorgeous C-Glow · $$", "Skinceuticals CE Ferulic · $$$"]
             )
         case .glow:
@@ -565,14 +568,14 @@ enum RoutineBuilder {
                 key: "t.glow",
                 productType: "AHA exfoliant (2–3×/week)",
                 active: "Glycolic acid 7%",
-                why: "At \(score), glow needs real resurfacing — glycolic delivers it.",
+                why: String(localized: "At \(score), glow needs real resurfacing — glycolic delivers it."),
                 examples: ["The Ordinary Glycolic Toner · $", "Pixi Glow Tonic · $$"]
             )
             : RoutineStep(
                 key: "t.glow",
                 productType: "Gentle AHA (2×/week)",
                 active: "Lactic acid 5%",
-                why: "Brings back the surface light your glow score is missing (\(score)).",
+                why: String(localized: "Brings back the surface light your glow score is missing (\(score))."),
                 examples: ["The Ordinary Lactic 5% · $", "Good Molecules Lactic Toner · $"]
             )
         case .hydration:
@@ -581,14 +584,14 @@ enum RoutineBuilder {
                 key: "t.hydration",
                 productType: "Overnight hydration mask",
                 active: "HA + squalane + panthenol",
-                why: "At \(score), a serum alone won't refill the deficit — seal it overnight.",
+                why: String(localized: "At \(score), a serum alone won't refill the deficit — seal it overnight."),
                 examples: ["Laneige Water Sleeping Mask · $$", "COSRX Rice Mask · $"]
             )
             : RoutineStep(
                 key: "t.hydration",
                 productType: "Hydrating serum",
                 active: "Hyaluronic acid + B5",
-                why: "Refills the water deficit behind your hydration score (\(score)).",
+                why: String(localized: "Refills the water deficit behind your hydration score (\(score))."),
                 examples: ["The Ordinary HA 2% · $", "La Roche-Posay Hyalu B5 · $$$"]
             )
         case .blemishes:
@@ -601,14 +604,14 @@ enum RoutineBuilder {
                 key: "t.blemishes",
                 productType: "Retinal treatment",
                 active: "Retinaldehyde 0.1%",
-                why: "At \(score), breakouts need a retinoid — the proven route, no prescription needed.",
+                why: String(localized: "At \(score), breakouts need a retinoid — the proven route, no prescription needed."),
                 examples: ["Geek & Gorgeous A-Game 10 · $$", "Avène Retrinal 0.1 · $$$"]
             )
             : RoutineStep(
                 key: "t.blemishes",
                 productType: "BHA spot treatment",
                 active: "Salicylic acid 2%",
-                why: "Keeps the occasional breakout from settling in (\(score)).",
+                why: String(localized: "Keeps the occasional breakout from settling in (\(score))."),
                 examples: ["COSRX Pimple Patches · $", "Paula's Choice 2% BHA · $$$"]
             )
         }

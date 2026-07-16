@@ -21,9 +21,11 @@ struct RampCurveScreen: View {
 
     private var range: (low: Int, high: Int) { answers.predictedRange }
 
-    private var headline: String {
-        if let name = answers.displayName { return "Where do you\nland, \(name)?" }
-        return "Where do\nyou land?"
+    // Returns Text (not String) so the name interpolation goes through the
+    // string catalog — a computed String would render as raw English.
+    private var headline: Text {
+        if let name = answers.displayName { return Text("Where do you\nland, \(name)?") }
+        return Text("Where do\nyou land?")
     }
 
     var body: some View {
@@ -31,7 +33,7 @@ struct RampCurveScreen: View {
             Spacer()
 
             VStack(spacing: VSpace.md) {
-                Text(headline)
+                headline
                     .font(RampStage.serif(28))
                     .foregroundStyle(RampStage.ink)
                     .multilineTextAlignment(.center)
@@ -49,7 +51,7 @@ struct RampCurveScreen: View {
                 .padding(.top, VSpace.lg)
 
             // The estimate echoed under its own band — lands with the pulse.
-            Text(verbatim: "Your estimated range: \(range.low) – \(range.high)")
+            Text("Your estimated range: \(range.low) – \(range.high)")
                 .font(VType.caption)
                 .foregroundStyle(RampStage.accentDeep)
                 .padding(.top, VSpace.sm)
@@ -590,9 +592,10 @@ struct RampCommitmentScreen: View {
         strokes.reduce(0) { $0 + $1.count } >= 12
     }
 
-    private var headline: String {
-        if let name { return "Make it official,\n\(name)." }
-        return "Make it\nofficial."
+    // Text, not String — so the name interpolation localizes via the catalog.
+    private var headline: Text {
+        if let name { return Text("Make it official,\n\(name).") }
+        return Text("Make it\nofficial.")
     }
 
     var body: some View {
@@ -604,7 +607,7 @@ struct RampCommitmentScreen: View {
                     .font(VType.micro)
                     .tracking(3)
                     .foregroundStyle(RampStage.accentDeep)
-                Text(headline)
+                headline
                     .font(RampStage.serif(28))
                     .foregroundStyle(RampStage.ink)
                     .multilineTextAlignment(.center)
@@ -668,7 +671,7 @@ struct RampCommitmentScreen: View {
                     .fill(RampStage.hair.opacity(0.8))
                     .frame(height: 1)
                     .padding(.horizontal, 28)
-                Text(strokes.isEmpty ? "Sign with your finger" : " ")
+                (strokes.isEmpty ? Text("Sign with your finger") : Text(verbatim: " "))
                     .font(RampStage.serif(15))
                     .foregroundStyle(RampStage.textTertiary)
                     .padding(.top, 8)

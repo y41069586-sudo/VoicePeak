@@ -493,10 +493,11 @@ struct RampRevealScreen: View {
             .prefix(4))
     }
 
-    private var eyebrow: String {
-        if !showRange { return "READING YOUR ANSWERS" }
-        if let name = answers.displayName { return "\(name.uppercased())'S RANGE" }
-        return "YOUR RANGE"
+    // Text, not String — Text(verbatim:) on a computed String never localizes.
+    private var eyebrow: Text {
+        if !showRange { return Text("READING YOUR ANSWERS") }
+        if let name = answers.displayName { return Text("\(name.uppercased())'S RANGE") }
+        return Text("YOUR RANGE")
     }
 
     var body: some View {
@@ -505,12 +506,12 @@ struct RampRevealScreen: View {
 
             // ---- Heading ----
             VStack(spacing: VSpace.sm) {
-                Text(verbatim: eyebrow)
+                eyebrow
                     .font(VType.micro)
                     .tracking(3)
                     .foregroundStyle(RampStage.accentDeep)
                     .contentTransition(.opacity)
-                Text(showRange ? "Your first estimate\nis ready." : "Building your\nfirst estimate")
+                (showRange ? Text("Your first estimate\nis ready.") : Text("Building your\nfirst estimate"))
                     .font(RampStage.serif(29))
                     .foregroundStyle(RampStage.ink)
                     .multilineTextAlignment(.center)
@@ -533,7 +534,7 @@ struct RampRevealScreen: View {
                         ScrollView(.horizontal) {
                             HStack(spacing: 8) {
                                 ForEach(answerChips, id: \.self) { chip in
-                                    Text(chip)
+                                    Text(LocalizedStringKey(chip))
                                         .font(.system(size: 12, weight: .semibold, design: .rounded))
                                         .foregroundStyle(RampStage.accentDeep)
                                         .lineLimit(1)

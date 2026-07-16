@@ -33,7 +33,7 @@ struct DermiqRoutineGenView: View {
                     .font(DQFont.mono(11, weight: .semibold))
                     .foregroundStyle(DQColor.accentBright)
                     .tracking(3)
-                Text(ready ? "Your plan is ready" : "Building your\n14-day plan")
+                (ready ? Text("Your plan is ready") : Text("Building your\n14-day plan"))
                     .font(.system(size: 28, weight: .bold, design: .rounded))
                     .foregroundStyle(DQColor.textPrimary)
                     .multilineTextAlignment(.center)
@@ -1020,7 +1020,7 @@ private struct DermiqStepRow: View {
                         .contentShape(Rectangle())
                 }
                 .buttonStyle(.plain)
-                .accessibilityLabel(expanded ? "Hide details" : "Show details")
+                .accessibilityLabel(expanded ? Text("Hide details") : Text("Show details"))
             }
 
             // Two-stage disclosure: expanding shows ONLY the application —

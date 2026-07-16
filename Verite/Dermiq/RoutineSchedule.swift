@@ -119,6 +119,6 @@ enum RoutineSchedule {
         let count = days(for: step).count
         guard count < 13 else { return nil }
         let perWeek = max(1, Int((Double(count) / 2).rounded()))
-        return "\(perWeek)×/week"
+        return String(localized: "\(perWeek)×/week")
     }
 }
