@@ -156,7 +156,7 @@ struct DermiqTabShell: View {
     /// StoreKit display price for the €1.99 extra scan, or a sensible fallback
     /// while products aren't loaded.
     private var extraScanPrice: String {
-        purchases.products.first { $0.id == VeriteProducts.extraScan }?.displayPrice ?? "€1.99"
+        purchases.displayPrice(for: VeriteProducts.extraScan) ?? "€1,99"
     }
 
     /// Buy one extra scan (consumable). On success it becomes a scan credit
@@ -164,8 +164,7 @@ struct DermiqTabShell: View {
     /// StoreKit isn't live, grant it immediately (mirrors the paywall).
     private func buyExtraScan() {
         Task {
-            guard let product = purchases.products.first(where: { $0.id == VeriteProducts.extraScan }),
-                  await purchases.purchaseConsumable(product) else { return }
+            guard await purchases.purchaseConsumable(productID: VeriteProducts.extraScan) else { return }
             ReferralStore.shared.addCredit()
             RampAnalytics.track("extra_scan_purchased")
             try? await Task.sleep(for: .milliseconds(250))

@@ -24,6 +24,9 @@ packages:
   GoogleSignIn:
     url: https://github.com/google/GoogleSignIn-iOS
     from: "8.0.0"
+  RevenueCat:
+    url: https://github.com/RevenueCat/purchases-ios
+    from: "5.0.0"
 
 targets:
   Verite:
@@ -54,6 +57,8 @@ targets:
         embed: true
       - package: GoogleSignIn
         product: GoogleSignIn
+      - package: RevenueCat
+        product: RevenueCat
     # DO NOT add an `info:` block here. XcodeGen REGENERATES the plist at
     # `info.path` on every `xcodegen generate` (CI runs it every build),
     # overwriting the hand-written Verite/Resources/Info.plist with 8 boiler-

@@ -681,10 +681,9 @@ struct DermiqPaywallCard: View {
 
     /// "≈ $0.77 / week" — the annual price broken down so the anchor lands.
     private var annualWeeklyEquivalent: String {
-        guard let product = purchases.products.first(where: { $0.id == VeriteProducts.proYearly })
+        guard let weekly = purchases.weeklyEquivalent(forYearly: VeriteProducts.proYearly)
         else { return String(localized: "≈ $0.77 / week") }
-        let weekly = product.price / 52
-        return "≈ \(weekly.formatted(product.priceFormatStyle)) / week"
+        return "≈ \(weekly) / week"
     }
 
     private func planRow(_ plan: PlanChoice, title: String, price: String,
@@ -734,10 +733,7 @@ struct DermiqPaywallCard: View {
     }
 
     private func price(for productID: String, fallback: String) -> String {
-        guard let product = purchases.products.first(where: { $0.id == productID }) else {
-            return fallback
-        }
-        return product.displayPrice
+        purchases.displayPrice(for: productID) ?? fallback
     }
 
     private func purchase() {
@@ -745,13 +741,13 @@ struct DermiqPaywallCard: View {
         Task {
             defer { purchasing = false }
             let id = choice == .annual ? VeriteProducts.proYearly : VeriteProducts.proWeekly
-            guard let product = purchases.products.first(where: { $0.id == id }) else {
-                // Products didn't load (offline / StoreKit hiccup) — say so
-                // instead of silently resetting the button.
+            guard purchases.displayPrice(for: id) != nil else {
+                // Products didn't load (offline / hiccup) — say so instead of
+                // silently resetting the button.
                 purchaseFailed = true
                 return
             }
-            if await purchases.purchase(product) {
+            if await purchases.purchase(productID: id) {
                 RampAnalytics.track("paywall_purchase", ["plan": id])
                 onUnlocked()
             }
