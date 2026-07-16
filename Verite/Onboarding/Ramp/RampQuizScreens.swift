@@ -23,44 +23,57 @@ struct RampQuizScreen: View {
     let onSelect: (String) -> Void
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 0) {
-            Spacer().frame(height: VSpace.xxl * 2)
+        // Centered header + centered answer tiles, and scroll-safe: on a short
+        // window the whole column scrolls instead of crushing the tiles
+        // together; on a tall phone the flexible bottom spacer keeps the
+        // familiar top-anchored placement.
+        GeometryReader { proxy in
+            ScrollView {
+                VStack(spacing: 0) {
+                    Spacer().frame(height: VSpace.xxl * 2)
 
-            if let chapter {
-                Text(LocalizedStringKey(chapter))
-                    .font(VType.micro)
-                    .tracking(3)
-                    .foregroundStyle(RampStage.accentDeep)
-                    .padding(.horizontal, VSpace.lg)
-                    .padding(.bottom, VSpace.sm)
-            }
-
-            Text(LocalizedStringKey(question))
-                .font(RampStage.serif(25))
-                .foregroundStyle(RampStage.ink)
-                .lineSpacing(2)
-                .padding(.horizontal, VSpace.lg)
-
-            Spacer().frame(height: VSpace.xl)
-
-            // No per-tile stagger: the tiles ride in with the screen's own
-            // push. A second entrance animation on top of the transition is
-            // exactly what made the advance feel glitchy.
-            VStack(spacing: VSpace.sm) {
-                ForEach(options) { option in
-                    RampOptionCard(
-                        label: option.label,
-                        sub: option.sub,
-                        icon: option.icon,
-                        selected: selectedID == option.id
-                    ) {
-                        onSelect(option.id)
+                    if let chapter {
+                        Text(LocalizedStringKey(chapter))
+                            .font(VType.micro)
+                            .tracking(3)
+                            .foregroundStyle(RampStage.accentDeep)
+                            .multilineTextAlignment(.center)
+                            .padding(.horizontal, VSpace.lg)
+                            .padding(.bottom, VSpace.sm)
                     }
-                }
-            }
-            .padding(.horizontal, VSpace.lg)
 
-            Spacer()
+                    Text(LocalizedStringKey(question))
+                        .font(RampStage.serif(25))
+                        .foregroundStyle(RampStage.ink)
+                        .multilineTextAlignment(.center)
+                        .lineSpacing(2)
+                        .fixedSize(horizontal: false, vertical: true)
+                        .padding(.horizontal, VSpace.lg)
+
+                    Spacer().frame(height: VSpace.xl)
+
+                    // No per-tile stagger: the tiles ride in with the screen's
+                    // own push. A second entrance animation on top of the
+                    // transition is exactly what made the advance feel glitchy.
+                    VStack(spacing: VSpace.sm) {
+                        ForEach(options) { option in
+                            RampOptionCard(
+                                label: option.label,
+                                sub: option.sub,
+                                icon: option.icon,
+                                selected: selectedID == option.id
+                            ) {
+                                onSelect(option.id)
+                            }
+                        }
+                    }
+                    .padding(.horizontal, VSpace.lg)
+
+                    Spacer(minLength: VSpace.xl)
+                }
+                .frame(minHeight: proxy.size.height)
+            }
+            .scrollBounceBehavior(.basedOnSize)
         }
     }
 }
