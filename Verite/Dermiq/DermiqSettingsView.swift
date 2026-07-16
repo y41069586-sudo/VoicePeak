@@ -234,7 +234,7 @@ struct DermiqSettingsView: View {
     private var supportSection: some View {
         settingsCard("SUPPORT") {
             settingsButton(icon: "envelope", text: "Contact support") {
-                if let url = URL(string: "mailto:support@verite.app?subject=Glow%C3%A9%20Support") {
+                if let url = URL(string: "mailto:glowe.skinapp@gmail.com?subject=Glow%C3%A9%20Support") {
                     UIApplication.shared.open(url)
                 }
             }
