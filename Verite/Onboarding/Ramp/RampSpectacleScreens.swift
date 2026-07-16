@@ -394,14 +394,14 @@ struct RampSampleReadingScreen: View {
                 .font(.system(size: 13, weight: .semibold, design: .rounded))
                 .foregroundStyle(RampStage.textSecondary)
                 .lineLimit(1)
-            // Exactly the locked-results treatment: number blurred at 9,
-            // bar softly blurred + dimmed — the familiar iOS-teaser look,
-            // not a flat smudge over everything.
+            // The iOS-teaser look that RESOLVES: numbers start blurred and
+            // sharpen as they count up (blur → 0 as reveal → 1), just like the
+            // real reveal — not a permanent smudge covering the whole card.
             Text(verbatim: "\(shown)")
                 .font(.system(size: 26, weight: .heavy, design: .rounded).monospacedDigit())
                 .foregroundStyle(lead ? RampStage.accentDeep : RampStage.ink)
                 .contentTransition(.numericText(value: Double(shown)))
-                .blur(radius: 9)
+                .blur(radius: 9 * (1 - reveal))
             GeometryReader { proxy in
                 ZStack(alignment: .leading) {
                     Capsule().fill(RampStage.hair.opacity(0.7))
@@ -411,8 +411,8 @@ struct RampSampleReadingScreen: View {
                 }
             }
             .frame(height: 6)
-            .blur(radius: 4)
-            .opacity(0.7)
+            .blur(radius: 4 * (1 - reveal))
+            .opacity(0.7 + 0.3 * reveal)
         }
     }
 
