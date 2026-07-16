@@ -1,8 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <!--
-  Vérité privacy manifest. Local-first: no tracking, no data collection off-device.
-  Face photos are never collected or transmitted. Expanded/verified in Milestone 11.
+  Glowé privacy manifest. No third-party tracking SDK and no analytics SDK ship in
+  the app (NSPrivacyTracking = false). The scan photo IS sent (encrypted in transit)
+  to our skin-analysis provider to compute the user's scores and is not retained
+  after the result — it is used only to service the user's own request. It is not
+  used for tracking and is never sold. Keep the App Store Connect privacy label in
+  sync with this if a photo is ever stored or an analytics sink is wired.
 -->
 <plist version="1.0">
 <dict>

@@ -310,6 +310,7 @@ struct DermiqResultsView: View {
                     .font(.system(size: 13, weight: .semibold, design: .rounded))
                     .foregroundStyle(DQColor.textSecondary)
                     .lineLimit(1)
+                    .minimumScaleFactor(0.8)
                 Spacer(minLength: 0)
                 if showProjected && delta != 0 {
                     deltaChip(delta)
