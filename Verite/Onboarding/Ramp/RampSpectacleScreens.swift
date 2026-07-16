@@ -87,12 +87,12 @@ struct RampBootScreen: View {
             Spacer()
 
             VStack(spacing: VSpace.md) {
-                Text(titles[index])
+                Text(LocalizedStringKey(titles[index]))
                     .font(RampStage.serif(34))
                     .foregroundStyle(RampStage.ink)
                     .multilineTextAlignment(.center)
                     .lineSpacing(2)
-                Text(subs[index])
+                Text(LocalizedStringKey(subs[index]))
                     .font(VType.bodyLarge)
                     .foregroundStyle(RampStage.textSecondary)
                     .multilineTextAlignment(.center)

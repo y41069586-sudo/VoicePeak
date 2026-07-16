@@ -345,7 +345,9 @@ struct RampNameScreen: View {
             Spacer().frame(height: VSpace.xxl)
         }
         .task {
-            try? await Task.sleep(for: .milliseconds(450))
+            // After the 480ms push transition — a keyboard sliding up mid-push
+            // visibly jolts the settling screen.
+            try? await Task.sleep(for: .milliseconds(620))
             focused = true
         }
     }
@@ -396,18 +398,21 @@ struct RampInsightScreen: View {
 
                 // The user's answers, echoed back — each pops in on its own.
                 if !chips.isEmpty {
-                    HStack(spacing: 7) {
-                        ForEach(chips.indices, id: \.self) { i in
-                            Text(LocalizedStringKey(chips[i]))
-                                .font(.system(size: 12.5, weight: .semibold, design: .rounded))
-                                .foregroundStyle(RampStage.accentDeep)
-                                .lineLimit(1)
-                                .padding(.horizontal, 11).padding(.vertical, 6)
-                                .background(RampStage.accentSoft, in: Capsule())
-                                .opacity(i < chipsShown ? 1 : 0)
-                                .scaleEffect(i < chipsShown ? 1 : 0.6)
+                    ScrollView(.horizontal) {
+                        HStack(spacing: 7) {
+                            ForEach(chips.indices, id: \.self) { i in
+                                Text(LocalizedStringKey(chips[i]))
+                                    .font(.system(size: 12.5, weight: .semibold, design: .rounded))
+                                    .foregroundStyle(RampStage.accentDeep)
+                                    .lineLimit(1)
+                                    .padding(.horizontal, 11).padding(.vertical, 6)
+                                    .background(RampStage.accentSoft, in: Capsule())
+                                    .opacity(i < chipsShown ? 1 : 0)
+                                    .scaleEffect(i < chipsShown ? 1 : 0.6)
+                            }
                         }
                     }
+                    .scrollIndicators(.hidden)
                 }
 
                 Text(LocalizedStringKey(insight))
@@ -587,7 +592,7 @@ struct RampRevealScreen: View {
                                 Image(systemName: done ? "checkmark.circle.fill" : "circle")
                                     .font(.system(size: 15, weight: .medium))
                                     .foregroundStyle(done ? RampStage.accent : RampStage.hair)
-                                Text(steps[index])
+                                Text(LocalizedStringKey(steps[index]))
                                     .font(VType.caption)
                                     .foregroundStyle(done ? RampStage.ink : RampStage.textTertiary)
                                 Spacer(minLength: 0)

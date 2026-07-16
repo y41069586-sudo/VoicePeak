@@ -26,7 +26,7 @@ struct CompareView: View {
     private var myScan: ScanRecord? { scans.first }
     private var myName: String {
         let n = profiles.first?.displayName ?? ""
-        return n.isEmpty ? "You" : n
+        return n.isEmpty ? String(localized: "You") : n
     }
 
     var body: some View {
@@ -40,7 +40,7 @@ struct CompareView: View {
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .background(DQColor.background.ignoresSafeArea())
-            .navigationTitle("Face-off")
+            .navigationTitle("Skin Duel")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
@@ -70,7 +70,7 @@ struct CompareView: View {
                               overall: mineOverall,
                               subValue: { analysis.subScore(for: $0)?.value },
                               photo: DermiqImageStore.load(scan.photoFilename),
-                              lead: mineOverall >= theirs)
+                              lead: mineOverall > theirs)
                         .transition(.opacity)
                 } else {
                     chartCard(name: opponent.name,
@@ -188,6 +188,7 @@ struct CompareView: View {
                 .font(.system(size: 13, weight: .semibold, design: .rounded))
                 .foregroundStyle(DQColor.textSecondary)
                 .lineLimit(1)
+                .minimumScaleFactor(0.8)
             Text(verbatim: "\(value)")
                 .font(.system(size: 25, weight: .heavy, design: .rounded).monospacedDigit())
                 .foregroundStyle(lead ? DQColor.accentBright : DQColor.textPrimary)

@@ -190,21 +190,26 @@ struct RampEvidenceScreen: View {
                     .padding(.horizontal, VSpace.xl)
             }
 
-            Spacer()
+            Spacer().frame(height: VSpace.lg)
 
-            VStack(spacing: 10) {
-                ForEach(items) { item in
-                    evidenceCard(item)
+            // Four cards + footnote exceed an SE-class screen in German —
+            // scrolls only when it must.
+            ScrollView {
+                VStack(spacing: 10) {
+                    ForEach(items) { item in
+                        evidenceCard(item)
+                    }
+                    Text("Studies open in your browser.")
+                        .font(VType.micro)
+                        .foregroundStyle(RampStage.textTertiary)
+                        .padding(.top, VSpace.sm)
                 }
+                .padding(.horizontal, VSpace.lg)
             }
-            .padding(.horizontal, VSpace.lg)
+            .scrollBounceBehavior(.basedOnSize)
+            .scrollIndicators(.hidden)
 
-            Text("Studies open in your browser.")
-                .font(VType.micro)
-                .foregroundStyle(RampStage.textTertiary)
-                .padding(.top, VSpace.sm)
-
-            Spacer()
+            Spacer().frame(height: VSpace.md)
 
             RampPrimaryButton(title: "Good to know") { onAdvance() }
                 .padding(.horizontal, VSpace.lg)
@@ -235,7 +240,7 @@ struct RampEvidenceScreen: View {
                 HStack(spacing: 5) {
                     Image(systemName: "doc.text.magnifyingglass")
                         .font(.system(size: 10, weight: .semibold))
-                    Text(verbatim: item.source)
+                    Text(LocalizedStringKey(item.source))
                         .font(.system(size: 12, weight: .semibold, design: .rounded))
                         .lineLimit(1)
                     Image(systemName: "arrow.up.right")
@@ -348,7 +353,7 @@ struct RampDailyReportScreen: View {
                 .fill(RampStage.accent)
                 .frame(width: 34, height: 34)
                 .overlay(
-                    Text(verbatim: "V")
+                    Text(verbatim: "G")
                         .font(.system(size: 17, weight: .heavy, design: .serif))
                         .foregroundStyle(.white)
                 )
@@ -362,12 +367,13 @@ struct RampDailyReportScreen: View {
                         .font(.system(size: 11, weight: .medium, design: .rounded))
                         .foregroundStyle(RampStage.textTertiary)
                 }
-                Text(time == .morning
-                     ? "Morning ritual — 3 steps, 4 minutes."
-                     : "Evening ritual — 3 steps before bed.")
+                (time == .morning
+                 ? Text("Morning ritual — 3 steps, 4 minutes.")
+                 : Text("Evening ritual — 3 steps before bed."))
                     .font(.system(size: 12.5, weight: .medium, design: .rounded))
                     .foregroundStyle(RampStage.textSecondary)
                     .lineLimit(1)
+                    .minimumScaleFactor(0.8)
             }
         }
         .padding(.horizontal, 12)

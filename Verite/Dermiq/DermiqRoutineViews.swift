@@ -524,7 +524,7 @@ struct DermiqRoutineTab: View {
                         Text("Recovery mode")
                             .font(.system(size: 15, weight: .bold, design: .rounded))
                             .foregroundStyle(DQColor.textPrimary)
-                        Text(verbatim: "\(left)d")
+                        Text("\(left)d")
                             .font(DQFont.mono(9, weight: .bold))
                             .foregroundStyle(DQColor.deltaDown)
                             .padding(.horizontal, 5).padding(.vertical, 1)
@@ -656,7 +656,7 @@ struct DermiqRoutineTab: View {
                 }
                 Group {
                     if kitEssentialsOnly && !extras.isEmpty {
-                        Text("Start with these four. The other \(extras.count) you add once the habit sticks.")
+                        Text("Start with these \(essentials.count). The other \(extras.count) you add once the habit sticks.")
                     } else {
                         Text("One cleanser covers morning and evening — you buy fewer products than there are steps.")
                     }

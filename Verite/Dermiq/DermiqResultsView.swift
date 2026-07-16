@@ -127,9 +127,9 @@ struct DermiqResultsView: View {
                         .font(.system(size: 26, weight: .heavy, design: .rounded))
                         .foregroundStyle(DQColor.textPrimary)
                         .multilineTextAlignment(.center)
-                    Text(locked
-                         ? "Unlock to see your full skin analysis and your 14-day potential."
-                         : "A reading of you — with your 14-day potential.")
+                    (locked
+                     ? Text("Unlock to see your full skin analysis and your 14-day potential.")
+                     : Text("A reading of you — with your 14-day potential."))
                         .font(DQFont.body)
                         .foregroundStyle(DQColor.textSecondary)
                         .multilineTextAlignment(.center)
@@ -363,6 +363,7 @@ struct DermiqResultsView: View {
                     Text("YOUR STANDING")
                         .font(DQFont.mono(11, weight: .semibold))
                         .foregroundStyle(DQColor.accentBright)
+                        .tracking(2)
                     Spacer()
                     Text("est.")
                         .font(DQFont.mono(9, weight: .semibold))
@@ -394,7 +395,7 @@ struct DermiqResultsView: View {
                         Text(LocalizedStringKey(best.category.displayName))
                             .font(DQFont.caption.weight(.semibold))
                             .foregroundStyle(DQColor.textPrimary)
-                        Text(verbatim: "· Top \(bestTop)%")
+                        Text("· Top \(bestTop)%")
                             .font(DQFont.caption.weight(.semibold))
                             .foregroundStyle(DQColor.accentBright)
                     }
@@ -530,6 +531,8 @@ struct DermiqPaywallCard: View {
     @State private var choice: PlanChoice = .annual
     @State private var purchasing = false
     @State private var legalDocument: LegalDocument?
+    @State private var purchaseFailed = false
+    @State private var restoreDone = false
 
     var body: some View {
         VStack {
@@ -537,6 +540,16 @@ struct DermiqPaywallCard: View {
             card
         }
         .ignoresSafeArea(edges: .bottom)
+        .alert("Couldn't load plans", isPresented: $purchaseFailed) {
+            Button("OK", role: .cancel) {}
+        } message: {
+            Text("Check your connection and try again.")
+        }
+        .alert("Restore complete", isPresented: $restoreDone) {
+            Button("OK", role: .cancel) {}
+        } message: {
+            Text("If you had an active purchase, it's back. Nothing found? There was nothing to restore.")
+        }
     }
 
     private var card: some View {
@@ -545,7 +558,33 @@ struct DermiqPaywallCard: View {
                 .fill(DQColor.stroke)
                 .frame(width: 40, height: 4)
                 .padding(.top, 12)
+            // Hugs its content when it fits (the normal case); on SE-class
+            // heights it swaps to a ScrollView so every row stays reachable.
+            ViewThatFits(in: .vertical) {
+                cardContent
+                ScrollView { cardContent }
+            }
+        }
+        .sheet(item: $legalDocument) { document in
+            DermiqLegalView(document: document)
+        }
+        .frame(maxWidth: .infinity)
+        .background(
+            DQColor.surfaceElevated,
+            in: UnevenRoundedRectangle(topLeadingRadius: DQRadius.sheet,
+                                       topTrailingRadius: DQRadius.sheet,
+                                       style: .continuous)
+        )
+        .overlay(alignment: .top) {
+            UnevenRoundedRectangle(topLeadingRadius: DQRadius.sheet,
+                                   topTrailingRadius: DQRadius.sheet,
+                                   style: .continuous)
+                .strokeBorder(DQColor.stroke, lineWidth: 1)
+        }
+    }
 
+    private var cardContent: some View {
+        VStack(spacing: 18) {
             VStack(spacing: 12) {
                 Text("Your score is ready.")
                     .font(DQFont.title)
@@ -566,12 +605,12 @@ struct DermiqPaywallCard: View {
             VStack(spacing: 10) {
                 planRow(.annual,
                         title: "Annual",
-                        price: price(for: VeriteProducts.proYearly, fallback: "$39.99 / year"),
+                        price: price(for: VeriteProducts.proYearly, fallback: String(localized: "$39.99 / year")),
                         badge: "SAVE 84%",
                         sub: annualWeeklyEquivalent)
                 planRow(.weekly,
                         title: "Weekly",
-                        price: price(for: VeriteProducts.proWeekly, fallback: "$4.99 / week"),
+                        price: price(for: VeriteProducts.proWeekly, fallback: String(localized: "$4.99 / week")),
                         badge: nil,
                         sub: nil)
             }
@@ -620,7 +659,7 @@ struct DermiqPaywallCard: View {
                     Button("Restore") {
                         Task {
                             await purchases.restore()
-                            if purchases.isPro { onUnlocked() }
+                            if purchases.isPro { onUnlocked() } else { restoreDone = true }
                         }
                     }
                 }
@@ -628,22 +667,6 @@ struct DermiqPaywallCard: View {
                 .foregroundStyle(DQColor.textSecondary)
             }
             .padding(.bottom, 30)
-        }
-        .sheet(item: $legalDocument) { document in
-            DermiqLegalView(document: document)
-        }
-        .frame(maxWidth: .infinity)
-        .background(
-            DQColor.surfaceElevated,
-            in: UnevenRoundedRectangle(topLeadingRadius: DQRadius.sheet,
-                                       topTrailingRadius: DQRadius.sheet,
-                                       style: .continuous)
-        )
-        .overlay(alignment: .top) {
-            UnevenRoundedRectangle(topLeadingRadius: DQRadius.sheet,
-                                   topTrailingRadius: DQRadius.sheet,
-                                   style: .continuous)
-                .strokeBorder(DQColor.stroke, lineWidth: 1)
         }
     }
 
@@ -663,7 +686,7 @@ struct DermiqPaywallCard: View {
     /// "≈ $0.77 / week" — the annual price broken down so the anchor lands.
     private var annualWeeklyEquivalent: String {
         guard let product = purchases.products.first(where: { $0.id == VeriteProducts.proYearly })
-        else { return "≈ $0.77 / week" }
+        else { return String(localized: "≈ $0.77 / week") }
         let weekly = product.price / 52
         return "≈ \(weekly.formatted(product.priceFormatStyle)) / week"
     }
@@ -727,7 +750,12 @@ struct DermiqPaywallCard: View {
             defer { purchasing = false }
             if appState.featureFlags.purchasesEnabled {
                 let id = choice == .annual ? VeriteProducts.proYearly : VeriteProducts.proWeekly
-                guard let product = purchases.products.first(where: { $0.id == id }) else { return }
+                guard let product = purchases.products.first(where: { $0.id == id }) else {
+                    // Products didn't load (offline / StoreKit hiccup) — say
+                    // so instead of silently resetting the button.
+                    purchaseFailed = true
+                    return
+                }
                 if await purchases.purchase(product) {
                     RampAnalytics.track("paywall_purchase", ["plan": id])
                     onUnlocked()

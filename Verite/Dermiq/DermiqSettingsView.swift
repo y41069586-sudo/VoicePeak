@@ -27,6 +27,7 @@ struct DermiqSettingsView: View {
     @State private var showSignOutConfirm = false
     @State private var showDeleteConfirm = false
     @State private var restoring = false
+    @State private var restoreDone = false
 
     private enum ReminderPref: String, CaseIterable {
         case off, morning, evening
@@ -126,7 +127,15 @@ struct DermiqSettingsView: View {
                 Task {
                     await purchases.restore()
                     restoring = false
+                    // Without this the button feels dead when there was
+                    // nothing to restore.
+                    restoreDone = true
                 }
+            }
+            .alert("Restore complete", isPresented: $restoreDone) {
+                Button("OK", role: .cancel) {}
+            } message: {
+                Text("If you had an active purchase, it's back. Nothing found? There was nothing to restore.")
             }
         }
     }
@@ -224,7 +233,7 @@ struct DermiqSettingsView: View {
     private var supportSection: some View {
         settingsCard("SUPPORT") {
             settingsButton(icon: "envelope", text: "Contact support") {
-                if let url = URL(string: "mailto:support@verite.app?subject=V%C3%A9rit%C3%A9%20Support") {
+                if let url = URL(string: "mailto:support@verite.app?subject=Glow%C3%A9%20Support") {
                     UIApplication.shared.open(url)
                 }
             }
@@ -339,8 +348,8 @@ struct DermiqSettingsView: View {
             let granted = (try? await center.requestAuthorization(options: [.alert, .sound, .badge])) ?? false
             guard granted else { return }
             let content = UNMutableNotificationContent()
-            content.title = "Your plan is waiting."
-            content.body = "Today's routine takes two minutes. The rescan is coming."
+            content.title = String(localized: "Your plan is waiting.")
+            content.body = String(localized: "Today's routine takes two minutes. The rescan is coming.")
             content.sound = .default
             var components = DateComponents()
             components.hour = pref == .morning ? 8 : 20

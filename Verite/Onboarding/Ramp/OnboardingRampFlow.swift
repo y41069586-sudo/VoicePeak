@@ -49,7 +49,8 @@ struct OnboardingRampFlow: View {
                    value: step)
         .onAppear { RampAnalytics.screen(step) }
         .onChange(of: step) { _, newStep in
-            Haptics.fire(.transition)
+            // No haptic here: the tapped button/tile already fired .selection —
+            // a second buzz per advance felt like a double-tap.
             RampAnalytics.screen(newStep)
         }
     }
@@ -197,7 +198,9 @@ struct OnboardingRampFlow: View {
     /// Swaps in the name-addressed variant once the user has given a name.
     private func personalized(_ plain: String, named template: String) -> String {
         guard let name = answers.displayName else { return plain }
-        return String(format: template, name)
+        // Localize the template BEFORE substituting the name — the composed
+        // result ("Anna, how does…") would never match a catalog key.
+        return String(format: String(localized: String.LocalizationValue(template)), name)
     }
 
     private func selfRatingSub(_ rating: RampQuizAnswers.SelfRating) -> String {

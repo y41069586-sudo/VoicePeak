@@ -40,9 +40,12 @@ struct DermiqDeltaView: View {
                         }
                     }
 
-                    DQPrimaryButton(title: "Start next 14 days") { onContinue() }
-                        .padding(.top, 4)
                 }
+
+                // Always reachable — even if the previous analysis failed to
+                // decode, the user must be able to leave this screen.
+                DQPrimaryButton(title: "Start next 14 days") { onContinue() }
+                    .padding(.top, 4)
             }
             .padding(.horizontal, 24)
             .padding(.bottom, 40)
@@ -66,9 +69,11 @@ struct DermiqDeltaView: View {
                     .foregroundStyle(DQColor.textPrimary)
                     .contentTransition(.numericText(value: Double(shownScore)))
                 HStack(spacing: 5) {
-                    Image(systemName: new >= old ? "arrow.up" : "arrow.down")
-                        .font(.system(size: 12, weight: .bold))
-                    Text(verbatim: "\(abs(new - old)) from \(old)")
+                    if new != old {
+                        Image(systemName: new > old ? "arrow.up" : "arrow.down")
+                            .font(.system(size: 12, weight: .bold))
+                    }
+                    (new == old ? Text("No change") : Text("\(abs(new - old)) from \(old)"))
                         .font(.system(size: 14, weight: .bold, design: .rounded))
                 }
                 .foregroundStyle(new >= old ? DQColor.deltaUp : DQColor.deltaDown)
@@ -216,6 +221,7 @@ struct DermiqProgressTab: View {
                         .font(DQFont.micro)
                         .foregroundStyle(.white.opacity(0.85))
                         .lineLimit(1)
+                        .minimumScaleFactor(0.75)
                 }
                 Spacer()
                 Image(systemName: "chevron.right")
@@ -369,9 +375,10 @@ struct DermiqProgressTab: View {
                         HStack(spacing: 5) {
                             Image(systemName: delta >= 0 ? "arrow.up.right" : "arrow.down.right")
                                 .font(.system(size: 11, weight: .bold))
-                            Text(verbatim: delta == 0
-                                 ? "Flat since your first scan"
-                                 : "\(delta > 0 ? "+" : "")\(delta) since your first scan")
+                            (delta == 0
+                             ? Text("Flat since your first scan")
+                             : (delta > 0 ? Text("+\(delta) since your first scan")
+                                          : Text("\(delta) since your first scan")))
                                 .font(DQFont.caption)
                         }
                         .foregroundStyle(delta >= 0 ? DQColor.deltaUp : DQColor.deltaDown)
@@ -405,9 +412,11 @@ struct DermiqProgressTab: View {
                 }
             }
             .scrollIndicators(.hidden)
-            Text("Tap any two scans to compare them side by side.")
-                .font(DQFont.micro)
-                .foregroundStyle(DQColor.textSecondary)
+            if scans.count >= 2 {
+                Text("Tap any two scans to compare them side by side.")
+                    .font(DQFont.micro)
+                    .foregroundStyle(DQColor.textSecondary)
+            }
         }
     }
 

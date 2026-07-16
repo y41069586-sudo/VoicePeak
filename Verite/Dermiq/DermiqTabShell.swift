@@ -350,7 +350,7 @@ struct DermiqScanHome: View {
                     .tag(1)
             }
             .tabViewStyle(.page(indexDisplayMode: .never))
-            .frame(height: 468)
+            .frame(height: 496)
 
             HStack(spacing: 6) {
                 ForEach(0..<2, id: \.self) { page in
@@ -384,7 +384,7 @@ struct DermiqScanHome: View {
         }
         return ZStack(alignment: .bottom) {
             // Lavender stage with a ghost VS watermark behind the avatars.
-            LinearGradient(colors: [DQColor.accentSoft, DQColor.accent, DQColor.accentBright],
+            LinearGradient(colors: [DQColor.accent, DQColor.accentBright],
                            startPoint: .top, endPoint: .bottom)
             Text(verbatim: "VS")
                 .font(.system(size: 170, weight: .black, design: .rounded))

@@ -184,6 +184,9 @@ struct ScanLimitSheet: View {
     @Environment(\.dismiss) private var dismiss
 
     var body: some View {
+        // Scrollable so the bottom button stays reachable at the medium
+        // detent on SE-class heights (German copy runs 4+ lines).
+        ScrollView {
         VStack(spacing: 18) {
             Image(systemName: proCap ? "camera.badge.clock" : "sparkles")
                 .font(.system(size: 40, weight: .semibold))
@@ -194,9 +197,9 @@ struct ScanLimitSheet: View {
                 (proCap ? Text("Weekly scan cap reached") : Text("Scanning is part of Pro"))
                     .font(.system(size: 21, weight: .heavy, design: .rounded))
                     .foregroundStyle(DQColor.textPrimary)
-                Text(proCap
-                     ? "Skin moves week by week — your two weekly readings are in. Need one more now? Grab an extra scan, or the next one unlocks free soon."
-                     : "Every scan runs a full AI skin analysis. Go Pro for your score, all seven metrics and your 14-day plan.")
+                (proCap
+                 ? Text("Skin moves week by week — your two weekly readings are in. Need one more now? Grab an extra scan, or the next one unlocks free soon.")
+                 : Text("Every scan runs a full AI skin analysis. Go Pro for your score, all seven metrics and your 14-day plan."))
                     .font(DQFont.caption)
                     .foregroundStyle(DQColor.textSecondary)
                     .multilineTextAlignment(.center)
@@ -266,7 +269,9 @@ struct ScanLimitSheet: View {
 
             Spacer(minLength: 12)
         }
-        .presentationDetents([.medium])
+        }
+        .scrollBounceBehavior(.basedOnSize)
+        .presentationDetents([.medium, .large])
         .presentationDragIndicator(.visible)
         .background(DQColor.background)
     }
