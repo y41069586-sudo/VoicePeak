@@ -38,6 +38,7 @@ enum RampStep: Int, CaseIterable {
     case handoff         // 19 — "now, the real you" → the scan
 
     var next: RampStep? { RampStep(rawValue: rawValue + 1) }
+    var previous: RampStep? { RampStep(rawValue: rawValue - 1) }
 
     /// True for the six interrogation questions.
     var isQuiz: Bool {

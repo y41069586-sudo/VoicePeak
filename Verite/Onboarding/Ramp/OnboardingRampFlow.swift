@@ -32,16 +32,31 @@ struct OnboardingRampFlow: View {
                         )
                 )
 
-            // One thin filling hairline — the whole progress language.
-            VStack {
+            // A quiet back chevron + the thin filling progress hairline.
+            VStack(spacing: VSpace.xs) {
                 if step != .boot {
+                    HStack {
+                        Button {
+                            Haptics.fire(.selection)
+                            back()
+                        } label: {
+                            Image(systemName: "chevron.left")
+                                .font(.system(size: 17, weight: .semibold))
+                                .foregroundStyle(RampStage.textSecondary)
+                                .frame(width: 44, height: 44)
+                                .contentShape(Rectangle())
+                        }
+                        .accessibilityLabel("Back")
+                        Spacer()
+                    }
+                    .padding(.leading, VSpace.xs)
                     RampProgressLine(fraction: progressFraction)
                         .padding(.horizontal, VSpace.lg)
-                        .padding(.top, VSpace.sm)
-                        .transition(.opacity)
+                    .transition(.opacity)
                 }
                 Spacer()
             }
+            .padding(.top, VSpace.sm)
         }
         // One smooth spring for every step change. Damping ~1 → no overshoot,
         // so the push reads as a glide, never a bounce.
@@ -287,6 +302,13 @@ struct OnboardingRampFlow: View {
 
     private func advance() {
         if let next = step.next { step = next } else { complete() }
+    }
+
+    /// Step back one screen (chevron top-left). Never leaves onboarding — the
+    /// opening `.boot` screen has no back, so the earliest reachable step is
+    /// `sampleReading`.
+    private func back() {
+        if let prev = step.previous { step = prev }
     }
 
     private func complete() {
