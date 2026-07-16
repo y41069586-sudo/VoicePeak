@@ -311,18 +311,12 @@ struct DermiqScanHome: View {
                     .padding(.horizontal, 24)
                     .padding(.top, 6)
 
-                scanCard
-                    .padding(.horizontal, 24)
+                heroPager
 
                 if let latest = scans.first {
                     lastReadingRow(latest)
                         .padding(.horizontal, 24)
-                    compareRow(latest)
-                        .padding(.horizontal, 24)
                 }
-
-                pasteLinkRow
-                    .padding(.horizontal, 24)
 
                 tipCard
                     .padding(.horizontal, 24)
@@ -330,99 +324,220 @@ struct DermiqScanHome: View {
             .padding(.bottom, 28)
         }
         .scrollIndicators(.hidden)
-    }
-
-    /// Invite a friend to a score face-off: shares your card (verite://compare)
-    /// so they can scan and see how you both stack up. Only when you've scanned.
-    private func compareRow(_ scan: ScanRecord) -> some View {
-        let name = profiles.first?.displayName ?? ""
-        return Group {
-            if let analysis = scan.analysis,
-               let url = CompareLink.url(for: ComparePayload.mine(
-                   name: name, analysis: analysis,
-                   photo: DermiqImageStore.load(scan.photoFilename))) {
-                ShareLink(item: url,
-                          message: Text("I scanned my skin — see how yours compares. Copy this whole message and paste it in Glowé.")) {
-                    HStack(spacing: 12) {
-                        Image(systemName: "person.2.fill")
-                            .font(.system(size: 16, weight: .semibold))
-                            .foregroundStyle(DQColor.accentBright)
-                            .frame(width: 40, height: 40)
-                            .background(DQColor.accentBright.opacity(0.10),
-                                        in: RoundedRectangle(cornerRadius: 12, style: .continuous))
-                        VStack(alignment: .leading, spacing: 1) {
-                            Text("Compare with a friend")
-                                .font(.system(size: 16, weight: .bold, design: .rounded))
-                                .foregroundStyle(DQColor.textPrimary)
-                            Text("Send your card — higher score wins.")
-                                .font(DQFont.micro)
-                                .foregroundStyle(DQColor.textSecondary)
-                                .lineLimit(1)
-                        }
-                        Spacer()
-                        Image(systemName: "square.and.arrow.up")
-                            .font(.system(size: 15, weight: .semibold))
-                            .foregroundStyle(DQColor.textSecondary)
-                    }
-                    .padding(14)
-                    .background(DQColor.surface, in: RoundedRectangle(cornerRadius: DQRadius.card, style: .continuous))
-                    .overlay(RoundedRectangle(cornerRadius: DQRadius.card, style: .continuous)
-                        .strokeBorder(DQColor.stroke, lineWidth: 1))
-                }
-                .buttonStyle(PressableStyle())
-            }
-        }
-    }
-
-    /// Chats never make verite:// links tappable — friends copy the whole
-    /// message instead, and this row redeems whatever is on the pasteboard
-    /// (a compare card or an invite). User-initiated, so the system paste
-    /// banner is expected.
-    @State private var pasteFailed = false
-    private var pasteLinkRow: some View {
-        Button {
-            Haptics.fire(.selection)
-            let text = UIPasteboard.general.string ?? ""
-            if let payload = CompareLink.payload(fromPastedText: text) {
-                CompareInbox.shared.pending = payload
-            } else if ReferralStore.shared.handlePasted(text) {
-                // Bonus scan credited — ReferralStore already fired the haptic.
-            } else {
-                pasteFailed = true
-            }
-        } label: {
-            HStack(spacing: 12) {
-                Image(systemName: "doc.on.clipboard")
-                    .font(.system(size: 15, weight: .semibold))
-                    .foregroundStyle(DQColor.accentBright)
-                    .frame(width: 40, height: 40)
-                    .background(DQColor.accentBright.opacity(0.10),
-                                in: RoundedRectangle(cornerRadius: 12, style: .continuous))
-                VStack(alignment: .leading, spacing: 1) {
-                    Text("Got a link from a friend?")
-                        .font(.system(size: 16, weight: .bold, design: .rounded))
-                        .foregroundStyle(DQColor.textPrimary)
-                    Text("Copy their message, then tap here.")
-                        .font(DQFont.micro)
-                        .foregroundStyle(DQColor.textSecondary)
-                        .lineLimit(1)
-                }
-                Spacer()
-                Image(systemName: "arrow.down.doc")
-                    .font(.system(size: 15, weight: .semibold))
-                    .foregroundStyle(DQColor.textSecondary)
-            }
-            .padding(14)
-            .background(DQColor.surface, in: RoundedRectangle(cornerRadius: DQRadius.card, style: .continuous))
-            .overlay(RoundedRectangle(cornerRadius: DQRadius.card, style: .continuous)
-                .strokeBorder(DQColor.stroke, lineWidth: 1))
-        }
-        .buttonStyle(PressableStyle())
         .alert("No Glowé link found", isPresented: $pasteFailed) {
             Button("OK", role: .cancel) {}
         } message: {
             Text("Copy your friend's whole message, then try again.")
         }
+    }
+
+    // MARK: Hero pager (Scan ↔ Duel)
+
+    /// The hero is a horizontal pager: page 1 is the scan card, page 2 the
+    /// full-size Skin Duel card — swipe between them; dots show where you are.
+    /// Replaces the old small compare/paste rows under the deck.
+    @State private var heroPage = 0
+
+    private var heroPager: some View {
+        VStack(spacing: 12) {
+            TabView(selection: $heroPage) {
+                scanCard
+                    .padding(.horizontal, 24)
+                    .tag(0)
+                duelCard
+                    .padding(.horizontal, 24)
+                    .tag(1)
+            }
+            .tabViewStyle(.page(indexDisplayMode: .never))
+            .frame(height: 468)
+
+            HStack(spacing: 6) {
+                ForEach(0..<2, id: \.self) { page in
+                    Capsule()
+                        .fill(page == heroPage ? DQColor.accentBright : DQColor.stroke)
+                        .frame(width: page == heroPage ? 20 : 7, height: 7)
+                }
+            }
+            .frame(maxWidth: .infinity)
+            .animation(VMotion.snappy, value: heroPage)
+        }
+    }
+
+    // MARK: Duel card (hero page 2)
+
+    /// Full-size Skin Duel hero: your card vs a friend's. Share your card
+    /// (verite://compare) or redeem a pasted one. Chats never make custom-
+    /// scheme links tappable, so redeeming reads the pasteboard instead —
+    /// user-initiated, the system paste banner is expected.
+    @State private var pasteFailed = false
+
+    private var duelCard: some View {
+        let latest = scans.first
+        let name = profiles.first?.displayName ?? ""
+        let shareURL: URL? = latest.flatMap { scan in
+            scan.analysis.flatMap { analysis in
+                CompareLink.url(for: ComparePayload.mine(
+                    name: name, analysis: analysis,
+                    photo: DermiqImageStore.load(scan.photoFilename)))
+            }
+        }
+        return ZStack(alignment: .bottom) {
+            // Lavender stage with a ghost VS watermark behind the avatars.
+            LinearGradient(colors: [DQColor.accentSoft, DQColor.accent, DQColor.accentBright],
+                           startPoint: .top, endPoint: .bottom)
+            Text(verbatim: "VS")
+                .font(.system(size: 170, weight: .black, design: .rounded))
+                .foregroundStyle(.white.opacity(0.12))
+                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
+                .offset(y: -78)
+
+            // The face-off: you (photo + score) vs the empty rival slot.
+            VStack {
+                Spacer().frame(height: 46)
+                HStack(spacing: 34) {
+                    duelAvatar(photo: latest.flatMap { DermiqImageStore.load($0.photoFilename) },
+                               label: "YOU", score: latest?.overall)
+                    duelAvatar(photo: nil, label: "FRIEND", score: nil)
+                }
+                Spacer()
+            }
+
+            // Legibility gradient behind the bottom content.
+            LinearGradient(
+                gradient: Gradient(stops: [
+                    .init(color: .clear, location: 0.0),
+                    .init(color: .black.opacity(0.0), location: 0.40),
+                    .init(color: .black.opacity(0.28), location: 0.62),
+                    .init(color: .black.opacity(0.62), location: 0.82),
+                    .init(color: .black.opacity(0.82), location: 1.0),
+                ]),
+                startPoint: .top, endPoint: .bottom
+            )
+
+            VStack(spacing: 12) {
+                VStack(spacing: 4) {
+                    Text("Skin Duel")
+                        .font(.system(size: 26, weight: .heavy, design: .rounded))
+                        .foregroundStyle(.white)
+                        .shadow(color: .black.opacity(0.45), radius: 10, y: 2)
+                    Text("Send your card — higher score wins.")
+                        .font(DQFont.caption)
+                        .foregroundStyle(.white.opacity(0.85))
+                        .multilineTextAlignment(.center)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+
+                if let shareURL {
+                    ShareLink(item: shareURL,
+                              message: Text("I scanned my skin — see how yours compares. Copy this whole message and paste it in Glowé.")) {
+                        duelCTALabel(icon: "person.2.fill", title: "Challenge a friend")
+                    }
+                    .buttonStyle(PressableStyle())
+                } else {
+                    Button {
+                        Haptics.fire(.selection)
+                        onScan()
+                    } label: {
+                        duelCTALabel(icon: "camera.fill", title: "Scan first — then send your card.")
+                    }
+                    .buttonStyle(PressableStyle())
+                }
+
+                Button {
+                    Haptics.fire(.selection)
+                    let text = UIPasteboard.general.string ?? ""
+                    if let payload = CompareLink.payload(fromPastedText: text) {
+                        CompareInbox.shared.pending = payload
+                    } else if ReferralStore.shared.handlePasted(text) {
+                        // Bonus scan credited — ReferralStore already fired the haptic.
+                    } else {
+                        pasteFailed = true
+                    }
+                } label: {
+                    HStack(spacing: 7) {
+                        Image(systemName: "doc.on.clipboard")
+                            .font(.system(size: 12, weight: .semibold))
+                        Text("Got a link from a friend?")
+                            .font(.system(size: 13, weight: .semibold, design: .rounded))
+                    }
+                    .foregroundStyle(.white.opacity(0.92))
+                    .padding(.horizontal, 14)
+                    .padding(.vertical, 9)
+                    .background(.white.opacity(0.16), in: Capsule())
+                    .overlay(Capsule().strokeBorder(.white.opacity(0.25), lineWidth: 1))
+                }
+                .buttonStyle(PressableStyle())
+            }
+            .padding(.horizontal, 20)
+            .padding(.bottom, 18)
+        }
+        .frame(maxWidth: .infinity)
+        .frame(height: 460)
+        .clipShape(RoundedRectangle(cornerRadius: 28, style: .continuous))
+        .overlay(
+            RoundedRectangle(cornerRadius: 28, style: .continuous)
+                .strokeBorder(DQColor.stroke, lineWidth: 1)
+        )
+        .shadow(color: DQColor.accent.opacity(0.12), radius: 18, y: 8)
+    }
+
+    /// One side of the face-off: a big avatar ring, an eyebrow label and —
+    /// for your side — the latest score. The rival slot stays a dashed "?".
+    private func duelAvatar(photo: UIImage?, label: String, score: Int?) -> some View {
+        VStack(spacing: 8) {
+            ZStack {
+                if let photo {
+                    Image(uiImage: photo).resizable().scaledToFill()
+                } else {
+                    ZStack {
+                        Color.white.opacity(0.14)
+                        Text(verbatim: "?")
+                            .font(.system(size: 34, weight: .heavy, design: .rounded))
+                            .foregroundStyle(.white.opacity(0.85))
+                    }
+                }
+            }
+            .frame(width: 84, height: 84)
+            .clipShape(Circle())
+            .overlay {
+                if photo == nil {
+                    Circle().strokeBorder(.white.opacity(0.65),
+                                          style: StrokeStyle(lineWidth: 2, dash: [5, 5]))
+                } else {
+                    Circle().strokeBorder(.white, lineWidth: 2.5)
+                }
+            }
+            .shadow(color: .black.opacity(0.18), radius: 8, y: 3)
+
+            Text(LocalizedStringKey(label))
+                .font(DQFont.mono(10, weight: .bold))
+                .tracking(2)
+                .foregroundStyle(.white.opacity(0.9))
+
+            if let score {
+                Text(verbatim: "\(score)")
+                    .font(.system(size: 17, weight: .heavy, design: .rounded).monospacedDigit())
+                    .foregroundStyle(.white)
+                    .padding(.horizontal, 10)
+                    .padding(.vertical, 2)
+                    .background(.white.opacity(0.18), in: Capsule())
+            }
+        }
+    }
+
+    /// The duel card's primary CTA look — white pill so it pops on lavender.
+    private func duelCTALabel(icon: String, title: String) -> some View {
+        HStack(spacing: 8) {
+            Image(systemName: icon)
+            Text(LocalizedStringKey(title))
+        }
+        .font(.system(size: 16, weight: .bold, design: .rounded))
+        .foregroundStyle(DQColor.accentBright)
+        .frame(maxWidth: .infinity, minHeight: 52)
+        .background(.white, in: RoundedRectangle(cornerRadius: 18, style: .continuous))
+        .lineLimit(1)
+        .minimumScaleFactor(0.8)
+        .padding(.horizontal, 2)
     }
 
     /// The home hero — a full-bleed scan photo (the UMax pattern) with a dark
