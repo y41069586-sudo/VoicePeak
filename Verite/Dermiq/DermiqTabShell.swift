@@ -237,18 +237,19 @@ struct DermiqScanHome: View {
 
     @Query private var profiles: [UserProfile]
 
-    private var greeting: String {
+    // Text, not String: a composed "\(base), \(name)" would never match a
+    // catalog key, so the greeting would render in English on every device.
+    private var greeting: Text {
         let hour = Calendar.current.component(.hour, from: .now)
-        let base: String
-        switch hour {
-        case 5..<12:  base = "Good morning"
-        case 12..<18: base = "Good afternoon"
-        default:      base = "Good evening"
+        let name = profiles.first?.displayName ?? ""
+        switch (hour, name.isEmpty) {
+        case (5..<12, false):  return Text("Good morning, \(name)")
+        case (12..<18, false): return Text("Good afternoon, \(name)")
+        case (_, false):       return Text("Good evening, \(name)")
+        case (5..<12, true):   return Text("Good morning")
+        case (12..<18, true):  return Text("Good afternoon")
+        default:               return Text("Good evening")
         }
-        if let name = profiles.first?.displayName, !name.isEmpty {
-            return "\(base), \(name)"
-        }
-        return base
     }
 
     /// One gentle, rotating tip a day — deterministic by day-of-year.
@@ -279,7 +280,7 @@ struct DermiqScanHome: View {
 
     private var header: some View {
         HStack(spacing: 14) {
-            Text(LocalizedStringKey(greeting))
+            greeting
                 .font(.system(size: 15, weight: .semibold, design: .rounded))
                 .foregroundStyle(DQColor.textSecondary)
             Spacer()
