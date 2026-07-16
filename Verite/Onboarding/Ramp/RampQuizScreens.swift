@@ -397,22 +397,26 @@ struct RampInsightScreen: View {
                     .offset(y: eyebrowIn ? 0 : 6)
 
                 // The user's answers, echoed back — each pops in on its own.
+                // ViewThatFits keeps them centered when they fit on one line,
+                // and only falls back to a horizontal scroll if they'd overflow.
                 if !chips.isEmpty {
-                    ScrollView(.horizontal) {
-                        HStack(spacing: 7) {
-                            ForEach(chips.indices, id: \.self) { i in
-                                Text(LocalizedStringKey(chips[i]))
-                                    .font(.system(size: 12.5, weight: .semibold, design: .rounded))
-                                    .foregroundStyle(RampStage.accentDeep)
-                                    .lineLimit(1)
-                                    .padding(.horizontal, 11).padding(.vertical, 6)
-                                    .background(RampStage.accentSoft, in: Capsule())
-                                    .opacity(i < chipsShown ? 1 : 0)
-                                    .scaleEffect(i < chipsShown ? 1 : 0.6)
-                            }
+                    let row = HStack(spacing: 7) {
+                        ForEach(chips.indices, id: \.self) { i in
+                            Text(LocalizedStringKey(chips[i]))
+                                .font(.system(size: 12.5, weight: .semibold, design: .rounded))
+                                .foregroundStyle(RampStage.accentDeep)
+                                .lineLimit(1)
+                                .padding(.horizontal, 11).padding(.vertical, 6)
+                                .background(RampStage.accentSoft, in: Capsule())
+                                .opacity(i < chipsShown ? 1 : 0)
+                                .scaleEffect(i < chipsShown ? 1 : 0.6)
                         }
                     }
-                    .scrollIndicators(.hidden)
+                    ViewThatFits(in: .horizontal) {
+                        row
+                        ScrollView(.horizontal) { row }
+                            .scrollIndicators(.hidden)
+                    }
                 }
 
                 Text(LocalizedStringKey(insight))
