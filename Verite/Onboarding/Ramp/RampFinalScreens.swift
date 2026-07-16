@@ -470,66 +470,75 @@ struct RampPlanPreviewScreen: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            // Clear the status bar + progress line so the eyebrow never clips.
-            Spacer().frame(height: VSpace.xxl + VSpace.md)
+            // The whole reading area scrolls when the window is short, so the
+            // two block cards never crush together — yet on a tall phone the
+            // flexible spacers still expand and keep the content centered.
+            GeometryReader { proxy in
+                ScrollView {
+                    VStack(spacing: 0) {
+                        // Clear the status bar + progress line so the eyebrow never clips.
+                        Spacer().frame(height: VSpace.xxl + VSpace.md)
 
-            VStack(spacing: VSpace.sm) {
-                Text("AFTER YOUR SCAN")
-                    .font(VType.micro)
-                    .tracking(3)
-                    .foregroundStyle(RampStage.accentDeep)
-                Text("Your first plan,\nready in seconds.")
-                    .font(RampStage.serif(25))
-                    .foregroundStyle(RampStage.ink)
-                    .multilineTextAlignment(.center)
-                    .lineSpacing(2)
-                    // Never let the vertical squeeze truncate the headline —
-                    // the two block cards below flex instead.
-                    .fixedSize(horizontal: false, vertical: true)
-                    .layoutPriority(1)
-            }
-            .padding(.horizontal, VSpace.xl)
+                        VStack(spacing: VSpace.sm) {
+                            Text("AFTER YOUR SCAN")
+                                .font(VType.micro)
+                                .tracking(3)
+                                .foregroundStyle(RampStage.accentDeep)
+                            Text("Your first plan,\nready in seconds.")
+                                .font(RampStage.serif(25))
+                                .foregroundStyle(RampStage.ink)
+                                .multilineTextAlignment(.center)
+                                .lineSpacing(2)
+                                .fixedSize(horizontal: false, vertical: true)
+                        }
+                        .padding(.horizontal, VSpace.xl)
 
-            // Day-1 + focus chip row.
-            HStack(spacing: 8) {
-                Text("DAY 1")
-                    .font(VType.micro).tracking(2)
-                    .foregroundStyle(RampStage.textTertiary)
-                if let focusChip {
-                    (Text("For:") + Text(verbatim: " ") + Text(LocalizedStringKey(focusChip)))
-                        .font(VType.micro).tracking(1.5)
-                        .textCase(.uppercase)
+                        // Day-1 + focus chip row.
+                        HStack(spacing: 8) {
+                            Text("DAY 1")
+                                .font(VType.micro).tracking(2)
+                                .foregroundStyle(RampStage.textTertiary)
+                            if let focusChip {
+                                (Text("For:") + Text(verbatim: " ") + Text(LocalizedStringKey(focusChip)))
+                                    .font(VType.micro).tracking(1.5)
+                                    .textCase(.uppercase)
+                                    .foregroundStyle(RampStage.accentDeep)
+                                    .padding(.horizontal, 8).padding(.vertical, 3)
+                                    .background(RampStage.accentSoft, in: Capsule())
+                            }
+                        }
+                        .padding(.top, VSpace.md)
+
+                        Spacer(minLength: VSpace.xl)
+
+                        VStack(spacing: 14) {
+                            blockCard(icon: "sun.max.fill", title: "Morning",
+                                      subtitle: "After you wake up", steps: morning)
+                            blockCard(icon: "moon.stars.fill", title: "Evening",
+                                      subtitle: "Before bed", steps: evening)
+                        }
+                        .padding(.horizontal, VSpace.lg)
+
+                        HStack(spacing: 6) {
+                            Image(systemName: "checkmark.seal")
+                                .font(.system(size: 11, weight: .semibold))
+                            Text("Built from your scan — not a template.")
+                                .font(VType.micro)
+                                .fixedSize(horizontal: false, vertical: true)
+                        }
                         .foregroundStyle(RampStage.accentDeep)
-                        .padding(.horizontal, 8).padding(.vertical, 3)
-                        .background(RampStage.accentSoft, in: Capsule())
+                        .padding(.top, VSpace.md)
+
+                        Spacer(minLength: VSpace.lg)
+                    }
+                    .frame(minHeight: proxy.size.height)
                 }
+                .scrollBounceBehavior(.basedOnSize)
             }
-            .padding(.top, VSpace.md)
-
-            Spacer()
-
-            VStack(spacing: 14) {
-                blockCard(icon: "sun.max.fill", title: "Morning",
-                          subtitle: "After you wake up", steps: morning)
-                blockCard(icon: "moon.stars.fill", title: "Evening",
-                          subtitle: "Before bed", steps: evening)
-            }
-            .padding(.horizontal, VSpace.lg)
-
-            HStack(spacing: 6) {
-                Image(systemName: "checkmark.seal")
-                    .font(.system(size: 11, weight: .semibold))
-                Text("Built from your scan — not a template.")
-                    .font(VType.micro)
-                    .fixedSize(horizontal: false, vertical: true)
-            }
-            .foregroundStyle(RampStage.accentDeep)
-            .padding(.top, VSpace.md)
-
-            Spacer()
 
             RampPrimaryButton(title: "Sounds good") { onAdvance() }
                 .padding(.horizontal, VSpace.lg)
+                .padding(.top, VSpace.sm)
             Spacer().frame(height: VSpace.xxl)
         }
     }
