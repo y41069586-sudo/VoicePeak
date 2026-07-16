@@ -34,7 +34,9 @@
 	<false/>
 
 	<!-- Custom URL scheme for Skin Duel invite/result deep links
-	     (verite://duel?d=…). Opened via .onOpenURL in RootView. -->
+	     (verite://duel?d=…). Opened via .onOpenURL in RootView.
+	     The second entry is Google Sign-In's reversed iOS client ID — the
+	     callback scheme GoogleSignIn opens after the consent sheet. -->
 	<key>CFBundleURLTypes</key>
 	<array>
 		<dict>
@@ -45,7 +47,23 @@
 				<string>verite</string>
 			</array>
 		</dict>
+		<dict>
+			<key>CFBundleURLName</key>
+			<string>google-signin</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>com.googleusercontent.apps.115881181976-1mdtr88idlr46cb71iqfmts8t1lo9pr2</string>
+			</array>
+		</dict>
 	</array>
+
+	<!-- Google Sign-In. GIDClientID = the iOS OAuth client; GIDServerClientID
+	     = the Web client, so the returned ID token's audience is accepted by
+	     Supabase (both IDs are listed in the Supabase Google provider). -->
+	<key>GIDClientID</key>
+	<string>115881181976-1mdtr88idlr46cb71iqfmts8t1lo9pr2.apps.googleusercontent.com</string>
+	<key>GIDServerClientID</key>
+	<string>115881181976-c58ut1hmt4bi9v2u309i2300knl9f3f3.apps.googleusercontent.com</string>
 
 	<!-- App Store category. -->
 	<key>LSApplicationCategoryType</key>

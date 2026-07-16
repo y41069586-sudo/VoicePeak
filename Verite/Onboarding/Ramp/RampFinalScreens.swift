@@ -1,5 +1,6 @@
 import SwiftUI
 import AuthenticationServices
+import GoogleSignIn
 
 // ============================================================
 // MARK: — Screen 9: The Curve (where do you land?)
@@ -905,11 +906,36 @@ struct RampSignInScreen: View {
         }
     }
 
-    /// Google sign-in — wired in step 2 with the GoogleSignIn SDK + client IDs.
-    /// Unreachable until `googleSignInEnabled` is turned on.
+    /// Real Google sign-in via the GoogleSignIn SDK. GIDClientID +
+    /// GIDServerClientID are read from Info.plist automatically, so we only
+    /// present, read the ID token, and hand it to Supabase.
     private func handleGoogle() {
+        guard let presenter = Self.topViewController() else { authError = true; return }
         RampAnalytics.track("onboarding_sign_in", ["provider": "google"])
-        onSkip()
+        Task {
+            do {
+                let result = try await GIDSignIn.sharedInstance.signIn(withPresenting: presenter)
+                guard let idToken = result.user.idToken?.tokenString else {
+                    await MainActor.run { authError = true }
+                    return
+                }
+                let given = result.user.profile?.givenName
+                _ = try? await appState.backend.signInWithGoogle(idToken: idToken)
+                await MainActor.run { Haptics.fire(.milestone); onSignedIn(given) }
+            } catch {
+                // User canceled or the sheet failed — stay on the screen.
+            }
+        }
+    }
+
+    /// The top-most view controller, needed to present Google's consent sheet
+    /// from SwiftUI.
+    private static func topViewController() -> UIViewController? {
+        let scene = UIApplication.shared.connectedScenes
+            .first { $0.activationState == .foregroundActive } as? UIWindowScene
+        var top = scene?.keyWindow?.rootViewController
+        while let presented = top?.presentedViewController { top = presented }
+        return top
     }
 }
 

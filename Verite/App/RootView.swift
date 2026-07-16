@@ -1,5 +1,6 @@
 import SwiftUI
 import SwiftData
+import GoogleSignIn
 
 /// Top-level router: shows onboarding until a profile marks it complete, then the
 /// main tab experience. The animated gradient mesh sits behind everything.
@@ -33,6 +34,8 @@ struct RootView: View {
         // Referral links (verite://invite?…) credit bonus scans; compare
         // links (verite://compare?d=…) open the friend face-off sheet.
         .onOpenURL { url in
+            // Google Sign-In's OAuth callback must be handed to the SDK first.
+            if GIDSignIn.sharedInstance.handle(url) { return }
             if ReferralStore.shared.handle(url) { return }
             _ = CompareInbox.shared.handle(url)
         }

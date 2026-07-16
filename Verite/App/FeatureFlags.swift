@@ -44,7 +44,7 @@ final class FeatureFlags: @unchecked Sendable {
         communityEnabled: Bool = false,
         onboardingRatingAskEnabled: Bool = false,
         appleSignInEnabled: Bool = true,
-        googleSignInEnabled: Bool = false
+        googleSignInEnabled: Bool = true
     ) {
         self.affiliateEnabled = affiliateEnabled
         self.backendEnabled = backendEnabled

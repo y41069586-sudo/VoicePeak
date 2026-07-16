@@ -11,6 +11,7 @@ protocol BackendService: Sendable {
 
     func currentUser() -> BackendUser?
     func signInWithApple(idToken: String, nonce: String) async throws -> BackendUser
+    func signInWithGoogle(idToken: String) async throws -> BackendUser
     func signOut() async
 
     /// Push numeric metrics + routine (opt-in). Never photos.
@@ -31,6 +32,9 @@ struct LocalOnlyBackend: BackendService {
 
     func currentUser() -> BackendUser? { nil }
     func signInWithApple(idToken: String, nonce: String) async throws -> BackendUser {
+        throw BackendError.notEnabled
+    }
+    func signInWithGoogle(idToken: String) async throws -> BackendUser {
         throw BackendError.notEnabled
     }
     func signOut() async {}
