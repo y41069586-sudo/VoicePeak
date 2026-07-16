@@ -357,23 +357,34 @@ workflows:
       - name: Determine next build number
         script: |
           set -e
-          # Use a Unix timestamp as the build number. It is numeric, strictly
-          # increasing on every build, and always far higher than anything
-          # already uploaded (previous uploads were single/double digits).
-          # This needs NO App Store Connect query, so it cannot fail on API
-          # or CLI quirks — the class of error that broke every prior upload
-          # (hardcoded 11, then a fallback 1, then an unsupported list-apps
-          # call). A timestamp (~1.7e9) stays well under the CFBundleVersion
-          # numeric limit, so it is always a valid, accepted build number.
-          NEXT_BUILD_NUMBER=$(date +%s)
-          echo "Using timestamp build number: $NEXT_BUILD_NUMBER"
+          # Build number must be numeric AND strictly greater than every prior
+          # upload. A plain Unix timestamp FAILED here: the CI builders' clock
+          # sits near ~1784225345, so `date +%s` returned near-identical values
+          # each run and repeatedly landed at/below an already-uploaded build.
+          #
+          # Reliable monotonic source = Codemagic's own $BUILD_NUMBER (increments
+          # every build). Floor it above the highest known-uploaded version so it
+          # is always accepted; take the max with the wall clock in case the
+          # builder clock ever advances past the floor.
+          HIGHEST_UPLOADED=1784225345
+          COUNTER=${BUILD_NUMBER:-1}
+          FLOOR=$(( HIGHEST_UPLOADED + COUNTER ))
+          EPOCH=$(date +%s)
+          if [ "$EPOCH" -gt "$FLOOR" ]; then NEXT_BUILD_NUMBER=$EPOCH; else NEXT_BUILD_NUMBER=$FLOOR; fi
+          echo "BUILD_NUMBER=$COUNTER  epoch=$EPOCH  floor=$FLOOR  ->  $NEXT_BUILD_NUMBER"
           echo "NEXT_BUILD_NUMBER=$NEXT_BUILD_NUMBER" >> $CM_ENV
       - name: Stamp build version into Info.plist
         script: |
+          set -e
+          # set -e so a bad PlistBuddy fails LOUDLY instead of the build silently
+          # shipping the static Info.plist CFBundleVersion (=12), which is what
+          # produced the recurring "must be higher than 1784225345" rejection.
+          test -n "$NEXT_BUILD_NUMBER" || { echo "ERROR: NEXT_BUILD_NUMBER empty"; exit 1; }
           PLIST="$CM_BUILD_DIR/Verite/Resources/Info.plist"
+          test -f "$PLIST" || { echo "ERROR: plist not found at $PLIST"; exit 1; }
           /usr/libexec/PlistBuddy -c "Set :CFBundleVersion $NEXT_BUILD_NUMBER" "$PLIST"
           /usr/libexec/PlistBuddy -c "Set :CFBundleShortVersionString 1.0.3" "$PLIST"
-          echo "Stamped CFBundleVersion=$(/usr/libexec/PlistBuddy -c 'Print :CFBundleVersion' $PLIST)"
+          echo "Stamped CFBundleVersion=$(/usr/libexec/PlistBuddy -c 'Print :CFBundleVersion' "$PLIST")"
       - name: Build & sign IPA
         script: |
           set -o pipefail
