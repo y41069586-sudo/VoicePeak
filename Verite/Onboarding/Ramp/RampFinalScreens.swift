@@ -57,7 +57,7 @@ struct RampCurveScreen: View {
                 .offset(y: bandShown ? 0 : 6)
 
             HStack(spacing: VSpace.md) {
-                RampMiniClaim(icon: "lock.fill", text: "100% private")
+                RampMiniClaim(icon: "lock.fill", text: "Secure & private")
                 RampMiniClaim(icon: "square.grid.3x3.fill", text: "7 metrics")
                 RampMiniClaim(icon: "gauge.with.dots.needle.bottom.50percent", text: "Honest 0–100")
             }

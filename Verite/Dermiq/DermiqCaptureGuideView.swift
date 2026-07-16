@@ -66,7 +66,7 @@ struct DermiqCaptureGuideView: View {
                     HStack(spacing: 8) {
                         Image(systemName: "lock.fill")
                             .font(.system(size: 12, weight: .semibold))
-                        Text("Your photo is analysed for your scores and stays private.")
+                        Text("Your photo is sent securely to generate your scores, then discarded.")
                             .font(DQFont.micro)
                             .fixedSize(horizontal: false, vertical: true)
                     }

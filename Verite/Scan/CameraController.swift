@@ -7,8 +7,9 @@ import UIKit
 /// detection + a luminance estimate on the video stream (throttled, off the main
 /// thread) to drive the AR alignment guide, and captures a still photo on demand.
 ///
-/// Everything here stays on-device. Nothing is transmitted; the captured image is
-/// handed back to the caller, which stores only a local thumbnail.
+/// Capture and framing run entirely on-device; this class transmits nothing on
+/// its own. The still it hands back is later sent to the analysis providers by
+/// the scan pipeline (see DermiqScanFlow); only a local thumbnail is stored here.
 final class CameraController: NSObject, ObservableObject, @unchecked Sendable,
                              AVCaptureVideoDataOutputSampleBufferDelegate,
                              AVCapturePhotoCaptureDelegate {

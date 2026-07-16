@@ -24371,31 +24371,31 @@
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "Zuletzt aktualisiert: [Datum]. Entwurf, vor Veröffentlichung anwaltlich zu finalisieren.\n\nStandardmäßig auf dem Gerät. Glowé analysiert dein Gesicht und deine Haut vollständig auf deinem Gerät. Deine Fotos werden lokal verarbeitet und niemals hochgeladen, übertragen oder von uns erhoben.\n\nWas gespeichert wird. Nur auf deinem Gerät: dein Hautprofil, Scan-Schätzungen (Zahlen), deine Produkte und Routine sowie lokale Foto-Thumbnails. Wir verkaufen deine Daten nicht.\n\nOptionale Cloud-Funktionen. Kontosynchronisierung, Community-Daten und Affiliate-Funktionen sind standardmäßig deaktiviert. Wenn du sie aktivierst, werden nur anonymisierte Zahlen – niemals Fotos – und nur mit deiner Einwilligung verarbeitet.\n\nDeine Rechte. Exportiere deine Daten oder lösche alles jederzeit unter Einstellungen → Daten & Datenschutz. Nach der DSGVO hast du außerdem Rechte auf Auskunft, Berichtigung, Löschung und Datenübertragbarkeit. Kontakt: [E-Mail].\n\nMinderjährige. Glowé richtet sich nicht an Kinder unter 16 Jahren.\n\nProduktdaten stammen aus der offen lizenzierten Open-Beauty-Facts-Datenbank."
+            "value": "Zuletzt aktualisiert: [Datum]. Entwurf, vor Veröffentlichung mit einem Anwalt zu finalisieren.\n\nWie dein Foto verwendet wird. Um deine Haut-Analyse zu erstellen, wird dein Foto verschlüsselt an unsere Analyse-Dienstleister übertragen und dort zu deinen Werten verarbeitet; die optionale „Potenzial\"-Vorschau nutzt einen separaten Bild-Dienstleister. Dein Foto wird ausschließlich zur Erstellung deiner Ergebnisse genutzt und von Glowé nicht dauerhaft gespeichert.\n\nWas auf deinem Gerät bleibt. Nur auf deinem Gerät: dein Haut-Profil, deine Scan-Schätzwerte (Zahlen), deine Produkte und Routine sowie lokale Foto-Miniaturen. Wir verkaufen deine Daten nicht.\n\nOptionale Funktionen. Konto-Sync und Affiliate-Funktionen sind standardmäßig aus. Wenn du sie aktivierst, werden nur anonymisierte numerische Daten verarbeitet — niemals Fotos."
           }
         },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Last updated: [date]. Draft to be finalized with a lawyer before release.\n\nOn-device by design. Glowé analyzes your face and skin entirely on your device. Your photos are processed locally and are never uploaded, transmitted, or collected by us.\n\nWhat we store. On your device only: your skin profile, scan estimates (numbers), your products and routine, and local photo thumbnails. We do not sell your data.\n\nOptional cloud features. Account sync, community efficacy data, and affiliate features are off by default. If you enable them, only anonymized numeric data — never photos — is processed, and only with your consent.\n\nYour rights. Export your data or delete everything anytime in Settings → Data & privacy. Under the GDPR you also have rights of access, rectification, erasure, and portability. Contact: [email].\n\nMinors. Glowé is not directed to children under 16.\n\nProduct data comes from the open-licensed Open Beauty Facts database."
+            "value": "Last updated: [date]. Draft to be finalized with a lawyer before release.\n\nHow your photo is used. To create your skin analysis, your photo is sent securely (encrypted in transit) to our analysis providers and processed to produce your scores; the optional \"potential\" preview uses a separate image provider. Your photo is used only to create your results and is not permanently stored by Glowé.\n\nWhat stays on your device. On your device only: your skin profile, scan estimates (numbers), your products and routine, and local photo thumbnails. We do not sell your data.\n\nOptional features. Account sync and affiliate features are off by default. If you enable them, only anonymized numeric data — never photos — is processed."
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Última actualización: [fecha]. Borrador que un abogado debe finalizar antes del lanzamiento.\n\nEn el dispositivo por diseño. Glowé analiza tu rostro y tu piel íntegramente en tu dispositivo. Tus fotos se procesan localmente y nunca se suben, transmiten ni recopilan.\n\nQué almacenamos. Solo en tu dispositivo: tu perfil de piel, estimaciones de escaneo (números), tus productos y rutina, y miniaturas locales. No vendemos tus datos.\n\nFunciones en la nube opcionales. La sincronización de cuenta, los datos de comunidad y las funciones de afiliados están desactivados por defecto. Si los activas, solo se procesan datos numéricos anonimizados —nunca fotos— y con tu consentimiento.\n\nTus derechos. Exporta tus datos o elimina todo cuando quieras en Ajustes → Datos y privacidad. Según el RGPD tienes derechos de acceso, rectificación, supresión y portabilidad. Contacto: [correo].\n\nMenores. Glowé no está dirigida a menores de 16 años.\n\nLos datos de productos provienen de la base de datos con licencia abierta Open Beauty Facts."
+            "value": "Última actualización: [fecha]. Borrador que debe finalizarse con un abogado antes del lanzamiento.\n\nCómo se usa tu foto. Para crear tu análisis de piel, tu foto se envía de forma segura (cifrada en tránsito) a nuestros proveedores de análisis y se procesa para generar tus puntuaciones; la vista previa opcional de \"potencial\" usa un proveedor de imágenes distinto. Tu foto solo se usa para crear tus resultados y Glowé no la almacena de forma permanente.\n\nQué permanece en tu dispositivo. Solo en tu dispositivo: tu perfil de piel, tus estimaciones (números), tus productos y rutina, y miniaturas locales. No vendemos tus datos.\n\nFunciones opcionales. La sincronización de cuenta y las funciones de afiliados están desactivadas por defecto. Si las activas, solo se procesan datos numéricos anonimizados — nunca fotos."
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Dernière mise à jour : [date]. Brouillon à finaliser avec un avocat avant publication.\n\nSur l’appareil par conception. Glowé analyse votre visage et votre peau entièrement sur votre appareil. Vos photos sont traitées localement et ne sont jamais téléchargées, transmises ni collectées.\n\nCe que nous stockons. Sur votre appareil uniquement : votre profil de peau, les estimations de scan (chiffres), vos produits et votre routine, et des miniatures locales. Nous ne vendons pas vos données.\n\nFonctions cloud optionnelles. La synchronisation de compte, les données communautaires et les fonctions d’affiliation sont désactivées par défaut. Si vous les activez, seules des données numériques anonymisées — jamais de photos — sont traitées, avec votre consentement.\n\nVos droits. Exportez vos données ou supprimez tout à tout moment dans Réglages → Données et confidentialité. Le RGPD vous accorde aussi des droits d’accès, de rectification, d’effacement et de portabilité. Contact : [e-mail].\n\nMineurs. Glowé ne s’adresse pas aux enfants de moins de 16 ans.\n\nLes données produits proviennent de la base sous licence ouverte Open Beauty Facts."
+            "value": "Dernière mise à jour : [date]. Brouillon à finaliser avec un avocat avant la sortie.\n\nComment ta photo est utilisée. Pour créer ton analyse de peau, ta photo est envoyée de façon sécurisée (chiffrée en transit) à nos prestataires d'analyse et traitée pour produire tes scores ; l'aperçu optionnel « potentiel » utilise un prestataire d'image distinct. Ta photo sert uniquement à créer tes résultats et n'est pas conservée durablement par Glowé.\n\nCe qui reste sur ton appareil. Sur ton appareil uniquement : ton profil de peau, tes estimations (chiffres), tes produits et ta routine, et des miniatures locales. Nous ne vendons pas tes données.\n\nFonctions optionnelles. La synchronisation de compte et les fonctions d'affiliation sont désactivées par défaut. Si tu les actives, seules des données numériques anonymisées — jamais de photos — sont traitées."
           }
         },
         "it": {
           "stringUnit": {
             "state": "translated",
-            "value": "Ultimo aggiornamento: [data]. Bozza da finalizzare con un avvocato prima del rilascio.\n\nSul dispositivo per progettazione. Glowé analizza il tuo viso e la tua pelle interamente sul tuo dispositivo. Le tue foto sono elaborate localmente e non vengono mai caricate, trasmesse o raccolte.\n\nCosa memorizziamo. Solo sul tuo dispositivo: il tuo profilo cutaneo, le stime delle scansioni (numeri), i tuoi prodotti e la routine e le miniature locali. Non vendiamo i tuoi dati.\n\nFunzioni cloud opzionali. Sincronizzazione dell’account, dati della community e funzioni di affiliazione sono disattivati per impostazione predefinita. Se le attivi, vengono elaborati solo dati numerici anonimizzati — mai foto — e solo con il tuo consenso.\n\nI tuoi diritti. Esporta i tuoi dati o elimina tutto in qualsiasi momento in Impostazioni → Dati e privacy. Ai sensi del GDPR hai inoltre diritti di accesso, rettifica, cancellazione e portabilità. Contatto: [email].\n\nMinori. Glowé non è rivolta a minori di 16 anni.\n\nI dati dei prodotti provengono dal database con licenza aperta Open Beauty Facts."
+            "value": "Ultimo aggiornamento: [data]. Bozza da finalizzare con un avvocato prima del rilascio.\n\nCome viene usata la tua foto. Per creare la tua analisi della pelle, la foto viene inviata in modo sicuro (cifrata in transito) ai nostri fornitori di analisi ed elaborata per produrre i tuoi punteggi; l'anteprima opzionale \"potenziale\" usa un fornitore di immagini separato. La tua foto è usata solo per creare i risultati e non viene conservata in modo permanente da Glowé.\n\nCosa resta sul dispositivo. Solo sul tuo dispositivo: il profilo pelle, le stime (numeri), i tuoi prodotti e la routine, e miniature locali. Non vendiamo i tuoi dati.\n\nFunzioni opzionali. La sincronizzazione dell'account e le funzioni di affiliazione sono disattivate di default. Se le attivi, vengono elaborati solo dati numerici anonimizzati — mai foto."
           }
         }
       }
@@ -38222,6 +38222,76 @@
           "stringUnit": {
             "state": "translated",
             "value": "Registrati e passa a Pro per inviare il bonus a chi ti ha invitato."
+          }
+        }
+      }
+    },
+    "Your photo is sent securely to generate your scores, then discarded.": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dein Foto wird sicher übertragen, um deine Werte zu erstellen, und danach verworfen."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Your photo is sent securely to generate your scores, then discarded."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tu foto se envía de forma segura para generar tus resultados y luego se descarta."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ta photo est envoyée en toute sécurité pour générer tes scores, puis supprimée."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "La tua foto viene inviata in modo sicuro per generare i tuoi punteggi, poi viene eliminata."
+          }
+        }
+      }
+    },
+    "Secure & private": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sicher & privat"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Secure & private"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Seguro y privado"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sécurisé et privé"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sicuro e privato"
           }
         }
       }

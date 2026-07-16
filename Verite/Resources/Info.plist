@@ -63,7 +63,7 @@
 
 	<!-- Honest, specific camera reason. Localized via InfoPlist.xcstrings. -->
 	<key>NSCameraUsageDescription</key>
-	<string>Glowé uses the camera to analyze your skin and scan product barcodes. Photos are processed on your device and never uploaded.</string>
+	<string>Glowé uses the camera to capture your skin. Your photo is sent securely to generate your skin analysis and isn't stored after your results are ready.</string>
 
 	<!-- Warm, light GlamUp look — committed app-wide. -->
 	<key>UIUserInterfaceStyle</key>
