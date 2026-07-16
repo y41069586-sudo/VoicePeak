@@ -340,10 +340,7 @@ struct RampOptionCard: View {
 
     var body: some View {
         Button(action: action) {
-            // Centered content: the icon + label + descriptor ride together as
-            // one centered group. The selection dot is overlaid on the trailing
-            // edge so it marks the choice without pulling the text off-center.
-            HStack(spacing: 12) {
+            HStack(spacing: 14) {
                 if let icon {
                     Image(systemName: icon)
                         .font(.system(size: 16, weight: .regular))
@@ -352,22 +349,21 @@ struct RampOptionCard: View {
                         .background(RampStage.accent.opacity(selected ? 0.20 : 0.12),
                                     in: RoundedRectangle(cornerRadius: 10, style: .continuous))
                 }
-                VStack(spacing: 2) {
+                VStack(alignment: .leading, spacing: 2) {
                     Text(LocalizedStringKey(label))
                         .font(VType.bodyLarge.weight(.medium))
                         .foregroundStyle(selected ? RampStage.accentDeep : RampStage.ink)
-                        .multilineTextAlignment(.center)
                     if let sub {
                         Text(LocalizedStringKey(sub))
                             .font(VType.caption)
                             .foregroundStyle(RampStage.textSecondary)
-                            .multilineTextAlignment(.center)
                     }
                 }
+                Spacer(minLength: 0)
+                selectionDot
             }
-            .frame(maxWidth: .infinity, minHeight: 62)
-            .padding(.horizontal, 44) // keep centered text clear of the dot
-            .padding(.vertical, 10)
+            .padding(.horizontal, 18)
+            .frame(maxWidth: .infinity, minHeight: 62, alignment: .leading)
             .background(
                 selected
                     ? AnyShapeStyle(RampStage.accent.opacity(0.12))
@@ -378,9 +374,6 @@ struct RampOptionCard: View {
                 RoundedRectangle(cornerRadius: 18, style: .continuous)
                     .strokeBorder(selected ? RampStage.accent : RampStage.hairline, lineWidth: 1)
             )
-            .overlay(alignment: .trailing) {
-                selectionDot.padding(.trailing, 16)
-            }
         }
         .buttonStyle(PressableStyle())
         .animation(VMotion.gentle, value: selected)
