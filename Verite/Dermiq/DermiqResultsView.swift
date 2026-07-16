@@ -31,8 +31,6 @@ struct DermiqResultsView: View {
     @Query private var scans: [ScanRecord]
     @Query private var profiles: [UserProfile]
 
-    /// Simulated entitlement while StoreKit is disabled (mock/demo builds).
-    @AppStorage("dermiq.unlocked") private var simulatedUnlock = false
     /// The post-scan review ask fires at most once, ever (system throttles too).
     @AppStorage("dermiq.reviewAsked") private var reviewAsked = false
 
@@ -51,7 +49,7 @@ struct DermiqResultsView: View {
     @State private var showProjected = false
     @Namespace private var segmentNS
 
-    private var unlocked: Bool { purchases.isPro || simulatedUnlock }
+    private var unlocked: Bool { purchases.isPro }
 
     /// The paywall doesn't pounce: the blurred chart gets ~1.6s alone on
     /// screen (the tease), THEN the card slides up from the bottom.
@@ -523,9 +521,7 @@ struct DermiqResultsView: View {
 struct DermiqPaywallCard: View {
     let onUnlocked: () -> Void
 
-    @Environment(AppState.self) private var appState
     @Environment(PurchaseManager.self) private var purchases
-    @AppStorage("dermiq.unlocked") private var simulatedUnlock = false
 
     private enum PlanChoice { case weekly, annual }
     @State private var choice: PlanChoice = .annual
@@ -748,24 +744,15 @@ struct DermiqPaywallCard: View {
         purchasing = true
         Task {
             defer { purchasing = false }
-            if appState.featureFlags.purchasesEnabled {
-                let id = choice == .annual ? VeriteProducts.proYearly : VeriteProducts.proWeekly
-                guard let product = purchases.products.first(where: { $0.id == id }) else {
-                    // Products didn't load (offline / StoreKit hiccup) — say
-                    // so instead of silently resetting the button.
-                    purchaseFailed = true
-                    return
-                }
-                if await purchases.purchase(product) {
-                    RampAnalytics.track("paywall_purchase", ["plan": id])
-                    onUnlocked()
-                }
-            } else {
-                // TODO: PRODUCTION — remove the simulated unlock once StoreKit
-                // products are configured and `purchasesEnabled` ships on.
-                try? await Task.sleep(for: .milliseconds(900))
-                simulatedUnlock = true
-                RampAnalytics.track("paywall_purchase", ["plan": "simulated"])
+            let id = choice == .annual ? VeriteProducts.proYearly : VeriteProducts.proWeekly
+            guard let product = purchases.products.first(where: { $0.id == id }) else {
+                // Products didn't load (offline / StoreKit hiccup) — say so
+                // instead of silently resetting the button.
+                purchaseFailed = true
+                return
+            }
+            if await purchases.purchase(product) {
+                RampAnalytics.track("paywall_purchase", ["plan": id])
                 onUnlocked()
             }
         }

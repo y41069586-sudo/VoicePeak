@@ -29,15 +29,12 @@ struct DermiqTabShell: View {
 
     @Environment(\.modelContext) private var modelContext
     @Environment(PurchaseManager.self) private var purchases
-    @Environment(AppState.self) private var appState
     @Query(sort: \ScanRecord.date, order: .reverse) private var scans: [ScanRecord]
 
-    /// Simulated entitlement, set by the paywall while StoreKit products
-    /// aren't live (`purchasesEnabled == false`). The scan gate MUST honor
-    /// it — otherwise pressing "Unlock" does nothing because `isPro` stays
-    /// false. Single source of truth: `hasPro`.
-    @AppStorage("dermiq.unlocked") private var simulatedUnlock = false
-    private var hasPro: Bool { purchases.isPro || simulatedUnlock }
+    /// Single source of truth for entitlement: a real, verified StoreKit
+    /// subscription. No simulated/free unlock — that path is gone now that
+    /// purchases are live.
+    private var hasPro: Bool { purchases.isPro }
 
     @State private var tab: Tab = .scan
     @State private var showFlow = false
@@ -167,17 +164,8 @@ struct DermiqTabShell: View {
     /// StoreKit isn't live, grant it immediately (mirrors the paywall).
     private func buyExtraScan() {
         Task {
-            var granted = false
-            if appState.featureFlags.purchasesEnabled {
-                if let product = purchases.products.first(where: { $0.id == VeriteProducts.extraScan }),
-                   await purchases.purchaseConsumable(product) {
-                    granted = true
-                }
-            } else {
-                try? await Task.sleep(for: .milliseconds(500))
-                granted = true // simulated purchase
-            }
-            guard granted else { return }
+            guard let product = purchases.products.first(where: { $0.id == VeriteProducts.extraScan }),
+                  await purchases.purchaseConsumable(product) else { return }
             ReferralStore.shared.addCredit()
             RampAnalytics.track("extra_scan_purchased")
             try? await Task.sleep(for: .milliseconds(250))

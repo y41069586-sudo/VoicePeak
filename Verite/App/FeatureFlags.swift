@@ -40,7 +40,7 @@ final class FeatureFlags: @unchecked Sendable {
     init(
         affiliateEnabled: Bool = false,
         backendEnabled: Bool = true,
-        purchasesEnabled: Bool = false,
+        purchasesEnabled: Bool = true,
         communityEnabled: Bool = false,
         onboardingRatingAskEnabled: Bool = false,
         appleSignInEnabled: Bool = true,

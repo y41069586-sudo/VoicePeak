@@ -22,7 +22,6 @@ struct DermiqSettingsView: View {
 
     @AppStorage("languageOverride") private var languageOverride = ""
     @AppStorage("dermiq.reminder") private var reminderPref = ReminderPref.off.rawValue
-    @AppStorage("dermiq.unlocked") private var simulatedUnlock = false
 
     @State private var legalDocument: LegalDocument?
     @State private var showSignOutConfirm = false
@@ -182,7 +181,7 @@ struct DermiqSettingsView: View {
                 // link". (No sign-in requirement: accounts aren't live, so
                 // gating on currentUser() made the bonus unreachable.)
                 if ReferralStore.shared.thankYouURL != nil {
-                    if purchases.isPro || simulatedUnlock,
+                    if purchases.isPro,
                        let thanks = ReferralStore.shared.thankYouURL {
                         ShareLink(item: thanks,
                                   message: Text("Thanks for the invite — open this so you get your bonus scan!")) {
@@ -329,7 +328,9 @@ struct DermiqSettingsView: View {
         DermiqImageStore.wipeAll()
         BadgeCenter.shared.resetAll()
 
-        simulatedUnlock = false
+        // Clear any stale demo-unlock flag left on test devices, so a fresh
+        // install/account is correctly treated as non-Pro until a real purchase.
+        UserDefaults.standard.removeObject(forKey: "dermiq.unlocked")
         languageOverride = ""
         reminderPref = ReminderPref.off.rawValue
         UNUserNotificationCenter.current().removeAllPendingNotificationRequests()
