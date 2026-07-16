@@ -14,7 +14,8 @@
 # this file. The `Verite` env-var group only needs the 3 API values used to
 # UPLOAD to TestFlight (see the publishing block).
 #
-# BUILD NUMBER: ios-release stamps a Unix timestamp as the CFBundleVersion
+# BUILD NUMBER: ios-release stamps a strictly-monotonic number (floor above
+# the highest uploaded build + Codemagic's own build counter) as the CFBundleVersion
 # ("Determine next build number" step) — always numeric, always increasing,
 # always higher than anything already uploaded, and needs no App Store Connect
 # query that could fail. No hardcoded version to bump before every release.
@@ -427,8 +428,19 @@ workflows:
             /usr/libexec/PlistBuddy -c "Print :$key" "$PLIST" > /dev/null 2>&1 \
               || { echo "ERROR: $key missing from the BUILT Info.plist — plist was clobbered"; exit 1; }
           done
-          echo "Built plist: CFBundleVersion=$(/usr/libexec/PlistBuddy -c 'Print :CFBundleVersion' "$PLIST"), launch=$(/usr/libexec/PlistBuddy -c 'Print :UILaunchStoryboardName' "$PLIST")"
-          echo "Packaging OK: plist intact, launch storyboard present"
+          BUILT_VERSION=$(/usr/libexec/PlistBuddy -c 'Print :CFBundleVersion' "$PLIST")
+          echo "Built plist: CFBundleVersion=$BUILT_VERSION, launch=$(/usr/libexec/PlistBuddy -c 'Print :UILaunchStoryboardName' "$PLIST")"
+          # Upload guard: App Store Connect rejects anything ≤ the highest
+          # already-uploaded build (1784225345). Fail HERE with a clear message
+          # instead of at publishing with a cryptic 409 — if this trips, the
+          # stamp step didn't run (e.g. a Rebuild of an old commit).
+          if [ "$BUILT_VERSION" -le 1784225345 ] 2>/dev/null || ! [ "$BUILT_VERSION" -gt 0 ] 2>/dev/null; then
+            echo "ERROR: CFBundleVersion ($BUILT_VERSION) is not above 1784225345 —"
+            echo "the IPA would be rejected by App Store Connect. The stamp step"
+            echo "did not take effect. Start a NEW build from the latest commit."
+            exit 1
+          fi
+          echo "Packaging OK: plist intact, launch storyboard present, version $BUILT_VERSION accepted-range"
     artifacts:
       - build/ios/ipa/*.ipa
       - /tmp/xcodebuild_logs/*.log
