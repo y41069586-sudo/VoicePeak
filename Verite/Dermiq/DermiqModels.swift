@@ -504,7 +504,7 @@ enum RoutineBuilder {
                 key: "t.texture",
                 productType: "Retinal night serum",
                 active: "Retinaldehyde 0.05%",
-                why: String(localized: "At \(score), texture is your biggest lever — retinoids are the proven route."),
+                why: String(localized: "At \(score), texture is your biggest lever — a retinoid is a well-studied option."),
                 examples: ["Geek & Gorgeous A-Game 5 · $$", "Avène Retrinal 0.05 · $$$"]
             )
             : RoutineStep(
@@ -604,7 +604,7 @@ enum RoutineBuilder {
                 key: "t.blemishes",
                 productType: "Retinal treatment",
                 active: "Retinaldehyde 0.1%",
-                why: String(localized: "At \(score), breakouts need a retinoid — the proven route, no prescription needed."),
+                why: String(localized: "At \(score), a retinoid is a well-studied option for breakouts."),
                 examples: ["Geek & Gorgeous A-Game 10 · $$", "Avène Retrinal 0.1 · $$$"]
             )
             : RoutineStep(

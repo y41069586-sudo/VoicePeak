@@ -150,12 +150,12 @@ struct RampEvidenceScreen: View {
     private let items: [Evidence] = [
         Evidence(icon: "sun.max.fill",
                  active: "Daily SPF",
-                 claim: "The only step proven to slow visible skin aging in a randomized trial.",
+                 claim: "Slowed visible skin aging in a randomized trial.",
                  source: "Annals of Internal Medicine",
                  url: URL(string: "https://pubmed.ncbi.nlm.nih.gov/23732711/")!),
         Evidence(icon: "moon.stars.fill",
                  active: "Retinal",
-                 claim: "Significantly cleared breakouts in an 8-week randomized trial.",
+                 claim: "Reduced breakouts in an 8-week randomized trial.",
                  source: "Clinical & Experimental Dermatology",
                  url: URL(string: "https://academic.oup.com/ced/article-abstract/24/5/354/6627773")!),
         Evidence(icon: "drop.halffull",
@@ -165,7 +165,7 @@ struct RampEvidenceScreen: View {
                  url: URL(string: "https://pubmed.ncbi.nlm.nih.gov/37550898/")!),
         Evidence(icon: "circle.lefthalf.filled",
                  active: "Tranexamic acid",
-                 claim: "Matched the gold-standard spot fader — with fewer side effects.",
+                 claim: "Faded dark spots in a systematic review, with fewer side effects.",
                  source: "Systematic review · PMC",
                  url: URL(string: "https://pmc.ncbi.nlm.nih.gov/articles/PMC9805721/")!),
     ]
@@ -179,7 +179,7 @@ struct RampEvidenceScreen: View {
                     .font(VType.micro)
                     .tracking(3)
                     .foregroundStyle(RampStage.accentDeep)
-                Text("Proven actives,\nnot promises.")
+                Text("Real actives,\nreal research.")
                     .font(RampStage.serif(25))
                     .foregroundStyle(RampStage.ink)
                     .multilineTextAlignment(.center)
