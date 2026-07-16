@@ -39,11 +39,11 @@ final class FeatureFlags: @unchecked Sendable {
 
     init(
         affiliateEnabled: Bool = false,
-        backendEnabled: Bool = false,
+        backendEnabled: Bool = true,
         purchasesEnabled: Bool = false,
         communityEnabled: Bool = false,
         onboardingRatingAskEnabled: Bool = false,
-        appleSignInEnabled: Bool = false,
+        appleSignInEnabled: Bool = true,
         googleSignInEnabled: Bool = false
     ) {
         self.affiliateEnabled = affiliateEnabled

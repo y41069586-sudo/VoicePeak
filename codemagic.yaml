@@ -59,16 +59,23 @@ workflows:
           API_CLEAN="$(printf '%s' "${PERFECTCORP_API_KEY:-}" | tr -d ' \t\r\n')"
           RSA_CLEAN="$(printf '%s' "${PERFECTCORP_RSA_KEY:-}" | tr -d ' \t\r\n')"
           GEMINI_CLEAN="$(printf '%s' "${GEMINI_API_KEY:-}" | tr -d ' \t\r\n')"
+          # Supabase (auth + account deletion). Anon key is a JWT — strip only
+          # whitespace/newlines a wrapped paste would carry.
+          SUPA_URL_CLEAN="$(printf '%s' "${SUPABASE_URL:-}" | tr -d ' \t\r\n')"
+          SUPA_ANON_CLEAN="$(printf '%s' "${SUPABASE_ANON_KEY:-}" | tr -d ' \t\r\n')"
           {
             echo '// CI-GENERATED — values injected from Codemagic env vars. Never committed.'
             echo 'enum DermiqSecrets {'
             echo "    static let perfectCorpAPIKey = \"${API_CLEAN}\""
             echo "    static let perfectCorpRSAPublicKey = \"${RSA_CLEAN}\""
             echo "    static let geminiAPIKey = \"${GEMINI_CLEAN}\""
+            echo "    static let supabaseURL = \"${SUPA_URL_CLEAN}\""
+            echo "    static let supabaseAnonKey = \"${SUPA_ANON_CLEAN}\""
             echo '}'
           } > Verite/Dermiq/DermiqSecrets.swift
           echo "Analysis: $([ -n "${PERFECTCORP_API_KEY:-}" ] && [ -n "${PERFECTCORP_RSA_KEY:-}" ] && echo LIVE || echo mock)"
           echo "Potential: $([ -n "${GEMINI_API_KEY:-}" ] && echo LIVE || echo mock)"
+          echo "Backend: $([ -n "${SUPABASE_URL:-}" ] && [ -n "${SUPABASE_ANON_KEY:-}" ] && echo LIVE || echo local-only)"
       - name: Probe Perfect Corp auth (only when keys are set)
         script: |
           # Proves the keys + auth contract from CI (this container has open
@@ -262,16 +269,23 @@ workflows:
           API_CLEAN="$(printf '%s' "${PERFECTCORP_API_KEY:-}" | tr -d ' \t\r\n')"
           RSA_CLEAN="$(printf '%s' "${PERFECTCORP_RSA_KEY:-}" | tr -d ' \t\r\n')"
           GEMINI_CLEAN="$(printf '%s' "${GEMINI_API_KEY:-}" | tr -d ' \t\r\n')"
+          # Supabase (auth + account deletion). Anon key is a JWT — strip only
+          # whitespace/newlines a wrapped paste would carry.
+          SUPA_URL_CLEAN="$(printf '%s' "${SUPABASE_URL:-}" | tr -d ' \t\r\n')"
+          SUPA_ANON_CLEAN="$(printf '%s' "${SUPABASE_ANON_KEY:-}" | tr -d ' \t\r\n')"
           {
             echo '// CI-GENERATED — values injected from Codemagic env vars. Never committed.'
             echo 'enum DermiqSecrets {'
             echo "    static let perfectCorpAPIKey = \"${API_CLEAN}\""
             echo "    static let perfectCorpRSAPublicKey = \"${RSA_CLEAN}\""
             echo "    static let geminiAPIKey = \"${GEMINI_CLEAN}\""
+            echo "    static let supabaseURL = \"${SUPA_URL_CLEAN}\""
+            echo "    static let supabaseAnonKey = \"${SUPA_ANON_CLEAN}\""
             echo '}'
           } > Verite/Dermiq/DermiqSecrets.swift
           echo "Analysis: $([ -n "${PERFECTCORP_API_KEY:-}" ] && [ -n "${PERFECTCORP_RSA_KEY:-}" ] && echo LIVE || echo mock)"
           echo "Potential: $([ -n "${GEMINI_API_KEY:-}" ] && echo LIVE || echo mock)"
+          echo "Backend: $([ -n "${SUPABASE_URL:-}" ] && [ -n "${SUPABASE_ANON_KEY:-}" ] && echo LIVE || echo local-only)"
       - name: Generate Xcode project
         script: xcodegen generate --spec project.yml
       - name: Set up signing

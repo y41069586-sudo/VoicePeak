@@ -16,6 +16,7 @@ struct DermiqSettingsView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(\.modelContext) private var modelContext
     @Environment(PurchaseManager.self) private var purchases
+    @Environment(AppState.self) private var appState
     @Environment(\.requestReview) private var requestReview
     @Query private var profiles: [UserProfile]
 
@@ -314,6 +315,12 @@ struct DermiqSettingsView: View {
     /// Full wipe: every SwiftData model, stored images, badges, preferences,
     /// scheduled notifications. Then back to onboarding (no profile left).
     private func deleteEverything() {
+        // If there's a backend session, delete the server-side account too
+        // (Guideline 5.1.1(v) — a real account must be removable, not just
+        // local data). Best-effort + fire-and-forget; the backend guards the
+        // no-session case, and local data is wiped regardless below.
+        Task { try? await appState.backend.deleteAccount() }
+
         try? modelContext.delete(model: ScanRecord.self)
         try? modelContext.delete(model: RoutinePlan.self)
         try? modelContext.delete(model: UserProfile.self)

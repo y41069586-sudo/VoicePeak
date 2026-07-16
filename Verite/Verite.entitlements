@@ -11,14 +11,12 @@
 		<string>group.verite.com</string>
 	</array>
 
-	<!-- Sign in with Apple (onboarding sign-in screen). OFF for signing until
-	     the capability is enabled for the App ID in the portal. To turn on:
-	     uncomment the block below AND enable it for com.verite.com in the
-	     portal (else release archiving fails at signing).
+	<!-- Sign in with Apple (onboarding sign-in screen). The capability must be
+	     enabled for App ID com.verite.com in the Apple Developer portal, or
+	     release archiving fails at the signing step. -->
 	<key>com.apple.developer.applesignin</key>
 	<array>
 		<string>Default</string>
 	</array>
-	-->
 </dict>
 </plist>

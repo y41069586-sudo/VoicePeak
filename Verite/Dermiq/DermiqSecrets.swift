@@ -22,4 +22,12 @@ enum DermiqSecrets {
     /// Google Gemini API key (Google AI Studio) for the "Potential" face
     /// enhancement (gemini-2.5-flash-image). Codemagic variable: GEMINI_API_KEY
     static let geminiAPIKey = ""
+
+    /// Supabase project URL, e.g. https://xxxx.supabase.co
+    /// Codemagic variable: SUPABASE_URL
+    static let supabaseURL = ""
+
+    /// Supabase anon/public key (Project Settings → API).
+    /// Codemagic variable: SUPABASE_ANON_KEY
+    static let supabaseAnonKey = ""
 }

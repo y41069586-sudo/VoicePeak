@@ -1,4 +1,5 @@
 import SwiftUI
+import AuthenticationServices
 
 // ============================================================
 // MARK: — Screen 9: The Curve (where do you land?)
@@ -767,11 +768,16 @@ private struct SignatureCanvas: View {
 /// buttons are an App Review 2.1 rejection. If real Google auth is added, swap
 /// GoogleGLogo for Google's official-brand asset per their sign-in guidelines.
 struct RampSignInScreen: View {
-    /// Reports an optional given name (real auth will supply one later).
+    /// Reports an optional given name (Sign in with Apple supplies one once,
+    /// on first authorization).
     let onSignedIn: (String?) -> Void
     let onSkip: () -> Void
 
+    @Environment(AppState.self) private var appState
     @State private var shown = false
+    /// Raw nonce for the in-flight Apple request; its SHA-256 goes in the request.
+    @State private var currentNonce: String?
+    @State private var authError = false
 
     var body: some View {
         VStack(spacing: 0) {
@@ -818,42 +824,39 @@ struct RampSignInScreen: View {
             Spacer()
 
             VStack(spacing: VSpace.md) {
-                // Apple — black button, white wordmark.
-                Button {
-                    RampAnalytics.track("onboarding_sign_in", ["provider": "apple_mock"])
-                    Haptics.fire(.milestone)
-                    onSignedIn(nil)
-                } label: {
-                    HStack(spacing: 10) {
-                        Image(systemName: "apple.logo")
-                            .font(.system(size: 18, weight: .medium))
-                        Text("Continue with Apple")
-                    }
-                    .font(.system(size: 17, weight: .semibold, design: .rounded))
-                    .foregroundStyle(.white)
-                    .frame(maxWidth: .infinity, minHeight: 58)
-                    .background(Color.black, in: Capsule())
+                // Apple — the real system button (correct request + credential
+                // handling); we only supply the nonce and consume the result.
+                SignInWithAppleButton(.continue) { request in
+                    let nonce = AppleSignIn.randomNonce()
+                    currentNonce = nonce
+                    request.requestedScopes = [.fullName, .email]
+                    request.nonce = AppleSignIn.sha256(nonce)
+                } onCompletion: { result in
+                    handleApple(result)
                 }
-                .buttonStyle(PressableStyle())
+                .signInWithAppleButtonStyle(.black)
+                .frame(height: 58)
+                .clipShape(Capsule())
 
-                // Google — white button, authentic four-color "G".
-                Button {
-                    RampAnalytics.track("onboarding_sign_in", ["provider": "google_mock"])
-                    Haptics.fire(.milestone)
-                    onSignedIn(nil)
-                } label: {
-                    HStack(spacing: 10) {
-                        GoogleGLogo()
-                            .frame(width: 20, height: 20)
-                        Text("Continue with Google")
+                // Google — only when configured (GoogleSignIn SDK + client IDs).
+                // Hidden otherwise, so no non-functional button ever ships.
+                if appState.featureFlags.googleSignInEnabled {
+                    Button {
+                        handleGoogle()
+                    } label: {
+                        HStack(spacing: 10) {
+                            GoogleGLogo()
+                                .frame(width: 20, height: 20)
+                            Text("Continue with Google")
+                        }
+                        .font(.system(size: 17, weight: .semibold, design: .rounded))
+                        .foregroundStyle(Color(red: 0.23, green: 0.23, blue: 0.24))
+                        .frame(maxWidth: .infinity, minHeight: 58)
+                        .background(Color.white, in: Capsule())
+                        .overlay(Capsule().strokeBorder(RampStage.hairline, lineWidth: 1))
                     }
-                    .font(.system(size: 17, weight: .semibold, design: .rounded))
-                    .foregroundStyle(Color(red: 0.23, green: 0.23, blue: 0.24))
-                    .frame(maxWidth: .infinity, minHeight: 58)
-                    .background(Color.white, in: Capsule())
-                    .overlay(Capsule().strokeBorder(RampStage.hairline, lineWidth: 1))
+                    .buttonStyle(PressableStyle())
                 }
-                .buttonStyle(PressableStyle())
 
                 RampGhostButton(title: "Not now") {
                     RampAnalytics.track("onboarding_sign_in", ["provider": "none"])
@@ -870,6 +873,43 @@ struct RampSignInScreen: View {
             try? await Task.sleep(for: .milliseconds(150))
             withAnimation(.easeOut(duration: 0.7)) { shown = true }
         }
+        .alert("Sign-in didn’t complete", isPresented: $authError) {
+            Button("OK", role: .cancel) {}
+        } message: {
+            Text("Please try again, or tap Not now to continue.")
+        }
+    }
+
+    /// Real Sign in with Apple. The system button already performed the auth;
+    /// we hand the identity token to Supabase (best effort — the app is fully
+    /// usable locally, so a backend hiccup never blocks the user) and advance.
+    private func handleApple(_ result: Result<ASAuthorization, Error>) {
+        switch result {
+        case .failure:
+            return  // canceled or failed — user can retry or tap "Not now"
+        case .success(let auth):
+            guard let cred = auth.credential as? ASAuthorizationAppleIDCredential,
+                  let tokenData = cred.identityToken,
+                  let idToken = String(data: tokenData, encoding: .utf8),
+                  let nonce = currentNonce else {
+                authError = true
+                return
+            }
+            let given = cred.fullName?.givenName
+            RampAnalytics.track("onboarding_sign_in", ["provider": "apple"])
+            Haptics.fire(.milestone)
+            Task {
+                _ = try? await appState.backend.signInWithApple(idToken: idToken, nonce: nonce)
+                await MainActor.run { onSignedIn(given) }
+            }
+        }
+    }
+
+    /// Google sign-in — wired in step 2 with the GoogleSignIn SDK + client IDs.
+    /// Unreachable until `googleSignInEnabled` is turned on.
+    private func handleGoogle() {
+        RampAnalytics.track("onboarding_sign_in", ["provider": "google"])
+        onSkip()
     }
 }
 
