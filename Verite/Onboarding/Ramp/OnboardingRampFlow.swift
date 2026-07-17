@@ -32,9 +32,11 @@ struct OnboardingRampFlow: View {
                         )
                 )
 
-            // A quiet back chevron + the thin filling progress hairline.
+            // The thin filling progress hairline sits ABOVE the back chevron.
             VStack(spacing: VSpace.xs) {
                 if step != .boot {
+                    RampProgressLine(fraction: progressFraction)
+                        .padding(.horizontal, VSpace.lg)
                     HStack {
                         Button {
                             Haptics.fire(.selection)
@@ -50,8 +52,6 @@ struct OnboardingRampFlow: View {
                         Spacer()
                     }
                     .padding(.leading, VSpace.xs)
-                    RampProgressLine(fraction: progressFraction)
-                        .padding(.horizontal, VSpace.lg)
                     .transition(.opacity)
                 }
                 Spacer()
