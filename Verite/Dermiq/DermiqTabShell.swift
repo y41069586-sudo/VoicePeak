@@ -48,6 +48,8 @@ struct DermiqTabShell: View {
     @State private var scanAfterUnlock = false
     /// A tapped compare link (verite://compare) lands here.
     @State private var compareInbox = CompareInbox.shared
+    /// Extra-scan product unavailable (not loaded from the App Store).
+    @State private var extraScanFailed = false
 
     var body: some View {
         // Stock SwiftUI TabView — no custom bar. Built against the iOS 26 SDK
@@ -126,6 +128,11 @@ struct DermiqTabShell: View {
             default: break
             }
         }
+        .alert("Purchase unavailable", isPresented: $extraScanFailed) {
+            Button("OK", role: .cancel) {}
+        } message: {
+            Text("The extra scan isn't available right now. Check your connection and try again.")
+        }
         // A tapped compare link opens the face-off sheet.
         .sheet(isPresented: Binding(
             get: { compareInbox.pending != nil },
@@ -168,14 +175,21 @@ struct DermiqTabShell: View {
     }
 
     /// Buy one extra scan (consumable). On success it becomes a scan credit
-    /// and we carry the user straight into the scan they wanted. While
-    /// StoreKit isn't live, grant it immediately (mirrors the paywall).
+    /// and we carry the user straight into the scan they wanted.
     private func buyExtraScan() {
         Task {
+            // Product not loaded (ASC product missing/not ready, offline) —
+            // SAY so; a silent return here read as "the button does nothing".
+            guard purchases.displayPrice(for: VeriteProducts.extraScan) != nil else {
+                extraScanFailed = true
+                return
+            }
             guard await purchases.purchaseConsumable(productID: VeriteProducts.extraScan) else { return }
             ReferralStore.shared.addCredit()
             RampAnalytics.track("extra_scan_purchased")
-            try? await Task.sleep(for: .milliseconds(250))
+            // Wait out StoreKit's own confirmation UI (the sandbox "You're all
+            // set" alert) — presenting the camera cover under it gets dropped.
+            try? await Task.sleep(for: .milliseconds(800))
             startScan()
         }
     }

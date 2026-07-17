@@ -99,6 +99,9 @@ final class ScanFlowModel {
         context.insert(scan)
         try? context.save()
         record = scan
+        // A one-time unlock bought BEFORE this scan (from the scan-blocked
+        // paywall) attaches to it now.
+        UnlockStore.shared.applyPending(to: scan.id)
         RampAnalytics.track("scan_completed", ["overall": String(analysis.overall)])
     }
 
@@ -160,6 +163,7 @@ struct DermiqScanFlowView: View {
     let onFinished: (_ planCreated: Bool) -> Void
 
     @Environment(\.modelContext) private var modelContext
+    @Environment(PurchaseManager.self) private var purchases
     @State private var model: ScanFlowModel
 
     init(previousScan: ScanRecord?, onFinished: @escaping (_ planCreated: Bool) -> Void) {
@@ -220,8 +224,20 @@ struct DermiqScanFlowView: View {
         .preferredColorScheme(.light)
     }
 
+    /// The 14-day plan is part of the "routine" one-time pack or Pro. A
+    /// rating-only buyer sees their revealed results + potential, then the
+    /// flow ends without a plan (the routine stays a paywall upsell).
+    private var planAllowed: Bool {
+        purchases.isPro
+            || (model.record.map { UnlockStore.shared.isRoutineUnlocked($0.id) } ?? false)
+    }
+
     private func advanceToRoutineGen() {
         Haptics.fire(.transition)
-        model.stage = .routineGen
+        if planAllowed {
+            model.stage = .routineGen
+        } else {
+            onFinished(false)
+        }
     }
 }

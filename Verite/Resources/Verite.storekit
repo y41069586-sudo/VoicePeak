@@ -16,6 +16,36 @@
       "productID" : "com.verite.app.scan.extra",
       "referenceName" : "Extra Scan",
       "type" : "Consumable"
+    },
+    {
+      "displayPrice" : "1.99",
+      "familyShareable" : false,
+      "internalID" : "21500011",
+      "localizations" : [
+        {
+          "description" : "Reveal this scan's score + all 7 metrics",
+          "displayName" : "Rating Only",
+          "locale" : "en_US"
+        }
+      ],
+      "productID" : "com.verite.app.rating.once",
+      "referenceName" : "Rating Once",
+      "type" : "Consumable"
+    },
+    {
+      "displayPrice" : "3.99",
+      "familyShareable" : false,
+      "internalID" : "21500012",
+      "localizations" : [
+        {
+          "description" : "This scan's rating + your 14-day routine",
+          "displayName" : "Rating + 14-Day Routine",
+          "locale" : "en_US"
+        }
+      ],
+      "productID" : "com.verite.app.routine.once",
+      "referenceName" : "Routine Once",
+      "type" : "Consumable"
     }
   ],
   "settings" : {

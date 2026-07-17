@@ -49,7 +49,12 @@ struct DermiqResultsView: View {
     @State private var showProjected = false
     @Namespace private var segmentNS
 
-    private var unlocked: Bool { purchases.isPro }
+    /// Pro reveals everything; a one-time "rating"/"routine" purchase reveals
+    /// exactly THIS scan (the record exists by the time results show).
+    private var unlocked: Bool {
+        purchases.isPro
+            || (model.record.map { UnlockStore.shared.isRatingUnlocked($0.id) } ?? false)
+    }
 
     /// The paywall doesn't pounce: the blurred chart gets ~1.6s alone on
     /// screen (the tease), THEN the card slides up from the bottom.
@@ -64,7 +69,7 @@ struct DermiqResultsView: View {
                     .allowsHitTesting(revealed)
 
                 if !revealed && paywallShown {
-                    DermiqPaywallCard {
+                    DermiqPaywallCard(scanID: model.record?.id) {
                         unlockAndReveal()
                     }
                     .transition(.move(edge: .bottom).combined(with: .opacity))
@@ -519,12 +524,19 @@ struct DermiqResultsView: View {
 /// Non-dismissible bottom sheet over the blurred results.
 /// Weekly + annual, annual pre-selected.
 struct DermiqPaywallCard: View {
+    /// The scan a one-time purchase applies to. Nil when the paywall opens
+    /// BEFORE a scan exists (scan-blocked) — then a one-time buy grants one
+    /// scan credit and attaches to the next scan via UnlockStore.pending.
+    var scanID: UUID? = nil
     let onUnlocked: () -> Void
 
     @Environment(PurchaseManager.self) private var purchases
 
-    private enum PlanChoice { case weekly, annual }
-    @State private var choice: PlanChoice = .annual
+    /// Three cards: one-time rating, one-time rating+routine, or the Pro sub.
+    private enum PlanChoice { case ratingOnce, routineOnce, pro }
+    @State private var choice: PlanChoice = .pro
+    /// Pro billing term — annual is the anchor, weekly the flexible option.
+    @State private var proAnnual = true
     @State private var purchasing = false
     @State private var legalDocument: LegalDocument?
     @State private var purchaseFailed = false
@@ -599,16 +611,34 @@ struct DermiqPaywallCard: View {
             .padding(.horizontal, 24)
 
             VStack(spacing: 10) {
-                planRow(.annual,
-                        title: "Annual",
-                        price: price(for: VeriteProducts.proYearly, fallback: String(localized: "$39.99 / year")),
-                        badge: "SAVE 84%",
-                        sub: annualWeeklyEquivalent)
-                planRow(.weekly,
-                        title: "Weekly",
-                        price: price(for: VeriteProducts.proWeekly, fallback: String(localized: "$4.99 / week")),
+                planRow(.pro,
+                        title: "Glowé Pro",
+                        price: proAnnual
+                            ? price(for: VeriteProducts.proYearly, fallback: String(localized: "$39.99 / year"))
+                            : price(for: VeriteProducts.proWeekly, fallback: String(localized: "$4.99 / week")),
+                        badge: proAnnual ? "SAVE 84%" : nil,
+                        sub: proAnnual
+                            ? "\(String(localized: "2 scans a week · routine included")) · \(annualWeeklyEquivalent)"
+                            : String(localized: "2 scans a week · routine included"))
+
+                // Pro billing term — only shown while Pro is the selection.
+                if choice == .pro {
+                    HStack(spacing: 8) {
+                        proTermChip("Annual", active: proAnnual) { proAnnual = true }
+                        proTermChip("Weekly", active: !proAnnual) { proAnnual = false }
+                    }
+                }
+
+                planRow(.routineOnce,
+                        title: "Rating + 14-day routine",
+                        price: price(for: VeriteProducts.routineOnce, fallback: String(localized: "$3.99 one-time")),
                         badge: nil,
-                        sub: nil)
+                        sub: String(localized: "This scan · your plan included"))
+                planRow(.ratingOnce,
+                        title: "Rating only",
+                        price: price(for: VeriteProducts.ratingOnce, fallback: String(localized: "$1.99 one-time")),
+                        badge: nil,
+                        sub: String(localized: "This scan · score + all 7 metrics"))
             }
             .padding(.horizontal, 20)
 
@@ -736,20 +766,63 @@ struct DermiqPaywallCard: View {
         purchases.displayPrice(for: productID) ?? fallback
     }
 
+    /// Small Annual/Weekly switch shown inside the Pro selection.
+    private func proTermChip(_ title: String, active: Bool,
+                             action: @escaping () -> Void) -> some View {
+        Button {
+            Haptics.fire(.selection)
+            action()
+        } label: {
+            Text(LocalizedStringKey(title))
+                .font(.system(size: 13, weight: .semibold, design: .rounded))
+                .foregroundStyle(active ? Color.white : DQColor.textSecondary)
+                .padding(.horizontal, 14).padding(.vertical, 7)
+                .background(active ? AnyShapeStyle(DQColor.accentBright)
+                                   : AnyShapeStyle(DQColor.surface),
+                            in: Capsule())
+                .overlay(Capsule().strokeBorder(
+                    active ? Color.clear : DQColor.stroke, lineWidth: 1))
+        }
+        .buttonStyle(PressableStyle())
+    }
+
     private func purchase() {
         purchasing = true
         Task {
             defer { purchasing = false }
-            let id = choice == .annual ? VeriteProducts.proYearly : VeriteProducts.proWeekly
-            guard purchases.displayPrice(for: id) != nil else {
-                // Products didn't load (offline / hiccup) — say so instead of
-                // silently resetting the button.
-                purchaseFailed = true
-                return
-            }
-            if await purchases.purchase(productID: id) {
+            switch choice {
+            case .ratingOnce, .routineOnce:
+                let id = choice == .ratingOnce ? VeriteProducts.ratingOnce
+                                               : VeriteProducts.routineOnce
+                guard purchases.displayPrice(for: id) != nil else {
+                    purchaseFailed = true
+                    return
+                }
+                guard await purchases.purchaseConsumable(productID: id) else { return }
+                let tier: UnlockStore.Tier = choice == .ratingOnce ? .rating : .routine
+                if let scanID {
+                    // Bought on the blurred results — unlock THIS scan.
+                    UnlockStore.shared.unlock(tier, scanID: scanID)
+                } else {
+                    // Bought before scanning — grant one scan credit and
+                    // attach the unlock to that upcoming scan.
+                    UnlockStore.shared.setPending(tier)
+                    ReferralStore.shared.addCredit()
+                }
                 RampAnalytics.track("paywall_purchase", ["plan": id])
                 onUnlocked()
+            case .pro:
+                let id = proAnnual ? VeriteProducts.proYearly : VeriteProducts.proWeekly
+                guard purchases.displayPrice(for: id) != nil else {
+                    // Products didn't load (offline / hiccup) — say so instead
+                    // of silently resetting the button.
+                    purchaseFailed = true
+                    return
+                }
+                if await purchases.purchase(productID: id) {
+                    RampAnalytics.track("paywall_purchase", ["plan": id])
+                    onUnlocked()
+                }
             }
         }
     }

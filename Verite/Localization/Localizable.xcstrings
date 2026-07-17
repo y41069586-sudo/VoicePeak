@@ -25098,6 +25098,96 @@
         }
       }
     },
+    "Rating only": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": { "stringUnit": { "state": "translated", "value": "Nur dein Rating" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Rating only" } },
+        "es": { "stringUnit": { "state": "translated", "value": "Solo tu puntuación" } },
+        "fr": { "stringUnit": { "state": "translated", "value": "Uniquement ta note" } },
+        "it": { "stringUnit": { "state": "translated", "value": "Solo il tuo punteggio" } }
+      }
+    },
+    "Rating + 14-day routine": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": { "stringUnit": { "state": "translated", "value": "Rating + 14-Tage-Routine" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Rating + 14-day routine" } },
+        "es": { "stringUnit": { "state": "translated", "value": "Puntuación + rutina de 14 días" } },
+        "fr": { "stringUnit": { "state": "translated", "value": "Note + routine de 14 jours" } },
+        "it": { "stringUnit": { "state": "translated", "value": "Punteggio + routine di 14 giorni" } }
+      }
+    },
+    "$1.99 one-time": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": { "stringUnit": { "state": "translated", "value": "1,99 € einmalig" } },
+        "en": { "stringUnit": { "state": "translated", "value": "$1.99 one-time" } },
+        "es": { "stringUnit": { "state": "translated", "value": "1,99 € pago único" } },
+        "fr": { "stringUnit": { "state": "translated", "value": "1,99 € achat unique" } },
+        "it": { "stringUnit": { "state": "translated", "value": "1,99 € una tantum" } }
+      }
+    },
+    "$3.99 one-time": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": { "stringUnit": { "state": "translated", "value": "3,99 € einmalig" } },
+        "en": { "stringUnit": { "state": "translated", "value": "$3.99 one-time" } },
+        "es": { "stringUnit": { "state": "translated", "value": "3,99 € pago único" } },
+        "fr": { "stringUnit": { "state": "translated", "value": "3,99 € achat unique" } },
+        "it": { "stringUnit": { "state": "translated", "value": "3,99 € una tantum" } }
+      }
+    },
+    "This scan · score + all 7 metrics": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": { "stringUnit": { "state": "translated", "value": "Dieser Scan · Score + alle 7 Werte" } },
+        "en": { "stringUnit": { "state": "translated", "value": "This scan · score + all 7 metrics" } },
+        "es": { "stringUnit": { "state": "translated", "value": "Este escaneo · puntuación + 7 métricas" } },
+        "fr": { "stringUnit": { "state": "translated", "value": "Ce scan · score + les 7 mesures" } },
+        "it": { "stringUnit": { "state": "translated", "value": "Questa scansione · punteggio + 7 metriche" } }
+      }
+    },
+    "This scan · your plan included": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": { "stringUnit": { "state": "translated", "value": "Dieser Scan · dein Plan inklusive" } },
+        "en": { "stringUnit": { "state": "translated", "value": "This scan · your plan included" } },
+        "es": { "stringUnit": { "state": "translated", "value": "Este escaneo · tu plan incluido" } },
+        "fr": { "stringUnit": { "state": "translated", "value": "Ce scan · ton plan inclus" } },
+        "it": { "stringUnit": { "state": "translated", "value": "Questa scansione · piano incluso" } }
+      }
+    },
+    "2 scans a week · routine included": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": { "stringUnit": { "state": "translated", "value": "2 Scans pro Woche · Routine inklusive" } },
+        "en": { "stringUnit": { "state": "translated", "value": "2 scans a week · routine included" } },
+        "es": { "stringUnit": { "state": "translated", "value": "2 escaneos por semana · rutina incluida" } },
+        "fr": { "stringUnit": { "state": "translated", "value": "2 scans par semaine · routine incluse" } },
+        "it": { "stringUnit": { "state": "translated", "value": "2 scansioni a settimana · routine inclusa" } }
+      }
+    },
+    "Purchase unavailable": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": { "stringUnit": { "state": "translated", "value": "Kauf nicht verfügbar" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Purchase unavailable" } },
+        "es": { "stringUnit": { "state": "translated", "value": "Compra no disponible" } },
+        "fr": { "stringUnit": { "state": "translated", "value": "Achat indisponible" } },
+        "it": { "stringUnit": { "state": "translated", "value": "Acquisto non disponibile" } }
+      }
+    },
+    "The extra scan isn't available right now. Check your connection and try again.": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": { "stringUnit": { "state": "translated", "value": "Der Extra-Scan ist gerade nicht verfügbar. Prüfe deine Verbindung und versuch es erneut." } },
+        "en": { "stringUnit": { "state": "translated", "value": "The extra scan isn't available right now. Check your connection and try again." } },
+        "es": { "stringUnit": { "state": "translated", "value": "El escaneo extra no está disponible ahora. Comprueba tu conexión e inténtalo de nuevo." } },
+        "fr": { "stringUnit": { "state": "translated", "value": "Le scan supplémentaire n'est pas disponible pour le moment. Vérifie ta connexion et réessaie." } },
+        "it": { "stringUnit": { "state": "translated", "value": "La scansione extra non è al momento disponibile. Controlla la connessione e riprova." } }
+      }
+    },
     "notif.nudge.body": {
       "extractionState": "manual",
       "localizations": {
