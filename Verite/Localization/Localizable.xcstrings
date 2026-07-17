@@ -25524,31 +25524,31 @@
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "Eine Minute für deine Haut – deine bewiesene Morgenroutine."
+            "value": "Eine Minute für deine Haut – deine Morgenroutine wartet."
           }
         },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "A minute for your skin — your proven AM routine."
+            "value": "A minute for your skin — your morning routine's ready."
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Un minuto para tu piel: tu rutina de mañana probada."
+            "value": "Un minuto para tu piel: tu rutina de mañana te espera."
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Une minute pour votre peau — votre routine du matin prouvée."
+            "value": "Une minute pour ta peau — ta routine du matin t'attend."
           }
         },
         "it": {
           "stringUnit": {
             "state": "translated",
-            "value": "Un minuto per la tua pelle — la tua routine mattutina dimostrata."
+            "value": "Un minuto per la tua pelle — la tua routine mattutina ti aspetta."
           }
         }
       }
@@ -25594,31 +25594,31 @@
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "Lass den Tag mit deiner bewiesenen Abendroutine ausklingen."
+            "value": "Lass den Tag mit deiner Abendroutine ausklingen."
           }
         },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Wind down with your proven PM routine."
+            "value": "Wind down with your evening routine."
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Relájate con tu rutina de noche probada."
+            "value": "Termina el día con tu rutina de noche."
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Détendez-vous avec votre routine du soir prouvée."
+            "value": "Termine la journée avec ta routine du soir."
           }
         },
         "it": {
           "stringUnit": {
             "state": "translated",
-            "value": "Rilassati con la tua routine serale dimostrata."
+            "value": "Chiudi la giornata con la tua routine serale."
           }
         }
       }
