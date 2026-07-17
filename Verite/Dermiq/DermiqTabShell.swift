@@ -50,6 +50,10 @@ struct DermiqTabShell: View {
     @State private var compareInbox = CompareInbox.shared
     /// Extra-scan product unavailable (not loaded from the App Store).
     @State private var extraScanFailed = false
+    /// The scan a one-time paywall purchase applies to: the latest scan when
+    /// opened from the routine card, nil when opened scan-blocked (attaches
+    /// to the NEXT scan via UnlockStore.pending).
+    @State private var paywallScanID: UUID?
 
     var body: some View {
         // Stock SwiftUI TabView — no custom bar. Built against the iOS 26 SDK
@@ -71,7 +75,7 @@ struct DermiqTabShell: View {
         // The ONE paywall — the same card that sits over the blurred results.
         // Presented as a drag-dismissible sheet, so it's never a dead end.
         .sheet(isPresented: $showPaywall) {
-            DermiqPaywallCard(onUnlocked: {
+            DermiqPaywallCard(scanID: paywallScanID, onUnlocked: {
                 showPaywall = false
                 // They unlocked to scan → start it once the sheet is gone.
                 if scanAfterUnlock {
@@ -160,6 +164,7 @@ struct DermiqTabShell: View {
             // real "get Pro" surface (score, 7 metrics, plan, plans to buy);
             // inviting a friend stays as a small secondary link inside it, not
             // the headline.
+            paywallScanID = nil // one-time buys attach to the NEXT scan
             scanAfterUnlock = true
             showPaywall = true
         case .blockedProWeekly(let nextScan):
@@ -205,7 +210,14 @@ struct DermiqTabShell: View {
                 onScan: { startScan() },
                 onSettings: { showSettings = true },
                 onRoutine: { tab = .routine },
-                onProgress: { tab = .progress }
+                onProgress: { tab = .progress },
+                onRoutinePaywall: {
+                    // Routine card upsell: a one-time buy applies to the
+                    // LATEST scan (its plan), not a future one.
+                    paywallScanID = scans.first?.id
+                    scanAfterUnlock = false
+                    showPaywall = true
+                }
             )
             .tabItem { Label(LocalizedStringKey(Tab.scan.title), systemImage: Tab.scan.icon) }
             .tag(Tab.scan)
@@ -243,8 +255,13 @@ struct DermiqScanHome: View {
     let onSettings: () -> Void
     var onRoutine: () -> Void = {}
     var onProgress: () -> Void = {}
+    /// Routine card upsell → the shell opens the paywall for the latest scan.
+    var onRoutinePaywall: () -> Void = {}
 
+    @Environment(\.modelContext) private var modelContext
+    @Environment(PurchaseManager.self) private var purchases
     @Query private var profiles: [UserProfile]
+    @Query private var plans: [RoutinePlan]
 
     // Text, not String: a composed "\(base), \(name)" would never match a
     // catalog key, so the greeting would render in English on every device.
@@ -341,11 +358,11 @@ struct DermiqScanHome: View {
         }
     }
 
-    // MARK: Hero pager (Scan ↔ Duel)
+    // MARK: Hero pager (Scan ↔ Routine ↔ Duel)
 
-    /// The hero is a horizontal pager: page 1 is the scan card, page 2 the
-    /// full-size Skin Duel card — swipe between them; dots show where you are.
-    /// Replaces the old small compare/paste rows under the deck.
+    /// The hero is a horizontal pager: page 1 the scan card, page 2 the
+    /// 14-day-routine card, page 3 the full-size Skin Duel card — swipe
+    /// between them; dots show where you are.
     @State private var heroPage = 0
 
     private var heroPager: some View {
@@ -354,15 +371,18 @@ struct DermiqScanHome: View {
                 scanCard
                     .padding(.horizontal, 24)
                     .tag(0)
-                duelCard
+                routineCard
                     .padding(.horizontal, 24)
                     .tag(1)
+                duelCard
+                    .padding(.horizontal, 24)
+                    .tag(2)
             }
             .tabViewStyle(.page(indexDisplayMode: .never))
             .frame(height: 496)
 
             HStack(spacing: 6) {
-                ForEach(0..<2, id: \.self) { page in
+                ForEach(0..<3, id: \.self) { page in
                     Capsule()
                         .fill(page == heroPage ? DQColor.accentBright : DQColor.stroke)
                         .frame(width: page == heroPage ? 20 : 7, height: 7)
@@ -373,7 +393,99 @@ struct DermiqScanHome: View {
         }
     }
 
-    // MARK: Duel card (hero page 2)
+    // MARK: Routine card (hero page 2)
+
+    /// Full-size 14-day-routine hero, state-aware:
+    /// plan exists → open it · entitled (Pro / routine pack) → create it from
+    /// the latest scan in one tap · not entitled → one-time price + paywall ·
+    /// no scan yet → scan first. Mirrors the scan/duel card format.
+    private var routineCard: some View {
+        let latest = scans.first
+        let plan = plans.first(where: { $0.isActive })
+        let entitled = purchases.isPro
+            || (latest.map { UnlockStore.shared.isRoutineUnlocked($0.id) } ?? false)
+        let routinePrice = purchases.displayPrice(for: VeriteProducts.routineOnce) ?? "€3,99"
+
+        return ZStack(alignment: .bottom) {
+            LinearGradient(colors: [DQColor.accent, DQColor.accentBright],
+                           startPoint: .topLeading, endPoint: .bottomTrailing)
+
+            // Ghost checklist watermark carrying the card's identity.
+            Image(systemName: "checklist")
+                .font(.system(size: 150, weight: .bold))
+                .foregroundStyle(Color.white.opacity(0.14))
+                .offset(y: -78)
+
+            // Bottom shade so the copy always reads.
+            LinearGradient(
+                gradient: Gradient(stops: [
+                    .init(color: .clear, location: 0.0),
+                    .init(color: .black.opacity(0.0), location: 0.42),
+                    .init(color: .black.opacity(0.30), location: 0.66),
+                    .init(color: .black.opacity(0.72), location: 0.84),
+                    .init(color: .black.opacity(0.92), location: 1.0),
+                ]),
+                startPoint: .top, endPoint: .bottom
+            )
+
+            VStack(spacing: 14) {
+                Text("Your 14-day routine")
+                    .font(.system(size: 26, weight: .heavy, design: .rounded))
+                    .foregroundStyle(.white)
+                    .multilineTextAlignment(.center)
+                    .lineSpacing(2)
+                    .shadow(color: .black.opacity(0.45), radius: 10, y: 2)
+
+                Group {
+                    if plan != nil {
+                        Text("Morning & evening from your scan — tick off today.")
+                    } else if latest != nil, entitled {
+                        Text("Built from your latest scan in seconds.")
+                    } else if latest != nil {
+                        Text("One-time \(routinePrice) — included with Pro.")
+                    } else {
+                        Text("Your routine is built from your first scan.")
+                    }
+                }
+                .font(.system(size: 14.5, weight: .semibold, design: .rounded))
+                .foregroundStyle(.white.opacity(0.92))
+                .multilineTextAlignment(.center)
+                .fixedSize(horizontal: false, vertical: true)
+                .shadow(color: .black.opacity(0.4), radius: 8, y: 1)
+
+                if plan != nil {
+                    DQPrimaryButton(title: "Open my routine", systemImage: "checklist") {
+                        onRoutine()
+                    }
+                } else if let latest, entitled {
+                    DQPrimaryButton(title: "Create my routine", systemImage: "wand.and.stars") {
+                        ScanFlowModel.createPlan(from: latest, context: modelContext)
+                        onRoutine()
+                    }
+                } else if latest != nil {
+                    DQPrimaryButton(title: "Unlock my routine", systemImage: "lock.open.fill") {
+                        onRoutinePaywall()
+                    }
+                } else {
+                    DQPrimaryButton(title: "Scan first", systemImage: "camera.fill") {
+                        onScan()
+                    }
+                }
+            }
+            .padding(.horizontal, 20)
+            .padding(.bottom, 22)
+        }
+        .frame(maxWidth: .infinity)
+        .frame(height: 460)
+        .clipShape(RoundedRectangle(cornerRadius: 28, style: .continuous))
+        .overlay(
+            RoundedRectangle(cornerRadius: 28, style: .continuous)
+                .strokeBorder(DQColor.stroke, lineWidth: 1)
+        )
+        .shadow(color: DQColor.accent.opacity(0.12), radius: 18, y: 8)
+    }
+
+    // MARK: Duel card (hero page 3)
 
     /// Full-size Skin Duel hero: your card vs a friend's. Share your card
     /// (verite://compare) or redeem a pasted one. Chats never make custom-

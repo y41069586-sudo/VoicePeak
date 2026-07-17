@@ -151,6 +151,25 @@ final class ScanFlowModel {
             "targets": targets.map(\.category.rawValue).joined(separator: ","),
         ])
     }
+
+    /// Build a 14-day plan straight from a saved scan — the dashboard routine
+    /// card's path, outside the scan flow. Same recipe as `createPlan`, just
+    /// without a rescan comparison.
+    static func createPlan(from record: ScanRecord, context: ModelContext) {
+        guard let analysis = record.analysis else { return }
+        let targets = analysis.subScores.sorted { $0.value < $1.value }
+        let steps = RoutineBuilder.steps(targets: targets, weightedToward: [],
+                                         prefs: SkinPrefs.load())
+        let plans = (try? context.fetch(FetchDescriptor<RoutinePlan>())) ?? []
+        for plan in plans { plan.isActive = false }
+        let plan = RoutinePlan(scanID: record.id, targets: targets,
+                               am: steps.am, pm: steps.pm)
+        context.insert(plan)
+        try? context.save()
+        WidgetBridge.publish(plan)
+        RoutineAIReview.kickoff(plan: plan, analysis: analysis, context: context)
+        RampAnalytics.track("plan_created_dashboard")
+    }
 }
 
 // ============================================================

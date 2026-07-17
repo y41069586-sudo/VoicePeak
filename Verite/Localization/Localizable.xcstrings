@@ -25098,6 +25098,96 @@
         }
       }
     },
+    "Your 14-day routine": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": { "stringUnit": { "state": "translated", "value": "Deine 14-Tage-Routine" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Your 14-day routine" } },
+        "es": { "stringUnit": { "state": "translated", "value": "Tu rutina de 14 días" } },
+        "fr": { "stringUnit": { "state": "translated", "value": "Ta routine de 14 jours" } },
+        "it": { "stringUnit": { "state": "translated", "value": "La tua routine di 14 giorni" } }
+      }
+    },
+    "Morning & evening from your scan — tick off today.": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": { "stringUnit": { "state": "translated", "value": "Morgens & abends aus deinem Scan — hak heute ab." } },
+        "en": { "stringUnit": { "state": "translated", "value": "Morning & evening from your scan — tick off today." } },
+        "es": { "stringUnit": { "state": "translated", "value": "Mañana y noche según tu escaneo — marca lo de hoy." } },
+        "fr": { "stringUnit": { "state": "translated", "value": "Matin et soir selon ton scan — coche ta journée." } },
+        "it": { "stringUnit": { "state": "translated", "value": "Mattina e sera dal tuo scan — spunta la giornata." } }
+      }
+    },
+    "Built from your latest scan in seconds.": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": { "stringUnit": { "state": "translated", "value": "In Sekunden aus deinem letzten Scan gebaut." } },
+        "en": { "stringUnit": { "state": "translated", "value": "Built from your latest scan in seconds." } },
+        "es": { "stringUnit": { "state": "translated", "value": "Creada en segundos a partir de tu último escaneo." } },
+        "fr": { "stringUnit": { "state": "translated", "value": "Créée en quelques secondes à partir de ton dernier scan." } },
+        "it": { "stringUnit": { "state": "translated", "value": "Creata in pochi secondi dal tuo ultimo scan." } }
+      }
+    },
+    "One-time %@ — included with Pro.": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": { "stringUnit": { "state": "translated", "value": "Einmalig %@ — mit Pro inklusive." } },
+        "en": { "stringUnit": { "state": "translated", "value": "One-time %@ — included with Pro." } },
+        "es": { "stringUnit": { "state": "translated", "value": "Pago único de %@ — incluido con Pro." } },
+        "fr": { "stringUnit": { "state": "translated", "value": "%@ en une fois — inclus avec Pro." } },
+        "it": { "stringUnit": { "state": "translated", "value": "%@ una tantum — incluso con Pro." } }
+      }
+    },
+    "Your routine is built from your first scan.": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": { "stringUnit": { "state": "translated", "value": "Deine Routine wird aus deinem ersten Scan gebaut." } },
+        "en": { "stringUnit": { "state": "translated", "value": "Your routine is built from your first scan." } },
+        "es": { "stringUnit": { "state": "translated", "value": "Tu rutina se crea a partir de tu primer escaneo." } },
+        "fr": { "stringUnit": { "state": "translated", "value": "Ta routine est créée à partir de ton premier scan." } },
+        "it": { "stringUnit": { "state": "translated", "value": "La tua routine nasce dal tuo primo scan." } }
+      }
+    },
+    "Open my routine": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": { "stringUnit": { "state": "translated", "value": "Zur Routine" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Open my routine" } },
+        "es": { "stringUnit": { "state": "translated", "value": "Abrir mi rutina" } },
+        "fr": { "stringUnit": { "state": "translated", "value": "Ouvrir ma routine" } },
+        "it": { "stringUnit": { "state": "translated", "value": "Apri la mia routine" } }
+      }
+    },
+    "Create my routine": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": { "stringUnit": { "state": "translated", "value": "Routine erstellen" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Create my routine" } },
+        "es": { "stringUnit": { "state": "translated", "value": "Crear mi rutina" } },
+        "fr": { "stringUnit": { "state": "translated", "value": "Créer ma routine" } },
+        "it": { "stringUnit": { "state": "translated", "value": "Crea la mia routine" } }
+      }
+    },
+    "Unlock my routine": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": { "stringUnit": { "state": "translated", "value": "Routine freischalten" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Unlock my routine" } },
+        "es": { "stringUnit": { "state": "translated", "value": "Desbloquear mi rutina" } },
+        "fr": { "stringUnit": { "state": "translated", "value": "Débloquer ma routine" } },
+        "it": { "stringUnit": { "state": "translated", "value": "Sblocca la mia routine" } }
+      }
+    },
+    "Scan first": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": { "stringUnit": { "state": "translated", "value": "Erst scannen" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Scan first" } },
+        "es": { "stringUnit": { "state": "translated", "value": "Escanea primero" } },
+        "fr": { "stringUnit": { "state": "translated", "value": "Scanne d'abord" } },
+        "it": { "stringUnit": { "state": "translated", "value": "Prima scansiona" } }
+      }
+    },
     "Rating only": {
       "extractionState": "manual",
       "localizations": {
