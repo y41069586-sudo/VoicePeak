@@ -33,8 +33,10 @@ final class ScanFlowModel {
     /// referral bonus) rather than a Pro weekly-included scan. Credit scans
     /// include the scan + rating ONLY — a NEW 14-day plan from one costs
     /// €3.99 even for Pro; the plan is only auto-included on the two weekly
-    /// subscription scans.
-    let usedCredit: Bool
+    /// subscription scans. `private(set) var` (not `let`) so `begin()` can
+    /// re-affirm it from the durable UserDefaults marker — a rebuilt cover
+    /// can never downgrade a credit scan to a free-plan one.
+    private(set) var usedCredit: Bool
 
     private var enhanceTask: Task<Void, Never>?
 
@@ -48,6 +50,10 @@ final class ScanFlowModel {
     func begin(with image: UIImage) {
         capturedImage = image
         stage = .theater
+        // Re-affirm the credit flag from the durable marker (belt-and-braces
+        // against a lost init value). Once true it stays true; consuming the
+        // marker here keeps it from bleeding into a later scan.
+        usedCredit = usedCredit || ReferralStore.shared.consumeNextScanUsesCredit()
         RampAnalytics.track("scan_captured", ["rescan": String(isRescan)])
 
         let engine = EngineFactory.analysis(previousOverall: previousScan?.overall)
@@ -108,8 +114,14 @@ final class ScanFlowModel {
         try? context.save()
         record = scan
         // A one-time unlock bought BEFORE this scan (from the scan-blocked
-        // paywall) attaches to it now.
+        // paywall) attaches to it now. In the current flow only a RATING
+        // pending is legitimate — a routine pending was already dropped as
+        // stale in UnlockStore's init, so this can't hand a free plan.
         UnlockStore.shared.applyPending(to: scan.id)
+        // Diagnostic: the exact inputs to the plan-price decision, so a
+        // "why is the plan free?" report is answerable from the logs.
+        DermiqDiagnostics.record(
+            "Scan saved — usedCredit=\(usedCredit) routineUnlocked=\(UnlockStore.shared.isRoutineUnlocked(scan.id))")
         RampAnalytics.track("scan_completed", ["overall": String(analysis.overall)])
     }
 

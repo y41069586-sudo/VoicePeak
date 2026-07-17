@@ -89,6 +89,28 @@ final class ReferralStore {
         UserDefaults.standard.set(credits, forKey: Self.creditsKey)
     }
 
+    // MARK: Credit-scan marker (durable)
+
+    private static let creditScanKey = "dq.scan.nextIsCredit"
+
+    /// Durable marker: the scan being launched was paid with a credit (extra
+    /// scan / referral bonus). Kept in UserDefaults so a rebuilt scan cover
+    /// can NEVER lose it — the flow re-reads it when the scan persists, and
+    /// credit scans never auto-include a 14-day plan.
+    func markNextScanUsesCredit() {
+        UserDefaults.standard.set(true, forKey: Self.creditScanKey)
+    }
+
+    func clearNextScanUsesCredit() {
+        UserDefaults.standard.removeObject(forKey: Self.creditScanKey)
+    }
+
+    func consumeNextScanUsesCredit() -> Bool {
+        let flag = UserDefaults.standard.bool(forKey: Self.creditScanKey)
+        UserDefaults.standard.removeObject(forKey: Self.creditScanKey)
+        return flag
+    }
+
     // MARK: Link handling
 
     /// Pasted-text redemption: chats never linkify verite:// URLs, so the

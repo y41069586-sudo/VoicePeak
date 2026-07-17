@@ -122,6 +122,7 @@ struct DermiqTabShell: View {
                   !ReferralStore.shared.freeScanUsed else { return }
             autoLaunched = true
             flowUsedCredit = false // the free onboarding scan is not a credit scan
+            ReferralStore.shared.clearNextScanUsesCredit()
             var transaction = Transaction()
             transaction.disablesAnimations = true
             withTransaction(transaction) { showFlow = true }
@@ -162,6 +163,11 @@ struct DermiqTabShell: View {
         case .allow(let useCredit):
             if useCredit { ReferralStore.shared.consumeCredit() }
             flowUsedCredit = useCredit
+            // Durable belt-and-braces: the flow re-reads this marker when the
+            // scan persists, so a rebuilt cover can never lose "credit scan".
+            if useCredit { ReferralStore.shared.markNextScanUsesCredit() }
+            else { ReferralStore.shared.clearNextScanUsesCredit() }
+            DermiqDiagnostics.record("Scan launch — credit=\(useCredit) pro=\(hasPro)")
             showFlow = true
         case .blockedNeedsPro:
             // Non-Pro out of free scans → the Pro paywall directly. It's the
