@@ -25098,6 +25098,96 @@
         }
       }
     },
+    "ONE-TIME OFFER": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": { "stringUnit": { "state": "translated", "value": "EINMALIGES ANGEBOT" } },
+        "en": { "stringUnit": { "state": "translated", "value": "ONE-TIME OFFER" } },
+        "es": { "stringUnit": { "state": "translated", "value": "OFERTA ÚNICA" } },
+        "fr": { "stringUnit": { "state": "translated", "value": "OFFRE UNIQUE" } },
+        "it": { "stringUnit": { "state": "translated", "value": "OFFERTA UNICA" } }
+      }
+    },
+    "Before you go —\nyour first year, 45% off.": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": { "stringUnit": { "state": "translated", "value": "Bevor du gehst —\ndein erstes Jahr, 45 % günstiger." } },
+        "en": { "stringUnit": { "state": "translated", "value": "Before you go —\nyour first year, 45% off." } },
+        "es": { "stringUnit": { "state": "translated", "value": "Antes de irte —\ntu primer año, 45 % menos." } },
+        "fr": { "stringUnit": { "state": "translated", "value": "Avant de partir —\nta première année à -45 %." } },
+        "it": { "stringUnit": { "state": "translated", "value": "Prima di uscire —\nil primo anno, 45% in meno." } }
+      }
+    },
+    "Your score + all 7 metrics": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": { "stringUnit": { "state": "translated", "value": "Dein Score + alle 7 Werte" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Your score + all 7 metrics" } },
+        "es": { "stringUnit": { "state": "translated", "value": "Tu puntuación + las 7 métricas" } },
+        "fr": { "stringUnit": { "state": "translated", "value": "Ton score + les 7 mesures" } },
+        "it": { "stringUnit": { "state": "translated", "value": "Il tuo punteggio + tutte le 7 metriche" } }
+      }
+    },
+    "Your 14-day routine, AI-checked": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": { "stringUnit": { "state": "translated", "value": "Deine 14-Tage-Routine, KI-geprüft" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Your 14-day routine, AI-checked" } },
+        "es": { "stringUnit": { "state": "translated", "value": "Tu rutina de 14 días, revisada por IA" } },
+        "fr": { "stringUnit": { "state": "translated", "value": "Ta routine de 14 jours, vérifiée par IA" } },
+        "it": { "stringUnit": { "state": "translated", "value": "La tua routine di 14 giorni, verificata dall'IA" } }
+      }
+    },
+    "Claim my offer": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": { "stringUnit": { "state": "translated", "value": "Angebot sichern" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Claim my offer" } },
+        "es": { "stringUnit": { "state": "translated", "value": "Aprovechar la oferta" } },
+        "fr": { "stringUnit": { "state": "translated", "value": "Profiter de l'offre" } },
+        "it": { "stringUnit": { "state": "translated", "value": "Approfitta dell'offerta" } }
+      }
+    },
+    "No thanks": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": { "stringUnit": { "state": "translated", "value": "Nein danke" } },
+        "en": { "stringUnit": { "state": "translated", "value": "No thanks" } },
+        "es": { "stringUnit": { "state": "translated", "value": "No, gracias" } },
+        "fr": { "stringUnit": { "state": "translated", "value": "Non merci" } },
+        "it": { "stringUnit": { "state": "translated", "value": "No grazie" } }
+      }
+    },
+    "$21.99 / year": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": { "stringUnit": { "state": "translated", "value": "21,99 € / Jahr" } },
+        "en": { "stringUnit": { "state": "translated", "value": "$21.99 / year" } },
+        "es": { "stringUnit": { "state": "translated", "value": "21,99 € / año" } },
+        "fr": { "stringUnit": { "state": "translated", "value": "21,99 € / an" } },
+        "it": { "stringUnit": { "state": "translated", "value": "21,99 € / anno" } }
+      }
+    },
+    "Couldn't load the offer": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": { "stringUnit": { "state": "translated", "value": "Angebot konnte nicht geladen werden" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Couldn't load the offer" } },
+        "es": { "stringUnit": { "state": "translated", "value": "No se pudo cargar la oferta" } },
+        "fr": { "stringUnit": { "state": "translated", "value": "Impossible de charger l'offre" } },
+        "it": { "stringUnit": { "state": "translated", "value": "Impossibile caricare l'offerta" } }
+      }
+    },
+    "First year at the offer price, then renews at %@. Auto-renewing; cancel anytime in your App Store settings.": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": { "stringUnit": { "state": "translated", "value": "Erstes Jahr zum Angebotspreis, danach %@. Verlängert sich automatisch; jederzeit in den App-Store-Einstellungen kündbar." } },
+        "en": { "stringUnit": { "state": "translated", "value": "First year at the offer price, then renews at %@. Auto-renewing; cancel anytime in your App Store settings." } },
+        "es": { "stringUnit": { "state": "translated", "value": "Primer año al precio de oferta y luego se renueva a %@. Renovación automática; cancela cuando quieras en los ajustes de App Store." } },
+        "fr": { "stringUnit": { "state": "translated", "value": "Première année au prix de l'offre, puis renouvellement à %@. Renouvellement automatique ; annulable à tout moment dans les réglages de l'App Store." } },
+        "it": { "stringUnit": { "state": "translated", "value": "Primo anno al prezzo dell'offerta, poi si rinnova a %@. Rinnovo automatico; annullabile in qualsiasi momento nelle impostazioni dell'App Store." } }
+      }
+    },
     "Your 14-day routine": {
       "extractionState": "manual",
       "localizations": {

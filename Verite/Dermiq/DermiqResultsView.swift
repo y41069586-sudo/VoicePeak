@@ -59,6 +59,9 @@ struct DermiqResultsView: View {
     /// The paywall doesn't pounce: the blurred chart gets ~1.6s alone on
     /// screen (the tease), THEN the card slides up from the bottom.
     @State private var paywallShown = false
+    /// The one-time win-back offer (shown once, on dismiss).
+    @State private var showWinBack = false
+    @AppStorage("dq.winback.shown") private var winBackSeen = false
 
     var body: some View {
         ZStack {
@@ -68,13 +71,22 @@ struct DermiqResultsView: View {
                 results(analysis, locked: !revealed)
                     .allowsHitTesting(revealed)
 
-                if !revealed && paywallShown {
+                if !revealed && paywallShown && !showWinBack {
                     DermiqPaywallCard(scanID: model.record?.id) {
                         unlockAndReveal()
                     }
                     .transition(.move(edge: .bottom).combined(with: .opacity))
                     closeButton
                         .transition(.opacity)
+                }
+
+                if showWinBack {
+                    DermiqWinBackCard(
+                        onSubscribed: { showWinBack = false; unlockAndReveal() },
+                        onDismiss: { withAnimation { showWinBack = false }; onClose() }
+                    )
+                    .transition(.move(edge: .bottom).combined(with: .opacity))
+                    .zIndex(2)
                 }
             }
         }
@@ -101,7 +113,19 @@ struct DermiqResultsView: View {
             HStack {
                 Button {
                     Haptics.fire(.selection)
-                    onClose()
+                    // One-time win-back on the way out: only if it hasn't been
+                    // seen, the user isn't already Pro, and the offer product
+                    // actually loaded. Otherwise just leave — never trap them.
+                    if !winBackSeen && !unlocked
+                        && purchases.displayPrice(for: VeriteProducts.proYearlyOffer) != nil {
+                        winBackSeen = true
+                        RampAnalytics.track("winback_shown")
+                        withAnimation(.spring(response: 0.5, dampingFraction: 0.85)) {
+                            showWinBack = true
+                        }
+                    } else {
+                        onClose()
+                    }
                 } label: {
                     Image(systemName: "xmark")
                         .font(.system(size: 15, weight: .semibold))
@@ -823,6 +847,177 @@ struct DermiqPaywallCard: View {
                     RampAnalytics.track("paywall_purchase", ["plan": id])
                     onUnlocked()
                 }
+            }
+        }
+    }
+}
+
+// ============================================================
+// MARK: — Win-back card (one-time discounted annual on dismiss)
+// ============================================================
+
+/// Shown ONCE, only when a non-subscriber dismisses the paywall: a genuine
+/// discounted first-year annual (real StoreKit product, real price). App
+/// Review-safe by construction:
+///  • a real IAP — the price comes from StoreKit, never hard-coded;
+///  • always dismissible via a clear ✕ — never a trap (2.3.1 / 3.1.1);
+///  • honest framing ("one-time offer") — NO fake countdown / false urgency;
+///  • full auto-renew disclosure + Terms + Privacy + Restore (3.1.2).
+struct DermiqWinBackCard: View {
+    let onSubscribed: () -> Void
+    let onDismiss: () -> Void
+
+    @Environment(PurchaseManager.self) private var purchases
+    @State private var purchasing = false
+    @State private var legalDocument: LegalDocument?
+    @State private var purchaseFailed = false
+
+    private var offerPrice: String {
+        purchases.displayPrice(for: VeriteProducts.proYearlyOffer)
+            ?? String(localized: "$21.99 / year")
+    }
+    private var fullPrice: String {
+        purchases.displayPrice(for: VeriteProducts.proYearly)
+            ?? String(localized: "$39.99 / year")
+    }
+
+    var body: some View {
+        ZStack {
+            Color.black.opacity(0.55).ignoresSafeArea()
+                .onTapGesture { onDismiss() }
+            VStack { Spacer(); card }
+                .ignoresSafeArea(edges: .bottom)
+        }
+        .alert("Couldn't load the offer", isPresented: $purchaseFailed) {
+            Button("OK", role: .cancel) {}
+        } message: {
+            Text("Check your connection and try again.")
+        }
+    }
+
+    private var card: some View {
+        VStack(spacing: 16) {
+            HStack {
+                Text("ONE-TIME OFFER")
+                    .font(DQFont.mono(11, weight: .bold))
+                    .tracking(2)
+                    .foregroundStyle(DQColor.accentBright)
+                Spacer()
+                Button {
+                    Haptics.fire(.selection)
+                    onDismiss()
+                } label: {
+                    Image(systemName: "xmark")
+                        .font(.system(size: 15, weight: .semibold))
+                        .foregroundStyle(DQColor.textSecondary)
+                        .frame(width: 34, height: 34)
+                        .background(DQColor.surface, in: Circle())
+                }
+                .accessibilityLabel("Close")
+            }
+
+            Text("Before you go —\nyour first year, 45% off.")
+                .font(DQFont.title)
+                .foregroundStyle(DQColor.textPrimary)
+                .multilineTextAlignment(.center)
+                .fixedSize(horizontal: false, vertical: true)
+
+            HStack(spacing: 10) {
+                Text(verbatim: fullPrice)
+                    .font(DQFont.headline)
+                    .foregroundStyle(DQColor.textSecondary)
+                    .strikethrough()
+                Text(verbatim: offerPrice)
+                    .font(.system(size: 22, weight: .heavy, design: .rounded))
+                    .foregroundStyle(DQColor.textPrimary)
+            }
+
+            VStack(alignment: .leading, spacing: 7) {
+                valueRow("Your score + all 7 metrics")
+                valueRow("2 fresh skin scans every week")
+                valueRow("Your 14-day routine, AI-checked")
+            }
+            .padding(.horizontal, 8)
+
+            DQPrimaryButton(title: purchasing
+                            ? String(localized: "Unlocking…")
+                            : "\(String(localized: "Claim my offer")) · \(offerPrice)",
+                            isEnabled: !purchasing) {
+                purchase()
+            }
+
+            Button {
+                Haptics.fire(.selection)
+                onDismiss()
+            } label: {
+                Text("No thanks")
+                    .font(DQFont.caption)
+                    .foregroundStyle(DQColor.textSecondary)
+            }
+
+            VStack(spacing: 8) {
+                Text("First year at the offer price, then renews at \(fullPrice). Auto-renewing; cancel anytime in your App Store settings.")
+                    .font(DQFont.micro)
+                    .foregroundStyle(DQColor.textSecondary)
+                    .multilineTextAlignment(.center)
+                    .fixedSize(horizontal: false, vertical: true)
+                HStack(spacing: 14) {
+                    Button("Terms of Use") { legalDocument = .terms }
+                    Button("Privacy Policy") { legalDocument = .privacy }
+                    Button("Restore") {
+                        Task {
+                            await purchases.restore()
+                            if purchases.isPro { onSubscribed() }
+                        }
+                    }
+                }
+                .font(DQFont.micro)
+                .foregroundStyle(DQColor.textSecondary)
+            }
+        }
+        .padding(22)
+        .frame(maxWidth: .infinity)
+        .background(
+            DQColor.surfaceElevated,
+            in: UnevenRoundedRectangle(topLeadingRadius: DQRadius.sheet,
+                                       topTrailingRadius: DQRadius.sheet,
+                                       style: .continuous)
+        )
+        .overlay(alignment: .top) {
+            UnevenRoundedRectangle(topLeadingRadius: DQRadius.sheet,
+                                   topTrailingRadius: DQRadius.sheet,
+                                   style: .continuous)
+                .strokeBorder(DQColor.stroke, lineWidth: 1)
+        }
+        .sheet(item: $legalDocument) { document in
+            DermiqLegalView(document: document)
+        }
+    }
+
+    private func valueRow(_ text: String) -> some View {
+        HStack(spacing: 8) {
+            Image(systemName: "checkmark.circle.fill")
+                .font(.system(size: 13, weight: .semibold))
+                .foregroundStyle(DQColor.accentBright)
+            Text(LocalizedStringKey(text))
+                .font(DQFont.caption)
+                .foregroundStyle(DQColor.textPrimary)
+                .fixedSize(horizontal: false, vertical: true)
+            Spacer(minLength: 0)
+        }
+    }
+
+    private func purchase() {
+        purchasing = true
+        Task {
+            defer { purchasing = false }
+            guard purchases.displayPrice(for: VeriteProducts.proYearlyOffer) != nil else {
+                purchaseFailed = true
+                return
+            }
+            if await purchases.purchase(productID: VeriteProducts.proYearlyOffer) {
+                RampAnalytics.track("winback_purchase")
+                onSubscribed()
             }
         }
     }

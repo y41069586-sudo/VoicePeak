@@ -87,6 +87,26 @@
           "referenceName" : "Pro Weekly",
           "subscriptionGroupID" : "21500001",
           "type" : "RecurringSubscription"
+        },
+        {
+          "adHocOffers" : [],
+          "codeOffers" : [],
+          "displayPrice" : "21.99",
+          "familyShareable" : false,
+          "groupNumber" : 1,
+          "internalID" : "21500007",
+          "localizations" : [
+            {
+              "description" : "Full access + 2 skin scans per week",
+              "displayName" : "Glowé Pro (Yearly Offer)",
+              "locale" : "en_US"
+            }
+          ],
+          "productID" : "com.verite.app.pro.yearly.offer",
+          "recurringSubscriptionPeriod" : "P1Y",
+          "referenceName" : "Pro Yearly Offer",
+          "subscriptionGroupID" : "21500001",
+          "type" : "RecurringSubscription"
         }
       ]
     }

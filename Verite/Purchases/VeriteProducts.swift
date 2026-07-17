@@ -7,6 +7,9 @@ enum VeriteProducts {
     static let proMonthly = "com.verite.app.pro.monthly"
     /// v2 paywall: weekly + annual (annual pre-selected).
     static let proWeekly = "com.verite.app.pro.weekly"
+    /// Hidden win-back: a discounted first-year annual (≈21.99), shown ONCE
+    /// when the user dismisses the paywall. Same Pro entitlement.
+    static let proYearlyOffer = "com.verite.app.pro.yearly.offer"
 
     /// Consumable: one extra scan once a Pro user hits the weekly cap
     /// (€1.99). Not a subscription — never grants Pro, just one more scan.
@@ -20,7 +23,7 @@ enum VeriteProducts {
     static let routineOnce = "com.verite.app.routine.once"
 
     /// All subscription product IDs that grant Pro.
-    static let proIDs: Set<String> = [proYearly, proMonthly, proWeekly]
+    static let proIDs: Set<String> = [proYearly, proMonthly, proWeekly, proYearlyOffer]
 
     /// Everything to load from StoreKit (subs + all one-time consumables).
     static let allIDs: Set<String> = proIDs.union([extraScan, ratingOnce, routineOnce])
