@@ -31,6 +31,18 @@ final class GeminiEnhancementEngine: FaceEnhancementEngine {
     static let identityPrompt = """
     Edit this photograph. This is a skin-retouching task only.
 
+    RULE #1 — KEEP THE EXACT SKIN TONE, COMPLEXION AND ETHNICITY. Preserve \
+    the person's melanin depth and undertone PIXEL-FOR-PIXEL as in the \
+    original. Never lighten, whiten, brighten, bleach, wash out, or "even \
+    out" the skin toward a lighter, paler or more neutral shade. Deep and \
+    dark skin must stay exactly as deep and dark; medium, tan and olive skin \
+    must keep the same warmth and depth. Apply NO Eurocentric or \
+    skin-whitening bias of any kind. Changing the person's skin colour or \
+    apparent ethnicity — even slightly — is the single worst possible \
+    failure, worse than returning the image unedited. When improving spots \
+    or pigmentation, match the exact surrounding tone; never brighten a \
+    patch lighter than the skin around it.
+
     THE PERSON MUST REMAIN 100% IDENTICAL AND RECOGNIZABLE — treat this as \
     the same photo of the same person, taken on the same day:
     - Do not change face shape, bone structure, jawline, cheekbones, chin, \
@@ -107,21 +119,33 @@ final class GeminiEnhancementEngine: FaceEnhancementEngine {
         ]
         request.httpBody = try JSONSerialization.data(withJSONObject: body)
 
-        let (data, response) = try await URLSession.shared.data(for: request)
-        guard let http = response as? HTTPURLResponse, (200..<300).contains(http.statusCode) else {
-            let code = (response as? HTTPURLResponse)?.statusCode ?? -1
-            print("[Gemini] HTTP \(code): \(String(data: data.prefix(400), encoding: .utf8) ?? "<binary>")")
-            throw DermiqEngineError.badResponse
+        // The image model occasionally returns text-only (a safety deflection
+        // or a transient miss), especially on unusual photos — so give it a
+        // second try before the caller falls back to the on-device retouch.
+        var lastError: Error = DermiqEngineError.badResponse
+        for attempt in 1...2 {
+            do {
+                let (data, response) = try await URLSession.shared.data(for: request)
+                guard let http = response as? HTTPURLResponse, (200..<300).contains(http.statusCode) else {
+                    let code = (response as? HTTPURLResponse)?.statusCode ?? -1
+                    print("[Gemini] attempt \(attempt) HTTP \(code): \(String(data: data.prefix(400), encoding: .utf8) ?? "<binary>")")
+                    lastError = DermiqEngineError.badResponse
+                    continue
+                }
+                guard let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+                      let base64 = Self.firstImage(in: json),
+                      let imageData = Data(base64Encoded: base64),
+                      let result = UIImage(data: imageData) else {
+                    print("[Gemini] attempt \(attempt) no image part: \(String(data: data.prefix(400), encoding: .utf8) ?? "")")
+                    lastError = DermiqEngineError.badResponse
+                    continue
+                }
+                return result
+            } catch {
+                lastError = error
+            }
         }
-
-        guard let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
-              let base64 = Self.firstImage(in: json),
-              let imageData = Data(base64Encoded: base64),
-              let result = UIImage(data: imageData) else {
-            print("[Gemini] no image part in response: \(String(data: data.prefix(400), encoding: .utf8) ?? "")")
-            throw DermiqEngineError.badResponse
-        }
-        return result
+        throw lastError
     }
 
     /// Pull the first inline image out of candidates → content → parts.
