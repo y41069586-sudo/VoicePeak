@@ -72,6 +72,18 @@ enum NotificationManager {
         UNUserNotificationCenter.current().removePendingNotificationRequests(withIdentifiers: [nudgeID])
     }
 
+    /// The routine's display times: AM is the fixed 8:00 ritual, PM is the
+    /// user's onboarding/Settings choice (default 21:00). Used by the routine
+    /// tab to show WHEN each block should be done — independent of whether
+    /// notifications are enabled.
+    static var routineTimes: (am: DateComponents, pm: DateComponents) {
+        let d = UserDefaults.standard
+        let pmHour = d.object(forKey: pmHourKey) as? Int ?? 21
+        let pmMinute = d.object(forKey: pmMinuteKey) as? Int ?? 0
+        return (DateComponents(hour: 8, minute: 0),
+                DateComponents(hour: pmHour, minute: pmMinute))
+    }
+
     // MARK: Routine
 
     static func scheduleRoutineReminders() {

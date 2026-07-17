@@ -846,6 +846,17 @@ struct DermiqRoutineTab: View {
 
     // MARK: Step blocks
 
+    /// The block's ritual time ("8:00" / "21:00"), locale-formatted (respects
+    /// 12/24-hour preference).
+    private func blockTimeString(_ block: RoutineBlock) -> String {
+        let times = NotificationManager.routineTimes
+        let comps = block == .am ? times.am : times.pm
+        let date = Calendar.current.date(
+            bySettingHour: comps.hour ?? 8, minute: comps.minute ?? 0, second: 0,
+            of: .now) ?? .now
+        return date.formatted(date: .omitted, time: .shortened)
+    }
+
     private func blockCard(_ plan: RoutinePlan, day: Int, block: RoutineBlock,
                            title: String, icon: String) -> some View {
         let steps = plan.scheduledSteps(block, day: day)
@@ -864,7 +875,11 @@ struct DermiqRoutineTab: View {
                         Text(LocalizedStringKey(title))
                             .font(.system(size: 17, weight: .bold, design: .rounded))
                             .foregroundStyle(DQColor.textPrimary)
-                        Text(LocalizedStringKey(block == .am ? "After you wake up" : "Before bed"))
+                        // "After you wake up · 8:00" — the localized phrase plus
+                        // the user's actual ritual time (AM fixed, PM from the
+                        // onboarding/Settings choice), locale-formatted.
+                        (Text(LocalizedStringKey(block == .am ? "After you wake up" : "Before bed"))
+                            + Text(verbatim: " · \(blockTimeString(block))"))
                             .font(DQFont.micro)
                             .foregroundStyle(DQColor.textSecondary)
                     }
