@@ -41,7 +41,6 @@ struct DermiqTabShell: View {
     @State private var showSettings = false
     @State private var autoLaunched = false
     @State private var showQuotaSheet = false
-    @State private var quotaProCap = false
     @State private var quotaNextFree: Date?
     @State private var showPaywall = false
     /// The user opened the paywall by trying to scan → once they unlock,
@@ -61,12 +60,9 @@ struct DermiqTabShell: View {
             DermiqSettingsView()
         }
         .sheet(isPresented: $showQuotaSheet) {
-            ScanLimitSheet(proCap: quotaProCap,
-                           nextScan: quotaNextFree,
-                           onGetPro: hasPro ? nil : {
-                               scanAfterUnlock = true
-                               showPaywall = true
-                           },
+            // Pro weekly cap ONLY — non-Pro never reaches this sheet
+            // (startScan sends them straight to the paywall).
+            ScanLimitSheet(nextScan: quotaNextFree,
                            extraScanPrice: extraScanPrice,
                            onBuyExtraScan: { buyExtraScan() })
         }
@@ -160,7 +156,6 @@ struct DermiqTabShell: View {
             scanAfterUnlock = true
             showPaywall = true
         case .blockedProWeekly(let nextScan):
-            quotaProCap = true
             quotaNextFree = nextScan
             showQuotaSheet = true
         }

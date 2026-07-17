@@ -189,14 +189,12 @@ enum ScanQuota {
 // MARK: — "Weekly scan used" sheet
 // ============================================================
 
-/// Two flavours: a non-Pro user tapping scan (the Pro pitch + invite escape
-/// hatch), or a Pro user hitting the weekly fair-use cap (countdown only).
+/// ONE purpose only: a Pro user hit the weekly fair-use cap (countdown +
+/// €1.99 extra scan). Non-Pro users NEVER see this sheet — tapping scan
+/// without Pro goes straight to the paywall (DermiqTabShell.startScan).
 struct ScanLimitSheet: View {
-    /// True when a Pro user hit the weekly cap; false = scanning needs Pro.
-    var proCap = false
     var nextScan: Date?
-    let onGetPro: (() -> Void)?
-    /// Pro-cap only: buy one more scan now (€1.99). Displayed price passed in.
+    /// Buy one more scan now (€1.99). Displayed price passed in.
     var extraScanPrice: String = "€1.99"
     var onBuyExtraScan: (() -> Void)? = nil
 
@@ -207,18 +205,16 @@ struct ScanLimitSheet: View {
         // detent on SE-class heights (German copy runs 4+ lines).
         ScrollView {
         VStack(spacing: 18) {
-            Image(systemName: proCap ? "camera.badge.clock" : "sparkles")
+            Image(systemName: "camera.badge.clock")
                 .font(.system(size: 40, weight: .semibold))
                 .foregroundStyle(DQColor.accentBright)
                 .padding(.top, 26)
 
             VStack(spacing: 6) {
-                (proCap ? Text("Weekly scan cap reached") : Text("Scanning is part of Pro"))
+                Text("Weekly scan cap reached")
                     .font(.system(size: 21, weight: .heavy, design: .rounded))
                     .foregroundStyle(DQColor.textPrimary)
-                (proCap
-                 ? Text("Skin moves week by week — your two weekly readings are in. Need one more now? Grab an extra scan, or the next one unlocks free soon.")
-                 : Text("Every scan runs a full AI skin analysis. Go Pro for your score, all seven metrics and your 14-day plan."))
+                Text("Skin moves week by week — your two weekly readings are in. Need one more now? Grab an extra scan, or the next one unlocks free soon.")
                     .font(DQFont.caption)
                     .foregroundStyle(DQColor.textSecondary)
                     .multilineTextAlignment(.center)
@@ -226,7 +222,7 @@ struct ScanLimitSheet: View {
             }
             .padding(.horizontal, 26)
 
-            if proCap, let nextScan {
+            if let nextScan {
                 HStack(spacing: 6) {
                     Image(systemName: "clock")
                         .font(.system(size: 12, weight: .semibold))
@@ -240,51 +236,21 @@ struct ScanLimitSheet: View {
                 .background(DQColor.accentSoft.opacity(0.6), in: Capsule())
             }
 
-            VStack(spacing: 10) {
-                if !proCap, let onGetPro {
-                    Button {
-                        dismiss()
-                        onGetPro()
-                    } label: {
-                        Label("Unlock scanning with Pro", systemImage: "sparkles")
-                            .font(.system(size: 16, weight: .bold, design: .rounded))
-                            .foregroundStyle(.white)
-                            .frame(maxWidth: .infinity, minHeight: 54)
-                            .background(DQColor.accentBright,
-                                        in: RoundedRectangle(cornerRadius: 18, style: .continuous))
-                    }
-                    .buttonStyle(PressableStyle())
+            if let onBuyExtraScan {
+                Button {
+                    dismiss()
+                    onBuyExtraScan()
+                } label: {
+                    Label("Buy 1 extra scan · \(extraScanPrice)", systemImage: "bolt.fill")
+                        .font(.system(size: 16, weight: .bold, design: .rounded))
+                        .foregroundStyle(.white)
+                        .frame(maxWidth: .infinity, minHeight: 54)
+                        .background(DQColor.accentBright,
+                                    in: RoundedRectangle(cornerRadius: 18, style: .continuous))
                 }
-
-                // Pro user past the weekly cap: buy one more scan right now.
-                if proCap, let onBuyExtraScan {
-                    Button {
-                        dismiss()
-                        onBuyExtraScan()
-                    } label: {
-                        Label("Buy 1 extra scan · \(extraScanPrice)", systemImage: "bolt.fill")
-                            .font(.system(size: 16, weight: .bold, design: .rounded))
-                            .foregroundStyle(.white)
-                            .frame(maxWidth: .infinity, minHeight: 54)
-                            .background(DQColor.accentBright,
-                                        in: RoundedRectangle(cornerRadius: 18, style: .continuous))
-                    }
-                    .buttonStyle(PressableStyle())
-                }
-
-                if !proCap {
-                    ShareLink(item: ReferralStore.shared.inviteURL,
-                              message: Text("Scan your skin with me — copy this whole message and paste it in Glowé for a free scan.")) {
-                        Label("Invite a friend — you both get a scan", systemImage: "person.2.fill")
-                            .font(.system(size: 15, weight: .semibold, design: .rounded))
-                            .foregroundStyle(DQColor.accentBright)
-                            .frame(maxWidth: .infinity, minHeight: 50)
-                            .background(DQColor.accentBright.opacity(0.10),
-                                        in: RoundedRectangle(cornerRadius: 16, style: .continuous))
-                    }
-                }
+                .buttonStyle(PressableStyle())
+                .padding(.horizontal, 22)
             }
-            .padding(.horizontal, 22)
 
             Spacer(minLength: 12)
         }
