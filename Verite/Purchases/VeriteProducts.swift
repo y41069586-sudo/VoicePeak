@@ -12,8 +12,10 @@ enum VeriteProducts {
     /// (€1.99). Not a subscription — never grants Pro, just one more scan.
     static let extraScan = "com.verite.app.scan.extra"
 
-    /// Consumable: reveal ONE scan's rating (score + all 7 metrics), no plan.
-    static let ratingOnce = "com.verite.app.rating.once"
+    /// Rating-only one-time unlock (reveal ONE scan's score + all 7 metrics,
+    /// no plan). Reuses the existing €1.99 "extra scan" consumable — same
+    /// product in App Store Connect, so there's no second €1.99 SKU to create.
+    static let ratingOnce = extraScan
     /// Consumable: one scan's rating PLUS its 14-day routine. One-time.
     static let routineOnce = "com.verite.app.routine.once"
 

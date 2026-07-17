@@ -18,21 +18,6 @@
       "type" : "Consumable"
     },
     {
-      "displayPrice" : "1.99",
-      "familyShareable" : false,
-      "internalID" : "21500011",
-      "localizations" : [
-        {
-          "description" : "Reveal this scan's score + all 7 metrics",
-          "displayName" : "Rating Only",
-          "locale" : "en_US"
-        }
-      ],
-      "productID" : "com.verite.app.rating.once",
-      "referenceName" : "Rating Once",
-      "type" : "Consumable"
-    },
-    {
       "displayPrice" : "3.99",
       "familyShareable" : false,
       "internalID" : "21500012",
