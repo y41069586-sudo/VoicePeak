@@ -123,7 +123,8 @@ final class GeminiEnhancementEngine: FaceEnhancementEngine {
         // or a transient miss), especially on unusual photos — so give it a
         // second try before the caller falls back to the on-device retouch.
         var lastError: Error = DermiqEngineError.badResponse
-        for attempt in 1...2 {
+        for attempt in 1...3 {
+            if attempt > 1 { try? await Task.sleep(for: .milliseconds(500)) }
             do {
                 let (data, response) = try await URLSession.shared.data(for: request)
                 guard let http = response as? HTTPURLResponse, (200..<300).contains(http.statusCode) else {

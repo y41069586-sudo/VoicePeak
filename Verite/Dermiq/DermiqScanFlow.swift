@@ -72,17 +72,20 @@ final class ScanFlowModel {
         let enhancer = EngineFactory.enhancement()
         enhanceTask = Task { [weak self] in
             // Try the live enhancer (Gemini); if it fails for ANY reason, fall
-            // back to the on-device retouch so the Potential reveal is never
-            // stuck on "Rendering…" forever.
+            // back to the on-device retouch. If BOTH fail (some photos make the
+            // image model refuse and CoreImage bail), show the ORIGINAL so the
+            // reveal is NEVER stuck on "Rendering…" — before == after, honest,
+            // and the slider still works.
             var enhanced = try? await enhancer.enhance(image: image)
             if enhanced == nil {
                 enhanced = try? await MockEnhancementEngine().enhance(image: image)
             }
-            guard let enhanced, let self else { return }
-            self.potentialImage = enhanced
+            guard let self else { return }
+            let final = enhanced ?? image
+            self.potentialImage = final
             // The record may already exist by the time the render lands.
             if let record = self.record, record.potentialFilename == nil {
-                record.potentialFilename = DermiqImageStore.save(enhanced)
+                record.potentialFilename = DermiqImageStore.save(final)
             }
         }
     }
