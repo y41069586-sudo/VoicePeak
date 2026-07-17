@@ -107,12 +107,19 @@ struct VeriteWidgetView: View {
             VStack(alignment: .leading, spacing: 8) {
                 header
                 Spacer(minLength: 0)
-                Text(snapshot.allDoneToday
-                     ? "Today complete — see you tomorrow."
-                     : "\(snapshot.doneToday) of \(snapshot.totalToday) steps today")
-                    .font(.system(size: 14, weight: .semibold, design: .rounded))
-                    .foregroundStyle(snapshot.allDoneToday ? WColor.up : WColor.secondary)
-                    .lineLimit(2)
+                Group {
+                    // A ternary inside Text() collapses to a plain String and
+                    // bypasses the String Catalog — split into two literal
+                    // Text() so both phrases localize.
+                    if snapshot.allDoneToday {
+                        Text("Today complete — see you tomorrow.")
+                    } else {
+                        Text("\(snapshot.doneToday) of \(snapshot.totalToday) steps today")
+                    }
+                }
+                .font(.system(size: 14, weight: .semibold, design: .rounded))
+                .foregroundStyle(snapshot.allDoneToday ? WColor.up : WColor.secondary)
+                .lineLimit(2)
                 footline
             }
             Spacer(minLength: 0)
