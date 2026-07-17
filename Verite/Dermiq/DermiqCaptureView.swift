@@ -1,5 +1,7 @@
 import SwiftUI
 import AVFoundation
+import PhotosUI
+import Vision
 
 // ============================================================
 // MARK: — Screen 2: Guided Capture
@@ -18,6 +20,11 @@ struct DermiqCaptureView: View {
     @State private var frozenFrame: UIImage?
     @State private var capturing = false
     @State private var flash = false
+    /// Gallery import: a picked photo goes through a basic face check before
+    /// entering the same pipeline as a live capture.
+    @State private var pickerItem: PhotosPickerItem?
+    @State private var checkingGallery = false
+    @State private var galleryRejected = false
 
     private var quality: CaptureQuality { camera.quality }
     private var allPass: Bool { quality.isStandardized && quality.eyesOK }
@@ -52,6 +59,11 @@ struct DermiqCaptureView: View {
         .onDisappear {
             camera.stop()
             restoreBrightness()
+        }
+        .alert("That photo won't work", isPresented: $galleryRejected) {
+            Button("OK", role: .cancel) { pickerItem = nil }
+        } message: {
+            Text("Pick a clear, front-facing photo of one face in good light.")
         }
     }
 
@@ -114,8 +126,43 @@ struct DermiqCaptureView: View {
                 .padding(.horizontal, 24)
                 .padding(.bottom, 18)
 
-            shutter
-                .padding(.bottom, 30)
+            // Shutter centered, gallery-import button bottom-right.
+            ZStack {
+                shutter
+                HStack {
+                    Spacer()
+                    galleryButton
+                }
+                .padding(.trailing, 34)
+            }
+            .padding(.bottom, 30)
+        }
+    }
+
+    /// Import a photo from the library instead of taking one live. Uses
+    /// PhotosPicker (out-of-process, so it needs NO photo-library permission
+    /// prompt and no Info.plist key — the user only shares the one photo they
+    /// pick).
+    private var galleryButton: some View {
+        PhotosPicker(selection: $pickerItem, matching: .images) {
+            ZStack {
+                Circle()
+                    .fill(DQColor.surface.opacity(0.7))
+                    .frame(width: 52, height: 52)
+                if checkingGallery {
+                    ProgressView().tint(DQColor.textPrimary)
+                } else {
+                    Image(systemName: "photo.on.rectangle")
+                        .font(.system(size: 19, weight: .semibold))
+                        .foregroundStyle(DQColor.textPrimary)
+                }
+            }
+        }
+        .disabled(checkingGallery || capturing)
+        .accessibilityLabel("Choose from library")
+        .onChange(of: pickerItem) { _, item in
+            guard let item else { return }
+            Task { await importFromGallery(item) }
         }
     }
 
@@ -194,6 +241,67 @@ struct DermiqCaptureView: View {
             camera.stop()
             try? await Task.sleep(for: .milliseconds(350))
             onCaptured(image)
+        }
+    }
+
+    // MARK: Gallery import
+
+    /// Load the picked photo, check it's actually usable for a scan (one
+    /// clear face, big enough), and if so feed it into the same pipeline as a
+    /// live capture. Not pixel-perfect — just "is there a face to read?".
+    private func importFromGallery(_ item: PhotosPickerItem) async {
+        checkingGallery = true
+        defer { checkingGallery = false; pickerItem = nil }
+
+        guard let data = try? await item.loadTransferable(type: Data.self),
+              let raw = UIImage(data: data) else {
+            galleryRejected = true
+            return
+        }
+        let image = raw.uprightForScan()
+
+        // Suitability: enough resolution + exactly one detectable face that
+        // fills a reasonable part of the frame (not a tiny background face).
+        guard min(image.size.width, image.size.height) >= 400,
+              await Self.faceIsScannable(image) else {
+            galleryRejected = true
+            return
+        }
+
+        Haptics.fire(.capture)
+        frozenFrame = image
+        camera.stop()
+        try? await Task.sleep(for: .milliseconds(300))
+        onCaptured(image)
+    }
+
+    /// One face that occupies at least ~18% of the frame width — enough for a
+    /// skin read. Runs Vision off the main actor.
+    private static func faceIsScannable(_ image: UIImage) async -> Bool {
+        guard let cg = image.cgImage else { return false }
+        return await withCheckedContinuation { continuation in
+            DispatchQueue.global(qos: .userInitiated).async {
+                let request = VNDetectFaceRectanglesRequest()
+                let handler = VNImageRequestHandler(cgImage: cg, orientation: .up, options: [:])
+                try? handler.perform([request])
+                let faces = request.results ?? []
+                let biggest = faces.max { $0.boundingBox.width < $1.boundingBox.width }
+                let ok = faces.count >= 1 && (biggest?.boundingBox.width ?? 0) >= 0.18
+                continuation.resume(returning: ok)
+            }
+        }
+    }
+}
+
+private extension UIImage {
+    /// Redraw with orientation baked in, so Vision + the analysis engine both
+    /// see an upright image regardless of the source photo's EXIF orientation.
+    func uprightForScan() -> UIImage {
+        guard imageOrientation != .up else { return self }
+        let format = UIGraphicsImageRendererFormat.default()
+        format.scale = scale
+        return UIGraphicsImageRenderer(size: size, format: format).image { _ in
+            draw(in: CGRect(origin: .zero, size: size))
         }
     }
 }

@@ -25178,6 +25178,36 @@
         "it": { "stringUnit": { "state": "translated", "value": "Acquisto una tantum — il tuo piano di 14 giorni, creato da questa scansione." } }
       }
     },
+    "Choose from library": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": { "stringUnit": { "state": "translated", "value": "Aus Galerie wählen" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Choose from library" } },
+        "es": { "stringUnit": { "state": "translated", "value": "Elegir de la galería" } },
+        "fr": { "stringUnit": { "state": "translated", "value": "Choisir dans la galerie" } },
+        "it": { "stringUnit": { "state": "translated", "value": "Scegli dalla galleria" } }
+      }
+    },
+    "That photo won't work": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": { "stringUnit": { "state": "translated", "value": "Dieses Foto passt nicht" } },
+        "en": { "stringUnit": { "state": "translated", "value": "That photo won't work" } },
+        "es": { "stringUnit": { "state": "translated", "value": "Esa foto no sirve" } },
+        "fr": { "stringUnit": { "state": "translated", "value": "Cette photo ne convient pas" } },
+        "it": { "stringUnit": { "state": "translated", "value": "Quella foto non va bene" } }
+      }
+    },
+    "Pick a clear, front-facing photo of one face in good light.": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": { "stringUnit": { "state": "translated", "value": "Wähle ein klares, frontales Foto von einem Gesicht bei gutem Licht." } },
+        "en": { "stringUnit": { "state": "translated", "value": "Pick a clear, front-facing photo of one face in good light." } },
+        "es": { "stringUnit": { "state": "translated", "value": "Elige una foto clara y de frente de un rostro con buena luz." } },
+        "fr": { "stringUnit": { "state": "translated", "value": "Choisis une photo nette et de face d'un visage bien éclairé." } },
+        "it": { "stringUnit": { "state": "translated", "value": "Scegli una foto nitida e frontale di un viso con buona luce." } }
+      }
+    },
     "ONE LAST THING": {
       "extractionState": "manual",
       "localizations": {
