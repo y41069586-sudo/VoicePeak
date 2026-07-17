@@ -56,6 +56,20 @@ final class ReferralStore {
         UserDefaults.standard.set(true, forKey: Self.freeScanKey)
     }
 
+    /// Delete-account support: wipe every referral/scan-credit marker so a
+    /// fresh account starts truly clean (free scan available again, no
+    /// leftover credits, code, or invite state).
+    func resetAll() {
+        let d = UserDefaults.standard
+        for key in [Self.codeKey, Self.creditsKey, Self.redeemedKey,
+                    Self.inviterKey, Self.confirmsKey, Self.freeScanKey,
+                    Self.creditScanKey] {
+            d.removeObject(forKey: key)
+        }
+        credits = 0
+        freeScanUsed = false
+    }
+
     // MARK: My code + links
 
     /// Stable 6-char code for this install.

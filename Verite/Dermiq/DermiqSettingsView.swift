@@ -328,9 +328,22 @@ struct DermiqSettingsView: View {
         DermiqImageStore.wipeAll()
         BadgeCenter.shared.resetAll()
 
-        // Clear any stale demo-unlock flag left on test devices, so a fresh
-        // install/account is correctly treated as non-Pro until a real purchase.
-        UserDefaults.standard.removeObject(forKey: "dermiq.unlocked")
+        // Wipe ALL app-side UserDefaults so a fresh account starts truly clean
+        // — otherwise leftover markers (free scan already used, credits, bought
+        // unlocks, the one-time win-back, the reminder wish, per-plan recovery,
+        // onboarding coach/review flags) make a "new" account behave weirdly.
+        ReferralStore.shared.resetAll()   // credits, code, free-scan, credit marker
+        UnlockStore.shared.resetAll()     // per-scan rating/routine unlocks + pending
+        let d = UserDefaults.standard
+        for key in ["dermiq.unlocked", "dq.winback.shown",
+                    "notif.routine.desired", "notif.routine.pmHour", "notif.routine.pmMinute",
+                    "dq.swipeCoachSeen", "dermiq.reviewAsked", "dermiq.reviewAskedRoutine"] {
+            d.removeObject(forKey: key)
+        }
+        // Per-plan recovery windows are keyed by plan UUID — sweep the prefix.
+        for key in d.dictionaryRepresentation().keys where key.hasPrefix("dq.recovery.begin.") {
+            d.removeObject(forKey: key)
+        }
         languageOverride = ""
         reminderPref = ReminderPref.off.rawValue
         UNUserNotificationCenter.current().removeAllPendingNotificationRequests()

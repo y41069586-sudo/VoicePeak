@@ -70,6 +70,17 @@ final class UnlockStore {
         UserDefaults.standard.removeObject(forKey: Self.pendingKey)
     }
 
+    /// Delete-account support: forget every per-scan unlock + any pending buy.
+    func resetAll() {
+        let defaults = UserDefaults.standard
+        defaults.removeObject(forKey: Self.ratingKey)
+        defaults.removeObject(forKey: Self.routineKey)
+        defaults.removeObject(forKey: Self.pendingKey)
+        ratingIDs = []
+        routineIDs = []
+        pending = nil
+    }
+
     private func persist() {
         let defaults = UserDefaults.standard
         defaults.set(Array(ratingIDs), forKey: Self.ratingKey)
