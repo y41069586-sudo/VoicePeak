@@ -27,6 +27,15 @@ final class UnlockStore {
         ratingIDs = Set(defaults.stringArray(forKey: Self.ratingKey) ?? [])
         routineIDs = Set(defaults.stringArray(forKey: Self.routineKey) ?? [])
         pending = defaults.string(forKey: Self.pendingKey).flatMap(Tier.init)
+        // Only a RATING unlock can be pending in the current flow (the plan
+        // is bought directly on the potential screen's CTA, tied to its scan).
+        // A stored .routine pending is stale state from an older build —
+        // TestFlight updates keep UserDefaults — and would silently hand the
+        // next scan a free plan. Drop it.
+        if pending == .routine {
+            pending = nil
+            defaults.removeObject(forKey: Self.pendingKey)
+        }
     }
 
     /// Routine implies rating — the bigger one-time pack reveals everything.
