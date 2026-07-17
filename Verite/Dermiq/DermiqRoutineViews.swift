@@ -846,6 +846,33 @@ struct DermiqRoutineTab: View {
 
     // MARK: Step blocks
 
+    /// Per-step clock times: start at the block's base time, advancing by how
+    /// long the PREVIOUS product needs to settle — cleanser ~1 min, a mask
+    /// ~10, any serum/treatment/moisturizer ~2 (its absorb window).
+    private func stepTimes(for steps: [RoutineStep], block: RoutineBlock) -> [String] {
+        let times = NotificationManager.routineTimes
+        let comps = block == .am ? times.am : times.pm
+        var date = Calendar.current.date(
+            bySettingHour: comps.hour ?? 8, minute: comps.minute ?? 0, second: 0,
+            of: .now) ?? .now
+        var result: [String] = []
+        for index in steps.indices {
+            if index > 0 {
+                date = date.addingTimeInterval(Double(settleMinutes(steps[index - 1])) * 60)
+            }
+            result.append(date.formatted(date: .omitted, time: .shortened))
+        }
+        return result
+    }
+
+    private func settleMinutes(_ step: RoutineStep) -> Int {
+        let type = step.productType.lowercased()
+        let key = step.key.lowercased()
+        if type.contains("mask") { return 10 }
+        if key.contains("cleanse") || type.contains("cleanser") { return 1 }
+        return 2
+    }
+
     /// The block's ritual time ("8:00" / "21:00"), locale-formatted (respects
     /// 12/24-hour preference).
     private func blockTimeString(_ block: RoutineBlock) -> String {
@@ -903,6 +930,7 @@ struct DermiqRoutineTab: View {
                     DermiqStepRow(
                         step: step,
                         order: index + 1,
+                        time: stepTimes(for: steps, block: block)[index],
                         done: plan.isDone(day: day, block: block, step: step)
                     ) {
                         toggle(plan, day: day, block: block, step: step)
@@ -964,6 +992,8 @@ private struct DermiqStepRow: View {
     let step: RoutineStep
     /// 1-based position inside the block — the visible "do this Nth" order.
     var order: Int = 0
+    /// Clock time this step lands at (block base + settle windows before it).
+    var time: String? = nil
     let done: Bool
     let onToggle: () -> Void
 
@@ -1008,10 +1038,21 @@ private struct DermiqStepRow: View {
                                         .background(DQColor.accentSoft.opacity(0.8), in: Capsule())
                                 }
                             }
-                            Text(LocalizedStringKey(step.active))
-                                .font(DQFont.mono(11))
-                                .foregroundStyle(DQColor.accentBright)
-                                .lineLimit(1)
+                            HStack(spacing: 6) {
+                                if let time {
+                                    // "8:02 · Retinal" — when this product goes on.
+                                    Text(verbatim: time)
+                                        .font(DQFont.mono(11).monospacedDigit())
+                                        .foregroundStyle(DQColor.textSecondary)
+                                    Text(verbatim: "·")
+                                        .font(DQFont.mono(11))
+                                        .foregroundStyle(DQColor.textSecondary)
+                                }
+                                Text(LocalizedStringKey(step.active))
+                                    .font(DQFont.mono(11))
+                                    .foregroundStyle(DQColor.accentBright)
+                                    .lineLimit(1)
+                            }
                         }
                         .opacity(done ? 0.65 : 1)
                         Spacer(minLength: 0)
