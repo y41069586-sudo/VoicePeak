@@ -46,8 +46,9 @@ enum RampStage {
     static let card = Color.white
     static let hairline = hair
 
-    /// Total conceptual screens (for the progress hairline).
-    static let screenCount = 20
+    /// Total conceptual screens (for the progress hairline). Derived from the
+    /// step enum so removing/adding a step keeps the progress bar exact.
+    static var screenCount: Int { RampStep.allCases.count }
 
     /// Friendly rounded display face — the GlamUp voice. (Name kept from the
     /// serif era so every call site keeps working; the look is SF Rounded.)

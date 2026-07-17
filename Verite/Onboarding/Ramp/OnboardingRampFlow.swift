@@ -180,8 +180,6 @@ struct OnboardingRampFlow: View {
             ) { advance() }
         case .theReading:
             RampRevealScreen(answers: answers) { advance() }
-        case .theCurve:
-            RampCurveScreen(answers: answers) { advance() }
         case .planPreview:
             RampPlanPreviewScreen(answers: answers) { advance() }
         case .evidence:

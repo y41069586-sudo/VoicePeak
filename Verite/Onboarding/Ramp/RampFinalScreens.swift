@@ -327,10 +327,14 @@ struct RampDailyReportScreen: View {
                     let chosen = time
                     Task {
                         let granted = await NotificationManager.requestAuthorization()
-                        if granted {
-                            let pm = chosen.pmHour
-                            NotificationManager.scheduleRoutineReminders(hour: pm.hour, minute: pm.minute)
-                        }
+                        // Remember the wish + chosen time, but DON'T arm the
+                        // reminders yet — there's no plan until the first scan,
+                        // and a locked (non-Pro) plan must never get pinged.
+                        // syncRoutineReminders arms them once the plan unlocks.
+                        let pm = chosen.pmHour
+                        NotificationManager.setRoutinePreference(enabled: granted,
+                                                                 pmHour: pm.hour,
+                                                                 pmMinute: pm.minute)
                         RampAnalytics.track("onboarding_notifications",
                                             ["choice": "enable",
                                              "time": chosen.rawValue,
