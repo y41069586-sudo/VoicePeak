@@ -105,7 +105,11 @@ struct DermiqAnalysis: Codable, Sendable {
 enum HonestSummaryBuilder {
 
     static func summary(overall: Int, weakest: DermiqSubScore) -> String {
-        let achievable = min(overall + max(8, (88 - overall) / 2), 92)
+        // A real, visible gap at EVERY score: lots of room when the score is
+        // low, a small honest one near the top — never "92 instead of 92"
+        // (the old hard cap of 92 collapsed onto high scores), never 100.
+        let gain = min(14, max(2, (96 - overall) / 2))
+        let achievable = min(overall + gain, 99)
         return state(for: weakest.category)
             + " " + String(localized: "That's your single biggest lever.")
             + " " + String(localized: "Fix it and you're a \(achievable), not a \(overall).")
