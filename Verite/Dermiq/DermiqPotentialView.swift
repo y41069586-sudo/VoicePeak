@@ -21,7 +21,7 @@ struct DermiqPotentialView: View {
     var body: some View {
         VStack(spacing: 0) {
             VStack(spacing: 6) {
-                Text("You at 100.")
+                Text("You as a 10/10!")
                     .font(DQFont.title)
                     .foregroundStyle(DQColor.textPrimary)
                 Text("This is your skin's ceiling. The next 14 days close the gap.")

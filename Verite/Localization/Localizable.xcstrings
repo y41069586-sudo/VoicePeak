@@ -25101,501 +25101,1751 @@
     "You already have a 14-day plan": {
       "extractionState": "manual",
       "localizations": {
-        "de": { "stringUnit": { "state": "translated", "value": "Du hast schon einen 14-Tage-Plan" } },
-        "en": { "stringUnit": { "state": "translated", "value": "You already have a 14-day plan" } },
-        "es": { "stringUnit": { "state": "translated", "value": "Ya tienes un plan de 14 días" } },
-        "fr": { "stringUnit": { "state": "translated", "value": "Tu as déjà un plan de 14 jours" } },
-        "it": { "stringUnit": { "state": "translated", "value": "Hai già un piano di 14 giorni" } }
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Du hast schon einen 14-Tage-Plan"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You already have a 14-day plan"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ya tienes un plan de 14 días"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tu as déjà un plan de 14 jours"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hai già un piano di 14 giorni"
+          }
+        }
       }
     },
     "A new plan replaces your current one and its progress. Create a new plan anyway?": {
       "extractionState": "manual",
       "localizations": {
-        "de": { "stringUnit": { "state": "translated", "value": "Ein neuer Plan ersetzt deinen aktuellen samt Fortschritt. Trotzdem neu erstellen?" } },
-        "en": { "stringUnit": { "state": "translated", "value": "A new plan replaces your current one and its progress. Create a new plan anyway?" } },
-        "es": { "stringUnit": { "state": "translated", "value": "Un plan nuevo sustituye al actual y su progreso. ¿Crear uno nuevo de todas formas?" } },
-        "fr": { "stringUnit": { "state": "translated", "value": "Un nouveau plan remplace l'actuel et sa progression. Créer quand même un nouveau plan ?" } },
-        "it": { "stringUnit": { "state": "translated", "value": "Un nuovo piano sostituisce quello attuale e i suoi progressi. Crearne comunque uno nuovo?" } }
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ein neuer Plan ersetzt deinen aktuellen samt Fortschritt. Trotzdem neu erstellen?"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A new plan replaces your current one and its progress. Create a new plan anyway?"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Un plan nuevo sustituye al actual y su progreso. ¿Crear uno nuevo de todas formas?"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Un nouveau plan remplace l'actuel et sa progression. Créer quand même un nouveau plan ?"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Un nuovo piano sostituisce quello attuale e i suoi progressi. Crearne comunque uno nuovo?"
+          }
+        }
       }
     },
     "Yes, create new": {
       "extractionState": "manual",
       "localizations": {
-        "de": { "stringUnit": { "state": "translated", "value": "Ja, neu erstellen" } },
-        "en": { "stringUnit": { "state": "translated", "value": "Yes, create new" } },
-        "es": { "stringUnit": { "state": "translated", "value": "Sí, crear nuevo" } },
-        "fr": { "stringUnit": { "state": "translated", "value": "Oui, en créer un nouveau" } },
-        "it": { "stringUnit": { "state": "translated", "value": "Sì, creane uno nuovo" } }
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ja, neu erstellen"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Yes, create new"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sí, crear nuevo"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Oui, en créer un nouveau"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sì, creane uno nuovo"
+          }
+        }
       }
     },
     "Back to dashboard": {
       "extractionState": "manual",
       "localizations": {
-        "de": { "stringUnit": { "state": "translated", "value": "Zurück zum Dashboard" } },
-        "en": { "stringUnit": { "state": "translated", "value": "Back to dashboard" } },
-        "es": { "stringUnit": { "state": "translated", "value": "Volver al panel" } },
-        "fr": { "stringUnit": { "state": "translated", "value": "Retour au tableau de bord" } },
-        "it": { "stringUnit": { "state": "translated", "value": "Torna alla dashboard" } }
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Zurück zum Dashboard"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Back to dashboard"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Volver al panel"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Retour au tableau de bord"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Torna alla dashboard"
+          }
+        }
       }
     },
     "Or wait — your next weekly scan includes the plan (%@).": {
       "extractionState": "manual",
       "localizations": {
-        "de": { "stringUnit": { "state": "translated", "value": "Oder warte — dein nächster Wochen-Scan enthält den Plan (%@)." } },
-        "en": { "stringUnit": { "state": "translated", "value": "Or wait — your next weekly scan includes the plan (%@)." } },
-        "es": { "stringUnit": { "state": "translated", "value": "O espera: tu próximo escaneo semanal incluye el plan (%@)." } },
-        "fr": { "stringUnit": { "state": "translated", "value": "Ou patiente — ton prochain scan hebdomadaire inclut le plan (%@)." } },
-        "it": { "stringUnit": { "state": "translated", "value": "Oppure aspetta — la tua prossima scansione settimanale include il piano (%@)." } }
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Oder warte — dein nächster Wochen-Scan enthält den Plan (%@)."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Or wait — your next weekly scan includes the plan (%@)."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "O espera: tu próximo escaneo semanal incluye el plan (%@)."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ou patiente — ton prochain scan hebdomadaire inclut le plan (%@)."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Oppure aspetta — la tua prossima scansione settimanale include il piano (%@)."
+          }
+        }
       }
     },
     "Build my 14-day plan · %@": {
       "extractionState": "manual",
       "localizations": {
-        "de": { "stringUnit": { "state": "translated", "value": "Bau meinen 14-Tage-Plan · %@" } },
-        "en": { "stringUnit": { "state": "translated", "value": "Build my 14-day plan · %@" } },
-        "es": { "stringUnit": { "state": "translated", "value": "Crear mi plan de 14 días · %@" } },
-        "fr": { "stringUnit": { "state": "translated", "value": "Créer mon plan de 14 jours · %@" } },
-        "it": { "stringUnit": { "state": "translated", "value": "Crea il mio piano di 14 giorni · %@" } }
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bau meinen 14-Tage-Plan · %@"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Build my 14-day plan · %@"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Crear mi plan de 14 días · %@"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Créer mon plan de 14 jours · %@"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Crea il mio piano di 14 giorni · %@"
+          }
+        }
       }
     },
     "Make me a 10/10 · %@": {
       "extractionState": "manual",
       "localizations": {
-        "de": { "stringUnit": { "state": "translated", "value": "Mach mich zur 10/10 · %@" } },
-        "en": { "stringUnit": { "state": "translated", "value": "Make me a 10/10 · %@" } },
-        "es": { "stringUnit": { "state": "translated", "value": "Conviérteme en un 10/10 · %@" } },
-        "fr": { "stringUnit": { "state": "translated", "value": "Fais de moi un 10/10 · %@" } },
-        "it": { "stringUnit": { "state": "translated", "value": "Fammi diventare un 10/10 · %@" } }
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mach mich zur 10/10 · %@"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Make me a 10/10 · %@"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Conviérteme en un 10/10 · %@"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fais de moi un 10/10 · %@"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fammi diventare un 10/10 · %@"
+          }
+        }
       }
     },
     "One-time purchase — your 14-day plan, built from this scan.": {
       "extractionState": "manual",
       "localizations": {
-        "de": { "stringUnit": { "state": "translated", "value": "Einmaliger Kauf — dein 14-Tage-Plan, gebaut aus diesem Scan." } },
-        "en": { "stringUnit": { "state": "translated", "value": "One-time purchase — your 14-day plan, built from this scan." } },
-        "es": { "stringUnit": { "state": "translated", "value": "Pago único: tu plan de 14 días, creado a partir de este escaneo." } },
-        "fr": { "stringUnit": { "state": "translated", "value": "Achat unique — ton plan de 14 jours, créé à partir de ce scan." } },
-        "it": { "stringUnit": { "state": "translated", "value": "Acquisto una tantum — il tuo piano di 14 giorni, creato da questa scansione." } }
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Einmaliger Kauf — dein 14-Tage-Plan, gebaut aus diesem Scan."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "One-time purchase — your 14-day plan, built from this scan."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pago único: tu plan de 14 días, creado a partir de este escaneo."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Achat unique — ton plan de 14 jours, créé à partir de ce scan."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Acquisto una tantum — il tuo piano di 14 giorni, creato da questa scansione."
+          }
+        }
       }
     },
     "Choose from library": {
       "extractionState": "manual",
       "localizations": {
-        "de": { "stringUnit": { "state": "translated", "value": "Aus Galerie wählen" } },
-        "en": { "stringUnit": { "state": "translated", "value": "Choose from library" } },
-        "es": { "stringUnit": { "state": "translated", "value": "Elegir de la galería" } },
-        "fr": { "stringUnit": { "state": "translated", "value": "Choisir dans la galerie" } },
-        "it": { "stringUnit": { "state": "translated", "value": "Scegli dalla galleria" } }
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aus Galerie wählen"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Choose from library"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Elegir de la galería"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Choisir dans la galerie"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Scegli dalla galleria"
+          }
+        }
       }
     },
     "That photo won't work": {
       "extractionState": "manual",
       "localizations": {
-        "de": { "stringUnit": { "state": "translated", "value": "Dieses Foto passt nicht" } },
-        "en": { "stringUnit": { "state": "translated", "value": "That photo won't work" } },
-        "es": { "stringUnit": { "state": "translated", "value": "Esa foto no sirve" } },
-        "fr": { "stringUnit": { "state": "translated", "value": "Cette photo ne convient pas" } },
-        "it": { "stringUnit": { "state": "translated", "value": "Quella foto non va bene" } }
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dieses Foto passt nicht"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "That photo won't work"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Esa foto no sirve"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cette photo ne convient pas"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Quella foto non va bene"
+          }
+        }
       }
     },
     "Pick a clear, front-facing photo of one face in good light.": {
       "extractionState": "manual",
       "localizations": {
-        "de": { "stringUnit": { "state": "translated", "value": "Wähle ein klares, frontales Foto von einem Gesicht bei gutem Licht." } },
-        "en": { "stringUnit": { "state": "translated", "value": "Pick a clear, front-facing photo of one face in good light." } },
-        "es": { "stringUnit": { "state": "translated", "value": "Elige una foto clara y de frente de un rostro con buena luz." } },
-        "fr": { "stringUnit": { "state": "translated", "value": "Choisis une photo nette et de face d'un visage bien éclairé." } },
-        "it": { "stringUnit": { "state": "translated", "value": "Scegli una foto nitida e frontale di un viso con buona luce." } }
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Wähle ein klares, frontales Foto von einem Gesicht bei gutem Licht."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pick a clear, front-facing photo of one face in good light."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Elige una foto clara y de frente de un rostro con buena luz."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Choisis une photo nette et de face d'un visage bien éclairé."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Scegli una foto nitida e frontale di un viso con buona luce."
+          }
+        }
       }
     },
     "ONE LAST THING": {
       "extractionState": "manual",
       "localizations": {
-        "de": { "stringUnit": { "state": "translated", "value": "NOCH EINE SACHE" } },
-        "en": { "stringUnit": { "state": "translated", "value": "ONE LAST THING" } },
-        "es": { "stringUnit": { "state": "translated", "value": "UNA ÚLTIMA COSA" } },
-        "fr": { "stringUnit": { "state": "translated", "value": "UNE DERNIÈRE CHOSE" } },
-        "it": { "stringUnit": { "state": "translated", "value": "UN'ULTIMA COSA" } }
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "NOCH EINE SACHE"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ONE LAST THING"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "UNA ÚLTIMA COSA"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "UNE DERNIÈRE CHOSE"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "UN'ULTIMA COSA"
+          }
+        }
       }
     },
     "Anything your skin\nreacts to?": {
       "extractionState": "manual",
       "localizations": {
-        "de": { "stringUnit": { "state": "translated", "value": "Reagiert deine Haut\nauf etwas?" } },
-        "en": { "stringUnit": { "state": "translated", "value": "Anything your skin\nreacts to?" } },
-        "es": { "stringUnit": { "state": "translated", "value": "¿Tu piel reacciona\na algo?" } },
-        "fr": { "stringUnit": { "state": "translated", "value": "Ta peau réagit-elle\nà quelque chose ?" } },
-        "it": { "stringUnit": { "state": "translated", "value": "La tua pelle reagisce\na qualcosa?" } }
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reagiert deine Haut\nauf etwas?"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Anything your skin\nreacts to?"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "¿Tu piel reacciona\na algo?"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ta peau réagit-elle\nà quelque chose ?"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "La tua pelle reagisce\na qualcosa?"
+          }
+        }
       }
     },
     "We'll build your plan around it — no ingredient you flagged.": {
       "extractionState": "manual",
       "localizations": {
-        "de": { "stringUnit": { "state": "translated", "value": "Wir bauen deinen Plan darum herum — kein Wirkstoff, den du markiert hast." } },
-        "en": { "stringUnit": { "state": "translated", "value": "We'll build your plan around it — no ingredient you flagged." } },
-        "es": { "stringUnit": { "state": "translated", "value": "Crearemos tu plan en torno a ello: ningún ingrediente que hayas marcado." } },
-        "fr": { "stringUnit": { "state": "translated", "value": "On construira ton plan en conséquence — aucun ingrédient signalé." } },
-        "it": { "stringUnit": { "state": "translated", "value": "Costruiremo il piano di conseguenza — nessun ingrediente segnalato." } }
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Wir bauen deinen Plan darum herum — kein Wirkstoff, den du markiert hast."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "We'll build your plan around it — no ingredient you flagged."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Crearemos tu plan en torno a ello: ningún ingrediente que hayas marcado."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "On construira ton plan en conséquence — aucun ingrédient signalé."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Costruiremo il piano di conseguenza — nessun ingrediente segnalato."
+          }
+        }
       }
     },
     "Nothing I know of": {
       "extractionState": "manual",
       "localizations": {
-        "de": { "stringUnit": { "state": "translated", "value": "Nichts, das ich wüsste" } },
-        "en": { "stringUnit": { "state": "translated", "value": "Nothing I know of" } },
-        "es": { "stringUnit": { "state": "translated", "value": "Nada que yo sepa" } },
-        "fr": { "stringUnit": { "state": "translated", "value": "Rien à ma connaissance" } },
-        "it": { "stringUnit": { "state": "translated", "value": "Niente che io sappia" } }
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nichts, das ich wüsste"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nothing I know of"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nada que yo sepa"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Rien à ma connaissance"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Niente che io sappia"
+          }
+        }
       }
     },
     "Retinoids": {
       "extractionState": "manual",
       "localizations": {
-        "de": { "stringUnit": { "state": "translated", "value": "Retinoide" } },
-        "en": { "stringUnit": { "state": "translated", "value": "Retinoids" } },
-        "es": { "stringUnit": { "state": "translated", "value": "Retinoides" } },
-        "fr": { "stringUnit": { "state": "translated", "value": "Rétinoïdes" } },
-        "it": { "stringUnit": { "state": "translated", "value": "Retinoidi" } }
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Retinoide"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Retinoids"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Retinoides"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Rétinoïdes"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Retinoidi"
+          }
+        }
       }
     },
     "Acids (AHA/BHA)": {
       "extractionState": "manual",
       "localizations": {
-        "de": { "stringUnit": { "state": "translated", "value": "Säuren (AHA/BHA)" } },
-        "en": { "stringUnit": { "state": "translated", "value": "Acids (AHA/BHA)" } },
-        "es": { "stringUnit": { "state": "translated", "value": "Ácidos (AHA/BHA)" } },
-        "fr": { "stringUnit": { "state": "translated", "value": "Acides (AHA/BHA)" } },
-        "it": { "stringUnit": { "state": "translated", "value": "Acidi (AHA/BHA)" } }
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Säuren (AHA/BHA)"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Acids (AHA/BHA)"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ácidos (AHA/BHA)"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Acides (AHA/BHA)"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Acidi (AHA/BHA)"
+          }
+        }
       }
     },
     "Vitamin C": {
       "extractionState": "manual",
       "localizations": {
-        "de": { "stringUnit": { "state": "translated", "value": "Vitamin C" } },
-        "en": { "stringUnit": { "state": "translated", "value": "Vitamin C" } },
-        "es": { "stringUnit": { "state": "translated", "value": "Vitamina C" } },
-        "fr": { "stringUnit": { "state": "translated", "value": "Vitamine C" } },
-        "it": { "stringUnit": { "state": "translated", "value": "Vitamina C" } }
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vitamin C"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vitamin C"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vitamina C"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vitamine C"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vitamina C"
+          }
+        }
       }
     },
     "Fragrance": {
       "extractionState": "manual",
       "localizations": {
-        "de": { "stringUnit": { "state": "translated", "value": "Duftstoffe" } },
-        "en": { "stringUnit": { "state": "translated", "value": "Fragrance" } },
-        "es": { "stringUnit": { "state": "translated", "value": "Fragancia" } },
-        "fr": { "stringUnit": { "state": "translated", "value": "Parfum" } },
-        "it": { "stringUnit": { "state": "translated", "value": "Profumo" } }
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Duftstoffe"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fragrance"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fragancia"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Parfum"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Profumo"
+          }
+        }
       }
     },
     "A gentle, non-retinoid smoother — you flagged retinoids.": {
       "extractionState": "manual",
       "localizations": {
-        "de": { "stringUnit": { "state": "translated", "value": "Ein sanfter, retinoidfreier Glätter — du hast Retinoide markiert." } },
-        "en": { "stringUnit": { "state": "translated", "value": "A gentle, non-retinoid smoother — you flagged retinoids." } },
-        "es": { "stringUnit": { "state": "translated", "value": "Un alisador suave sin retinoides: marcaste retinoides." } },
-        "fr": { "stringUnit": { "state": "translated", "value": "Un lissant doux sans rétinoïde — tu as signalé les rétinoïdes." } },
-        "it": { "stringUnit": { "state": "translated", "value": "Un levigante delicato senza retinoidi — hai segnalato i retinoidi." } }
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ein sanfter, retinoidfreier Glätter — du hast Retinoide markiert."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A gentle, non-retinoid smoother — you flagged retinoids."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Un alisador suave sin retinoides: marcaste retinoides."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Un lissant doux sans rétinoïde — tu as signalé les rétinoïdes."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Un levigante delicato senza retinoidi — hai segnalato i retinoidi."
+          }
+        }
       }
     },
     "Draws out congestion without acids — you flagged acids.": {
       "extractionState": "manual",
       "localizations": {
-        "de": { "stringUnit": { "state": "translated", "value": "Zieht Unreinheiten ohne Säuren heraus — du hast Säuren markiert." } },
-        "en": { "stringUnit": { "state": "translated", "value": "Draws out congestion without acids — you flagged acids." } },
-        "es": { "stringUnit": { "state": "translated", "value": "Extrae las impurezas sin ácidos: marcaste ácidos." } },
-        "fr": { "stringUnit": { "state": "translated", "value": "Élimine les impuretés sans acides — tu as signalé les acides." } },
-        "it": { "stringUnit": { "state": "translated", "value": "Elimina le impurità senza acidi — hai segnalato gli acidi." } }
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Zieht Unreinheiten ohne Säuren heraus — du hast Säuren markiert."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Draws out congestion without acids — you flagged acids."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Extrae las impurezas sin ácidos: marcaste ácidos."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Élimine les impuretés sans acides — tu as signalé les acides."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Elimina le impurità senza acidi — hai segnalato gli acidi."
+          }
+        }
       }
     },
     "An acid-free way to smooth and calm — you flagged acids.": {
       "extractionState": "manual",
       "localizations": {
-        "de": { "stringUnit": { "state": "translated", "value": "Säurefrei glätten und beruhigen — du hast Säuren markiert." } },
-        "en": { "stringUnit": { "state": "translated", "value": "An acid-free way to smooth and calm — you flagged acids." } },
-        "es": { "stringUnit": { "state": "translated", "value": "Alisa y calma sin ácidos: marcaste ácidos." } },
-        "fr": { "stringUnit": { "state": "translated", "value": "Lisser et apaiser sans acides — tu as signalé les acides." } },
-        "it": { "stringUnit": { "state": "translated", "value": "Leviga e calma senza acidi — hai segnalato gli acidi." } }
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Säurefrei glätten und beruhigen — du hast Säuren markiert."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "An acid-free way to smooth and calm — you flagged acids."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Alisa y calma sin ácidos: marcaste ácidos."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Lisser et apaiser sans acides — tu as signalé les acides."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Leviga e calma senza acidi — hai segnalato gli acidi."
+          }
+        }
       }
     },
     "Brightens tone without vitamin C — you flagged it.": {
       "extractionState": "manual",
       "localizations": {
-        "de": { "stringUnit": { "state": "translated", "value": "Klärt den Teint ohne Vitamin C — du hast es markiert." } },
-        "en": { "stringUnit": { "state": "translated", "value": "Brightens tone without vitamin C — you flagged it." } },
-        "es": { "stringUnit": { "state": "translated", "value": "Ilumina el tono sin vitamina C: lo marcaste." } },
-        "fr": { "stringUnit": { "state": "translated", "value": "Illumine le teint sans vitamine C — tu l'as signalée." } },
-        "it": { "stringUnit": { "state": "translated", "value": "Illumina l'incarnato senza vitamina C — l'hai segnalata." } }
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Klärt den Teint ohne Vitamin C — du hast es markiert."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Brightens tone without vitamin C — you flagged it."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ilumina el tono sin vitamina C: lo marcaste."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Illumine le teint sans vitamine C — tu l'as signalée."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Illumina l'incarnato senza vitamina C — l'hai segnalata."
+          }
+        }
       }
     },
     "ONE-TIME OFFER": {
       "extractionState": "manual",
       "localizations": {
-        "de": { "stringUnit": { "state": "translated", "value": "EINMALIGES ANGEBOT" } },
-        "en": { "stringUnit": { "state": "translated", "value": "ONE-TIME OFFER" } },
-        "es": { "stringUnit": { "state": "translated", "value": "OFERTA ÚNICA" } },
-        "fr": { "stringUnit": { "state": "translated", "value": "OFFRE UNIQUE" } },
-        "it": { "stringUnit": { "state": "translated", "value": "OFFERTA UNICA" } }
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "EINMALIGES ANGEBOT"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ONE-TIME OFFER"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "OFERTA ÚNICA"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "OFFRE UNIQUE"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "OFFERTA UNICA"
+          }
+        }
       }
     },
     "Before you go —\nyour first year, 45% off.": {
       "extractionState": "manual",
       "localizations": {
-        "de": { "stringUnit": { "state": "translated", "value": "Bevor du gehst —\ndein erstes Jahr, 45 % günstiger." } },
-        "en": { "stringUnit": { "state": "translated", "value": "Before you go —\nyour first year, 45% off." } },
-        "es": { "stringUnit": { "state": "translated", "value": "Antes de irte —\ntu primer año, 45 % menos." } },
-        "fr": { "stringUnit": { "state": "translated", "value": "Avant de partir —\nta première année à -45 %." } },
-        "it": { "stringUnit": { "state": "translated", "value": "Prima di uscire —\nil primo anno, 45% in meno." } }
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bevor du gehst —\ndein erstes Jahr, 45 % günstiger."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Before you go —\nyour first year, 45% off."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Antes de irte —\ntu primer año, 45 % menos."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Avant de partir —\nta première année à -45 %."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Prima di uscire —\nil primo anno, 45% in meno."
+          }
+        }
       }
     },
     "Your score + all 7 metrics": {
       "extractionState": "manual",
       "localizations": {
-        "de": { "stringUnit": { "state": "translated", "value": "Dein Score + alle 7 Werte" } },
-        "en": { "stringUnit": { "state": "translated", "value": "Your score + all 7 metrics" } },
-        "es": { "stringUnit": { "state": "translated", "value": "Tu puntuación + las 7 métricas" } },
-        "fr": { "stringUnit": { "state": "translated", "value": "Ton score + les 7 mesures" } },
-        "it": { "stringUnit": { "state": "translated", "value": "Il tuo punteggio + tutte le 7 metriche" } }
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dein Score + alle 7 Werte"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Your score + all 7 metrics"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tu puntuación + las 7 métricas"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ton score + les 7 mesures"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Il tuo punteggio + tutte le 7 metriche"
+          }
+        }
       }
     },
     "Your 14-day routine, AI-checked": {
       "extractionState": "manual",
       "localizations": {
-        "de": { "stringUnit": { "state": "translated", "value": "Deine 14-Tage-Routine, KI-geprüft" } },
-        "en": { "stringUnit": { "state": "translated", "value": "Your 14-day routine, AI-checked" } },
-        "es": { "stringUnit": { "state": "translated", "value": "Tu rutina de 14 días, revisada por IA" } },
-        "fr": { "stringUnit": { "state": "translated", "value": "Ta routine de 14 jours, vérifiée par IA" } },
-        "it": { "stringUnit": { "state": "translated", "value": "La tua routine di 14 giorni, verificata dall'IA" } }
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Deine 14-Tage-Routine, KI-geprüft"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Your 14-day routine, AI-checked"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tu rutina de 14 días, revisada por IA"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ta routine de 14 jours, vérifiée par IA"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "La tua routine di 14 giorni, verificata dall'IA"
+          }
+        }
       }
     },
     "Claim my offer": {
       "extractionState": "manual",
       "localizations": {
-        "de": { "stringUnit": { "state": "translated", "value": "Angebot sichern" } },
-        "en": { "stringUnit": { "state": "translated", "value": "Claim my offer" } },
-        "es": { "stringUnit": { "state": "translated", "value": "Aprovechar la oferta" } },
-        "fr": { "stringUnit": { "state": "translated", "value": "Profiter de l'offre" } },
-        "it": { "stringUnit": { "state": "translated", "value": "Approfitta dell'offerta" } }
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Angebot sichern"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Claim my offer"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aprovechar la oferta"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Profiter de l'offre"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Approfitta dell'offerta"
+          }
+        }
       }
     },
     "No thanks": {
       "extractionState": "manual",
       "localizations": {
-        "de": { "stringUnit": { "state": "translated", "value": "Nein danke" } },
-        "en": { "stringUnit": { "state": "translated", "value": "No thanks" } },
-        "es": { "stringUnit": { "state": "translated", "value": "No, gracias" } },
-        "fr": { "stringUnit": { "state": "translated", "value": "Non merci" } },
-        "it": { "stringUnit": { "state": "translated", "value": "No grazie" } }
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nein danke"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No thanks"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No, gracias"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Non merci"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No grazie"
+          }
+        }
       }
     },
     "$21.99 / year": {
       "extractionState": "manual",
       "localizations": {
-        "de": { "stringUnit": { "state": "translated", "value": "21,99 € / Jahr" } },
-        "en": { "stringUnit": { "state": "translated", "value": "$21.99 / year" } },
-        "es": { "stringUnit": { "state": "translated", "value": "21,99 € / año" } },
-        "fr": { "stringUnit": { "state": "translated", "value": "21,99 € / an" } },
-        "it": { "stringUnit": { "state": "translated", "value": "21,99 € / anno" } }
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "21,99 € / Jahr"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "$21.99 / year"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "21,99 € / año"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "21,99 € / an"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "21,99 € / anno"
+          }
+        }
       }
     },
     "Couldn't load the offer": {
       "extractionState": "manual",
       "localizations": {
-        "de": { "stringUnit": { "state": "translated", "value": "Angebot konnte nicht geladen werden" } },
-        "en": { "stringUnit": { "state": "translated", "value": "Couldn't load the offer" } },
-        "es": { "stringUnit": { "state": "translated", "value": "No se pudo cargar la oferta" } },
-        "fr": { "stringUnit": { "state": "translated", "value": "Impossible de charger l'offre" } },
-        "it": { "stringUnit": { "state": "translated", "value": "Impossibile caricare l'offerta" } }
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Angebot konnte nicht geladen werden"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Couldn't load the offer"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No se pudo cargar la oferta"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Impossible de charger l'offre"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Impossibile caricare l'offerta"
+          }
+        }
       }
     },
     "First year at the offer price, then renews at %@. Auto-renewing; cancel anytime in your App Store settings.": {
       "extractionState": "manual",
       "localizations": {
-        "de": { "stringUnit": { "state": "translated", "value": "Erstes Jahr zum Angebotspreis, danach %@. Verlängert sich automatisch; jederzeit in den App-Store-Einstellungen kündbar." } },
-        "en": { "stringUnit": { "state": "translated", "value": "First year at the offer price, then renews at %@. Auto-renewing; cancel anytime in your App Store settings." } },
-        "es": { "stringUnit": { "state": "translated", "value": "Primer año al precio de oferta y luego se renueva a %@. Renovación automática; cancela cuando quieras en los ajustes de App Store." } },
-        "fr": { "stringUnit": { "state": "translated", "value": "Première année au prix de l'offre, puis renouvellement à %@. Renouvellement automatique ; annulable à tout moment dans les réglages de l'App Store." } },
-        "it": { "stringUnit": { "state": "translated", "value": "Primo anno al prezzo dell'offerta, poi si rinnova a %@. Rinnovo automatico; annullabile in qualsiasi momento nelle impostazioni dell'App Store." } }
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Erstes Jahr zum Angebotspreis, danach %@. Verlängert sich automatisch; jederzeit in den App-Store-Einstellungen kündbar."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "First year at the offer price, then renews at %@. Auto-renewing; cancel anytime in your App Store settings."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Primer año al precio de oferta y luego se renueva a %@. Renovación automática; cancela cuando quieras en los ajustes de App Store."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Première année au prix de l'offre, puis renouvellement à %@. Renouvellement automatique ; annulable à tout moment dans les réglages de l'App Store."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Primo anno al prezzo dell'offerta, poi si rinnova a %@. Rinnovo automatico; annullabile in qualsiasi momento nelle impostazioni dell'App Store."
+          }
+        }
       }
     },
     "Your 14-day routine": {
       "extractionState": "manual",
       "localizations": {
-        "de": { "stringUnit": { "state": "translated", "value": "Deine 14-Tage-Routine" } },
-        "en": { "stringUnit": { "state": "translated", "value": "Your 14-day routine" } },
-        "es": { "stringUnit": { "state": "translated", "value": "Tu rutina de 14 días" } },
-        "fr": { "stringUnit": { "state": "translated", "value": "Ta routine de 14 jours" } },
-        "it": { "stringUnit": { "state": "translated", "value": "La tua routine di 14 giorni" } }
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Deine 14-Tage-Routine"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Your 14-day routine"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tu rutina de 14 días"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ta routine de 14 jours"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "La tua routine di 14 giorni"
+          }
+        }
       }
     },
     "Morning & evening from your scan — tick off today.": {
       "extractionState": "manual",
       "localizations": {
-        "de": { "stringUnit": { "state": "translated", "value": "Morgens & abends aus deinem Scan — hak heute ab." } },
-        "en": { "stringUnit": { "state": "translated", "value": "Morning & evening from your scan — tick off today." } },
-        "es": { "stringUnit": { "state": "translated", "value": "Mañana y noche según tu escaneo — marca lo de hoy." } },
-        "fr": { "stringUnit": { "state": "translated", "value": "Matin et soir selon ton scan — coche ta journée." } },
-        "it": { "stringUnit": { "state": "translated", "value": "Mattina e sera dal tuo scan — spunta la giornata." } }
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Morgens & abends aus deinem Scan — hak heute ab."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Morning & evening from your scan — tick off today."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mañana y noche según tu escaneo — marca lo de hoy."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Matin et soir selon ton scan — coche ta journée."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mattina e sera dal tuo scan — spunta la giornata."
+          }
+        }
       }
     },
     "Built from your latest scan in seconds.": {
       "extractionState": "manual",
       "localizations": {
-        "de": { "stringUnit": { "state": "translated", "value": "In Sekunden aus deinem letzten Scan gebaut." } },
-        "en": { "stringUnit": { "state": "translated", "value": "Built from your latest scan in seconds." } },
-        "es": { "stringUnit": { "state": "translated", "value": "Creada en segundos a partir de tu último escaneo." } },
-        "fr": { "stringUnit": { "state": "translated", "value": "Créée en quelques secondes à partir de ton dernier scan." } },
-        "it": { "stringUnit": { "state": "translated", "value": "Creata in pochi secondi dal tuo ultimo scan." } }
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "In Sekunden aus deinem letzten Scan gebaut."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Built from your latest scan in seconds."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Creada en segundos a partir de tu último escaneo."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Créée en quelques secondes à partir de ton dernier scan."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Creata in pochi secondi dal tuo ultimo scan."
+          }
+        }
       }
     },
     "One-time %@ — included with Pro.": {
       "extractionState": "manual",
       "localizations": {
-        "de": { "stringUnit": { "state": "translated", "value": "Einmalig %@ — mit Pro inklusive." } },
-        "en": { "stringUnit": { "state": "translated", "value": "One-time %@ — included with Pro." } },
-        "es": { "stringUnit": { "state": "translated", "value": "Pago único de %@ — incluido con Pro." } },
-        "fr": { "stringUnit": { "state": "translated", "value": "%@ en une fois — inclus avec Pro." } },
-        "it": { "stringUnit": { "state": "translated", "value": "%@ una tantum — incluso con Pro." } }
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Einmalig %@ — mit Pro inklusive."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "One-time %@ — included with Pro."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pago único de %@ — incluido con Pro."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ en une fois — inclus avec Pro."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ una tantum — incluso con Pro."
+          }
+        }
       }
     },
     "Your routine is built from your first scan.": {
       "extractionState": "manual",
       "localizations": {
-        "de": { "stringUnit": { "state": "translated", "value": "Deine Routine wird aus deinem ersten Scan gebaut." } },
-        "en": { "stringUnit": { "state": "translated", "value": "Your routine is built from your first scan." } },
-        "es": { "stringUnit": { "state": "translated", "value": "Tu rutina se crea a partir de tu primer escaneo." } },
-        "fr": { "stringUnit": { "state": "translated", "value": "Ta routine est créée à partir de ton premier scan." } },
-        "it": { "stringUnit": { "state": "translated", "value": "La tua routine nasce dal tuo primo scan." } }
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Deine Routine wird aus deinem ersten Scan gebaut."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Your routine is built from your first scan."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tu rutina se crea a partir de tu primer escaneo."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ta routine est créée à partir de ton premier scan."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "La tua routine nasce dal tuo primo scan."
+          }
+        }
       }
     },
     "Open my routine": {
       "extractionState": "manual",
       "localizations": {
-        "de": { "stringUnit": { "state": "translated", "value": "Zur Routine" } },
-        "en": { "stringUnit": { "state": "translated", "value": "Open my routine" } },
-        "es": { "stringUnit": { "state": "translated", "value": "Abrir mi rutina" } },
-        "fr": { "stringUnit": { "state": "translated", "value": "Ouvrir ma routine" } },
-        "it": { "stringUnit": { "state": "translated", "value": "Apri la mia routine" } }
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Zur Routine"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Open my routine"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Abrir mi rutina"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ouvrir ma routine"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Apri la mia routine"
+          }
+        }
       }
     },
     "Create my routine": {
       "extractionState": "manual",
       "localizations": {
-        "de": { "stringUnit": { "state": "translated", "value": "Routine erstellen" } },
-        "en": { "stringUnit": { "state": "translated", "value": "Create my routine" } },
-        "es": { "stringUnit": { "state": "translated", "value": "Crear mi rutina" } },
-        "fr": { "stringUnit": { "state": "translated", "value": "Créer ma routine" } },
-        "it": { "stringUnit": { "state": "translated", "value": "Crea la mia routine" } }
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Routine erstellen"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Create my routine"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Crear mi rutina"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Créer ma routine"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Crea la mia routine"
+          }
+        }
       }
     },
     "Unlock my routine": {
       "extractionState": "manual",
       "localizations": {
-        "de": { "stringUnit": { "state": "translated", "value": "Routine freischalten" } },
-        "en": { "stringUnit": { "state": "translated", "value": "Unlock my routine" } },
-        "es": { "stringUnit": { "state": "translated", "value": "Desbloquear mi rutina" } },
-        "fr": { "stringUnit": { "state": "translated", "value": "Débloquer ma routine" } },
-        "it": { "stringUnit": { "state": "translated", "value": "Sblocca la mia routine" } }
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Routine freischalten"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Unlock my routine"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Desbloquear mi rutina"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Débloquer ma routine"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sblocca la mia routine"
+          }
+        }
       }
     },
     "Scan first": {
       "extractionState": "manual",
       "localizations": {
-        "de": { "stringUnit": { "state": "translated", "value": "Erst scannen" } },
-        "en": { "stringUnit": { "state": "translated", "value": "Scan first" } },
-        "es": { "stringUnit": { "state": "translated", "value": "Escanea primero" } },
-        "fr": { "stringUnit": { "state": "translated", "value": "Scanne d'abord" } },
-        "it": { "stringUnit": { "state": "translated", "value": "Prima scansiona" } }
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Erst scannen"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Scan first"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Escanea primero"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Scanne d'abord"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Prima scansiona"
+          }
+        }
       }
     },
     "Rating only": {
       "extractionState": "manual",
       "localizations": {
-        "de": { "stringUnit": { "state": "translated", "value": "Nur dein Rating" } },
-        "en": { "stringUnit": { "state": "translated", "value": "Rating only" } },
-        "es": { "stringUnit": { "state": "translated", "value": "Solo tu puntuación" } },
-        "fr": { "stringUnit": { "state": "translated", "value": "Uniquement ta note" } },
-        "it": { "stringUnit": { "state": "translated", "value": "Solo il tuo punteggio" } }
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nur dein Rating"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Rating only"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Solo tu puntuación"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Uniquement ta note"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Solo il tuo punteggio"
+          }
+        }
       }
     },
     "Rating + 14-day routine": {
       "extractionState": "manual",
       "localizations": {
-        "de": { "stringUnit": { "state": "translated", "value": "Rating + 14-Tage-Routine" } },
-        "en": { "stringUnit": { "state": "translated", "value": "Rating + 14-day routine" } },
-        "es": { "stringUnit": { "state": "translated", "value": "Puntuación + rutina de 14 días" } },
-        "fr": { "stringUnit": { "state": "translated", "value": "Note + routine de 14 jours" } },
-        "it": { "stringUnit": { "state": "translated", "value": "Punteggio + routine di 14 giorni" } }
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Rating + 14-Tage-Routine"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Rating + 14-day routine"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Puntuación + rutina de 14 días"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Note + routine de 14 jours"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Punteggio + routine di 14 giorni"
+          }
+        }
       }
     },
     "$1.99 one-time": {
       "extractionState": "manual",
       "localizations": {
-        "de": { "stringUnit": { "state": "translated", "value": "1,99 € einmalig" } },
-        "en": { "stringUnit": { "state": "translated", "value": "$1.99 one-time" } },
-        "es": { "stringUnit": { "state": "translated", "value": "1,99 € pago único" } },
-        "fr": { "stringUnit": { "state": "translated", "value": "1,99 € achat unique" } },
-        "it": { "stringUnit": { "state": "translated", "value": "1,99 € una tantum" } }
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "1,99 € einmalig"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "$1.99 one-time"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "1,99 € pago único"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "1,99 € achat unique"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "1,99 € una tantum"
+          }
+        }
       }
     },
     "$3.99 one-time": {
       "extractionState": "manual",
       "localizations": {
-        "de": { "stringUnit": { "state": "translated", "value": "3,99 € einmalig" } },
-        "en": { "stringUnit": { "state": "translated", "value": "$3.99 one-time" } },
-        "es": { "stringUnit": { "state": "translated", "value": "3,99 € pago único" } },
-        "fr": { "stringUnit": { "state": "translated", "value": "3,99 € achat unique" } },
-        "it": { "stringUnit": { "state": "translated", "value": "3,99 € una tantum" } }
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "3,99 € einmalig"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "$3.99 one-time"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "3,99 € pago único"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "3,99 € achat unique"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "3,99 € una tantum"
+          }
+        }
       }
     },
     "This scan · score + all 7 metrics": {
       "extractionState": "manual",
       "localizations": {
-        "de": { "stringUnit": { "state": "translated", "value": "Dieser Scan · Score + alle 7 Werte" } },
-        "en": { "stringUnit": { "state": "translated", "value": "This scan · score + all 7 metrics" } },
-        "es": { "stringUnit": { "state": "translated", "value": "Este escaneo · puntuación + 7 métricas" } },
-        "fr": { "stringUnit": { "state": "translated", "value": "Ce scan · score + les 7 mesures" } },
-        "it": { "stringUnit": { "state": "translated", "value": "Questa scansione · punteggio + 7 metriche" } }
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dieser Scan · Score + alle 7 Werte"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This scan · score + all 7 metrics"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Este escaneo · puntuación + 7 métricas"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ce scan · score + les 7 mesures"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Questa scansione · punteggio + 7 metriche"
+          }
+        }
       }
     },
     "This scan · your plan included": {
       "extractionState": "manual",
       "localizations": {
-        "de": { "stringUnit": { "state": "translated", "value": "Dieser Scan · dein Plan inklusive" } },
-        "en": { "stringUnit": { "state": "translated", "value": "This scan · your plan included" } },
-        "es": { "stringUnit": { "state": "translated", "value": "Este escaneo · tu plan incluido" } },
-        "fr": { "stringUnit": { "state": "translated", "value": "Ce scan · ton plan inclus" } },
-        "it": { "stringUnit": { "state": "translated", "value": "Questa scansione · piano incluso" } }
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dieser Scan · dein Plan inklusive"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This scan · your plan included"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Este escaneo · tu plan incluido"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ce scan · ton plan inclus"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Questa scansione · piano incluso"
+          }
+        }
       }
     },
     "2 scans a week · routine included": {
       "extractionState": "manual",
       "localizations": {
-        "de": { "stringUnit": { "state": "translated", "value": "2 Scans pro Woche · Routine inklusive" } },
-        "en": { "stringUnit": { "state": "translated", "value": "2 scans a week · routine included" } },
-        "es": { "stringUnit": { "state": "translated", "value": "2 escaneos por semana · rutina incluida" } },
-        "fr": { "stringUnit": { "state": "translated", "value": "2 scans par semaine · routine incluse" } },
-        "it": { "stringUnit": { "state": "translated", "value": "2 scansioni a settimana · routine inclusa" } }
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "2 Scans pro Woche · Routine inklusive"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "2 scans a week · routine included"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "2 escaneos por semana · rutina incluida"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "2 scans par semaine · routine incluse"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "2 scansioni a settimana · routine inclusa"
+          }
+        }
       }
     },
     "Purchase unavailable": {
       "extractionState": "manual",
       "localizations": {
-        "de": { "stringUnit": { "state": "translated", "value": "Kauf nicht verfügbar" } },
-        "en": { "stringUnit": { "state": "translated", "value": "Purchase unavailable" } },
-        "es": { "stringUnit": { "state": "translated", "value": "Compra no disponible" } },
-        "fr": { "stringUnit": { "state": "translated", "value": "Achat indisponible" } },
-        "it": { "stringUnit": { "state": "translated", "value": "Acquisto non disponibile" } }
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kauf nicht verfügbar"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Purchase unavailable"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Compra no disponible"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Achat indisponible"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Acquisto non disponibile"
+          }
+        }
       }
     },
     "The extra scan isn't available right now. Check your connection and try again.": {
       "extractionState": "manual",
       "localizations": {
-        "de": { "stringUnit": { "state": "translated", "value": "Der Extra-Scan ist gerade nicht verfügbar. Prüfe deine Verbindung und versuch es erneut." } },
-        "en": { "stringUnit": { "state": "translated", "value": "The extra scan isn't available right now. Check your connection and try again." } },
-        "es": { "stringUnit": { "state": "translated", "value": "El escaneo extra no está disponible ahora. Comprueba tu conexión e inténtalo de nuevo." } },
-        "fr": { "stringUnit": { "state": "translated", "value": "Le scan supplémentaire n'est pas disponible pour le moment. Vérifie ta connexion et réessaie." } },
-        "it": { "stringUnit": { "state": "translated", "value": "La scansione extra non è al momento disponibile. Controlla la connessione e riprova." } }
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Der Extra-Scan ist gerade nicht verfügbar. Prüfe deine Verbindung und versuch es erneut."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The extra scan isn't available right now. Check your connection and try again."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "El escaneo extra no está disponible ahora. Comprueba tu conexión e inténtalo de nuevo."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Le scan supplémentaire n'est pas disponible pour le moment. Vérifie ta connexion et réessaie."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "La scansione extra non è al momento disponibile. Controlla la connessione e riprova."
+          }
+        }
       }
     },
     "notif.nudge.body": {
@@ -35608,41 +36858,6 @@
         }
       }
     },
-    "Vitamin C": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Vitamin C"
-          }
-        },
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Vitamin C"
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Vitamina C"
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Vitamine C"
-          }
-        },
-        "it": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Vitamina C"
-          }
-        }
-      }
-    },
     "Targeted active": {
       "extractionState": "manual",
       "localizations": {
@@ -40434,6 +41649,41 @@
           "stringUnit": {
             "state": "translated",
             "value": "A %lld, un retinoide è un'opzione ben studiata per le imperfezioni."
+          }
+        }
+      }
+    },
+    "You as a 10/10!": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Du als 10/10!"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You as a 10/10!"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "¡Tú como un 10/10!"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Toi en 10/10 !"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tu come un 10/10!"
           }
         }
       }
