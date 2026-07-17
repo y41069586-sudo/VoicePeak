@@ -25138,6 +25138,16 @@
         "it": { "stringUnit": { "state": "translated", "value": "Torna alla dashboard" } }
       }
     },
+    "Or wait — your next weekly scan includes the plan (%@).": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": { "stringUnit": { "state": "translated", "value": "Oder warte — dein nächster Wochen-Scan enthält den Plan (%@)." } },
+        "en": { "stringUnit": { "state": "translated", "value": "Or wait — your next weekly scan includes the plan (%@)." } },
+        "es": { "stringUnit": { "state": "translated", "value": "O espera: tu próximo escaneo semanal incluye el plan (%@)." } },
+        "fr": { "stringUnit": { "state": "translated", "value": "Ou patiente — ton prochain scan hebdomadaire inclut le plan (%@)." } },
+        "it": { "stringUnit": { "state": "translated", "value": "Oppure aspetta — la tua prossima scansione settimanale include il piano (%@)." } }
+      }
+    },
     "Build my 14-day plan · %@": {
       "extractionState": "manual",
       "localizations": {

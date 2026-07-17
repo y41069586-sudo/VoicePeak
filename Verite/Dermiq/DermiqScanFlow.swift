@@ -174,6 +174,7 @@ struct DermiqScanFlowView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(PurchaseManager.self) private var purchases
     @Query private var allPlans: [RoutinePlan]
+    @Query(sort: \ScanRecord.date, order: .reverse) private var scans: [ScanRecord]
     @State private var model: ScanFlowModel
     @State private var planPurchasing = false
     @State private var planPurchaseFailed = false
@@ -229,8 +230,7 @@ struct DermiqScanFlowView: View {
                 DermiqPotentialView(
                     model: model,
                     ctaTitle: planCTATitle,
-                    ctaCaption: planAllowed ? nil
-                        : String(localized: "One-time purchase — your 14-day plan, built from this scan."),
+                    ctaCaption: planCTACaption,
                     ctaEnabled: !planPurchasing
                 ) {
                     planCTATapped()
@@ -275,6 +275,29 @@ struct DermiqScanFlowView: View {
         if planPurchasing { return String(localized: "Unlocking…") }
         let price = purchases.displayPrice(for: VeriteProducts.routineOnce) ?? "€3,99"
         return String(format: String(localized: "Build my 14-day plan · %@"), price)
+    }
+
+    /// When a Pro user is on a credit scan, their NEXT weekly-included scan
+    /// (plan included) frees up once the oldest scan leaves the 7-day window —
+    /// same arithmetic as ScanQuota's weekly cap.
+    private var nextIncludedScan: Date? {
+        guard purchases.isPro, model.usedCredit else { return nil }
+        let weekAgo = Date.now.addingTimeInterval(-7 * 24 * 3600)
+        return scans.filter { $0.date > weekAgo }
+            .map(\.date).min()?
+            .addingTimeInterval(7 * 24 * 3600)
+    }
+
+    /// Caption under the paid plan CTA: the honest one-time line, plus — for
+    /// Pro on a credit scan — a countdown to the next included plan.
+    private var planCTACaption: String? {
+        guard !planAllowed else { return nil }
+        var caption = String(localized: "One-time purchase — your 14-day plan, built from this scan.")
+        if let next = nextIncludedScan {
+            let rel = next.formatted(.relative(presentation: .named))
+            caption += "\n" + String(format: String(localized: "Or wait — your next weekly scan includes the plan (%@)."), rel)
+        }
+        return caption
     }
 
     /// Single entry point for the plan CTA: warn if a plan already exists
