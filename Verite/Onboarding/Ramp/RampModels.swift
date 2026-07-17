@@ -29,7 +29,8 @@ enum RampStep: Int, CaseIterable {
     case quizSPF         // 11 — Q6 · your life
     case insightLife     // 12 — mirrored insight, chapter 2
     case theReading      // 13 — visible processing + prediction range
-    case planPreview     // 14 — your first plan, previewed
+    case theCurve        // 14 — where do you land?
+    case planPreview     // 15 — your first plan, previewed
     case evidence        // 16 — the science behind the plan (tappable sources)
     case commitment      // 17 — sign your 14-day commitment
     case dailyRitual     // 17 — time choice + notifications
@@ -68,6 +69,7 @@ enum RampStep: Int, CaseIterable {
         case .quizSPF:        return "quiz_spf"
         case .insightLife:    return "insight_life"
         case .theReading:     return "the_reading"
+        case .theCurve:       return "the_curve"
         case .planPreview:    return "plan_preview"
         case .evidence:       return "evidence"
         case .commitment:     return "commitment"
