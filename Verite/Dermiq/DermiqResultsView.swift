@@ -70,6 +70,24 @@ struct DermiqResultsView: View {
 
     @State private var planPurchasing = false
     @State private var planPurchaseFailed = false
+    /// Tapping the plan CTA while a plan already exists → warn first: a new
+    /// plan replaces the current one (and its tick-off progress).
+    @State private var showPlanReplaceWarning = false
+    @Query private var allPlans: [RoutinePlan]
+
+    private var hasActivePlan: Bool { allPlans.contains { $0.isActive } }
+
+    /// The plan CTA's single entry point: warn if a plan already exists,
+    /// otherwise continue (Pro) or start the €3.99 purchase.
+    private func planCTATapped() {
+        if hasActivePlan {
+            showPlanReplaceWarning = true
+        } else if planAllowed {
+            onContinue()
+        } else {
+            buyPlan()
+        }
+    }
 
     /// Buy the 14-day plan for THIS scan, then continue into plan creation.
     private func buyPlan() {
@@ -129,6 +147,14 @@ struct DermiqResultsView: View {
             Button("OK", role: .cancel) {}
         } message: {
             Text("Check your connection and try again.")
+        }
+        .alert("You already have a 14-day plan", isPresented: $showPlanReplaceWarning) {
+            Button("Yes, create new") {
+                if planAllowed { onContinue() } else { buyPlan() }
+            }
+            Button("Back to dashboard", role: .cancel) { onClose() }
+        } message: {
+            Text("A new plan replaces your current one and its progress. Create a new plan anyway?")
         }
         .task {
             guard !unlocked else { return }
@@ -234,7 +260,7 @@ struct DermiqResultsView: View {
                             // and it buys ONLY the plan, not the charts.
                             if planAllowed {
                                 DQPrimaryButton(title: "Make me a 10/10",
-                                                systemImage: "sparkles") { onContinue() }
+                                                systemImage: "sparkles") { planCTATapped() }
                             } else {
                                 DQPrimaryButton(
                                     title: planPurchasing
@@ -243,7 +269,7 @@ struct DermiqResultsView: View {
                                                  routineOncePrice),
                                     systemImage: "sparkles",
                                     isEnabled: !planPurchasing
-                                ) { buyPlan() }
+                                ) { planCTATapped() }
                                 Text("One-time purchase — your 14-day plan, built from this scan.")
                                     .font(DQFont.micro)
                                     .foregroundStyle(DQColor.textSecondary)

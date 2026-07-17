@@ -25098,6 +25098,46 @@
         }
       }
     },
+    "You already have a 14-day plan": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": { "stringUnit": { "state": "translated", "value": "Du hast schon einen 14-Tage-Plan" } },
+        "en": { "stringUnit": { "state": "translated", "value": "You already have a 14-day plan" } },
+        "es": { "stringUnit": { "state": "translated", "value": "Ya tienes un plan de 14 días" } },
+        "fr": { "stringUnit": { "state": "translated", "value": "Tu as déjà un plan de 14 jours" } },
+        "it": { "stringUnit": { "state": "translated", "value": "Hai già un piano di 14 giorni" } }
+      }
+    },
+    "A new plan replaces your current one and its progress. Create a new plan anyway?": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": { "stringUnit": { "state": "translated", "value": "Ein neuer Plan ersetzt deinen aktuellen samt Fortschritt. Trotzdem neu erstellen?" } },
+        "en": { "stringUnit": { "state": "translated", "value": "A new plan replaces your current one and its progress. Create a new plan anyway?" } },
+        "es": { "stringUnit": { "state": "translated", "value": "Un plan nuevo sustituye al actual y su progreso. ¿Crear uno nuevo de todas formas?" } },
+        "fr": { "stringUnit": { "state": "translated", "value": "Un nouveau plan remplace l'actuel et sa progression. Créer quand même un nouveau plan ?" } },
+        "it": { "stringUnit": { "state": "translated", "value": "Un nuovo piano sostituisce quello attuale e i suoi progressi. Crearne comunque uno nuovo?" } }
+      }
+    },
+    "Yes, create new": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": { "stringUnit": { "state": "translated", "value": "Ja, neu erstellen" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Yes, create new" } },
+        "es": { "stringUnit": { "state": "translated", "value": "Sí, crear nuevo" } },
+        "fr": { "stringUnit": { "state": "translated", "value": "Oui, en créer un nouveau" } },
+        "it": { "stringUnit": { "state": "translated", "value": "Sì, creane uno nuovo" } }
+      }
+    },
+    "Back to dashboard": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": { "stringUnit": { "state": "translated", "value": "Zurück zum Dashboard" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Back to dashboard" } },
+        "es": { "stringUnit": { "state": "translated", "value": "Volver al panel" } },
+        "fr": { "stringUnit": { "state": "translated", "value": "Retour au tableau de bord" } },
+        "it": { "stringUnit": { "state": "translated", "value": "Torna alla dashboard" } }
+      }
+    },
     "Make me a 10/10 · %@": {
       "extractionState": "manual",
       "localizations": {
