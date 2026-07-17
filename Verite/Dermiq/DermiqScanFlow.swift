@@ -80,6 +80,10 @@ final class ScanFlowModel {
     /// longer shove the delta comparison screen in front of a dashboard rescan.
     func theaterFinished(context: ModelContext) {
         persist(context: context)
+        // Burn the one free scan the moment a result is reached — durably, so
+        // even if the ScanRecord write above raced or failed, a non-Pro user
+        // can never land a second free reading.
+        ReferralStore.shared.markFreeScanUsed()
         Haptics.fire(.transition)
         stage = .results
     }

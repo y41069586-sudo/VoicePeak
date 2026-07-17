@@ -33,13 +33,27 @@ final class ReferralStore {
     private static let redeemedKey = "dq.referral.redeemed"
     private static let inviterKey = "dq.referral.inviter"
     private static let confirmsKey = "dq.referral.confirms"
+    private static let freeScanKey = "dq.scan.freeUsed"
     private static let confirmCap = 10
 
     /// Bonus scans available (earned via referrals).
     private(set) var credits: Int
 
+    /// The one free (onboarding) scan has been taken. Durable and independent
+    /// of whether a `ScanRecord` actually persisted — so a save race or a
+    /// cancelled write can never hand out a second free reading.
+    private(set) var freeScanUsed: Bool
+
     private init() {
         credits = UserDefaults.standard.integer(forKey: Self.creditsKey)
+        freeScanUsed = UserDefaults.standard.bool(forKey: Self.freeScanKey)
+    }
+
+    /// Called once the user has reached a scan result — burns the free scan.
+    func markFreeScanUsed() {
+        guard !freeScanUsed else { return }
+        freeScanUsed = true
+        UserDefaults.standard.set(true, forKey: Self.freeScanKey)
     }
 
     // MARK: My code + links
@@ -149,7 +163,8 @@ enum ScanQuota {
         case blockedProWeekly(nextScan: Date?)
     }
 
-    static func decide(scans: [ScanRecord], isPro: Bool, credits: Int) -> Decision {
+    static func decide(scans: [ScanRecord], isPro: Bool, credits: Int,
+                       freeScanUsed: Bool) -> Decision {
         if isPro {
             let weekAgo = Date.now.addingTimeInterval(-7 * 24 * 3600)
             let inWindow = scans.filter { $0.date > weekAgo }
@@ -160,7 +175,11 @@ enum ScanQuota {
             let nextScan = inWindow.map(\.date).min()?.addingTimeInterval(7 * 24 * 3600)
             return .blockedProWeekly(nextScan: nextScan)
         }
-        if scans.isEmpty { return .allow(useCredit: false) }   // the one first scan
+        // The one free scan: allowed only while it has NOT been burned AND no
+        // record exists yet. Gating on `freeScanUsed` (set the moment the first
+        // scan reaches its result) means a persistence race can never grant a
+        // second free reading — the whole point of the flag.
+        if !freeScanUsed && scans.isEmpty { return .allow(useCredit: false) }
         if credits > 0 { return .allow(useCredit: true) }
         return .blockedNeedsPro
     }

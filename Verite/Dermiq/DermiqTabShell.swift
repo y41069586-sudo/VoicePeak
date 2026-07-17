@@ -100,10 +100,13 @@ struct DermiqTabShell: View {
             }
         }
         .onAppear {
-            // Onboarding hands off straight into the camera: with zero scans,
-            // open the capture flow IMMEDIATELY and without the cover's slide
-            // animation, so the home dashboard never flashes behind it.
-            guard !autoLaunched, scans.isEmpty else { return }
+            // Onboarding hands off straight into the camera: with zero scans
+            // AND an unused free scan, open the capture flow IMMEDIATELY and
+            // without the cover's slide animation, so the home dashboard never
+            // flashes behind it. The `freeScanUsed` guard stops a re-launch on
+            // a later cold start if the first scan's record never persisted.
+            guard !autoLaunched, scans.isEmpty,
+                  !ReferralStore.shared.freeScanUsed else { return }
             autoLaunched = true
             var transaction = Transaction()
             transaction.disablesAnimations = true
@@ -135,7 +138,8 @@ struct DermiqTabShell: View {
         // scans); everything else is Pro. Pro has a weekly fair-use cap —
         // every scan hits the paid analysis API.
         switch ScanQuota.decide(scans: scans, isPro: hasPro,
-                                credits: ReferralStore.shared.credits) {
+                                credits: ReferralStore.shared.credits,
+                                freeScanUsed: ReferralStore.shared.freeScanUsed) {
         case .allow(let useCredit):
             if useCredit { ReferralStore.shared.consumeCredit() }
             showFlow = true
