@@ -50,6 +50,9 @@ struct DermiqTabShell: View {
     @State private var compareInbox = CompareInbox.shared
     /// Extra-scan product unavailable (not loaded from the App Store).
     @State private var extraScanFailed = false
+    /// The launched scan was paid with a credit (extra scan / bonus) — such
+    /// scans don't auto-include a new 14-day plan, even for Pro.
+    @State private var flowUsedCredit = false
 
     var body: some View {
         // Stock SwiftUI TabView — no custom bar. Built against the iOS 26 SDK
@@ -88,7 +91,8 @@ struct DermiqTabShell: View {
                 .presentationDragIndicator(.visible)
         }
         .fullScreenCover(isPresented: $showFlow) {
-            DermiqScanFlowView(previousScan: scans.first) { planCreated in
+            DermiqScanFlowView(previousScan: scans.first,
+                               usedCredit: flowUsedCredit) { planCreated in
                 showFlow = false
                 if planCreated { tab = .routine }
                 // Award scan badges once the cover is gone, so the popup
@@ -117,6 +121,7 @@ struct DermiqTabShell: View {
             guard !autoLaunched, scans.isEmpty,
                   !ReferralStore.shared.freeScanUsed else { return }
             autoLaunched = true
+            flowUsedCredit = false // the free onboarding scan is not a credit scan
             var transaction = Transaction()
             transaction.disablesAnimations = true
             withTransaction(transaction) { showFlow = true }
@@ -156,6 +161,7 @@ struct DermiqTabShell: View {
                                 freeScanUsed: ReferralStore.shared.freeScanUsed) {
         case .allow(let useCredit):
             if useCredit { ReferralStore.shared.consumeCredit() }
+            flowUsedCredit = useCredit
             showFlow = true
         case .blockedNeedsPro:
             // Non-Pro out of free scans → the Pro paywall directly. It's the

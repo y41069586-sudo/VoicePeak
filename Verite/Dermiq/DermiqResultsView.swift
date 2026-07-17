@@ -56,10 +56,11 @@ struct DermiqResultsView: View {
             || (model.record.map { UnlockStore.shared.isRatingUnlocked($0.id) } ?? false)
     }
 
-    /// The 14-day plan: included with Pro, otherwise a €3.99 one-time buy on
-    /// the CTA (plan only — the charts were unlocked separately).
+    /// The 14-day plan: auto-included only on Pro's two WEEKLY scans. A
+    /// credit scan (€1.99 extra / bonus) — even for Pro — and any non-Pro
+    /// scan needs the €3.99 one-time buy on the CTA (plan only).
     private var planAllowed: Bool {
-        purchases.isPro
+        (purchases.isPro && !model.usedCredit)
             || (model.record.map { UnlockStore.shared.isRoutineUnlocked($0.id) } ?? false)
     }
 

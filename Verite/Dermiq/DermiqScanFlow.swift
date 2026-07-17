@@ -29,10 +29,18 @@ final class ScanFlowModel {
     let previousScan: ScanRecord?
     var isRescan: Bool { previousScan != nil }
 
+    /// True when this scan was paid for with a credit (€1.99 extra scan or a
+    /// referral bonus) rather than a Pro weekly-included scan. Credit scans
+    /// include the scan + rating ONLY — a NEW 14-day plan from one costs
+    /// €3.99 even for Pro; the plan is only auto-included on the two weekly
+    /// subscription scans.
+    let usedCredit: Bool
+
     private var enhanceTask: Task<Void, Never>?
 
-    init(previousScan: ScanRecord? = nil) {
+    init(previousScan: ScanRecord? = nil, usedCredit: Bool = false) {
         self.previousScan = previousScan
+        self.usedCredit = usedCredit
     }
 
     // MARK: Pipeline
@@ -167,10 +175,12 @@ struct DermiqScanFlowView: View {
     @Environment(PurchaseManager.self) private var purchases
     @State private var model: ScanFlowModel
 
-    init(previousScan: ScanRecord?, onFinished: @escaping (_ planCreated: Bool) -> Void) {
+    init(previousScan: ScanRecord?, usedCredit: Bool = false,
+         onFinished: @escaping (_ planCreated: Bool) -> Void) {
         self.previousScan = previousScan
         self.onFinished = onFinished
-        _model = State(initialValue: ScanFlowModel(previousScan: previousScan))
+        _model = State(initialValue: ScanFlowModel(previousScan: previousScan,
+                                                   usedCredit: usedCredit))
     }
 
     var body: some View {
@@ -225,11 +235,12 @@ struct DermiqScanFlowView: View {
         .preferredColorScheme(.light)
     }
 
-    /// The 14-day plan is part of the "routine" one-time pack or Pro. A
-    /// rating-only buyer sees their revealed results + potential, then the
-    /// flow ends without a plan (the routine stays a paywall upsell).
+    /// The 14-day plan is included only on Pro's two WEEKLY scans; a credit
+    /// scan (€1.99 extra / referral bonus) or a rating-only buy needs the
+    /// €3.99 plan purchase. Without it the flow ends after the potential
+    /// screen, plan-less.
     private var planAllowed: Bool {
-        purchases.isPro
+        (purchases.isPro && !model.usedCredit)
             || (model.record.map { UnlockStore.shared.isRoutineUnlocked($0.id) } ?? false)
     }
 
