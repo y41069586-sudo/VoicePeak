@@ -50,6 +50,9 @@ struct DermiqTabShell: View {
     @State private var compareInbox = CompareInbox.shared
     /// Extra-scan product unavailable (not loaded from the App Store).
     @State private var extraScanFailed = false
+    /// The €1.99 extra-scan purchase is in flight — drives the buy button's
+    /// loading state in ScanLimitSheet.
+    @State private var extraScanPurchasing = false
     /// The launched scan was paid with a credit (extra scan / bonus) — such
     /// scans don't auto-include a new 14-day plan, even for Pro.
     @State private var flowUsedCredit = false
@@ -69,6 +72,7 @@ struct DermiqTabShell: View {
             // (startScan sends them straight to the paywall).
             ScanLimitSheet(nextScan: quotaNextFree,
                            extraScanPrice: extraScanPrice,
+                           purchasing: extraScanPurchasing,
                            onBuyExtraScan: { buyExtraScan() })
         }
         // The ONE paywall — the same card that sits over the blurred results.
@@ -189,21 +193,27 @@ struct DermiqTabShell: View {
     }
 
     /// Buy one extra scan (consumable). On success it becomes a scan credit
-    /// and we carry the user straight into the scan they wanted.
+    /// and we carry the user straight into the scan they wanted. The buy
+    /// button stays in a loading state (via `extraScanPurchasing`) until this
+    /// resolves — the sheet dismisses itself on success.
     private func buyExtraScan() {
+        guard !extraScanPurchasing else { return }
         Task {
+            extraScanPurchasing = true
+            defer { extraScanPurchasing = false }
             // Product not loaded (ASC product missing/not ready, offline) —
             // SAY so; a silent return here read as "the button does nothing".
             guard purchases.displayPrice(for: VeriteProducts.extraScan) != nil else {
+                showQuotaSheet = false
                 extraScanFailed = true
                 return
             }
             guard await purchases.purchaseConsumable(productID: VeriteProducts.extraScan) else { return }
             ReferralStore.shared.addCredit()
             RampAnalytics.track("extra_scan_purchased")
-            // Straight into the camera — one runloop beat so the purchase
-            // sheet's dismissal has settled, nothing more.
-            try? await Task.sleep(for: .milliseconds(150))
+            showQuotaSheet = false   // dismiss the cap sheet
+            // Let the sheet dismissal + the purchase confirmation settle.
+            try? await Task.sleep(for: .milliseconds(300))
             startScan()
         }
     }

@@ -232,6 +232,8 @@ struct ScanLimitSheet: View {
     var nextScan: Date?
     /// Buy one more scan now (€1.99). Displayed price passed in.
     var extraScanPrice: String = "€1.99"
+    /// The purchase is in flight — the buy button shows a spinner and locks.
+    var purchasing: Bool = false
     var onBuyExtraScan: (() -> Void)? = nil
 
     @Environment(\.dismiss) private var dismiss
@@ -274,17 +276,25 @@ struct ScanLimitSheet: View {
 
             if let onBuyExtraScan {
                 Button {
-                    dismiss()
+                    // Don't dismiss here — stay open showing the spinner; the
+                    // shell dismisses this sheet once the purchase resolves.
                     onBuyExtraScan()
                 } label: {
-                    Label("Buy 1 extra scan · \(extraScanPrice)", systemImage: "bolt.fill")
-                        .font(.system(size: 16, weight: .bold, design: .rounded))
-                        .foregroundStyle(.white)
-                        .frame(maxWidth: .infinity, minHeight: 54)
-                        .background(DQColor.accentBright,
-                                    in: RoundedRectangle(cornerRadius: 18, style: .continuous))
+                    Group {
+                        if purchasing {
+                            ProgressView().tint(.white)
+                        } else {
+                            Label("Buy 1 extra scan · \(extraScanPrice)", systemImage: "bolt.fill")
+                        }
+                    }
+                    .font(.system(size: 16, weight: .bold, design: .rounded))
+                    .foregroundStyle(.white)
+                    .frame(maxWidth: .infinity, minHeight: 54)
+                    .background(DQColor.accentBright,
+                                in: RoundedRectangle(cornerRadius: 18, style: .continuous))
                 }
                 .buttonStyle(PressableStyle())
+                .disabled(purchasing)
                 .padding(.horizontal, 22)
             }
 
