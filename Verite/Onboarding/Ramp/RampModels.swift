@@ -28,7 +28,8 @@ enum RampStep: Int, CaseIterable {
     case quizSleep       // 10 — Q5 · your life
     case quizSPF         // 11 — Q6 · your life
     case insightLife     // 12 — mirrored insight, chapter 2
-    case theReading      // 13 — visible processing + prediction range
+    case sensitivities   // 13 — allergies the routine must avoid
+    case theReading      // 14 — visible processing + prediction range
     case theCurve        // 14 — where do you land?
     case planPreview     // 15 — your first plan, previewed
     case evidence        // 16 — the science behind the plan (tappable sources)
@@ -68,6 +69,7 @@ enum RampStep: Int, CaseIterable {
         case .quizSleep:      return "quiz_sleep"
         case .quizSPF:        return "quiz_spf"
         case .insightLife:    return "insight_life"
+        case .sensitivities:  return "sensitivities"
         case .theReading:     return "the_reading"
         case .theCurve:       return "the_curve"
         case .planPreview:    return "plan_preview"
@@ -210,6 +212,9 @@ struct RampQuizAnswers {
     var routine: RoutineLevel?
     var sleep: SleepBucket?
     var spf: SunProtection?
+    /// Ingredients the user reacts to (raw `SkinSensitivity` values) — the
+    /// routine builder swaps these for gentle alternatives.
+    var sensitivities: Set<String> = []
 
     /// Trimmed display name, nil when empty/skipped.
     var displayName: String? {
@@ -328,6 +333,8 @@ struct RampQuizAnswers {
         profile.sunProtection = spf?.rawValue
         profile.displayName = displayName
         profile.ageBand = age?.rawValue
+        // Persist sensitivities for the routine builder (avoid flagged actives).
+        SkinSensitivities.save(Set(sensitivities.compactMap(SkinSensitivity.init(rawValue:))))
     }
 }
 

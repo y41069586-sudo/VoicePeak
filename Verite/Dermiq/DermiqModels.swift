@@ -249,6 +249,48 @@ struct SkinPrefs: Sendable {
 }
 
 // ============================================================
+// MARK: — Skin sensitivities (allergies the routine must avoid)
+// ============================================================
+
+/// Ingredients the user reacts to — captured once in onboarding and honored
+/// on every plan build, so a flagged active is swapped for a gentle
+/// alternative (never stacked onto skin that reacts to it).
+enum SkinSensitivity: String, CaseIterable, Sendable {
+    case retinoids, acids, vitaminC, fragrance
+
+    var label: String {
+        switch self {
+        case .retinoids: return String(localized: "Retinoids")
+        case .acids:     return String(localized: "Acids (AHA/BHA)")
+        case .vitaminC:  return String(localized: "Vitamin C")
+        case .fragrance: return String(localized: "Fragrance")
+        }
+    }
+
+    var icon: String {
+        switch self {
+        case .retinoids: return "moon.stars"
+        case .acids:     return "drop.triangle"
+        case .vitaminC:  return "sun.max"
+        case .fragrance: return "nose"
+        }
+    }
+}
+
+enum SkinSensitivities {
+    private static let key = "dq.pref.sensitivities"
+
+    static func load() -> Set<SkinSensitivity> {
+        Set((UserDefaults.standard.stringArray(forKey: key) ?? [])
+            .compactMap(SkinSensitivity.init(rawValue:)))
+    }
+
+    static func save(_ set: Set<SkinSensitivity>) {
+        UserDefaults.standard.set(set.map(\.rawValue), forKey: key)
+    }
+}
+
+// ============================================================
 // MARK: — THE CANONICAL ROUTINE (locked, evidence-based)
 // ============================================================
 //
@@ -293,7 +335,8 @@ enum RoutineBuilder {
     static func steps(
         targets: [DermiqSubScore],
         weightedToward: [DermiqCategory] = [],
-        prefs: SkinPrefs? = nil
+        prefs: SkinPrefs? = nil,
+        avoid: Set<SkinSensitivity> = []
     ) -> (am: [RoutineStep], pm: [RoutineStep]) {
         var ordered = targets
         if !weightedToward.isEmpty {
@@ -329,6 +372,9 @@ enum RoutineBuilder {
             guard amTargets + pmTargets < totalCap else { break }
             var step = targetedStep(for: target)
             if feel == .sensitive { step = soften(step) }
+            // Allergy guard: swap any flagged active for a gentle alternative
+            // so skin that reacts to it never gets it.
+            step = respectingSensitivities(step, avoid: avoid)
             let family = activeFamily(of: step)
             guard !usedFamilies.contains(family) else { continue }
             switch preferredBlock(for: target.category) {
@@ -460,6 +506,51 @@ enum RoutineBuilder {
                 active: "Ethylated ascorbic acid 10%",
                 why: step.why + " " + String(localized: "Derivative form — kinder to reactive skin."),
                 examples: ["Purito CID Serum · $$", "Geek & Gorgeous C-Glow · $$"])
+        }
+        return step
+    }
+
+    /// Swap a flagged active for a gentle alternative that treats the same
+    /// concern without the ingredient the user reacts to. Always returns a
+    /// filled step — the treatment slot is never left empty.
+    private static func respectingSensitivities(_ step: RoutineStep,
+                                                avoid: Set<SkinSensitivity>) -> RoutineStep {
+        guard !avoid.isEmpty else { return step }
+        let a = step.active.lowercased()
+        let type = step.productType.lowercased()
+
+        // Retinoids → bakuchiol (a plant-based, non-retinoid smoother).
+        if avoid.contains(.retinoids),
+           a.contains("retina") || a.contains("retinol") || a.contains("adapalene") {
+            return RoutineStep(key: step.key, productType: "Bakuchiol serum",
+                active: "Bakuchiol 1%",
+                why: String(localized: "A gentle, non-retinoid smoother — you flagged retinoids."),
+                examples: ["The Inkey List Bakuchiol · $", "By Wishtrend Bakuchiol · $$"])
+        }
+        // Exfoliating acids (AHA/BHA/PHA) → niacinamide, or a plain clay mask
+        // when the step was an exfoliating clay+BHA mask. Azelaic/tranexamic
+        // are NOT exfoliating acids and are left alone.
+        if avoid.contains(.acids),
+           a.contains("salicylic") || a.contains("glycolic") || a.contains("lactic")
+            || a.contains("bha") || a.contains("aha") || a.contains("gluconolactone") {
+            if type.contains("mask") {
+                return RoutineStep(key: step.key, productType: "Kaolin clay mask (2×/week)",
+                    active: "Kaolin clay",
+                    why: String(localized: "Draws out congestion without acids — you flagged acids."),
+                    examples: ["Innisfree Volcanic Clay · $", "The Ordinary Clay Mask · $"])
+            }
+            return RoutineStep(key: step.key, productType: "Niacinamide serum",
+                active: "Niacinamide 10%",
+                why: String(localized: "An acid-free way to smooth and calm — you flagged acids."),
+                examples: ["The Ordinary Niacinamide · $", "Naturium Niacinamide · $$"])
+        }
+        // Vitamin C → niacinamide (also brightens, gentler for reactive skin).
+        if avoid.contains(.vitaminC),
+           a.contains("ascorbic") || a.contains("vitamin c") {
+            return RoutineStep(key: step.key, productType: "Niacinamide serum",
+                active: "Niacinamide 10%",
+                why: String(localized: "Brightens tone without vitamin C — you flagged it."),
+                examples: ["The Ordinary Niacinamide · $", "Naturium Niacinamide · $$"])
         }
         return step
     }

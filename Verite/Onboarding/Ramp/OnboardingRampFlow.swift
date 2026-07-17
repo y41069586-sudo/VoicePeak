@@ -178,6 +178,8 @@ struct OnboardingRampFlow: View {
                 chips: [answers.routine?.label, answers.sleep?.label, answers.spf?.label]
                     .compactMap { $0 }
             ) { advance() }
+        case .sensitivities:
+            RampSensitivityScreen(selected: sensitivitiesBinding) { advance() }
         case .theReading:
             RampRevealScreen(answers: answers) { advance() }
         case .theCurve:
@@ -208,6 +210,10 @@ struct OnboardingRampFlow: View {
 
     private var nameBinding: Binding<String> {
         Binding(get: { answers.name ?? "" }, set: { answers.name = $0 })
+    }
+
+    private var sensitivitiesBinding: Binding<Set<String>> {
+        Binding(get: { answers.sensitivities }, set: { answers.sensitivities = $0 })
     }
 
     /// Swaps in the name-addressed variant once the user has given a name.

@@ -148,7 +148,8 @@ final class ScanFlowModel {
         let steps = RoutineBuilder.steps(
             targets: targets,
             weightedToward: weightedToward,
-            prefs: SkinPrefs.load()   // the two pre-scan questions
+            prefs: SkinPrefs.load(),        // the two pre-scan questions
+            avoid: SkinSensitivities.load() // allergies from onboarding
         )
 
         // One active plan at a time.

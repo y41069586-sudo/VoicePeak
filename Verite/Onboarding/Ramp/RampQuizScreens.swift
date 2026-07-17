@@ -295,6 +295,85 @@ extension LabelStyle where Self == TrailingIconLabelStyle {
 }
 
 // ============================================================
+// MARK: — Sensitivities (multi-select allergies → routine build)
+// ============================================================
+
+/// Multi-select: ingredients the user reacts to. Flagged actives get swapped
+/// for gentle alternatives when the 14-day plan is built. "None" clears the
+/// rest; picking any active clears "None". Always advanceable (Continue).
+struct RampSensitivityScreen: View {
+    @Binding var selected: Set<String>
+    let onAdvance: () -> Void
+
+    private let options = SkinSensitivity.allCases
+
+    var body: some View {
+        GeometryReader { proxy in
+            ScrollView {
+                VStack(alignment: .leading, spacing: 0) {
+                    Spacer(minLength: VSpace.xxl)
+
+                    Text("ONE LAST THING")
+                        .font(VType.micro).tracking(3)
+                        .foregroundStyle(RampStage.accentDeep)
+                        .padding(.horizontal, VSpace.lg)
+                        .padding(.bottom, VSpace.sm)
+                    Text("Anything your skin\nreacts to?")
+                        .font(RampStage.serif(25))
+                        .foregroundStyle(RampStage.ink)
+                        .lineSpacing(2)
+                        .fixedSize(horizontal: false, vertical: true)
+                        .padding(.horizontal, VSpace.lg)
+                    Text("We'll build your plan around it — no ingredient you flagged.")
+                        .font(VType.body)
+                        .foregroundStyle(RampStage.textSecondary)
+                        .fixedSize(horizontal: false, vertical: true)
+                        .padding(.horizontal, VSpace.lg)
+                        .padding(.top, VSpace.xs)
+
+                    Spacer().frame(height: VSpace.xl)
+
+                    VStack(spacing: VSpace.sm) {
+                        ForEach(options, id: \.rawValue) { option in
+                            RampOptionCard(
+                                label: option.label,
+                                icon: option.icon,
+                                selected: selected.contains(option.rawValue)
+                            ) {
+                                toggle(option.rawValue)
+                            }
+                        }
+                        // "None" — clears every flag.
+                        RampOptionCard(
+                            label: "Nothing I know of",
+                            icon: "checkmark.seal",
+                            selected: selected.isEmpty
+                        ) {
+                            Haptics.fire(.selection)
+                            selected.removeAll()
+                        }
+                    }
+                    .padding(.horizontal, VSpace.lg)
+
+                    Spacer(minLength: VSpace.xl)
+
+                    RampPrimaryButton(title: "Continue") { onAdvance() }
+                        .padding(.horizontal, VSpace.lg)
+                    Spacer().frame(height: VSpace.xxl)
+                }
+                .frame(minHeight: proxy.size.height, alignment: .leading)
+            }
+            .scrollBounceBehavior(.basedOnSize)
+        }
+    }
+
+    private func toggle(_ raw: String) {
+        Haptics.fire(.selection)
+        if selected.contains(raw) { selected.remove(raw) } else { selected.insert(raw) }
+    }
+}
+
+// ============================================================
 // MARK: — The Name (optional, personalizes everything after)
 // ============================================================
 

@@ -25178,6 +25178,126 @@
         "it": { "stringUnit": { "state": "translated", "value": "Acquisto una tantum — il tuo piano di 14 giorni, creato da questa scansione." } }
       }
     },
+    "ONE LAST THING": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": { "stringUnit": { "state": "translated", "value": "NOCH EINE SACHE" } },
+        "en": { "stringUnit": { "state": "translated", "value": "ONE LAST THING" } },
+        "es": { "stringUnit": { "state": "translated", "value": "UNA ÚLTIMA COSA" } },
+        "fr": { "stringUnit": { "state": "translated", "value": "UNE DERNIÈRE CHOSE" } },
+        "it": { "stringUnit": { "state": "translated", "value": "UN'ULTIMA COSA" } }
+      }
+    },
+    "Anything your skin\nreacts to?": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": { "stringUnit": { "state": "translated", "value": "Reagiert deine Haut\nauf etwas?" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Anything your skin\nreacts to?" } },
+        "es": { "stringUnit": { "state": "translated", "value": "¿Tu piel reacciona\na algo?" } },
+        "fr": { "stringUnit": { "state": "translated", "value": "Ta peau réagit-elle\nà quelque chose ?" } },
+        "it": { "stringUnit": { "state": "translated", "value": "La tua pelle reagisce\na qualcosa?" } }
+      }
+    },
+    "We'll build your plan around it — no ingredient you flagged.": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": { "stringUnit": { "state": "translated", "value": "Wir bauen deinen Plan darum herum — kein Wirkstoff, den du markiert hast." } },
+        "en": { "stringUnit": { "state": "translated", "value": "We'll build your plan around it — no ingredient you flagged." } },
+        "es": { "stringUnit": { "state": "translated", "value": "Crearemos tu plan en torno a ello: ningún ingrediente que hayas marcado." } },
+        "fr": { "stringUnit": { "state": "translated", "value": "On construira ton plan en conséquence — aucun ingrédient signalé." } },
+        "it": { "stringUnit": { "state": "translated", "value": "Costruiremo il piano di conseguenza — nessun ingrediente segnalato." } }
+      }
+    },
+    "Nothing I know of": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": { "stringUnit": { "state": "translated", "value": "Nichts, das ich wüsste" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Nothing I know of" } },
+        "es": { "stringUnit": { "state": "translated", "value": "Nada que yo sepa" } },
+        "fr": { "stringUnit": { "state": "translated", "value": "Rien à ma connaissance" } },
+        "it": { "stringUnit": { "state": "translated", "value": "Niente che io sappia" } }
+      }
+    },
+    "Retinoids": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": { "stringUnit": { "state": "translated", "value": "Retinoide" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Retinoids" } },
+        "es": { "stringUnit": { "state": "translated", "value": "Retinoides" } },
+        "fr": { "stringUnit": { "state": "translated", "value": "Rétinoïdes" } },
+        "it": { "stringUnit": { "state": "translated", "value": "Retinoidi" } }
+      }
+    },
+    "Acids (AHA/BHA)": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": { "stringUnit": { "state": "translated", "value": "Säuren (AHA/BHA)" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Acids (AHA/BHA)" } },
+        "es": { "stringUnit": { "state": "translated", "value": "Ácidos (AHA/BHA)" } },
+        "fr": { "stringUnit": { "state": "translated", "value": "Acides (AHA/BHA)" } },
+        "it": { "stringUnit": { "state": "translated", "value": "Acidi (AHA/BHA)" } }
+      }
+    },
+    "Vitamin C": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": { "stringUnit": { "state": "translated", "value": "Vitamin C" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Vitamin C" } },
+        "es": { "stringUnit": { "state": "translated", "value": "Vitamina C" } },
+        "fr": { "stringUnit": { "state": "translated", "value": "Vitamine C" } },
+        "it": { "stringUnit": { "state": "translated", "value": "Vitamina C" } }
+      }
+    },
+    "Fragrance": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": { "stringUnit": { "state": "translated", "value": "Duftstoffe" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Fragrance" } },
+        "es": { "stringUnit": { "state": "translated", "value": "Fragancia" } },
+        "fr": { "stringUnit": { "state": "translated", "value": "Parfum" } },
+        "it": { "stringUnit": { "state": "translated", "value": "Profumo" } }
+      }
+    },
+    "A gentle, non-retinoid smoother — you flagged retinoids.": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": { "stringUnit": { "state": "translated", "value": "Ein sanfter, retinoidfreier Glätter — du hast Retinoide markiert." } },
+        "en": { "stringUnit": { "state": "translated", "value": "A gentle, non-retinoid smoother — you flagged retinoids." } },
+        "es": { "stringUnit": { "state": "translated", "value": "Un alisador suave sin retinoides: marcaste retinoides." } },
+        "fr": { "stringUnit": { "state": "translated", "value": "Un lissant doux sans rétinoïde — tu as signalé les rétinoïdes." } },
+        "it": { "stringUnit": { "state": "translated", "value": "Un levigante delicato senza retinoidi — hai segnalato i retinoidi." } }
+      }
+    },
+    "Draws out congestion without acids — you flagged acids.": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": { "stringUnit": { "state": "translated", "value": "Zieht Unreinheiten ohne Säuren heraus — du hast Säuren markiert." } },
+        "en": { "stringUnit": { "state": "translated", "value": "Draws out congestion without acids — you flagged acids." } },
+        "es": { "stringUnit": { "state": "translated", "value": "Extrae las impurezas sin ácidos: marcaste ácidos." } },
+        "fr": { "stringUnit": { "state": "translated", "value": "Élimine les impuretés sans acides — tu as signalé les acides." } },
+        "it": { "stringUnit": { "state": "translated", "value": "Elimina le impurità senza acidi — hai segnalato gli acidi." } }
+      }
+    },
+    "An acid-free way to smooth and calm — you flagged acids.": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": { "stringUnit": { "state": "translated", "value": "Säurefrei glätten und beruhigen — du hast Säuren markiert." } },
+        "en": { "stringUnit": { "state": "translated", "value": "An acid-free way to smooth and calm — you flagged acids." } },
+        "es": { "stringUnit": { "state": "translated", "value": "Alisa y calma sin ácidos: marcaste ácidos." } },
+        "fr": { "stringUnit": { "state": "translated", "value": "Lisser et apaiser sans acides — tu as signalé les acides." } },
+        "it": { "stringUnit": { "state": "translated", "value": "Leviga e calma senza acidi — hai segnalato gli acidi." } }
+      }
+    },
+    "Brightens tone without vitamin C — you flagged it.": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": { "stringUnit": { "state": "translated", "value": "Klärt den Teint ohne Vitamin C — du hast es markiert." } },
+        "en": { "stringUnit": { "state": "translated", "value": "Brightens tone without vitamin C — you flagged it." } },
+        "es": { "stringUnit": { "state": "translated", "value": "Ilumina el tono sin vitamina C: lo marcaste." } },
+        "fr": { "stringUnit": { "state": "translated", "value": "Illumine le teint sans vitamine C — tu l'as signalée." } },
+        "it": { "stringUnit": { "state": "translated", "value": "Illumina l'incarnato senza vitamina C — l'hai segnalata." } }
+      }
+    },
     "ONE-TIME OFFER": {
       "extractionState": "manual",
       "localizations": {
