@@ -56,6 +56,37 @@ struct DermiqResultsView: View {
             || (model.record.map { UnlockStore.shared.isRatingUnlocked($0.id) } ?? false)
     }
 
+    /// The 14-day plan: included with Pro, otherwise a €3.99 one-time buy on
+    /// the CTA (plan only — the charts were unlocked separately).
+    private var planAllowed: Bool {
+        purchases.isPro
+            || (model.record.map { UnlockStore.shared.isRoutineUnlocked($0.id) } ?? false)
+    }
+
+    private var routineOncePrice: String {
+        purchases.displayPrice(for: VeriteProducts.routineOnce) ?? "€3,99"
+    }
+
+    @State private var planPurchasing = false
+    @State private var planPurchaseFailed = false
+
+    /// Buy the 14-day plan for THIS scan, then continue into plan creation.
+    private func buyPlan() {
+        guard let record = model.record, !planPurchasing else { return }
+        planPurchasing = true
+        Task {
+            defer { planPurchasing = false }
+            guard purchases.displayPrice(for: VeriteProducts.routineOnce) != nil else {
+                planPurchaseFailed = true
+                return
+            }
+            guard await purchases.purchaseConsumable(productID: VeriteProducts.routineOnce) else { return }
+            UnlockStore.shared.unlock(.routine, scanID: record.id)
+            RampAnalytics.track("plan_purchased")
+            onContinue()
+        }
+    }
+
     /// The paywall doesn't pounce: the blurred chart gets ~1.6s alone on
     /// screen (the tease), THEN the card slides up from the bottom.
     @State private var paywallShown = false
@@ -92,6 +123,11 @@ struct DermiqResultsView: View {
         }
         .onAppear {
             if unlocked { unlockAndReveal() }
+        }
+        .alert("Couldn't load plans", isPresented: $planPurchaseFailed) {
+            Button("OK", role: .cancel) {}
+        } message: {
+            Text("Check your connection and try again.")
         }
         .task {
             guard !unlocked else { return }
@@ -191,8 +227,28 @@ struct DermiqResultsView: View {
                     // plan, no regeneration every time.
                     if countUpFinished {
                         VStack(spacing: 10) {
-                            DQPrimaryButton(title: "Make me a 10/10",
-                                            systemImage: "sparkles") { onContinue() }
+                            // Pro (or already-bought plan) → straight through.
+                            // Otherwise the CTA IS the €3.99 plan purchase —
+                            // price on the button (no surprise charges, 3.1.1),
+                            // and it buys ONLY the plan, not the charts.
+                            if planAllowed {
+                                DQPrimaryButton(title: "Make me a 10/10",
+                                                systemImage: "sparkles") { onContinue() }
+                            } else {
+                                DQPrimaryButton(
+                                    title: planPurchasing
+                                        ? String(localized: "Unlocking…")
+                                        : String(format: String(localized: "Make me a 10/10 · %@"),
+                                                 routineOncePrice),
+                                    systemImage: "sparkles",
+                                    isEnabled: !planPurchasing
+                                ) { buyPlan() }
+                                Text("One-time purchase — your 14-day plan, built from this scan.")
+                                    .font(DQFont.micro)
+                                    .foregroundStyle(DQColor.textSecondary)
+                                    .multilineTextAlignment(.center)
+                                    .fixedSize(horizontal: false, vertical: true)
+                            }
                             Button {
                                 Haptics.fire(.selection)
                                 onClose()
@@ -556,8 +612,9 @@ struct DermiqPaywallCard: View {
 
     @Environment(PurchaseManager.self) private var purchases
 
-    /// Three cards: one-time rating, one-time rating+routine, or the Pro sub.
-    private enum PlanChoice { case ratingOnce, routineOnce, pro }
+    /// Two cards: the Pro sub or a one-time rating unlock. (The 14-day plan
+    /// is sold contextually on the results CTA, not here.)
+    private enum PlanChoice { case ratingOnce, pro }
     @State private var choice: PlanChoice = .pro
     /// Pro billing term — annual is the anchor, weekly the flexible option.
     @State private var proAnnual = true
@@ -653,11 +710,6 @@ struct DermiqPaywallCard: View {
                     }
                 }
 
-                planRow(.routineOnce,
-                        title: "Rating + 14-day routine",
-                        price: price(for: VeriteProducts.routineOnce, fallback: String(localized: "$3.99 one-time")),
-                        badge: nil,
-                        sub: String(localized: "This scan · your plan included"))
                 planRow(.ratingOnce,
                         title: "Rating only",
                         price: price(for: VeriteProducts.ratingOnce, fallback: String(localized: "$1.99 one-time")),
@@ -815,22 +867,20 @@ struct DermiqPaywallCard: View {
         Task {
             defer { purchasing = false }
             switch choice {
-            case .ratingOnce, .routineOnce:
-                let id = choice == .ratingOnce ? VeriteProducts.ratingOnce
-                                               : VeriteProducts.routineOnce
+            case .ratingOnce:
+                let id = VeriteProducts.ratingOnce
                 guard purchases.displayPrice(for: id) != nil else {
                     purchaseFailed = true
                     return
                 }
                 guard await purchases.purchaseConsumable(productID: id) else { return }
-                let tier: UnlockStore.Tier = choice == .ratingOnce ? .rating : .routine
                 if let scanID {
                     // Bought on the blurred results — unlock THIS scan.
-                    UnlockStore.shared.unlock(tier, scanID: scanID)
+                    UnlockStore.shared.unlock(.rating, scanID: scanID)
                 } else {
                     // Bought before scanning — grant one scan credit and
                     // attach the unlock to that upcoming scan.
-                    UnlockStore.shared.setPending(tier)
+                    UnlockStore.shared.setPending(.rating)
                     ReferralStore.shared.addCredit()
                 }
                 RampAnalytics.track("paywall_purchase", ["plan": id])

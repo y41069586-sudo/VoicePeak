@@ -25098,6 +25098,26 @@
         }
       }
     },
+    "Make me a 10/10 · %@": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": { "stringUnit": { "state": "translated", "value": "Mach mich zur 10/10 · %@" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Make me a 10/10 · %@" } },
+        "es": { "stringUnit": { "state": "translated", "value": "Conviérteme en un 10/10 · %@" } },
+        "fr": { "stringUnit": { "state": "translated", "value": "Fais de moi un 10/10 · %@" } },
+        "it": { "stringUnit": { "state": "translated", "value": "Fammi diventare un 10/10 · %@" } }
+      }
+    },
+    "One-time purchase — your 14-day plan, built from this scan.": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": { "stringUnit": { "state": "translated", "value": "Einmaliger Kauf — dein 14-Tage-Plan, gebaut aus diesem Scan." } },
+        "en": { "stringUnit": { "state": "translated", "value": "One-time purchase — your 14-day plan, built from this scan." } },
+        "es": { "stringUnit": { "state": "translated", "value": "Pago único: tu plan de 14 días, creado a partir de este escaneo." } },
+        "fr": { "stringUnit": { "state": "translated", "value": "Achat unique — ton plan de 14 jours, créé à partir de ce scan." } },
+        "it": { "stringUnit": { "state": "translated", "value": "Acquisto una tantum — il tuo piano di 14 giorni, creato da questa scansione." } }
+      }
+    },
     "ONE-TIME OFFER": {
       "extractionState": "manual",
       "localizations": {
