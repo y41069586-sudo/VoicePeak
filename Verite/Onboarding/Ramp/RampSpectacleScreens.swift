@@ -296,14 +296,17 @@ struct RampSampleReadingScreen: View {
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var reveal: Double = 0        // 0 → 1 count-up driver
 
-    // Illustrative reading — Overall leads, then five sub-scores.
+    // Illustrative reading — Overall leads, then five sub-scores. Kept in a
+    // realistic 60–70 band: a first honest scan rarely reads higher, and an
+    // over-bright sample sets a promise the real reveal can't match. Overall
+    // ≈ the average of the five sub-scores.
     private let cells: [(String, Int, Bool)] = [
-        ("Overall", 78, true),
-        ("Glow", 83, false),
-        ("Hydration", 71, false),
-        ("Texture", 74, false),
-        ("Redness", 69, false),
-        ("Evenness", 76, false),
+        ("Overall", 66, true),
+        ("Glow", 69, false),
+        ("Hydration", 63, false),
+        ("Texture", 65, false),
+        ("Redness", 61, false),
+        ("Evenness", 68, false),
     ]
 
     private let columns = [GridItem(.flexible(), spacing: 20),
