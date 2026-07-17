@@ -23,48 +23,56 @@ struct RampQuizScreen: View {
     let onSelect: (String) -> Void
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 0) {
-            // A flexible top spacer (not a fixed block) so the question + tiles
-            // sit vertically centred instead of pinned high on taller canvases
-            // (e.g. the iPad compatibility window). Floor keeps it clear of the
-            // back chevron + progress line.
-            Spacer(minLength: VSpace.xxl)
+        // Scroll-safe AND centered at any height: on a short canvas the column
+        // scrolls instead of cramming the tiles; on a tall one (e.g. the iPad
+        // compatibility window) the flexible spacers expand and keep the
+        // question + tiles vertically centred. Floor on the top spacer keeps
+        // the header clear of the back chevron + progress line.
+        GeometryReader { proxy in
+            ScrollView {
+                VStack(alignment: .leading, spacing: 0) {
+                    Spacer(minLength: VSpace.xxl)
 
-            if let chapter {
-                Text(LocalizedStringKey(chapter))
-                    .font(VType.micro)
-                    .tracking(3)
-                    .foregroundStyle(RampStage.accentDeep)
-                    .padding(.horizontal, VSpace.lg)
-                    .padding(.bottom, VSpace.sm)
-            }
-
-            Text(LocalizedStringKey(question))
-                .font(RampStage.serif(25))
-                .foregroundStyle(RampStage.ink)
-                .lineSpacing(2)
-                .padding(.horizontal, VSpace.lg)
-
-            Spacer().frame(height: VSpace.xl)
-
-            // No per-tile stagger: the tiles ride in with the screen's own
-            // push. A second entrance animation on top of the transition is
-            // exactly what made the advance feel glitchy.
-            VStack(spacing: VSpace.sm) {
-                ForEach(options) { option in
-                    RampOptionCard(
-                        label: option.label,
-                        sub: option.sub,
-                        icon: option.icon,
-                        selected: selectedID == option.id
-                    ) {
-                        onSelect(option.id)
+                    if let chapter {
+                        Text(LocalizedStringKey(chapter))
+                            .font(VType.micro)
+                            .tracking(3)
+                            .foregroundStyle(RampStage.accentDeep)
+                            .padding(.horizontal, VSpace.lg)
+                            .padding(.bottom, VSpace.sm)
                     }
-                }
-            }
-            .padding(.horizontal, VSpace.lg)
 
-            Spacer()
+                    Text(LocalizedStringKey(question))
+                        .font(RampStage.serif(25))
+                        .foregroundStyle(RampStage.ink)
+                        .lineSpacing(2)
+                        .fixedSize(horizontal: false, vertical: true)
+                        .padding(.horizontal, VSpace.lg)
+
+                    Spacer().frame(height: VSpace.xl)
+
+                    // No per-tile stagger: the tiles ride in with the screen's
+                    // own push. A second entrance animation on top of the
+                    // transition is exactly what made the advance feel glitchy.
+                    VStack(spacing: VSpace.sm) {
+                        ForEach(options) { option in
+                            RampOptionCard(
+                                label: option.label,
+                                sub: option.sub,
+                                icon: option.icon,
+                                selected: selectedID == option.id
+                            ) {
+                                onSelect(option.id)
+                            }
+                        }
+                    }
+                    .padding(.horizontal, VSpace.lg)
+
+                    Spacer(minLength: VSpace.xxl)
+                }
+                .frame(minHeight: proxy.size.height, alignment: .leading)
+            }
+            .scrollBounceBehavior(.basedOnSize)
         }
     }
 }
@@ -381,65 +389,75 @@ struct RampInsightScreen: View {
     @State private var buttonIn = false
 
     var body: some View {
-        VStack(spacing: 0) {
-            Spacer(minLength: VSpace.xl)
+        // Scroll-safe + centered: floors on the spacers let the column scroll
+        // when the canvas is short (no crush), while they still expand to keep
+        // the photo/insight balanced on a tall one.
+        GeometryReader { proxy in
+            ScrollView {
+                VStack(spacing: 0) {
+                    Spacer(minLength: VSpace.xl)
 
-            RampPhoto(name: photoName, cornerRadius: 24)
-                .frame(width: 220, height: 293) // 3:4, no crop
-                .opacity(photoIn ? 1 : 0)
-                .scaleEffect(photoIn ? 1 : 0.94)
-                .blur(radius: photoIn ? 0 : 8)
+                    RampPhoto(name: photoName, cornerRadius: 24)
+                        .frame(width: 220, height: 293) // 3:4, no crop
+                        .opacity(photoIn ? 1 : 0)
+                        .scaleEffect(photoIn ? 1 : 0.94)
+                        .blur(radius: photoIn ? 0 : 8)
 
-            Spacer()
+                    Spacer(minLength: VSpace.lg)
 
-            VStack(spacing: VSpace.md) {
-                Text(LocalizedStringKey(eyebrow))
-                    .font(VType.micro)
-                    .tracking(3)
-                    .foregroundStyle(RampStage.accentDeep)
-                    .opacity(eyebrowIn ? 1 : 0)
-                    .offset(y: eyebrowIn ? 0 : 6)
+                    VStack(spacing: VSpace.md) {
+                        Text(LocalizedStringKey(eyebrow))
+                            .font(VType.micro)
+                            .tracking(3)
+                            .foregroundStyle(RampStage.accentDeep)
+                            .opacity(eyebrowIn ? 1 : 0)
+                            .offset(y: eyebrowIn ? 0 : 6)
 
-                // The user's answers, echoed back — each pops in on its own.
-                // ViewThatFits keeps them centered when they fit on one line,
-                // and only falls back to a horizontal scroll if they'd overflow.
-                if !chips.isEmpty {
-                    let row = HStack(spacing: 7) {
-                        ForEach(chips.indices, id: \.self) { i in
-                            Text(LocalizedStringKey(chips[i]))
-                                .font(.system(size: 12.5, weight: .semibold, design: .rounded))
-                                .foregroundStyle(RampStage.accentDeep)
-                                .lineLimit(1)
-                                .padding(.horizontal, 11).padding(.vertical, 6)
-                                .background(RampStage.accentSoft, in: Capsule())
-                                .opacity(i < chipsShown ? 1 : 0)
-                                .scaleEffect(i < chipsShown ? 1 : 0.6)
+                        // The user's answers, echoed back — each pops in on its
+                        // own. ViewThatFits keeps them centered when they fit on
+                        // one line, falling back to a horizontal scroll only if
+                        // they'd overflow.
+                        if !chips.isEmpty {
+                            let row = HStack(spacing: 7) {
+                                ForEach(chips.indices, id: \.self) { i in
+                                    Text(LocalizedStringKey(chips[i]))
+                                        .font(.system(size: 12.5, weight: .semibold, design: .rounded))
+                                        .foregroundStyle(RampStage.accentDeep)
+                                        .lineLimit(1)
+                                        .padding(.horizontal, 11).padding(.vertical, 6)
+                                        .background(RampStage.accentSoft, in: Capsule())
+                                        .opacity(i < chipsShown ? 1 : 0)
+                                        .scaleEffect(i < chipsShown ? 1 : 0.6)
+                                }
+                            }
+                            ViewThatFits(in: .horizontal) {
+                                row
+                                ScrollView(.horizontal) { row }
+                                    .scrollIndicators(.hidden)
+                            }
                         }
+
+                        Text(LocalizedStringKey(insight))
+                            .font(RampStage.serif(21, weight: .semibold))
+                            .foregroundStyle(RampStage.ink)
+                            .multilineTextAlignment(.center)
+                            .lineSpacing(4)
+                            .fixedSize(horizontal: false, vertical: true)
+                            .opacity(textIn ? 1 : 0)
+                            .offset(y: textIn ? 0 : 10)
                     }
-                    ViewThatFits(in: .horizontal) {
-                        row
-                        ScrollView(.horizontal) { row }
-                            .scrollIndicators(.hidden)
-                    }
+                    .padding(.horizontal, VSpace.xl)
+
+                    Spacer(minLength: VSpace.lg)
+
+                    RampPrimaryButton(title: "Continue") { onAdvance() }
+                        .padding(.horizontal, VSpace.lg)
+                        .opacity(buttonIn ? 1 : 0)
+                    Spacer(minLength: VSpace.xxl)
                 }
-
-                Text(LocalizedStringKey(insight))
-                    .font(RampStage.serif(21, weight: .semibold))
-                    .foregroundStyle(RampStage.ink)
-                    .multilineTextAlignment(.center)
-                    .lineSpacing(4)
-                    .fixedSize(horizontal: false, vertical: true)
-                    .opacity(textIn ? 1 : 0)
-                    .offset(y: textIn ? 0 : 10)
+                .frame(minHeight: proxy.size.height)
             }
-            .padding(.horizontal, VSpace.xl)
-
-            Spacer()
-
-            RampPrimaryButton(title: "Continue") { onAdvance() }
-                .padding(.horizontal, VSpace.lg)
-                .opacity(buttonIn ? 1 : 0)
-            Spacer().frame(height: VSpace.xxl)
+            .scrollBounceBehavior(.basedOnSize)
         }
         .task {
             if reduceMotion {
@@ -514,7 +532,12 @@ struct RampRevealScreen: View {
     }
 
     var body: some View {
-        VStack(spacing: 0) {
+        // Scroll-safe + centered at any height (short canvas scrolls; tall one
+        // keeps the card block centred). The inner GeometryReader further down
+        // measures the progress-bar width — distinct from this outer one.
+        GeometryReader { outer in
+            ScrollView {
+                VStack(spacing: 0) {
             Spacer(minLength: 24)
 
             // ---- Heading ----
@@ -634,7 +657,11 @@ struct RampRevealScreen: View {
                 .padding(.horizontal, VSpace.lg)
                 .opacity(showRange ? 1 : 0)
                 .animation(VMotion.gentle, value: showRange)
-            Spacer().frame(height: VSpace.xxl)
+            Spacer(minLength: VSpace.xxl)
+                }
+                .frame(minHeight: outer.size.height)
+            }
+            .scrollBounceBehavior(.basedOnSize)
         }
         .task { await run() }
     }
