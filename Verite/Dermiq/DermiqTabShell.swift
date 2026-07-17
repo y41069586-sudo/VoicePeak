@@ -189,9 +189,9 @@ struct DermiqTabShell: View {
             guard await purchases.purchaseConsumable(productID: VeriteProducts.extraScan) else { return }
             ReferralStore.shared.addCredit()
             RampAnalytics.track("extra_scan_purchased")
-            // Wait out StoreKit's own confirmation UI (the sandbox "You're all
-            // set" alert) — presenting the camera cover under it gets dropped.
-            try? await Task.sleep(for: .milliseconds(800))
+            // Straight into the camera — one runloop beat so the purchase
+            // sheet's dismissal has settled, nothing more.
+            try? await Task.sleep(for: .milliseconds(150))
             startScan()
         }
     }
