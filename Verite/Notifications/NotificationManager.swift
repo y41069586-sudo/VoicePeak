@@ -7,6 +7,7 @@ import Foundation
 enum NotificationManager {
 
     private static let routineIDs = ["routine.am", "routine.pm"]
+    private static let nudgeID = "nudge.daily"
     private static let testID = "test.scan"
 
     private static let desiredKey = "notif.routine.desired"
@@ -20,11 +21,11 @@ enum NotificationManager {
 
     // MARK: Routine preference (deferred scheduling)
 
-    /// Store the user's routine-reminder wish WITHOUT arming anything yet. The
-    /// onboarding ritual screen runs before the first scan, so there is no plan
-    /// to remind about — we only remember the choice + preferred evening time
-    /// and arm it later via `syncRoutineReminders` once a real, unlocked plan
-    /// exists.
+    /// Store the user's reminder wish WITHOUT arming anything yet. The
+    /// onboarding ritual screen runs before the first scan, so there's no plan
+    /// to remind about — we only remember the choice + preferred evening time,
+    /// then `syncReminders` arms the right one later (the routine reminder once
+    /// Pro, otherwise a conversion nudge).
     static func setRoutinePreference(enabled: Bool, pmHour: Int, pmMinute: Int) {
         let d = UserDefaults.standard
         d.set(enabled, forKey: desiredKey)
@@ -32,20 +33,43 @@ enum NotificationManager {
         d.set(pmMinute, forKey: pmMinuteKey)
     }
 
-    /// Arm the routine reminders only when the user asked for them AND has a
-    /// plan they can actually see (Pro + at least one scan). Otherwise clear
-    /// them — a non-Pro with a locked, blurred plan must never get a daily
-    /// "time for your routine" ping for something they can't open. Idempotent;
-    /// call whenever Pro / scan state changes.
-    static func syncRoutineReminders(planUnlocked: Bool) {
+    /// Reconcile the daily notification the user opted into, based on state:
+    ///  • Pro + a real (unlocked) plan → the actual "do your routine" reminder.
+    ///  • Not Pro yet (locked/blurred plan, or hasn't scanned) → a conversion
+    ///    nudge that drives them back to the scan + paywall ("your score is
+    ///    waiting…"), using the permission they already granted. This keeps the
+    ///    opted-in channel alive to convert non-payers instead of going silent.
+    /// Only ever ONE of the two is scheduled. Idempotent; call whenever Pro /
+    /// scan state changes.
+    static func syncReminders(planUnlocked: Bool) {
         let d = UserDefaults.standard
-        guard d.bool(forKey: desiredKey), planUnlocked else {
+        guard d.bool(forKey: desiredKey) else {
             cancelRoutineReminders()
+            cancelConversionNudge()
             return
         }
         let hour = d.object(forKey: pmHourKey) as? Int ?? 21
         let minute = d.object(forKey: pmMinuteKey) as? Int ?? 0
-        scheduleRoutineReminders(hour: hour, minute: minute)
+        if planUnlocked {
+            cancelConversionNudge()
+            scheduleRoutineReminders(hour: hour, minute: minute)
+        } else {
+            cancelRoutineReminders()
+            scheduleConversionNudge(hour: hour, minute: minute)
+        }
+    }
+
+    /// One daily marketing nudge for a non-Pro user — pushes toward the scan
+    /// and the paywall. Localized at schedule time.
+    static func scheduleConversionNudge(hour: Int, minute: Int) {
+        cancelConversionNudge()
+        add(id: nudgeID, hour: hour, minute: minute,
+            title: String(localized: "notif.nudge.title"),
+            body: String(localized: "notif.nudge.body"))
+    }
+
+    static func cancelConversionNudge() {
+        UNUserNotificationCenter.current().removePendingNotificationRequests(withIdentifiers: [nudgeID])
     }
 
     // MARK: Routine

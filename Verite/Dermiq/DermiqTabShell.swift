@@ -100,14 +100,14 @@ struct DermiqTabShell: View {
             }
         }
         .onChange(of: purchases.isPro) { _, _ in
-            NotificationManager.syncRoutineReminders(planUnlocked: hasPro && !scans.isEmpty)
+            NotificationManager.syncReminders(planUnlocked: hasPro && !scans.isEmpty)
         }
         .onAppear {
             // Arm (or clear) the routine reminders the user asked for during
             // onboarding — but only now that we know Pro + scan state. A
             // non-Pro with a locked plan gets none; a Pro with a real plan gets
             // theirs at the chosen time.
-            NotificationManager.syncRoutineReminders(planUnlocked: hasPro && !scans.isEmpty)
+            NotificationManager.syncReminders(planUnlocked: hasPro && !scans.isEmpty)
 
             // Onboarding hands off straight into the camera: with zero scans
             // AND an unused free scan, open the capture flow IMMEDIATELY and

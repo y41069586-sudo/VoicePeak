@@ -330,7 +330,7 @@ struct RampDailyReportScreen: View {
                         // Remember the wish + chosen time, but DON'T arm the
                         // reminders yet — there's no plan until the first scan,
                         // and a locked (non-Pro) plan must never get pinged.
-                        // syncRoutineReminders arms them once the plan unlocks.
+                        // syncReminders arms the right one once state is known.
                         let pm = chosen.pmHour
                         NotificationManager.setRoutinePreference(enabled: granted,
                                                                  pmHour: pm.hour,
