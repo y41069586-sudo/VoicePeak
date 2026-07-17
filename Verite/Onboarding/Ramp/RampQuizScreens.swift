@@ -24,7 +24,11 @@ struct RampQuizScreen: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
-            Spacer().frame(height: VSpace.xxl * 2)
+            // A flexible top spacer (not a fixed block) so the question + tiles
+            // sit vertically centred instead of pinned high on taller canvases
+            // (e.g. the iPad compatibility window). Floor keeps it clear of the
+            // back chevron + progress line.
+            Spacer(minLength: VSpace.xxl)
 
             if let chapter {
                 Text(LocalizedStringKey(chapter))
@@ -297,7 +301,7 @@ struct RampNameScreen: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
-            Spacer().frame(height: VSpace.xxl * 2)
+            Spacer(minLength: VSpace.xxl)
 
             Text("What should\nwe call you?")
                 .font(RampStage.serif(25))
@@ -378,7 +382,7 @@ struct RampInsightScreen: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            Spacer().frame(height: VSpace.xxl * 1.3)
+            Spacer(minLength: VSpace.xl)
 
             RampPhoto(name: photoName, cornerRadius: 24)
                 .frame(width: 220, height: 293) // 3:4, no crop
@@ -530,7 +534,9 @@ struct RampRevealScreen: View {
             .opacity(appeared ? 1 : 0)
             .offset(y: appeared ? 0 : 12)
 
-            Spacer(minLength: 24)
+            // Fixed gap (not flexible) so the heading and work card stay a
+            // single centred block instead of drifting apart on tall canvases.
+            Spacer().frame(height: 28)
 
             // ---- The work card ----
             VStack(alignment: .leading, spacing: 16) {
