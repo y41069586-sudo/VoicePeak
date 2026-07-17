@@ -294,14 +294,19 @@ struct DermiqCaptureView: View {
 }
 
 private extension UIImage {
-    /// Redraw with orientation baked in, so Vision + the analysis engine both
-    /// see an upright image regardless of the source photo's EXIF orientation.
-    func uprightForScan() -> UIImage {
-        guard imageOrientation != .up else { return self }
+    /// Normalize a picked photo for scanning: bake in EXIF orientation AND cap
+    /// the long side (gallery originals can be 12MP) so Vision, the analysis
+    /// engine and Gemini all get an upright, reasonably-sized image.
+    func uprightForScan(maxDimension: CGFloat = 1600) -> UIImage {
+        let longSide = max(size.width, size.height)
+        let needsResize = longSide > maxDimension
+        guard imageOrientation != .up || needsResize else { return self }
+        let ratio = needsResize ? maxDimension / longSide : 1
+        let target = CGSize(width: size.width * ratio, height: size.height * ratio)
         let format = UIGraphicsImageRendererFormat.default()
-        format.scale = scale
-        return UIGraphicsImageRenderer(size: size, format: format).image { _ in
-            draw(in: CGRect(origin: .zero, size: size))
+        format.scale = 1
+        return UIGraphicsImageRenderer(size: target, format: format).image { _ in
+            draw(in: CGRect(origin: .zero, size: target))
         }
     }
 }

@@ -79,9 +79,14 @@ final class GeminiEnhancementEngine: FaceEnhancementEngine {
     """
 
     func enhance(image: UIImage) async throws -> UIImage {
+        // Downscale before encoding: a raw gallery photo can be 12MP / several
+        // MB, and base64 inflates it ~33% — that oversized payload is what made
+        // the image model fail on picked photos. ~1024px is plenty for the
+        // before/after reveal and keeps the request small + fast.
+        let source = Self.downscaled(image, maxDimension: 1024)
         guard DermiqConfig.hasLiveEnhancement,
               let url = URL(string: Self.endpoint),
-              let jpeg = image.jpegData(compressionQuality: 0.9) else {
+              let jpeg = source.jpegData(compressionQuality: 0.9) else {
             throw DermiqEngineError.notConfigured
         }
 
@@ -132,5 +137,19 @@ final class GeminiEnhancementEngine: FaceEnhancementEngine {
             }
         }
         return nil
+    }
+
+    /// Fit within `maxDimension` on the long side (bakes in orientation too).
+    /// Returns the original untouched when it's already small enough.
+    private static func downscaled(_ image: UIImage, maxDimension: CGFloat) -> UIImage {
+        let longSide = max(image.size.width, image.size.height)
+        guard longSide > maxDimension else { return image }
+        let scale = maxDimension / longSide
+        let target = CGSize(width: image.size.width * scale, height: image.size.height * scale)
+        let format = UIGraphicsImageRendererFormat.default()
+        format.scale = 1
+        return UIGraphicsImageRenderer(size: target, format: format).image { _ in
+            image.draw(in: CGRect(origin: .zero, size: target))
+        }
     }
 }
