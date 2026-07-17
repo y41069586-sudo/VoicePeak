@@ -56,55 +56,6 @@ struct DermiqResultsView: View {
             || (model.record.map { UnlockStore.shared.isRatingUnlocked($0.id) } ?? false)
     }
 
-    /// The 14-day plan: auto-included only on Pro's two WEEKLY scans. A
-    /// credit scan (€1.99 extra / bonus) — even for Pro — and any non-Pro
-    /// scan needs the €3.99 one-time buy on the CTA (plan only).
-    private var planAllowed: Bool {
-        (purchases.isPro && !model.usedCredit)
-            || (model.record.map { UnlockStore.shared.isRoutineUnlocked($0.id) } ?? false)
-    }
-
-    private var routineOncePrice: String {
-        purchases.displayPrice(for: VeriteProducts.routineOnce) ?? "€3,99"
-    }
-
-    @State private var planPurchasing = false
-    @State private var planPurchaseFailed = false
-    /// Tapping the plan CTA while a plan already exists → warn first: a new
-    /// plan replaces the current one (and its tick-off progress).
-    @State private var showPlanReplaceWarning = false
-    @Query private var allPlans: [RoutinePlan]
-
-    private var hasActivePlan: Bool { allPlans.contains { $0.isActive } }
-
-    /// The plan CTA's single entry point: warn if a plan already exists,
-    /// otherwise continue (Pro) or start the €3.99 purchase.
-    private func planCTATapped() {
-        if hasActivePlan {
-            showPlanReplaceWarning = true
-        } else if planAllowed {
-            onContinue()
-        } else {
-            buyPlan()
-        }
-    }
-
-    /// Buy the 14-day plan for THIS scan, then continue into plan creation.
-    private func buyPlan() {
-        guard let record = model.record, !planPurchasing else { return }
-        planPurchasing = true
-        Task {
-            defer { planPurchasing = false }
-            guard purchases.displayPrice(for: VeriteProducts.routineOnce) != nil else {
-                planPurchaseFailed = true
-                return
-            }
-            guard await purchases.purchaseConsumable(productID: VeriteProducts.routineOnce) else { return }
-            UnlockStore.shared.unlock(.routine, scanID: record.id)
-            RampAnalytics.track("plan_purchased")
-            onContinue()
-        }
-    }
 
     /// The paywall doesn't pounce: the blurred chart gets ~1.6s alone on
     /// screen (the tease), THEN the card slides up from the bottom.
@@ -142,19 +93,6 @@ struct DermiqResultsView: View {
         }
         .onAppear {
             if unlocked { unlockAndReveal() }
-        }
-        .alert("Couldn't load plans", isPresented: $planPurchaseFailed) {
-            Button("OK", role: .cancel) {}
-        } message: {
-            Text("Check your connection and try again.")
-        }
-        .alert("You already have a 14-day plan", isPresented: $showPlanReplaceWarning) {
-            Button("Yes, create new") {
-                if planAllowed { onContinue() } else { buyPlan() }
-            }
-            Button("Back to dashboard", role: .cancel) { onClose() }
-        } message: {
-            Text("A new plan replaces your current one and its progress. Create a new plan anyway?")
         }
         .task {
             guard !unlocked else { return }
@@ -254,28 +192,11 @@ struct DermiqResultsView: View {
                     // plan, no regeneration every time.
                     if countUpFinished {
                         VStack(spacing: 10) {
-                            // Pro (or already-bought plan) → straight through.
-                            // Otherwise the CTA IS the €3.99 plan purchase —
-                            // price on the button (no surprise charges, 3.1.1),
-                            // and it buys ONLY the plan, not the charts.
-                            if planAllowed {
-                                DQPrimaryButton(title: "Make me a 10/10",
-                                                systemImage: "sparkles") { planCTATapped() }
-                            } else {
-                                DQPrimaryButton(
-                                    title: planPurchasing
-                                        ? String(localized: "Unlocking…")
-                                        : String(format: String(localized: "Make me a 10/10 · %@"),
-                                                 routineOncePrice),
-                                    systemImage: "sparkles",
-                                    isEnabled: !planPurchasing
-                                ) { planCTATapped() }
-                                Text("One-time purchase — your 14-day plan, built from this scan.")
-                                    .font(DQFont.micro)
-                                    .foregroundStyle(DQColor.textSecondary)
-                                    .multilineTextAlignment(.center)
-                                    .fixedSize(horizontal: false, vertical: true)
-                            }
+                            // Free to tap — leads to the Potential reveal.
+                            // Plan gating (€3.99 / replace warning) lives on
+                            // THAT screen's "Build my 14-day plan" CTA.
+                            DQPrimaryButton(title: "Make me a 10/10",
+                                            systemImage: "sparkles") { onContinue() }
                             Button {
                                 Haptics.fire(.selection)
                                 onClose()

@@ -173,7 +173,12 @@ struct DermiqScanFlowView: View {
 
     @Environment(\.modelContext) private var modelContext
     @Environment(PurchaseManager.self) private var purchases
+    @Query private var allPlans: [RoutinePlan]
     @State private var model: ScanFlowModel
+    @State private var planPurchasing = false
+    @State private var planPurchaseFailed = false
+    /// "Build my 14-day plan" while a plan already exists → warn first.
+    @State private var showPlanReplaceWarning = false
 
     init(previousScan: ScanRecord?, usedCredit: Bool = false,
          onFinished: @escaping (_ planCreated: Bool) -> Void) {
@@ -221,8 +226,14 @@ struct DermiqScanFlowView: View {
                     advanceToRoutineGen()
                 }
             case .potential:
-                DermiqPotentialView(model: model) {
-                    advanceToRoutineGen()
+                DermiqPotentialView(
+                    model: model,
+                    ctaTitle: planCTATitle,
+                    ctaCaption: planAllowed ? nil
+                        : String(localized: "One-time purchase — your 14-day plan, built from this scan."),
+                    ctaEnabled: !planPurchasing
+                ) {
+                    planCTATapped()
                 }
             case .routineGen:
                 DermiqRoutineGenView(model: model) {
@@ -233,15 +244,68 @@ struct DermiqScanFlowView: View {
         }
         .animation(VMotion.crossfade, value: model.stage)
         .preferredColorScheme(.light)
+        .alert("You already have a 14-day plan", isPresented: $showPlanReplaceWarning) {
+            Button("Yes, create new") { proceedToPlan() }
+            Button("Back to dashboard", role: .cancel) { onFinished(false) }
+        } message: {
+            Text("A new plan replaces your current one and its progress. Create a new plan anyway?")
+        }
+        .alert("Couldn't load plans", isPresented: $planPurchaseFailed) {
+            Button("OK", role: .cancel) {}
+        } message: {
+            Text("Check your connection and try again.")
+        }
     }
 
     /// The 14-day plan is included only on Pro's two WEEKLY scans; a credit
     /// scan (€1.99 extra / referral bonus) or a rating-only buy needs the
-    /// €3.99 plan purchase. Without it the flow ends after the potential
-    /// screen, plan-less.
+    /// €3.99 plan purchase — made right here on the potential screen's CTA.
     private var planAllowed: Bool {
         (purchases.isPro && !model.usedCredit)
             || (model.record.map { UnlockStore.shared.isRoutineUnlocked($0.id) } ?? false)
+    }
+
+    private var hasActivePlan: Bool { allPlans.contains { $0.isActive } }
+
+    /// The potential screen's CTA title: plain when the plan is included,
+    /// price-suffixed when tapping it starts the €3.99 purchase (no surprise
+    /// charges), and a busy label mid-purchase.
+    private var planCTATitle: String {
+        if planAllowed { return String(localized: "Build my 14-day plan") }
+        if planPurchasing { return String(localized: "Unlocking…") }
+        let price = purchases.displayPrice(for: VeriteProducts.routineOnce) ?? "€3,99"
+        return String(format: String(localized: "Build my 14-day plan · %@"), price)
+    }
+
+    /// Single entry point for the plan CTA: warn if a plan already exists
+    /// (BEFORE any charge), otherwise continue or buy.
+    private func planCTATapped() {
+        if hasActivePlan {
+            showPlanReplaceWarning = true
+        } else {
+            proceedToPlan()
+        }
+    }
+
+    private func proceedToPlan() {
+        if planAllowed { advanceToRoutineGen() } else { buyPlan() }
+    }
+
+    /// Buy the 14-day plan for THIS scan (€3.99, plan only), then build it.
+    private func buyPlan() {
+        guard let record = model.record, !planPurchasing else { return }
+        planPurchasing = true
+        Task {
+            defer { planPurchasing = false }
+            guard purchases.displayPrice(for: VeriteProducts.routineOnce) != nil else {
+                planPurchaseFailed = true
+                return
+            }
+            guard await purchases.purchaseConsumable(productID: VeriteProducts.routineOnce) else { return }
+            UnlockStore.shared.unlock(.routine, scanID: record.id)
+            RampAnalytics.track("plan_purchased")
+            advanceToRoutineGen()
+        }
     }
 
     private func advanceToRoutineGen() {

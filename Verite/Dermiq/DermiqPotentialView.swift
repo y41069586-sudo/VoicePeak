@@ -10,6 +10,12 @@ import UIKit
 /// until it lands, the right side shimmers: "Rendering your potential…".
 struct DermiqPotentialView: View {
     let model: ScanFlowModel
+    /// Plan-CTA overrides from the flow container: a price-suffixed title
+    /// when the plan costs (€3.99), an honest one-time caption, and a
+    /// disabled state while the purchase runs.
+    var ctaTitle: String = String(localized: "Build my 14-day plan")
+    var ctaCaption: String? = nil
+    var ctaEnabled: Bool = true
     let onContinue: () -> Void
 
     var body: some View {
@@ -45,8 +51,16 @@ struct DermiqPotentialView: View {
                    let overall = model.analysis?.overall {
                     DQShareButton(current: current, potential: potential, overall: overall)
                 }
-                DQPrimaryButton(title: "Build my 14-day plan",
-                                systemImage: "calendar.badge.plus") { onContinue() }
+                DQPrimaryButton(title: ctaTitle,
+                                systemImage: "calendar.badge.plus",
+                                isEnabled: ctaEnabled) { onContinue() }
+                if let ctaCaption {
+                    Text(verbatim: ctaCaption)
+                        .font(DQFont.micro)
+                        .foregroundStyle(DQColor.textSecondary)
+                        .multilineTextAlignment(.center)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
             }
             .padding(.horizontal, 24)
             .padding(.bottom, 30)

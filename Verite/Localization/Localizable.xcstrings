@@ -25138,6 +25138,16 @@
         "it": { "stringUnit": { "state": "translated", "value": "Torna alla dashboard" } }
       }
     },
+    "Build my 14-day plan · %@": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": { "stringUnit": { "state": "translated", "value": "Bau meinen 14-Tage-Plan · %@" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Build my 14-day plan · %@" } },
+        "es": { "stringUnit": { "state": "translated", "value": "Crear mi plan de 14 días · %@" } },
+        "fr": { "stringUnit": { "state": "translated", "value": "Créer mon plan de 14 jours · %@" } },
+        "it": { "stringUnit": { "state": "translated", "value": "Crea il mio piano di 14 giorni · %@" } }
+      }
+    },
     "Make me a 10/10 · %@": {
       "extractionState": "manual",
       "localizations": {
