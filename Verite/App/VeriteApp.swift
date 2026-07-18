@@ -1,5 +1,6 @@
 import SwiftUI
 import SwiftData
+import UserNotifications
 
 /// Application entry point. Sets up the SwiftData container, injects global state,
 /// commits to the dark "Aesthetic Blue" look, and applies any language override.
@@ -24,6 +25,8 @@ struct VeriteApp: App {
         // view models (e.g. the plan CTA) stay in the device language while the
         // rest of the UI switches via .environment(\.locale).
         AppLanguage.install()
+        // Notifications show in the foreground and their taps deep-link.
+        UNUserNotificationCenter.current().delegate = DQNotificationDelegate.shared
     }
 
     var body: some Scene {

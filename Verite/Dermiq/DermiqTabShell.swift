@@ -114,6 +114,14 @@ struct DermiqTabShell: View {
         .onChange(of: purchases.isPro) { _, _ in
             NotificationManager.syncReminders(planUnlocked: hasPro && !scans.isEmpty)
         }
+        .onReceive(NotificationCenter.default.publisher(for: .dqOpenRoute)) { note in
+            // A tapped reminder deep-links to the right tab.
+            switch note.object as? String {
+            case "routine": tab = .routine
+            case "scan":    tab = .analyze
+            default:        break
+            }
+        }
         .onAppear {
             // Arm (or clear) the routine reminders the user asked for during
             // onboarding — but only now that we know Pro + scan state. A

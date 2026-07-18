@@ -65,7 +65,7 @@ enum NotificationManager {
         cancelConversionNudge()
         add(id: nudgeID, hour: hour, minute: minute,
             title: String(localized: "notif.nudge.title"),
-            body: String(localized: "notif.nudge.body"))
+            body: String(localized: "notif.nudge.body"), route: "scan")
     }
 
     static func cancelConversionNudge() {
@@ -96,14 +96,14 @@ enum NotificationManager {
         cancelRoutineReminders()
         add(id: "routine.am", hour: 8, minute: 0,
             title: String(localized: "notif.routine.am.title"),
-            body: String(localized: "notif.routine.am.body"))
+            body: String(localized: "notif.routine.am.body"), route: "routine")
         // Skip the PM reminder when it would land on the same 8:00 as the AM
         // one (e.g. the user chose a "morning" slot) — never fire two identical
         // daily notifications.
         guard !(hour == 8 && minute == 0) else { return }
         add(id: "routine.pm", hour: hour, minute: minute,
             title: String(localized: "notif.routine.pm.title"),
-            body: String(localized: "notif.routine.pm.body"))
+            body: String(localized: "notif.routine.pm.body"), route: "routine")
     }
 
     static func cancelRoutineReminders() {
@@ -112,10 +112,12 @@ enum NotificationManager {
 
     // MARK: Test-scan
 
+    /// The day-14 "time to re-scan" nudge. Scheduled once a plan is created so
+    /// the rescan the routine promises actually gets a reminder.
     static func scheduleTestReminder(afterDays days: Int) {
         UNUserNotificationCenter.current().removePendingNotificationRequests(withIdentifiers: [testID])
         let content = makeContent(title: String(localized: "notif.test.title"),
-                                  body: String(localized: "notif.test.body"))
+                                  body: String(localized: "notif.test.body"), route: "scan")
         let interval = max(3600, Double(days) * 86_400)
         let trigger = UNTimeIntervalNotificationTrigger(timeInterval: interval, repeats: false)
         UNUserNotificationCenter.current().add(
@@ -124,20 +126,50 @@ enum NotificationManager {
 
     // MARK: Helpers
 
-    private static func add(id: String, hour: Int, minute: Int, title: String, body: String) {
+    private static func add(id: String, hour: Int, minute: Int, title: String, body: String, route: String) {
         var components = DateComponents()
         components.hour = hour
         components.minute = minute
         let trigger = UNCalendarNotificationTrigger(dateMatching: components, repeats: true)
         UNUserNotificationCenter.current().add(
-            UNNotificationRequest(identifier: id, content: makeContent(title: title, body: body), trigger: trigger))
+            UNNotificationRequest(identifier: id, content: makeContent(title: title, body: body, route: route), trigger: trigger))
     }
 
-    private static func makeContent(title: String, body: String) -> UNMutableNotificationContent {
+    private static func makeContent(title: String, body: String, route: String) -> UNMutableNotificationContent {
         let content = UNMutableNotificationContent()
         content.title = title
         content.body = body
         content.sound = .default
+        content.userInfo = ["route": route]   // read on tap to deep-link
         return content
+    }
+}
+
+// ============================================================
+// MARK: — Tap routing + foreground presentation
+// ============================================================
+
+extension Notification.Name {
+    /// Fired when a local notification is tapped; object is the route string.
+    static let dqOpenRoute = Notification.Name("dq.notification.route")
+}
+
+/// Delegate so notifications show in the foreground and their taps deep-link
+/// into the app (scan / routine) instead of just opening the last tab.
+final class DQNotificationDelegate: NSObject, UNUserNotificationCenterDelegate {
+    static let shared = DQNotificationDelegate()
+
+    func userNotificationCenter(_ center: UNUserNotificationCenter,
+                                willPresent notification: UNNotification) async
+        -> UNNotificationPresentationOptions {
+        [.banner, .sound]
+    }
+
+    func userNotificationCenter(_ center: UNUserNotificationCenter,
+                                didReceive response: UNNotificationResponse) async {
+        let route = response.notification.request.content.userInfo["route"] as? String
+        await MainActor.run {
+            NotificationCenter.default.post(name: .dqOpenRoute, object: route)
+        }
     }
 }

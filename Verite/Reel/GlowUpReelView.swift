@@ -51,6 +51,7 @@ struct GlowUpReelSheet: View {
 
     @Environment(\.dismiss) private var dismiss
     @State private var model = ReelExportModel()
+    @State private var tooFewFrames = false
 
     var body: some View {
         VStack(spacing: 18) {
@@ -90,6 +91,13 @@ struct GlowUpReelSheet: View {
                     Text("Export failed — try again.")
                         .font(DQFont.micro)
                         .foregroundStyle(DQColor.deltaDown)
+                }
+                if tooFewFrames {
+                    Text("You need at least 2 scans with photos to make a reel.")
+                        .font(DQFont.micro)
+                        .foregroundStyle(DQColor.deltaDown)
+                        .multilineTextAlignment(.center)
+                        .padding(.horizontal, 24)
                 }
             }
         }
@@ -210,7 +218,12 @@ struct GlowUpReelSheet: View {
             guard let image = DermiqImageStore.load(scan.photoFilename) else { return nil }
             return ReelFrame(image: image, dayLabel: dayLabel(for: index), score: scan.overall)
         }
-        guard frames.count >= 2 else { return }
+        guard frames.count >= 2 else {
+            tooFewFrames = true
+            Haptics.fire(.transition)
+            return
+        }
+        tooFewFrames = false
         Haptics.fire(.capture)
         model.start(frames: frames)
         RampAnalytics.track("reel_export_started", ["scans": String(frames.count)])

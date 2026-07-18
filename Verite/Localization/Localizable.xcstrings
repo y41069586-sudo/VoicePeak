@@ -26671,6 +26671,41 @@
         }
       }
     },
+    "You need at least 2 scans with photos to make a reel.": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Du brauchst mindestens 2 Scans mit Fotos für ein Reel."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You need at least 2 scans with photos to make a reel."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Necesitas al menos 2 escaneos con fotos para crear un reel."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Il te faut au moins 2 scans avec photos pour créer un reel."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ti servono almeno 2 scansioni con foto per creare un reel."
+          }
+        }
+      }
+    },
     "You told us SPF isn't a daily habit yet — this is the single change that moves your score most.": {
       "extractionState": "manual",
       "localizations": {
