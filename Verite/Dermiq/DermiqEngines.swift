@@ -54,23 +54,17 @@ final class MockDermiqEngine: DermiqAnalysisEngine {
     func analyze(image: UIImage) async throws -> DermiqAnalysis {
         try? await Task.sleep(for: .milliseconds(1400)) // realistic latency
 
-        // The mock always reports inside a realistic 60-70 band — overall and
-        // every sub-score. On a rescan it still nudges up a point or two, but
-        // stays clamped to the band so repeat test scans never march past 70.
-        let overall: Int
-        if let previousOverall {
-            overall = min(max(previousOverall + Int.random(in: 1...3), 60), 70)
-        } else {
-            overall = Int.random(in: 60...70)
-        }
+        // The mock reports a genuinely mixed reading inside a realistic 50-60
+        // band. Each sub-score is drawn independently so the card looks varied
+        // (not a row of identical numbers), and the overall is their average —
+        // which lands in the same band. Rescans re-roll the same way; no
+        // upward clamp, so nothing marches to the top of the band.
+        let subValues = DermiqCategory.allCases.map { _ in Int.random(in: 50...60) }
+        let overall = subValues.reduce(0, +) / subValues.count
 
-        let subScores: [DermiqSubScore] = DermiqCategory.allCases.map { category in
-            let spread = Int.random(in: -4...4)
-            return DermiqSubScore(
-                category: category,
-                value: min(max(overall + spread, 60), 70),
-                trend: nil
-            )
+        let subScores: [DermiqSubScore] = zip(DermiqCategory.allCases, subValues).map {
+            category, value in
+            DermiqSubScore(category: category, value: value, trend: nil)
         }
 
         let weakest = subScores.sorted { $0.value < $1.value }
