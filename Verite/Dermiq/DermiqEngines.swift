@@ -56,16 +56,25 @@ final class MockDermiqEngine: DermiqAnalysisEngine {
 
         let overall: Int
         if let previousOverall {
-            overall = min(previousOverall + Int.random(in: 3...9), 92)
+            // Trend up on a rescan, but with diminishing returns so repeat
+            // scans plateau in a believable band instead of marching to a
+            // maxed-out 90+. Headroom shrinks as the score climbs, and the
+            // ceiling is 85 — "above 85 is rare" holds even after many scans.
+            let headroom = max(0, 82 - previousOverall)
+            let gain = min(Int.random(in: 2...6), max(1, (headroom + 3) / 3))
+            overall = min(previousOverall + gain, 85)
         } else {
             overall = Int.random(in: 55...75)
         }
 
         let subScores: [DermiqSubScore] = DermiqCategory.allCases.map { category in
-            let spread = Int.random(in: -14...12)
+            // Slightly negative skew and an 88 ceiling: sub-scores vary around
+            // the overall without a cluster of maxed-out 95s, and none reads
+            // as "perfect" — there's always visible room for the plan to move.
+            let spread = Int.random(in: -16...9)
             return DermiqSubScore(
                 category: category,
-                value: max(30, min(95, overall + spread)),
+                value: max(28, min(88, overall + spread)),
                 trend: nil
             )
         }

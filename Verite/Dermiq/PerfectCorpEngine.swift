@@ -314,8 +314,16 @@ final class PerfectCorpSkinEngine: DermiqAnalysisEngine {
         return nil
     }
 
+    /// Perfect Corp's `ui_score` is a flattering "beauty score" — a decent
+    /// selfie routinely reads 90-98, which maxes out every metric and leaves
+    /// no visible room for the 14-day plan to move. Recalibrate onto an honest
+    /// curve: excellent skin lands high-80s, a typical reading mid-60s, and a
+    /// genuine problem area stays low. Linear remap of the meaningful [50,100]
+    /// window down to [40,88]; anything below 50 is kept proportionally low.
     private static func clamp(_ value: Double) -> Int {
-        Int(min(max(value.rounded(), 0), 100))
+        let v = min(max(value, 0), 100)
+        let mapped = v >= 50 ? 40 + (v - 50) * (88 - 40) / 50 : v * 0.80
+        return Int(min(max(mapped.rounded(), 0), 100))
     }
 
     /// Rough skin type from the two metrics we have (no dedicated oiliness in
