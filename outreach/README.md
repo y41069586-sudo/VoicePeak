@@ -27,12 +27,30 @@ of spam and out of trouble).
 4. **Pick a tool.** Instantly.ai or Smartlead (both: warm-up + sequences +
    inbox rotation, ~€30–50/mo). Lemlist/Apollo also work.
 
+## Finding creators (per platform)
+
+- **YouTube — automated & legal.** `find_youtube.py` uses the official Data
+  API to search a niche, pull real stats, and extract emails from channel
+  descriptions:
+  ```bash
+  export YOUTUBE_API_KEY="your-key"      # free, console.cloud.google.com
+  python3 find_youtube.py "skincare routine" "acne tips" "glow up" \
+      --min-subs 10000 --max-subs 300000 --out leads.csv
+  ```
+  Output is already in the `leads.csv` format — add a `hook` per row and run
+  `generate_emails.py`.
+- **TikTok — no legal bulk API.** Reading TikTok profiles at scale means either
+  (a) **Creator Marketplace** (official, manual-ish), or (b) a **paid data
+  provider** (EnsembleData, Modash, HypeAuditor) with a real API. Scraping is
+  against ToS and fragile — don't. If you get a provider key, that API can feed
+  `leads.csv` the same way; ask and I'll wire it.
+- **Instagram — manual.** Collect handles + business emails from bio /
+  link-in-bio, or via the same paid providers. No official bulk read.
+
 ## Daily workflow
 
 1. **Find creators** (skincare/beauty micro-influencers, ~10k–150k, engagement
-   >3%). Sources: TikTok Creator Marketplace, Modash, HypeAuditor, Apollo, or
-   manually from hashtags. Grab their **business email** (in "link in bio" /
-   Beacons / Linktree).
+   >3%) using the sources above. Grab their **business email**.
 2. **Fill `leads.csv`** — see `leads.example.csv`. One line per creator. Add a
    real `hook` (one thing you genuinely liked) — it roughly **triples** replies.
 3. **Generate:**
