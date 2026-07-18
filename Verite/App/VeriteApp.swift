@@ -18,6 +18,14 @@ struct VeriteApp: App {
     /// Language override chosen in Settings; empty string = follow system locale.
     @AppStorage("languageOverride") private var languageOverride: String = ""
 
+    init() {
+        // Make String(localized:)/NSLocalizedString honor the in-app language
+        // picker, not just the device language — otherwise strings built in
+        // view models (e.g. the plan CTA) stay in the device language while the
+        // rest of the UI switches via .environment(\.locale).
+        AppLanguage.install()
+    }
+
     var body: some Scene {
         WindowGroup {
             // Color scheme lives in RootView: dark for the cinematic onboarding

@@ -14,11 +14,28 @@ enum LegalDocument: String, CaseIterable, Identifiable {
 
     var id: String { rawValue }
 
-    var titleKey: LocalizedStringKey { "legal.\(rawValue).title" }
+    /// Literal keys — NOT interpolated. A `LocalizedStringKey` built from
+    /// `"legal.\(rawValue).title"` is parsed as the key `legal.%@.title` with
+    /// `rawValue` as an argument; since the catalog has the concrete keys and
+    /// no `%@` variant, the lookup misses and SwiftUI renders the raw key on
+    /// screen. Returning compile-time literals keeps the lookup exact.
+    var titleKey: LocalizedStringKey {
+        switch self {
+        case .impressum:  return "legal.impressum.title"
+        case .privacy:    return "legal.privacy.title"
+        case .terms:      return "legal.terms.title"
+        case .disclaimer: return "legal.disclaimer.title"
+        }
+    }
 
     /// Localized body key. All four resolve to final localized copy.
     var bodyKey: LocalizedStringKey {
-        rawValue == "disclaimer" ? "disclaimer.full" : "legal.\(rawValue).body"
+        switch self {
+        case .impressum:  return "legal.impressum.body"
+        case .privacy:    return "legal.privacy.body"
+        case .terms:      return "legal.terms.body"
+        case .disclaimer: return "disclaimer.full"
+        }
     }
 
     var systemImage: String {
