@@ -326,6 +326,45 @@ enum SkinSensitivities {
 /// Derives the 14-day routine from the user's weakest sub-scores, following the
 /// canonical structure above. Base steps are constant per skin type; the one
 /// targeted step per block comes 1:1 from the worst-scoring `DermiqCategory`s.
+/// Signals decoded from the onboarding quiz that nudge the plan — so two people
+/// with the same scan but opposite answers don't get the identical routine.
+struct PlanContext: Sendable {
+    /// Categories behind the user's stated concerns — promoted in the targeting.
+    var promote: [DermiqCategory] = []
+    /// Routine newcomer ("nothing"/"just cleanser") → gentler entry doses.
+    var beginner = false
+    /// Sleeps under 6h → skin recovers poorly overnight → prioritize hydration.
+    var poorSleep = false
+    /// 35+ → softer pacing on harsh actives.
+    var mature = false
+    /// Rarely/never wears SPF → the SPF step gets an honest, pointed why-line.
+    var weakSPF = false
+
+    init() {}
+
+    /// Decode from the persisted onboarding answers (raw enum values).
+    init(profile: UserProfile?) {
+        guard let profile else { return }
+        beginner  = profile.routineLevel == "nothing" || profile.routineLevel == "cleanserOnly"
+        poorSleep = profile.sleepBucket == "under6"
+        mature    = profile.ageBand == "from35to44" || profile.ageBand == "over45"
+        weakSPF   = profile.sunProtection == "sometimes" || profile.sunProtection == "whatsSPF"
+        promote   = profile.concerns.compactMap(Self.category(for:))
+    }
+
+    private static func category(for concern: SkinConcern) -> DermiqCategory? {
+        switch concern {
+        case .redness, .sensitivity: return .redness
+        case .acne:                  return .blemishes
+        case .texture, .aging:       return .texture
+        case .pores, .oiliness:      return .pores
+        case .dryness:               return .hydration
+        case .dullness:              return .glow
+        case .hyperpigmentation:     return .evenness
+        }
+    }
+}
+
 enum RoutineBuilder {
 
     /// `weightedToward` (rescan iterations): categories that improved least
@@ -336,7 +375,8 @@ enum RoutineBuilder {
         targets: [DermiqSubScore],
         weightedToward: [DermiqCategory] = [],
         prefs: SkinPrefs? = nil,
-        avoid: Set<SkinSensitivity> = []
+        avoid: Set<SkinSensitivity> = [],
+        context: PlanContext = PlanContext()
     ) -> (am: [RoutineStep], pm: [RoutineStep]) {
         var ordered = targets
         if !weightedToward.isEmpty {
@@ -346,14 +386,34 @@ enum RoutineBuilder {
                 return ai == bi ? a.value < b.value : ai < bi
             }
         }
-        // "What's bothering you right now" jumps the queue — the routine should
-        // visibly answer the thing the user just told us.
+        // The onboarding quiz jumps the queue: the categories behind the user's
+        // stated concerns (and hydration when they sleep short — that's when the
+        // skin can't recover) get promoted so the plan visibly answers what they
+        // told us, not just the raw scan order.
+        var promote = context.promote
+        if context.poorSleep { promote.append(.hydration) }
+        for category in promote.reversed() {
+            if let index = ordered.firstIndex(where: { $0.category == category }), index > 0 {
+                ordered.insert(ordered.remove(at: index), at: 0)
+            }
+        }
+        // "What's bothering you right now" (the pre-scan question) wins the very
+        // front — it's the most acute signal.
         if let boosted = prefs?.concern.boostedCategory,
            let index = ordered.firstIndex(where: { $0.category == boosted }), index > 0 {
             ordered.insert(ordered.remove(at: index), at: 0)
         }
 
         let feel = prefs?.feel
+        // One gentling pass, highest-priority reason first: reactive skin, then a
+        // routine newcomer, then more mature skin — each gets the softer cousin
+        // of any harsh active, with an honest why-line for the reason.
+        let gentleFlag: String? = {
+            if feel == .sensitive { return String(localized: "Softened — your skin flagged sensitive.") }
+            if context.beginner { return String(localized: "Eased in gently — you're just starting a routine.") }
+            if context.mature { return String(localized: "Kept gentle — a steady pace suits your skin.") }
+            return nil
+        }()
         var am: [RoutineStep] = [baseCleanser(feel: feel, block: .am)]
         var pm: [RoutineStep] = [baseCleanser(feel: feel, block: .pm)]
 
@@ -371,7 +431,7 @@ enum RoutineBuilder {
         for target in ordered {
             guard amTargets + pmTargets < totalCap else { break }
             var step = targetedStep(for: target)
-            if feel == .sensitive { step = soften(step) }
+            if let gentleFlag { step = soften(step, flag: gentleFlag) }
             // Allergy guard: swap any flagged active for a gentle alternative
             // so skin that reacts to it never gets it.
             step = respectingSensitivities(step, avoid: avoid)
@@ -396,11 +456,15 @@ enum RoutineBuilder {
         }
 
         am.append(baseMoisturizer(feel: feel, block: .am))
+        let spfWhy = context.weakSPF
+            ? String(localized: "UV is the #1 score killer. Non-negotiable, every day.") + " "
+                + String(localized: "You told us SPF isn't a daily habit yet — this is the single change that moves your score most.")
+            : String(localized: "UV is the #1 score killer. Non-negotiable, every day.")
         am.append(RoutineStep(
             key: "am.spf",
             productType: feel == .oily ? "SPF 50, mattifying fluid" : "SPF 50 broad spectrum",
             active: "UV filters",
-            why: String(localized: "UV is the #1 score killer. Non-negotiable, every day."),
+            why: spfWhy,
             examples: feel == .oily
                 ? ["La Roche-Posay Anthelios Oil Control · $$", "Beauty of Joseon Matte Sun Stick · $"]
                 : ["Beauty of Joseon Relief Sun · $", "La Roche-Posay Anthelios · $$", "Supergoop Unseen · $$$"]
@@ -487,24 +551,26 @@ enum RoutineBuilder {
         }
     }
 
-    /// Sensitive skin gets the gentler cousin of every harsh active.
-    private static func soften(_ step: RoutineStep) -> RoutineStep {
+    /// The gentler cousin of every harsh active. `flag` is the honest reason
+    /// line (reactive skin / new to routines / more mature skin), appended so
+    /// the user sees why the plan softened this step.
+    private static func soften(_ step: RoutineStep, flag: String) -> RoutineStep {
         if step.active.contains("Glycolic") {
             return RoutineStep(key: step.key, productType: "Gentle PHA exfoliant (2×/week)",
                 active: "Gluconolactone (PHA)",
-                why: step.why + " " + String(localized: "Softened to PHA — sensitive skin flagged."),
+                why: step.why + " " + flag,
                 examples: ["The Inkey List PHA Toner · $", "Naturium PHA Toner · $$"])
         }
         if step.active.contains("Adapalene") || step.active.contains("Retinaldehyde") {
             return RoutineStep(key: step.key, productType: "Gentle retinol (start 2×/week)",
                 active: "Retinol 0.3% encapsulated",
-                why: step.why + " " + String(localized: "Softened entry dose — sensitive skin flagged."),
+                why: step.why + " " + flag,
                 examples: ["The Inkey List Retinol · $", "Geek & Gorgeous A-Game 5 · $$"])
         }
         if step.active.contains("Ascorbic") {
             return RoutineStep(key: step.key, productType: "Vitamin C derivative serum",
                 active: "Ethylated ascorbic acid 10%",
-                why: step.why + " " + String(localized: "Derivative form — kinder to reactive skin."),
+                why: step.why + " " + flag,
                 examples: ["Purito CID Serum · $$", "Geek & Gorgeous C-Glow · $$"])
         }
         return step

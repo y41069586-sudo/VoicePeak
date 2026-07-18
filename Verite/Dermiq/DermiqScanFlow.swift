@@ -148,11 +148,13 @@ final class ScanFlowModel {
         // ALL seven readings feed the plan, worst first — the builder fills
         // its treatment slots from the full picture, not a 3-metric shortlist.
         let targets = analysis.subScores.sorted { $0.value < $1.value }
+        let profile = (try? context.fetch(FetchDescriptor<UserProfile>()))?.first
         let steps = RoutineBuilder.steps(
             targets: targets,
             weightedToward: weightedToward,
             prefs: SkinPrefs.load(),        // the two pre-scan questions
-            avoid: SkinSensitivities.load() // allergies from onboarding
+            avoid: SkinSensitivities.load(), // allergies from onboarding
+            context: PlanContext(profile: profile) // the onboarding quiz answers
         )
 
         // One active plan at a time.

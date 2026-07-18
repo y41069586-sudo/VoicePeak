@@ -8436,6 +8436,41 @@
         }
       }
     },
+    "Eased in gently — you're just starting a routine.": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sanfter Einstieg — du fängst gerade erst mit einer Routine an."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Eased in gently — you're just starting a routine."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Introducción suave — apenas estás empezando una rutina."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Introduction en douceur — tu débutes tout juste une routine."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Inizio graduale — stai appena iniziando una routine."
+          }
+        }
+      }
+    },
     "Easing in actives": {
       "extractionState": "manual",
       "localizations": {
@@ -12877,6 +12912,41 @@
           "stringUnit": {
             "state": "translated",
             "value": "Impedisce ai brufoli occasionali di stabilizzarsi (%lld)."
+          }
+        }
+      }
+    },
+    "Kept gentle — a steady pace suits your skin.": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bewusst sanft — ein ruhiges Tempo tut deiner Haut gut."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kept gentle — a steady pace suits your skin."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Suave a propósito — un ritmo pausado le sienta bien a tu piel."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Volontairement doux — un rythme posé convient à ta peau."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Delicato di proposito — un ritmo calmo fa bene alla tua pelle."
           }
         }
       }
@@ -21841,6 +21911,41 @@
         }
       }
     },
+    "Softened — your skin flagged sensitive.": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sanfter — deine Haut ist empfindlich."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Softened — your skin flagged sensitive."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Suavizado — tu piel es sensible."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Adouci — ta peau est sensible."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Più delicato — la tua pelle è sensibile."
+          }
+        }
+      }
+    },
     "Some good days, some off": {
       "extractionState": "manual",
       "localizations": {
@@ -26562,6 +26667,41 @@
           "stringUnit": {
             "state": "translated",
             "value": "Hai completato 14 giorni"
+          }
+        }
+      }
+    },
+    "You told us SPF isn't a daily habit yet — this is the single change that moves your score most.": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Du hast gesagt, SPF ist noch keine tägliche Gewohnheit — das ist die eine Änderung, die deinen Wert am meisten bewegt."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You told us SPF isn't a daily habit yet — this is the single change that moves your score most."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nos dijiste que el SPF aún no es un hábito diario — este es el único cambio que más sube tu puntuación."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tu nous as dit que le SPF n'est pas encore une habitude quotidienne — c'est le seul changement qui fait le plus grimper ton score."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ci hai detto che l'SPF non è ancora un'abitudine quotidiana — è l'unico cambiamento che fa salire di più il tuo punteggio."
           }
         }
       }
