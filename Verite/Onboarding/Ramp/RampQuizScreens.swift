@@ -735,6 +735,9 @@ struct RampRevealScreen: View {
             RampPrimaryButton(title: "See where I land") { onAdvance() }
                 .padding(.horizontal, VSpace.lg)
                 .opacity(showRange ? 1 : 0)
+                // Not just invisible — non-tappable until revealed, so a tap in
+                // the empty space can't advance the screen before the reading.
+                .allowsHitTesting(showRange)
                 .animation(VMotion.gentle, value: showRange)
             Spacer(minLength: VSpace.xxl)
                 }

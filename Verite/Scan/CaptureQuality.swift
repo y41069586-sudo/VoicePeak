@@ -17,9 +17,15 @@ struct CaptureQuality: Equatable {
     var eyesOpen: Bool = false
 
     // Target bands. Forgiving on purpose — guidance, not a lab rig.
-    static let minFaceHeight = 0.70
-    static let maxFaceHeight = 0.80
-    static let maxCenterOffset = 0.14
+    // Distance is the Vision face-box height as a fraction of the FULL frame.
+    // The on-screen oval guide (265×360 over a full-bleed aspect-fill preview)
+    // frames a face at roughly 0.45–0.6 of frame height, so the old 0.70–0.80
+    // window could never be satisfied by following the guide — "Distance"
+    // stayed red and the shutter never unlocked. Widened to match the oval
+    // (and still reject a face that's too far or cropped-in close).
+    static let minFaceHeight = 0.40
+    static let maxFaceHeight = 0.92
+    static let maxCenterOffset = 0.18
     static let minBrightness = 0.25  // was 0.70 – most indoor lighting sits 0.30-0.55
     static let maxBrightness = 0.97  // allow very bright environments
 

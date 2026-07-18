@@ -129,15 +129,29 @@ final class ReferralStore {
 
     /// Pasted-text redemption: chats never linkify verite:// URLs, so the
     /// friend copies the whole message and we fish the link out of it.
+    /// Paste-to-redeem: returns true only when a bonus scan was ACTUALLY
+    /// credited — so the paste button shows honest feedback. A link that's
+    /// already been redeemed, or your own code, returns false (surfaces the
+    /// error) instead of silently doing nothing.
     func handlePasted(_ text: String) -> Bool {
         guard let range = text.range(of: #"verite://invite\?[A-Za-z0-9\-_=&]+"#,
                                      options: .regularExpression),
-              let url = URL(string: String(text[range]))
+              let url = URL(string: String(text[range])),
+              url.scheme == "verite", url.host == "invite",
+              let items = URLComponents(url: url, resolvingAgainstBaseURL: false)?.queryItems
         else { return false }
-        return handle(url)
+
+        if let code = items.first(where: { $0.name == "code" })?.value, !code.isEmpty {
+            return redeemInvite(from: code)
+        }
+        if let code = items.first(where: { $0.name == "confirm" })?.value, !code.isEmpty {
+            return confirm(code)
+        }
+        return false
     }
 
-    /// Returns true when the URL was a referral link (handled here).
+    /// Deep-link routing: returns true when the URL was a referral link (so
+    /// RootView stops routing it), regardless of whether a credit was granted.
     func handle(_ url: URL) -> Bool {
         guard url.scheme == "verite", url.host == "invite",
               let items = URLComponents(url: url, resolvingAgainstBaseURL: false)?.queryItems
@@ -155,25 +169,31 @@ final class ReferralStore {
     }
 
     /// Friend's side: one redemption per install, never your own code.
-    private func redeemInvite(from code: String) {
+    /// Returns true only when a bonus was actually credited.
+    @discardableResult
+    private func redeemInvite(from code: String) -> Bool {
         let defaults = UserDefaults.standard
-        guard code != myCode, !defaults.bool(forKey: Self.redeemedKey) else { return }
+        guard code != myCode, !defaults.bool(forKey: Self.redeemedKey) else { return false }
         defaults.set(true, forKey: Self.redeemedKey)
         defaults.set(code, forKey: Self.inviterKey)
         addCredit()
         Haptics.fire(.milestone)
         DermiqDiagnostics.record("Referral redeemed — +1 bonus scan")
+        return true
     }
 
     /// Inviter's side: only my own code pays out, capped.
-    private func confirm(_ code: String) {
+    /// Returns true only when a bonus was actually credited.
+    @discardableResult
+    private func confirm(_ code: String) -> Bool {
         let defaults = UserDefaults.standard
         let confirms = defaults.integer(forKey: Self.confirmsKey)
-        guard code == myCode, confirms < Self.confirmCap else { return }
+        guard code == myCode, confirms < Self.confirmCap else { return false }
         defaults.set(confirms + 1, forKey: Self.confirmsKey)
         addCredit()
         Haptics.fire(.milestone)
         DermiqDiagnostics.record("Referral confirmed — +1 bonus scan")
+        return true
     }
 }
 
