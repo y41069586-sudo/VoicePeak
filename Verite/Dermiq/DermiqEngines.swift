@@ -54,27 +54,21 @@ final class MockDermiqEngine: DermiqAnalysisEngine {
     func analyze(image: UIImage) async throws -> DermiqAnalysis {
         try? await Task.sleep(for: .milliseconds(1400)) // realistic latency
 
+        // The mock always reports inside a realistic 60-70 band — overall and
+        // every sub-score. On a rescan it still nudges up a point or two, but
+        // stays clamped to the band so repeat test scans never march past 70.
         let overall: Int
         if let previousOverall {
-            // Trend up on a rescan, but with diminishing returns so repeat
-            // scans plateau in a believable band instead of marching to a
-            // maxed-out 90+. Headroom shrinks as the score climbs, and the
-            // ceiling is 85 — "above 85 is rare" holds even after many scans.
-            let headroom = max(0, 82 - previousOverall)
-            let gain = min(Int.random(in: 2...6), max(1, (headroom + 3) / 3))
-            overall = min(previousOverall + gain, 85)
+            overall = min(max(previousOverall + Int.random(in: 1...3), 60), 70)
         } else {
-            overall = Int.random(in: 55...75)
+            overall = Int.random(in: 60...70)
         }
 
         let subScores: [DermiqSubScore] = DermiqCategory.allCases.map { category in
-            // Slightly negative skew and an 88 ceiling: sub-scores vary around
-            // the overall without a cluster of maxed-out 95s, and none reads
-            // as "perfect" — there's always visible room for the plan to move.
-            let spread = Int.random(in: -16...9)
+            let spread = Int.random(in: -4...4)
             return DermiqSubScore(
                 category: category,
-                value: max(28, min(88, overall + spread)),
+                value: min(max(overall + spread, 60), 70),
                 trend: nil
             )
         }
