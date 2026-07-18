@@ -314,6 +314,9 @@ struct DermiqSettingsView: View {
 
     /// Sign out: clear the session, keep on-device data, return to onboarding.
     private func signOut() {
+        // Invalidate the server session too — otherwise a live backend token
+        // survives sign-out (no-op on the local-only backend).
+        Task { await appState.backend.signOut() }
         for profile in profiles {
             profile.onboardingComplete = false
         }
