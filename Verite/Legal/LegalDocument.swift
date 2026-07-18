@@ -1,11 +1,9 @@
 import SwiftUI
 
-/// The four localized legal documents reachable from Settings → Legal. The
-/// Impressum, Privacy Policy, Terms and medical disclaimer bodies are final,
-/// localized in all five languages. The only remaining fill-ins are the
-/// provider-identity fields (name, address, contact email, responsible person),
-/// which are bracketed placeholders in the Impressum/Privacy bodies and must be
-/// completed with real details before App Store submission.
+/// The four localized legal documents reachable from Settings → Legal and from
+/// the paywall's Terms/Privacy links. The Impressum, Privacy Policy, Terms and
+/// medical disclaimer bodies are final and localized in all five languages,
+/// with the real provider-identity details already filled in.
 enum LegalDocument: String, CaseIterable, Identifiable {
     case impressum
     case privacy
