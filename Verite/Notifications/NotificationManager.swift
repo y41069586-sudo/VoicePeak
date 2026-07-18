@@ -97,6 +97,10 @@ enum NotificationManager {
         add(id: "routine.am", hour: 8, minute: 0,
             title: String(localized: "notif.routine.am.title"),
             body: String(localized: "notif.routine.am.body"))
+        // Skip the PM reminder when it would land on the same 8:00 as the AM
+        // one (e.g. the user chose a "morning" slot) — never fire two identical
+        // daily notifications.
+        guard !(hour == 8 && minute == 0) else { return }
         add(id: "routine.pm", hour: hour, minute: minute,
             title: String(localized: "notif.routine.pm.title"),
             body: String(localized: "notif.routine.pm.body"))

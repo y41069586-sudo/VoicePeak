@@ -238,7 +238,7 @@ enum GlowUpReelComposer {
         draw(text: frame.dayLabel, font: rounded(92, .heavy),
              color: .white.withAlphaComponent(a),
              at: CGPoint(x: 64, y: 1650))
-        draw(text: "SCORE", font: rounded(30, .bold),
+        draw(text: String(localized: "SCORE"), font: rounded(30, .bold),
              color: .white.withAlphaComponent(0.65 * a),
              at: CGPoint(x: size.width - 64, y: 1650), rightAligned: true, tracking: 4)
         draw(text: "\(frame.score)", font: rounded(92, .heavy),
@@ -250,7 +250,7 @@ enum GlowUpReelComposer {
         draw(text: dayLabel, font: rounded(64, .heavy),
              color: .white.withAlphaComponent(0.9),
              at: CGPoint(x: size.width / 2, y: 1420), centered: true)
-        draw(text: "SCORE", font: rounded(34, .bold),
+        draw(text: String(localized: "SCORE"), font: rounded(34, .bold),
              color: .white.withAlphaComponent(0.65),
              at: CGPoint(x: size.width / 2, y: 1520), centered: true, tracking: 6)
         draw(text: "\(value)", font: rounded(190, .heavy),
@@ -261,7 +261,8 @@ enum GlowUpReelComposer {
             let color = delta > 0
                 ? UIColor(red: 0.12, green: 0.62, blue: 0.42, alpha: 1)  // deltaUp
                 : UIColor(red: 0.87, green: 0.36, blue: 0.31, alpha: 1)
-            draw(text: "\(sign)\(delta) IN 14 DAYS", font: rounded(46, .heavy),
+            draw(text: String(format: String(localized: "%@ IN 14 DAYS"), "\(sign)\(delta)"),
+                 font: rounded(46, .heavy),
                  color: color, at: CGPoint(x: size.width / 2, y: 1790),
                  centered: true, tracking: 2)
         }
@@ -279,10 +280,10 @@ enum GlowUpReelComposer {
                  color: UIColor(red: 0.31, green: 0.56, blue: 0.97, alpha: a),  // accent-bright
                  at: CGPoint(x: size.width / 2, y: 1010), centered: true)
         }
-        draw(text: "The 14-day glow-up.", font: rounded(52, .semibold),
+        draw(text: String(localized: "The 14-day glow-up."), font: rounded(52, .semibold),
              color: .white.withAlphaComponent(0.85 * a),
              at: CGPoint(x: size.width / 2, y: 1130), centered: true)
-        draw(text: "Scan yours.", font: rounded(44, .bold),
+        draw(text: String(localized: "Scan yours."), font: rounded(44, .bold),
              color: UIColor(red: 0.31, green: 0.56, blue: 0.97, alpha: a),
              at: CGPoint(x: size.width / 2, y: 1230), centered: true)
     }

@@ -19,9 +19,9 @@ struct DermiqSettingsView: View {
     @Environment(AppState.self) private var appState
     @Environment(\.requestReview) private var requestReview
     @Query private var profiles: [UserProfile]
+    @Query(sort: \ScanRecord.date, order: .reverse) private var scans: [ScanRecord]
 
     @AppStorage("languageOverride") private var languageOverride = ""
-    @AppStorage("dermiq.reminder") private var reminderPref = ReminderPref.off.rawValue
 
     @State private var legalDocument: LegalDocument?
     @State private var showSignOutConfirm = false
@@ -99,7 +99,7 @@ struct DermiqSettingsView: View {
             HStack {
                 rowLabel(icon: "bell.badge", text: "Daily reminder")
                 Spacer()
-                Picker("Daily reminder", selection: $reminderPref) {
+                Picker("Daily reminder", selection: reminderBinding) {
                     ForEach(ReminderPref.allCases, id: \.rawValue) { pref in
                         Text(LocalizedStringKey(pref.label)).tag(pref.rawValue)
                     }
@@ -107,9 +107,22 @@ struct DermiqSettingsView: View {
                 .tint(DQColor.accentBright)
             }
         }
-        .onChange(of: reminderPref) { _, newValue in
-            applyReminder(ReminderPref(rawValue: newValue) ?? .off)
-        }
+    }
+
+    /// The picker reads the real reminder state (owned by NotificationManager,
+    /// armed in onboarding) and writes through `applyReminder`. Deriving the
+    /// value — instead of a separate @AppStorage — means the picker can never
+    /// show "Off" while reminders are actually firing, so "Off" always works.
+    private var reminderBinding: Binding<String> {
+        Binding(
+            get: {
+                let d = UserDefaults.standard
+                guard d.bool(forKey: "notif.routine.desired") else { return ReminderPref.off.rawValue }
+                let pmHour = d.object(forKey: "notif.routine.pmHour") as? Int ?? 21
+                return (pmHour == 8 ? ReminderPref.morning : ReminderPref.evening).rawValue
+            },
+            set: { applyReminder(ReminderPref(rawValue: $0) ?? .off) }
+        )
     }
 
     // MARK: Subscription
@@ -345,7 +358,6 @@ struct DermiqSettingsView: View {
             d.removeObject(forKey: key)
         }
         languageOverride = ""
-        reminderPref = ReminderPref.off.rawValue
         UNUserNotificationCenter.current().removeAllPendingNotificationRequests()
 
         RampAnalytics.track("settings_delete_account")
@@ -359,26 +371,28 @@ struct DermiqSettingsView: View {
         }
     }
 
-    /// One local daily reminder at the chosen slot (Screen 8 spec: AM or PM).
-    private func applyReminder(_ pref: ReminderPref) {
-        let center = UNUserNotificationCenter.current()
-        center.removePendingNotificationRequests(withIdentifiers: ["dermiq.daily"])
-        guard pref != .off else { return }
+    private var planUnlocked: Bool { purchases.isPro && !scans.isEmpty }
 
+    /// The daily reminder is a SINGLE system (NotificationManager): the picker
+    /// stores the preference + evening time, then reconciles which reminder is
+    /// live (routine once Pro+plan, else a conversion nudge). No separate
+    /// scheduler, so "Off" really silences everything and nothing double-fires.
+    private func applyReminder(_ pref: ReminderPref) {
+        // Clear the legacy standalone reminder from older builds so it can't
+        // linger alongside the unified one.
+        UNUserNotificationCenter.current().removePendingNotificationRequests(withIdentifiers: ["dermiq.daily"])
+
+        let enabled = pref != .off
+        NotificationManager.setRoutinePreference(enabled: enabled,
+                                                 pmHour: pref == .morning ? 8 : 20,
+                                                 pmMinute: 0)
+        guard enabled else {
+            NotificationManager.syncReminders(planUnlocked: planUnlocked)
+            return
+        }
         Task {
-            let granted = (try? await center.requestAuthorization(options: [.alert, .sound, .badge])) ?? false
-            guard granted else { return }
-            let content = UNMutableNotificationContent()
-            content.title = String(localized: "Your plan is waiting.")
-            content.body = String(localized: "Today's routine takes two minutes. The rescan is coming.")
-            content.sound = .default
-            var components = DateComponents()
-            components.hour = pref == .morning ? 8 : 20
-            components.minute = 0
-            let trigger = UNCalendarNotificationTrigger(dateMatching: components, repeats: true)
-            try? await center.add(UNNotificationRequest(identifier: "dermiq.daily",
-                                                        content: content,
-                                                        trigger: trigger))
+            _ = await NotificationManager.requestAuthorization()
+            NotificationManager.syncReminders(planUnlocked: planUnlocked)
         }
     }
 

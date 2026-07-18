@@ -45,7 +45,7 @@ struct ComparePayload: Codable, Identifiable {
     /// stays light enough to travel (≈120px, low quality).
     static func mine(name: String, analysis: DermiqAnalysis, photo: UIImage?) -> ComparePayload {
         ComparePayload(
-            name: name.isEmpty ? "A friend" : name,
+            name: name.isEmpty ? String(localized: "A friend") : name,
             overall: analysis.overall,
             subs: CompareScore.from(analysis.subScores),
             thumb: photo.flatMap { thumbToken(from: $0) }

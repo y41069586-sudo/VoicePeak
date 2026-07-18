@@ -350,6 +350,6 @@ private struct DermiqBadgeTile: View {
             RoundedRectangle(cornerRadius: 14, style: .continuous)
                 .strokeBorder(DQColor.stroke, lineWidth: 1)
         )
-        .accessibilityLabel(Text(verbatim: "\(badge.title): \(earned ? "earned" : "locked")"))
+        .accessibilityLabel(Text(verbatim: "\(badge.title): \(earned ? String(localized: "earned") : String(localized: "locked"))"))
     }
 }
