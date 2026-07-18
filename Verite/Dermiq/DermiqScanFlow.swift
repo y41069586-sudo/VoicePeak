@@ -247,7 +247,11 @@ struct DermiqScanFlowView: View {
                     model: model,
                     ctaTitle: planCTATitle,
                     ctaCaption: planCTACaption,
-                    ctaEnabled: !planPurchasing
+                    ctaEnabled: !planPurchasing,
+                    onBack: {
+                        Haptics.fire(.transition)
+                        model.stage = .results
+                    }
                 ) {
                     planCTATapped()
                 }

@@ -16,21 +16,43 @@ struct DermiqPotentialView: View {
     var ctaTitle: String = String(localized: "Build my 14-day plan")
     var ctaCaption: String? = nil
     var ctaEnabled: Bool = true
+    /// Back to the reading card. Absent hides the chevron (e.g. if this ever
+    /// becomes the first screen in a flow).
+    var onBack: (() -> Void)? = nil
     let onContinue: () -> Void
 
     var body: some View {
         VStack(spacing: 0) {
-            VStack(spacing: 6) {
-                Text("You as a 10/10!")
-                    .font(DQFont.title)
-                    .foregroundStyle(DQColor.textPrimary)
-                Text("This is your skin's ceiling. The next 14 days close the gap.")
-                    .font(DQFont.body)
-                    .foregroundStyle(DQColor.textSecondary)
-                    .multilineTextAlignment(.center)
+            ZStack {
+                if let onBack {
+                    HStack {
+                        Button {
+                            Haptics.fire(.tick)
+                            onBack()
+                        } label: {
+                            Image(systemName: "chevron.left")
+                                .font(.system(size: 18, weight: .semibold))
+                                .foregroundStyle(DQColor.textSecondary)
+                                .frame(width: 44, height: 44)
+                                .contentShape(Rectangle())
+                        }
+                        .accessibilityLabel(Text("Back"))
+                        Spacer()
+                    }
+                }
+                VStack(spacing: 6) {
+                    Text("You as a 10/10!")
+                        .font(DQFont.title)
+                        .foregroundStyle(DQColor.textPrimary)
+                    Text("This is your skin's ceiling. The next 14 days close the gap.")
+                        .font(DQFont.body)
+                        .foregroundStyle(DQColor.textSecondary)
+                        .multilineTextAlignment(.center)
+                }
+                .padding(.horizontal, 44)
             }
-            .padding(.horizontal, 28)
-            .padding(.top, 24)
+            .padding(.horizontal, 12)
+            .padding(.top, 16)
 
             Spacer()
 
