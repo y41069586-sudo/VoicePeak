@@ -81,13 +81,13 @@ final class ReferralStore {
     }
 
     var inviteURL: URL {
-        URL(string: "verite://invite?code=\(myCode)")!
+        LinkConfig.share(host: "invite", query: "code=\(myCode)")
     }
 
     /// The thank-you link the redeemer can send back so the inviter gets paid.
     var thankYouURL: URL? {
         guard let inviter = UserDefaults.standard.string(forKey: Self.inviterKey) else { return nil }
-        return URL(string: "verite://invite?confirm=\(inviter)")
+        return LinkConfig.share(host: "invite", query: "confirm=\(inviter)")
     }
 
     // MARK: Credits
@@ -134,9 +134,7 @@ final class ReferralStore {
     /// already been redeemed, or your own code, returns false (surfaces the
     /// error) instead of silently doing nothing.
     func handlePasted(_ text: String) -> Bool {
-        guard let range = text.range(of: #"verite://invite\?[A-Za-z0-9\-_=&]+"#,
-                                     options: .regularExpression),
-              let url = URL(string: String(text[range])),
+        guard let url = LinkConfig.veriteURL(fromPasted: text),
               url.scheme == "verite", url.host == "invite",
               let items = URLComponents(url: url, resolvingAgainstBaseURL: false)?.queryItems
         else { return false }

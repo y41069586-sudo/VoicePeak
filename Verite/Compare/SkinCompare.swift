@@ -87,11 +87,8 @@ enum CompareLink {
 
     static func url(for payload: ComparePayload) -> URL? {
         guard let json = try? JSONEncoder().encode(payload) else { return nil }
-        var components = URLComponents()
-        components.scheme = scheme
-        components.host = host
-        components.queryItems = [URLQueryItem(name: "d", value: base64url(json))]
-        return components.url
+        // Shareable (https) when a web base is configured, else verite://.
+        return LinkConfig.share(host: host, query: "d=\(base64url(json))")
     }
 
     static func payload(from url: URL) -> ComparePayload? {
@@ -107,10 +104,7 @@ enum CompareLink {
     /// Messengers never make custom-scheme links tappable — the friend copies
     /// the whole message instead. Fish the compare link out of arbitrary text.
     static func payload(fromPastedText text: String) -> ComparePayload? {
-        guard let range = text.range(of: #"verite://compare\?d=[A-Za-z0-9\-_=]+"#,
-                                     options: .regularExpression),
-              let url = URL(string: String(text[range]))
-        else { return nil }
+        guard let url = LinkConfig.veriteURL(fromPasted: text) else { return nil }
         return payload(from: url)
     }
 
