@@ -788,6 +788,7 @@ struct RampSignInScreen: View {
     let onSkip: () -> Void
 
     @Environment(AppState.self) private var appState
+    @Environment(\.modelContext) private var modelContext
     @State private var shown = false
     /// Raw nonce for the in-flight Apple request; its SHA-256 goes in the request.
     @State private var currentNonce: String?
@@ -914,7 +915,11 @@ struct RampSignInScreen: View {
             Haptics.fire(.milestone)
             Task {
                 _ = try? await appState.backend.signInWithApple(idToken: idToken, nonce: nonce)
-                await MainActor.run { onSignedIn(given) }
+                await MainActor.run {
+                    // Cross-device restore of the score history, then push the merge back up.
+                    BackendSync.restoreThenUpload(backend: appState.backend, context: modelContext)
+                    onSignedIn(given)
+                }
             }
         }
     }
@@ -934,7 +939,10 @@ struct RampSignInScreen: View {
                 }
                 let given = result.user.profile?.givenName
                 _ = try? await appState.backend.signInWithGoogle(idToken: idToken)
-                await MainActor.run { Haptics.fire(.milestone); onSignedIn(given) }
+                await MainActor.run {
+                    BackendSync.restoreThenUpload(backend: appState.backend, context: modelContext)
+                    Haptics.fire(.milestone); onSignedIn(given)
+                }
             } catch {
                 // User canceled or the sheet failed — stay on the screen.
             }

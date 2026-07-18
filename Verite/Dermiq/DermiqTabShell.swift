@@ -29,6 +29,7 @@ struct DermiqTabShell: View {
 
     @Environment(\.modelContext) private var modelContext
     @Environment(PurchaseManager.self) private var purchases
+    @Environment(AppState.self) private var appState
     @Query(sort: \ScanRecord.date, order: .reverse) private var scans: [ScanRecord]
 
     /// Single source of truth for entitlement: a real, verified StoreKit
@@ -99,6 +100,9 @@ struct DermiqTabShell: View {
                                usedCredit: flowUsedCredit) { planCreated in
                 showFlow = false
                 if planCreated { tab = .routine }
+                // Push the new scan up to the account (no-op when signed out /
+                // local-only). Keeps cross-device history current.
+                BackendSync.upload(backend: appState.backend, context: modelContext)
                 // Award scan badges once the cover is gone, so the popup
                 // lands on the shell — never on top of the paywall.
                 Task {

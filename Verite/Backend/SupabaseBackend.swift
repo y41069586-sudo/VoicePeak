@@ -92,6 +92,18 @@ final class SupabaseBackend: BackendService, @unchecked Sendable {
                            extraHeaders: ["Prefer": "resolution=merge-duplicates"])
     }
 
+    func fetchMetrics() async throws -> MetricsPayload? {
+        guard currentUser() != nil else { throw BackendError.notSignedIn }
+        let data = try await send("rest/v1/user_metrics",
+                                  query: [URLQueryItem(name: "select", value: "metrics")],
+                                  method: "GET", authorized: true, body: nil)
+        struct Row: Decodable { let metrics: MetricsPayload }
+        let decoder = JSONDecoder()
+        decoder.dateDecodingStrategy = .iso8601
+        let rows = (try? decoder.decode([Row].self, from: data)) ?? []
+        return rows.first?.metrics
+    }
+
     func fetchCommunityEfficacy(skinType: String?) async throws -> [CommunityEfficacy] {
         var query = [URLQueryItem(name: "select", value: "product_key,skin_type,works_percent,sample_size")]
         if let skinType { query.append(URLQueryItem(name: "skin_type", value: "eq.\(skinType)")) }
