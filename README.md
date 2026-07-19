@@ -47,3 +47,10 @@ Full instructions, feature-flag toggles, and where to drop the display font are
 in [`docs/SETUP.md`](docs/SETUP.md). Design tokens and motion specs are in
 [`docs/DESIGN_SPEC.md`](docs/DESIGN_SPEC.md); architecture in
 [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md).
+
+## MCP
+
+A project-scoped [MCP](https://modelcontextprotocol.io) config (`.mcp.json`)
+connects MCP-aware clients (Claude Code, Cursor, VS Code) to the hosted
+[Apify](https://apify.com) MCP server. Set `APIFY_TOKEN` in your environment;
+setup and alternatives are in [`docs/MCP.md`](docs/MCP.md).
