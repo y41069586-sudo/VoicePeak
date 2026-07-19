@@ -351,7 +351,7 @@ struct DermiqSettingsView: View {
         ReferralStore.shared.resetAll()   // credits, code, free-scan, credit marker
         UnlockStore.shared.resetAll()     // per-scan rating/routine unlocks + pending
         let d = UserDefaults.standard
-        for key in ["dermiq.unlocked", "dq.winback.shown",
+        for key in ["dermiq.unlocked", "dq.winback.shown", "dq.attribution.source",
                     "notif.routine.desired", "notif.routine.pmHour", "notif.routine.pmMinute",
                     "dq.swipeCoachSeen", "dermiq.reviewAsked", "dermiq.reviewAskedRoutine"] {
             d.removeObject(forKey: key)

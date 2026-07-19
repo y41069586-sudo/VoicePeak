@@ -85,6 +85,20 @@ struct OnboardingRampFlow: View {
             RampSampleReadingScreen { advance() }
         case .theSplit:
             RampSplitScreen { advance() }
+        case .attribution:
+            RampQuizScreen(
+                question: "Where did you find Glowé?",
+                options: RampQuizAnswers.AcquisitionSource.allCases.map {
+                    RampQuizOption(id: $0.rawValue, label: $0.label, icon: $0.icon)
+                },
+                selectedID: answers.acquisition?.rawValue
+            ) { id in
+                answers.acquisition = RampQuizAnswers.AcquisitionSource(rawValue: id)
+                // Durable channel attribution — read this against creator
+                // spend (UserDefaults so it survives sign-out/updates).
+                UserDefaults.standard.set(id, forKey: "dq.attribution.source")
+                recordAnswer(question: "acquisition_source", answer: id)
+            }
         case .name:
             RampNameScreen(name: nameBinding) { advance() }
         case .quizSelfRating:

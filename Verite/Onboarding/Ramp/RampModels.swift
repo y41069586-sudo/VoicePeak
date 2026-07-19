@@ -19,6 +19,7 @@ enum RampStep: Int, CaseIterable {
     case boot            // 0  — opening
     case sampleReading   // 1  — the real results chart, previewed
     case theSplit        // 2  — what 14 days moves (interactive bars)
+    case attribution     // 3  — "where did you find us?" (marketing attribution)
     case name            // 4  — "what should we call you?" (optional)
     case quizSelfRating  // 5  — Q1 · your skin
     case quizConcern     // 6  — Q2 · your skin
@@ -60,6 +61,7 @@ enum RampStep: Int, CaseIterable {
         case .boot:           return "boot"
         case .sampleReading:  return "sample_reading"
         case .theSplit:       return "the_split"
+        case .attribution:    return "attribution"
         case .name:           return "name"
         case .quizSelfRating: return "quiz_self_rating"
         case .quizConcern:    return "quiz_concern"
@@ -204,8 +206,37 @@ struct RampQuizAnswers {
         var chip: String { label }
     }
 
+    /// Marketing attribution: which channel brought this install. Self-reported
+    /// but the only attribution iOS reliably allows — drives where the creator
+    /// budget goes. Persisted durably under `dq.attribution.source`.
+    enum AcquisitionSource: String, CaseIterable, Identifiable {
+        case tiktok, instagram, youtube, friend, appstore, other
+        var id: String { rawValue }
+        var label: String {
+            switch self {
+            case .tiktok:    return "TikTok"
+            case .instagram: return "Instagram"
+            case .youtube:   return "YouTube"
+            case .friend:    return "A friend told me"
+            case .appstore:  return "App Store search"
+            case .other:     return "Somewhere else"
+            }
+        }
+        var icon: String {
+            switch self {
+            case .tiktok:    return "music.note"
+            case .instagram: return "camera"
+            case .youtube:   return "play.rectangle"
+            case .friend:    return "person.2"
+            case .appstore:  return "magnifyingglass"
+            case .other:     return "ellipsis.circle"
+            }
+        }
+    }
+
     /// Optional first name — personalizes copy from the quiz onward.
     var name: String?
+    var acquisition: AcquisitionSource?
     var selfRating: SelfRating?
     var concern: MirrorConcern?
     var age: AgeBand?
