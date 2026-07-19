@@ -118,7 +118,7 @@ struct DermiqTabShell: View {
             // A tapped reminder deep-links to the right tab.
             switch note.object as? String {
             case "routine": tab = .routine
-            case "scan":    tab = .analyze
+            case "scan":    tab = .scan
             default:        break
             }
         }
