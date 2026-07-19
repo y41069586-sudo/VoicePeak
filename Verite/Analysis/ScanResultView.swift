@@ -71,7 +71,7 @@ struct ScanResultView: View {
                             // Section 2: Key Insight Sentence
                             GlassCard(featured: true) {
                                 VStack(alignment: .leading, spacing: 8) {
-                                    Text("Verite Insight")
+                                    Text("Glowé Insight")
                                         .vEyebrow()
                                     Text(snapshot.keyInsight)
                                         .font(VType.bodyMedium)

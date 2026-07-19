@@ -1,14 +1,14 @@
-# Vérité
+# Glowé
 
 **The honest skincare app.** Scan your face → pick a product → get an honest,
 risk-first prediction for *your* skin → prove it with a controlled half-face
 test → your routine contains only what you've proven → share the verified result.
 
-Vérité leads with *"why not"* as often as *"why"*, never fakes a glow-up, and
+Glowé leads with *"why not"* as often as *"why"*, never fakes a glow-up, and
 only puts a product in your routine after you've proven it works on your own
 face. All face photos and analysis happen **on-device and are never uploaded.**
 
-> Vérité is a tracking and education tool, not medical advice, and not a
+> Glowé is a tracking and education tool, not medical advice, and not a
 > substitute for a dermatologist.
 
 ---

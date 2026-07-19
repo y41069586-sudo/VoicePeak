@@ -7,7 +7,7 @@
 _Last updated: [date]._
 
 ## On-device by design
-Vérité analyzes your face and skin **entirely on your device**. Your photos are
+Glowé analyzes your face and skin **entirely on your device**. Your photos are
 processed locally and are **never uploaded, transmitted, or collected by us**.
 
 ## What we store
@@ -26,7 +26,7 @@ privacy**. Under the GDPR you also have rights of access, rectification,
 erasure, and portability. Contact: **[email]**.
 
 ## Minors
-Vérité is not directed to children under 16.
+Glowé is not directed to children under 16.
 
 ## Product data
 Product information comes from the open-licensed **Open Beauty Facts** database.

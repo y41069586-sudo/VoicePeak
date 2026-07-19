@@ -3,7 +3,7 @@ import SwiftData
 
 // MARK: - Main Onboarding Flow
 
-/// Premium 8-screen onboarding for Vérité.
+/// Premium 8-screen onboarding for Glowé.
 /// Emotionally-driven, conversion-optimised, Apple-quality UX.
 /// All design tokens route through VColor / VType / VSpace / VMotion.
 struct OnboardingFlowView: View {
@@ -76,7 +76,7 @@ struct OnboardingFlowView: View {
             Spacer()
             VStack(spacing: VSpace.md) {
                 // Wordmark
-                Text("Vérité")
+                Text("Glowé")
                     .font(VType.hero(52))
                     .foregroundStyle(VColor.textPrimary)
                     .tracking(-0.5)
@@ -119,7 +119,7 @@ struct OnboardingFlowView: View {
         }
     }
 
-    // MARK: Screen 2 — What Vérité Does
+    // MARK: Screen 2 — What Glowé Does
 
     private var screen2: some View {
         VStack(spacing: 0) {
@@ -161,7 +161,7 @@ struct OnboardingFlowView: View {
                     .font(VType.heroTitle)
                     .foregroundStyle(VColor.textPrimary)
                     .multilineTextAlignment(.center)
-                Text("This is what Vérité sees.")
+                Text("This is what Glowé sees.")
                     .font(VType.body)
                     .foregroundStyle(VColor.textSecondary)
                     .multilineTextAlignment(.center)
@@ -227,7 +227,7 @@ struct OnboardingFlowView: View {
                                 .foregroundStyle(VColor.primary)
                                 .frame(width: 36)
                             VStack(alignment: .leading, spacing: 4) {
-                                Text("Vérité reads every ingredient label.")
+                                Text("Glowé reads every ingredient label.")
                                     .font(VType.bodyMedium)
                                     .foregroundStyle(VColor.textPrimary)
                                 Text("Open Beauty Facts database, cross-matched with your unique skin profile.")
@@ -279,7 +279,7 @@ struct OnboardingFlowView: View {
                 .font(VType.heroTitle)
                 .foregroundStyle(VColor.textPrimary)
                 .multilineTextAlignment(.center)
-            Text("Vérité was designed from the ground up with your privacy as the foundation — not an afterthought.")
+            Text("Glowé was designed from the ground up with your privacy as the foundation — not an afterthought.")
                 .font(VType.body)
                 .foregroundStyle(VColor.textSecondary)
                 .multilineTextAlignment(.center)
@@ -302,7 +302,7 @@ struct OnboardingFlowView: View {
     }
 
     private var privacyFootnote: some View {
-        Text("Vérité uses Apple's Vision framework for on-device processing. No cloud AI. No third-party data sharing.")
+        Text("Glowé uses Apple's Vision framework for on-device processing. No cloud AI. No third-party data sharing.")
             .font(VType.caption)
             .foregroundStyle(VColor.textTertiary)
             .multilineTextAlignment(.center)
@@ -609,7 +609,7 @@ private struct GoalSetupScreen: View {
                         Text("Any specific concerns?")
                             .font(VType.heroTitle)
                             .foregroundStyle(VColor.textPrimary)
-                        Text("Select all that apply. Vérité flags these across every scan.")
+                        Text("Select all that apply. Glowé flags these across every scan.")
                             .font(VType.body)
                             .foregroundStyle(VColor.textSecondary)
                     }

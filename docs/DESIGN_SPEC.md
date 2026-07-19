@@ -1,4 +1,4 @@
-# Vérité — Design Spec ("Aesthetic Blue")
+# Glowé — Design Spec ("Aesthetic Blue")
 
 A refined, editorial, **white-and-blue** aesthetic: premium beauty-tech meets
 honest lab instrument. Light-first (committed `.preferredColorScheme(.light)`),

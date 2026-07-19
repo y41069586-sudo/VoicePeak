@@ -1,4 +1,4 @@
-# Vérité — Setup
+# Glowé — Setup
 
 ## Requirements
 

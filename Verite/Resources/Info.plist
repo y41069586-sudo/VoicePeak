@@ -5,7 +5,7 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>en</string>
 	<key>CFBundleDisplayName</key>
-	<string>Vérité</string>
+	<string>Glowé</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>
@@ -49,7 +49,7 @@
 
 	<!-- Honest, specific camera reason. Localized via InfoPlist.xcstrings. -->
 	<key>NSCameraUsageDescription</key>
-	<string>Vérité uses the camera to analyze your skin and scan product barcodes. Photos are processed on your device and never uploaded.</string>
+	<string>Glowé uses the camera to analyze your skin and scan product barcodes. Photos are processed on your device and never uploaded.</string>
 
 	<!-- Light-first white-and-blue committed look. -->
 	<key>UIUserInterfaceStyle</key>

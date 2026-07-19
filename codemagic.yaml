@@ -1,4 +1,4 @@
-# Codemagic CI/CD — Vérité (iOS / SwiftUI)
+# Codemagic CI/CD — Glowé (iOS / SwiftUI)
 #
 # The repo ships an XcodeGen spec (project.yml) instead of a checked-in
 # .xcodeproj, so every workflow generates the project first, then builds.
@@ -16,7 +16,7 @@
 
 workflows:
   ios-compile-check:
-    name: Vérité · Compile check (simulator, unsigned)
+    name: Glowé · Compile check (simulator, unsigned)
     instance_type: mac_mini_m2
     max_build_duration: 45
     environment:

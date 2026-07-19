@@ -1,4 +1,4 @@
-# XcodeGen spec for Vérité.
+# XcodeGen spec for Glowé.
 # Generate the Xcode project with:  xcodegen generate
 # (brew install xcodegen)  — see docs/SETUP.md
 name: Verite

@@ -1,4 +1,4 @@
-// Vérité — `delete-account` Supabase Edge Function (Deno).
+// Glowé — `delete-account` Supabase Edge Function (Deno).
 //
 // Apple guideline 5.1.1(v): an account-based app must let users delete their
 // account from inside the app. This function verifies the caller's JWT, then

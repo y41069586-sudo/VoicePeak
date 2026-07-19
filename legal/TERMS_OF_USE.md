@@ -7,14 +7,14 @@
 _Last updated: [date]._
 
 ## Acceptance
-By using Vérité you agree to these terms.
+By using Glowé you agree to these terms.
 
 ## Not medical advice
-Vérité is a tracking and education tool. Skin readings are estimates, not
+Glowé is a tracking and education tool. Skin readings are estimates, not
 clinical measurements, and are not a substitute for a dermatologist.
 
 ## Subscriptions
-Vérité Pro is an auto-renewing subscription billed to your Apple ID. It renews
+Glowé Pro is an auto-renewing subscription billed to your Apple ID. It renews
 unless cancelled at least 24 hours before the period ends; manage or cancel in
 your App Store account settings. Apple's standard EULA also applies:
 <https://www.apple.com/legal/internet-services/itunes/dev/stdeula/>
@@ -24,6 +24,6 @@ Don't misuse the app or infringe others' rights. Product information is provided
 as-is from third-party open data.
 
 ## Liability
-To the extent permitted by law, Vérité is provided "as is" without warranties.
+To the extent permitted by law, Glowé is provided "as is" without warranties.
 
 Contact: **[email]**.

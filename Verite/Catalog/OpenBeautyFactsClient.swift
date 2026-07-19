@@ -8,7 +8,7 @@ enum OpenBeautyFacts {
     enum ClientError: Error { case badURL, http(Int) }
 
     private static let base = "https://world.openbeautyfacts.org"
-    private static let userAgent = "Verite/0.1 (iOS)"
+    private static let userAgent = "Glowe/0.1 (iOS)"
     private static let fields = "code,product_name,brands,ingredients_text,image_front_small_url,image_small_url"
 
     /// Look up a single product by its barcode. Returns nil when OBF has no record.

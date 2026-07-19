@@ -1,4 +1,4 @@
-# Vérité — Architecture
+# Glowé — Architecture
 
 ## One-line product
 

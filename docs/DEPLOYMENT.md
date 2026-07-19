@@ -1,4 +1,4 @@
-# Deploying Vérité
+# Deploying Glowé
 
 Two independent things:
 

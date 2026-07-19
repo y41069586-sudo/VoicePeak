@@ -1,4 +1,4 @@
--- Vérité — Supabase schema + Row Level Security.
+-- Glowé — Supabase schema + Row Level Security.
 -- Opt-in cloud sync of NUMBERS and routine only. No face photos are ever stored.
 -- Run in the Supabase SQL editor after creating a project.
 

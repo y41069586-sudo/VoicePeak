@@ -1,4 +1,4 @@
-# Vérité — App Store Review Checklist
+# Glowé — App Store Review Checklist
 
 Each item from the brief (§11) mapped to its implementation, with reviewer notes.
 Ship-blockers are marked ⚠️ where a human step remains before submission.
