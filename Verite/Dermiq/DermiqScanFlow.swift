@@ -15,7 +15,7 @@ import UIKit
 final class ScanFlowModel {
 
     enum Stage {
-        case quiz, guide, capture, theater, results, delta, potential, routineGen
+        case quiz, guide, capture, theater, results, potential, routineGen
     }
 
     // The flow opens on the 2-question skin check, then the capture guide.
@@ -242,10 +242,6 @@ struct DermiqScanFlowView: View {
                     },
                     onClose: { onFinished(false) }
                 )
-            case .delta:
-                DermiqDeltaView(model: model) {
-                    advanceToRoutineGen()
-                }
             case .potential:
                 DermiqPotentialView(
                     model: model,

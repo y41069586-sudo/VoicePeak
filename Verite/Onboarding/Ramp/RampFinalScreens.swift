@@ -788,6 +788,7 @@ struct RampSignInScreen: View {
     let onSkip: () -> Void
 
     @Environment(AppState.self) private var appState
+    @Environment(PurchaseManager.self) private var purchases
     @Environment(\.modelContext) private var modelContext
     @State private var shown = false
     /// Raw nonce for the in-flight Apple request; its SHA-256 goes in the request.
@@ -914,7 +915,9 @@ struct RampSignInScreen: View {
             RampAnalytics.track("onboarding_sign_in", ["provider": "apple"])
             Haptics.fire(.milestone)
             Task {
-                _ = try? await appState.backend.signInWithApple(idToken: idToken, nonce: nonce)
+                let user = try? await appState.backend.signInWithApple(idToken: idToken, nonce: nonce)
+                // Tie purchases to the account (cross-device entitlements).
+                if let user { await purchases.logIn(appUserID: user.id) }
                 await MainActor.run {
                     // Cross-device restore of the score history, then push the merge back up.
                     BackendSync.restoreThenUpload(backend: appState.backend, context: modelContext)
@@ -938,7 +941,8 @@ struct RampSignInScreen: View {
                     return
                 }
                 let given = result.user.profile?.givenName
-                _ = try? await appState.backend.signInWithGoogle(idToken: idToken)
+                let user = try? await appState.backend.signInWithGoogle(idToken: idToken)
+                if let user { await purchases.logIn(appUserID: user.id) }
                 await MainActor.run {
                     BackendSync.restoreThenUpload(backend: appState.backend, context: modelContext)
                     Haptics.fire(.milestone); onSignedIn(given)

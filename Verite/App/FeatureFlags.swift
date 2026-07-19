@@ -1,7 +1,9 @@
 import SwiftUI
 
-/// Feature flags for the optional modules. **All OFF by default** — the app is
-/// 100% functional offline without any of them (see the brief §7.1/§9/§16).
+/// Feature flags for the optional modules. Backend, purchases and Google
+/// sign-in ship ON (their services are configured); the rest stay OFF until
+/// their integrations land. The app is 100% functional offline with every
+/// flag off (see the brief §7.1/§9/§16).
 ///
 /// Exposed as `@Observable` so a debug settings screen can toggle them at
 /// runtime; production defaults come from `.default`.
@@ -25,12 +27,9 @@ final class FeatureFlags: @unchecked Sendable {
     /// hook is built, intended for later versions once ratings justify it.
     var onboardingRatingAskEnabled: Bool
 
-    /// "Sign in with Apple" on the sign-in screen. OFF by default: the button
-    /// needs the `com.apple.developer.applesignin` entitlement, which requires
-    /// the capability enabled on the App ID in the developer portal. Turn ON
-    /// (and re-add CODE_SIGN_ENTITLEMENTS in project.yml) once that's done.
-    /// When both this and Google are OFF, the sign-in step is skipped entirely.
-    var appleSignInEnabled: Bool
+    // "Sign in with Apple" has no flag: the entitlement is enabled and App
+    // Review 4.8 requires it whenever any third-party login (Google) is
+    // offered — so the button always shows.
 
     /// "Continue with Google" on the sign-in screen. OFF until the
     /// GoogleSignIn SDK + OAuth client ID are configured — a visible but
@@ -43,7 +42,6 @@ final class FeatureFlags: @unchecked Sendable {
         purchasesEnabled: Bool = true,
         communityEnabled: Bool = false,
         onboardingRatingAskEnabled: Bool = false,
-        appleSignInEnabled: Bool = true,
         googleSignInEnabled: Bool = true
     ) {
         self.affiliateEnabled = affiliateEnabled
@@ -51,7 +49,6 @@ final class FeatureFlags: @unchecked Sendable {
         self.purchasesEnabled = purchasesEnabled
         self.communityEnabled = communityEnabled
         self.onboardingRatingAskEnabled = onboardingRatingAskEnabled
-        self.appleSignInEnabled = appleSignInEnabled
         self.googleSignInEnabled = googleSignInEnabled
     }
 

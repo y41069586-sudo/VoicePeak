@@ -92,6 +92,28 @@ final class PurchaseManager {
     func restore() async {
         if let info = try? await Purchases.shared.restorePurchases() { apply(info) }
     }
+
+    // MARK: Account linking
+
+    /// Tie the RevenueCat customer to the signed-in account, so entitlements
+    /// follow the user across devices and the dashboard shows real user IDs
+    /// instead of anonymous ones. Aliases any purchases made while anonymous.
+    func logIn(appUserID: String) async {
+        guard !appUserID.isEmpty else { return }
+        if let result = try? await Purchases.shared.logIn(appUserID) {
+            apply(result.customerInfo)
+        }
+    }
+
+    /// Back to an anonymous customer on sign-out / account deletion. Purchases
+    /// stay restorable via the Apple ID (Restore button) — this only detaches
+    /// the account link. Throws-away error: logging out an already-anonymous
+    /// user is a no-op failure by design.
+    func logOut() async {
+        if let info = try? await Purchases.shared.logOut() {
+            apply(info)
+        }
+    }
 }
 
 private final class TaskHolder: @unchecked Sendable {

@@ -315,8 +315,12 @@ struct DermiqSettingsView: View {
     /// Sign out: clear the session, keep on-device data, return to onboarding.
     private func signOut() {
         // Invalidate the server session too — otherwise a live backend token
-        // survives sign-out (no-op on the local-only backend).
-        Task { await appState.backend.signOut() }
+        // survives sign-out (no-op on the local-only backend). Detach the
+        // RevenueCat account link as well (purchases stay Apple-ID-restorable).
+        Task {
+            await appState.backend.signOut()
+            await purchases.logOut()
+        }
         for profile in profiles {
             profile.onboardingComplete = false
         }
@@ -334,7 +338,10 @@ struct DermiqSettingsView: View {
         // (Guideline 5.1.1(v) — a real account must be removable, not just
         // local data). Best-effort + fire-and-forget; the backend guards the
         // no-session case, and local data is wiped regardless below.
-        Task { try? await appState.backend.deleteAccount() }
+        Task {
+            try? await appState.backend.deleteAccount()
+            await purchases.logOut()
+        }
 
         try? modelContext.delete(model: ScanRecord.self)
         try? modelContext.delete(model: RoutinePlan.self)
