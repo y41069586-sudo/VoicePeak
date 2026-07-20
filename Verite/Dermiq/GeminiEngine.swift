@@ -45,15 +45,25 @@ final class GeminiEnhancementEngine: FaceEnhancementEngine {
 
     THE PERSON MUST REMAIN 100% IDENTICAL AND RECOGNIZABLE — treat this as \
     the same photo of the same person, taken on the same day:
-    - Do not change face shape, bone structure, jawline, cheekbones, chin, \
-    forehead, ears, nose, lips, teeth, or eyes (same iris color, same eye \
-    shape, same eyebrows).
+    - Do not change face shape, bone structure, facial geometry, jawline, \
+    cheekbones, chin, forehead, ears, nose, lips, teeth, or eyes (same iris \
+    color, same eye shape, same eyebrows). The underlying skull and muscle \
+    structure must read exactly the same in the edited photo.
     - Do not change hair (same hairstyle, hairline, color, individual \
-    strands), facial hair, makeup level, or facial expression.
+    strands), makeup level, or facial expression.
     - Do not change head pose, camera angle, framing, crop, background, \
     clothing, jewelry, or the lighting's direction and color temperature.
     - Do not slim, reshape, or beautify any facial proportions. No \
     digital-art or beauty-filter look.
+
+    FACIAL HAIR IS UNTOUCHABLE. If the person has a beard, stubble, \
+    mustache, sideburns, or any facial hair: keep every bit of it exactly as \
+    in the original — same coverage, same density, same length, same edges, \
+    same individual hairs and shadow. Never shave, remove, thin, trim, \
+    soften, blur, or "clean up" facial hair, not even partially. When \
+    healing skin near or under facial hair, edit only the skin visible \
+    between the hairs and leave every hair itself intact. Removing or \
+    reducing a beard is an identity failure as severe as changing the face.
 
     CRITICAL — PRESERVE PERMANENT SKIN FEATURES PIXEL-FOR-PIXEL. These are \
     NOT blemishes and must stay exactly where they are, same size, shape, \
@@ -69,9 +79,21 @@ final class GeminiEnhancementEngine: FaceEnhancementEngine {
     CHANGE ONLY THE TEMPORARY SKIN CONDITION, as if this person had followed \
     a perfect skincare routine for two weeks. Only these transient issues may \
     be improved — everything else stays untouched:
-    - Heal only active breakouts: pimples, whiteheads, pustules, acne spots, \
-    and inflamed irritation. A flat brown mole or a freckle is never a \
-    "spot" — leave it in place.
+    - Heal active breakouts: pimples, whiteheads, pustules, acne spots, and \
+    inflamed irritation. A flat brown mole or a freckle is never a "spot" — \
+    leave it in place.
+    - Treat the WHOLE face evenly. Apply the same degree of improvement to \
+    every affected area — forehead, temples, both cheeks, nose, chin, \
+    jawline, and along the hairline. Never clear one side or one zone while \
+    leaving obvious untouched breakouts in another; the healing must look \
+    consistent across the entire face.
+    - If the acne is severe or widespread, stay REALISTIC: two weeks of \
+    great skincare visibly calms and heals most of it, but does not produce \
+    flawless skin. Clear the inflamed pimples, yet keep faint healing marks, \
+    slight residual unevenness, and all natural pores and texture in those \
+    areas. Perfectly smooth, poreless, porcelain "plastic" skin is a \
+    failure — the after must still look like real skin that recently had \
+    breakouts and is now healthy.
     - Calm diffuse redness around the nose, cheeks, and chin to an even, \
     healthy tone.
     - Even out patchy pigmentation and dark post-acne marks, while keeping \
@@ -85,9 +107,9 @@ final class GeminiEnhancementEngine: FaceEnhancementEngine {
     - Slightly reduce dark under-eye tint, keeping natural under-eye anatomy.
 
     The result must look like a real, unedited photograph of this same \
-    person on their best skin day — natural photo grain, realistic texture, \
-    believable as a dermatologist's after-photo. Return only the edited \
-    photograph.
+    person on their best skin day — same face, same bone structure, same \
+    facial hair, natural photo grain, realistic texture, believable as a \
+    dermatologist's after-photo. Return only the edited photograph.
     """
 
     func enhance(image: UIImage) async throws -> UIImage {
