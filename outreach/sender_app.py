@@ -32,19 +32,18 @@ from http.server import BaseHTTPRequestHandler, HTTPServer
 
 HOST, PORT = "127.0.0.1", 8765
 
-FOOTER = ('\n\n--\nNot your thing? Just reply "stop" and we won\'t message again.\n'
-          "Glowé · Wilhelm-Diess-Weg 3a · 94081 Fürstenzell · Germany")
+FOOTER = '\n\n--\nNot your thing? Just reply "stop" and we won\'t message again.'
 
 DEFAULT_SUBJECT = "Paid collab with Glowé?"
 DEFAULT_BODY = """Hey {{first_name}},
 
-We're the founders of Glowé — an app that scans your skin, gives an honest 0–100 score and a personalized 14-day glow-up plan (plus an AI "you as a 10/10" preview).
+We're the founders of Glowé — an app that scans your skin, gives an honest 0–100 score and a personalized 14-day glow-up plan (plus an AI "you as a 10/10" preview). Super visual, made for skincare content.
 
-Your audience is exactly who we built this for — we'd love to do a paid collab.
+We'd love to do a paid collab with you. Your audience is exactly who we built this for.
 
 Interested? Happy to send you free lifetime access to try it first.
 
-— Doaa & the Glowé team"""
+— The Glowé Team"""
 
 DEFAULT_LEADS = """email,first_name
 example@gmail.com,Jane"""
