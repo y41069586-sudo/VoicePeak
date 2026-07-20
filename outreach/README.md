@@ -39,11 +39,19 @@ of spam and out of trouble).
   ```
   Output is already in the `leads.csv` format — add a `hook` per row and run
   `generate_emails.py`.
-- **TikTok — no legal bulk API.** Reading TikTok profiles at scale means either
-  (a) **Creator Marketplace** (official, manual-ish), or (b) a **paid data
-  provider** (EnsembleData, Modash, HypeAuditor) with a real API. Scraping is
-  against ToS and fragile — don't. If you get a provider key, that API can feed
-  `leads.csv` the same way; ask and I'll wire it.
+- **TikTok / Instagram via an Apify export.** If you run a profile scraper in
+  the Apify console yourself and export a CSV, `import_apify.py` turns it into
+  `leads.csv`: it extracts emails from the bio text, filters to your follower
+  band, and ranks by engagement.
+  ```bash
+  python3 import_apify.py apify_export.csv --show-columns   # see the columns first
+  python3 import_apify.py apify_export.csv --platform instagram \
+      --min-followers 10000 --max-followers 80000 --out leads.csv
+  ```
+  (Note: scraping TikTok/IG is against their ToS and mass-emailing scraped
+  personal addresses is legally restricted for a German company — see the
+  compliance section. The clean bulk route stays Creator Marketplace or a
+  licensed provider like EnsembleData/Modash.)
 - **Instagram — manual.** Collect handles + business emails from bio /
   link-in-bio, or via the same paid providers. No official bulk read.
 
