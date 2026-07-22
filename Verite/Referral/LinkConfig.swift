@@ -18,8 +18,9 @@ import Foundation
 enum LinkConfig {
 
     /// Your https site hosting the redirect page. Empty → `verite://` fallback.
-    /// Example: "https://glowe.app"
-    static let webBase = ""
+    /// Punycode form of glowé.app — ASCII-safe for URL building everywhere;
+    /// browsers resolve and display it as the registered IDN domain.
+    static let webBase = "https://xn--glow-epa.app"
 
     /// App Store URL for the redirect page's "Get the app" button. (Used by the
     /// web page, kept here for reference.) Fill in once the app is live.
