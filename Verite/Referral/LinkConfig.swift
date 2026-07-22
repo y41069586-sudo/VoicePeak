@@ -18,9 +18,15 @@ import Foundation
 enum LinkConfig {
 
     /// Your https site hosting the redirect page. Empty → `verite://` fallback.
-    /// Punycode form of glowé.app — ASCII-safe for URL building everywhere;
-    /// browsers resolve and display it as the registered IDN domain.
-    static let webBase = "https://xn--glow-epa.app"
+    /// Pretty IDN form — iOS 17+'s URL parser accepts the accented host and
+    /// keeps it in `absoluteString`, so a shared link shows "glowé.app" in
+    /// WhatsApp/iMessage instead of the raw punycode. If a platform ever fails
+    /// to parse the IDN, `share(...)` falls back to `webBaseASCII`.
+    static let webBase = "https://glowé.app"
+
+    /// ASCII/punycode form of the same host — guaranteed-parseable fallback so a
+    /// configured base never silently degrades to a `verite://` copy-only link.
+    static let webBaseASCII = "https://xn--glow-epa.app"
 
     /// App Store URL for the redirect page's "Get the app" button. (Used by the
     /// web page, kept here for reference.) Fill in once the app is live.
@@ -30,8 +36,11 @@ enum LinkConfig {
     /// redirect page works on ANY static host with no server rules:
     ///   https://glowe.app/#invite?code=ABC  →  verite://invite?code=ABC
     static func share(host: String, query: String) -> URL {
-        if let base = normalizedBase {
-            if let url = URL(string: "\(base)/#\(host)?\(query)") { return url }
+        // Prefer the pretty IDN base (nicer in shared chats); fall back to the
+        // ASCII/punycode base if the IDN string won't parse on this platform;
+        // only then drop to the copy-only verite:// scheme.
+        for base in [normalized(webBase), normalized(webBaseASCII)] {
+            if let base, let url = URL(string: "\(base)/#\(host)?\(query)") { return url }
         }
         return veriteURL(host: host, query: query)
     }
@@ -57,8 +66,8 @@ enum LinkConfig {
         return nil
     }
 
-    private static var normalizedBase: String? {
-        let base = webBase.trimmingCharacters(in: .whitespaces)
+    private static func normalized(_ raw: String) -> String? {
+        let base = raw.trimmingCharacters(in: .whitespaces)
         guard !base.isEmpty else { return nil }
         return base.hasSuffix("/") ? String(base.dropLast()) : base
     }
