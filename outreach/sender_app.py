@@ -140,12 +140,16 @@ class Handler(BaseHTTPRequestHandler):
                 msg["To"] = to
                 msg["Subject"] = subject.replace("{{first_name}}", first)
                 msg.set_content(body.replace("{{first_name}}", first) + FOOTER)
+                sent_ok = False
                 try:
                     server.send_message(msg)
                     results.append((True, to, ""))
+                    sent_ok = True
                 except Exception as e:  # noqa: BLE001
                     results.append((False, to, str(e)))
-                if i < len(leads) - 1 and delay:
+                # Only throttle after a real send, and not after the last lead —
+                # skipped/invalid rows shouldn't cost a delay.
+                if sent_ok and delay and i < len(leads) - 1:
                     time.sleep(delay)
         finally:
             server.quit()
