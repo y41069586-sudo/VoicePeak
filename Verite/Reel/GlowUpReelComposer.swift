@@ -94,16 +94,16 @@ enum GlowUpReelComposer {
 
     private enum Segment {
         case intro(ReelFrame)
-        case photo(ReelFrame, previous: ReelFrame)
+        case photo(ReelFrame, previous: ReelFrame, frames: Int)
         case finale(ReelFrame, previous: ReelFrame, fromScore: Int)
         case outro(fromScore: Int, toScore: Int)
 
         var frameCount: Int {
             switch self {
-            case .intro: return 54    // 1.8 s
-            case .photo: return 24    // 0.8 s
-            case .finale: return 84   // 2.8 s (count-up lives here)
-            case .outro: return 48    // 1.6 s
+            case .intro: return 54                       // 1.8 s
+            case .photo(_, _, let frames): return frames // adaptive, see timeline()
+            case .finale: return 84                      // 2.8 s (count-up lives here)
+            case .outro: return 48                       // 1.6 s
             }
         }
     }
@@ -111,8 +111,13 @@ enum GlowUpReelComposer {
     private static func timeline(for frames: [ReelFrame]) -> [Segment] {
         var segments: [Segment] = [.intro(frames[0])]
         if frames.count > 2 {
+            // Adaptive pacing: few photos linger (~1.6 s), many photos still get
+            // a comfortable ~1 s each instead of a rapid 0.8 s flicker. The
+            // middle section is budgeted at ~7 s and clamped per photo.
+            let middleCount = frames.count - 2
+            let perPhoto = max(30, min(48, 210 / middleCount))   // 1.0–1.6 s @30fps
             for i in 1..<(frames.count - 1) {
-                segments.append(.photo(frames[i], previous: frames[i - 1]))
+                segments.append(.photo(frames[i], previous: frames[i - 1], frames: perPhoto))
             }
         }
         let last = frames[frames.count - 1]
@@ -158,7 +163,7 @@ enum GlowUpReelComposer {
             drawBrandTag()
             drawDayAndScore(frame, appear: min(1, t * 3))
 
-        case .photo(let frame, let previous):
+        case .photo(let frame, let previous, _):
             let fade = min(1, CGFloat(local) / 8)
             if fade < 1 { drawPhoto(previous.image, zoom: 1.06, alpha: 1) }
             drawPhoto(frame.image, zoom: 1.02 + 0.04 * t, alpha: fade)
