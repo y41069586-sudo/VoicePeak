@@ -26,12 +26,38 @@ enum GlowUpReelComposer {
     static let size = CGSize(width: 1080, height: 1920)
     static let fps: Int32 = 30
 
+    // Segment lengths in frames (single source of truth for both the render and
+    // the UI's "~Xs" estimate, so the two can never drift apart).
+    fileprivate static let introFrames = 54   // 1.8 s
+    fileprivate static let finaleFrames = 84  // 2.8 s (count-up lives here)
+    fileprivate static let outroFrames = 48   // 1.6 s
+    private static let middleBudget = 210     // frames shared across middle photos
+
+    /// Frames for each middle (crossfaded) photo — few photos linger (~1.6 s),
+    /// many still get a comfortable ~1 s instead of a rapid flicker.
+    fileprivate static func middlePhotoFrames(middleCount: Int) -> Int {
+        guard middleCount > 0 else { return 0 }
+        return max(30, min(48, middleBudget / middleCount))   // 1.0–1.6 s @30fps
+    }
+
+    /// Total video frames for `photoCount` scans — mirrors `timeline()` exactly
+    /// so the UI duration estimate is always the real one.
+    static func totalFrames(photoCount: Int) -> Int {
+        guard photoCount >= 2 else { return 0 }
+        let middleCount = photoCount - 2
+        return introFrames + middleCount * middlePhotoFrames(middleCount: middleCount)
+            + finaleFrames + outroFrames
+    }
+
     // MARK: Public entry
 
     /// Composes the reel and returns the temporary .mp4 URL.
-    /// `progress` is called on arbitrary threads with 0…1.
+    /// `progress` is called on arbitrary threads with 0…1. `spanDays` is the real
+    /// elapsed days between the first and last scan, so the overlays never claim
+    /// a hard-coded "14 days".
     static func compose(
         frames: [ReelFrame],
+        spanDays: Int,
         progress: @escaping @Sendable (Double) -> Void
     ) async throws -> URL {
         guard frames.count >= 2 else { throw ReelError.setup }
@@ -59,7 +85,7 @@ enum GlowUpReelComposer {
         guard writer.startWriting() else { throw ReelError.setup }
         writer.startSession(atSourceTime: .zero)
 
-        let segments = timeline(for: frames)
+        let segments = timeline(for: frames, spanDays: spanDays)
         let totalFrames = segments.reduce(0) { $0 + $1.frameCount }
         var written: Int64 = 0
 
@@ -83,16 +109,18 @@ enum GlowUpReelComposer {
                 // Front-load the reported progress so the ring RACES ahead early
                 // and eases in near the end — a linear bar over a few-second render
                 // reads as "stuck / slow", this reads as "fast". Purely perceptual;
-                // the real work is unchanged. Reserve the top 6% for the final mux.
+                // the real work is unchanged. The last frame yields raw == 1, so
+                // the ring reaches 100% during the loop (before the quick mux),
+                // never plateauing partway.
                 let raw = Double(written) / Double(totalFrames)
-                progress(pow(raw, 0.5) * 0.94)
+                progress(pow(raw, 0.5))
             }
         }
 
         input.markAsFinished()
         await writer.finishWriting()
         guard writer.status == .completed else { throw ReelError.render }
-        progress(1)   // finishWriting flushed — snap the ring to 100%
+        progress(1)   // guarantee a clean 100% even if rounding fell short
         return url
     }
 
@@ -101,35 +129,32 @@ enum GlowUpReelComposer {
     private enum Segment {
         case intro(ReelFrame)
         case photo(ReelFrame, previous: ReelFrame, frames: Int)
-        case finale(ReelFrame, previous: ReelFrame, fromScore: Int)
-        case outro(fromScore: Int, toScore: Int)
+        case finale(ReelFrame, previous: ReelFrame, fromScore: Int, spanDays: Int)
+        case outro(fromScore: Int, toScore: Int, spanDays: Int)
 
         var frameCount: Int {
             switch self {
-            case .intro: return 54                       // 1.8 s
-            case .photo(_, _, let frames): return frames // adaptive, see timeline()
-            case .finale: return 84                      // 2.8 s (count-up lives here)
-            case .outro: return 48                       // 1.6 s
+            case .intro: return GlowUpReelComposer.introFrames
+            case .photo(_, _, let frames): return frames  // adaptive, see timeline()
+            case .finale: return GlowUpReelComposer.finaleFrames
+            case .outro: return GlowUpReelComposer.outroFrames
             }
         }
     }
 
-    private static func timeline(for frames: [ReelFrame]) -> [Segment] {
+    private static func timeline(for frames: [ReelFrame], spanDays: Int) -> [Segment] {
         var segments: [Segment] = [.intro(frames[0])]
         if frames.count > 2 {
-            // Adaptive pacing: few photos linger (~1.6 s), many photos still get
-            // a comfortable ~1 s each instead of a rapid 0.8 s flicker. The
-            // middle section is budgeted at ~7 s and clamped per photo.
             let middleCount = frames.count - 2
-            let perPhoto = max(30, min(48, 210 / middleCount))   // 1.0–1.6 s @30fps
+            let perPhoto = middlePhotoFrames(middleCount: middleCount)
             for i in 1..<(frames.count - 1) {
                 segments.append(.photo(frames[i], previous: frames[i - 1], frames: perPhoto))
             }
         }
         let last = frames[frames.count - 1]
         let prev = frames[frames.count - 2]
-        segments.append(.finale(last, previous: prev, fromScore: frames[0].score))
-        segments.append(.outro(fromScore: frames[0].score, toScore: last.score))
+        segments.append(.finale(last, previous: prev, fromScore: frames[0].score, spanDays: spanDays))
+        segments.append(.outro(fromScore: frames[0].score, toScore: last.score, spanDays: spanDays))
         return segments
     }
 
@@ -177,7 +202,7 @@ enum GlowUpReelComposer {
             drawBrandTag()
             drawDayAndScore(frame, appear: 1)
 
-        case .finale(let frame, let previous, let fromScore):
+        case .finale(let frame, let previous, let fromScore, let spanDays):
             let fade = min(1, CGFloat(local) / 8)
             if fade < 1 { drawPhoto(previous.image, zoom: 1.06, alpha: 1) }
             drawPhoto(frame.image, zoom: 1.02 + 0.05 * t, alpha: fade)
@@ -189,10 +214,12 @@ enum GlowUpReelComposer {
             let eased = 1 - pow(1 - countT, 2.6)
             let value = fromScore + Int((CGFloat(frame.score - fromScore) * eased).rounded())
             drawFinaleScore(value: value, dayLabel: frame.dayLabel,
-                            delta: frame.score - fromScore, showDelta: countT >= 1)
+                            delta: frame.score - fromScore, showDelta: countT >= 1,
+                            spanDays: spanDays)
 
-        case .outro(let fromScore, let toScore):
-            drawOutro(appear: easeInOut(min(1, t * 2.2)), from: fromScore, to: toScore)
+        case .outro(let fromScore, let toScore, let spanDays):
+            drawOutro(appear: easeInOut(min(1, t * 2.2)), from: fromScore, to: toScore,
+                      spanDays: spanDays)
         }
     }
 
@@ -257,7 +284,8 @@ enum GlowUpReelComposer {
              at: CGPoint(x: size.width - 64, y: 1692), rightAligned: true)
     }
 
-    private static func drawFinaleScore(value: Int, dayLabel: String, delta: Int, showDelta: Bool) {
+    private static func drawFinaleScore(value: Int, dayLabel: String, delta: Int,
+                                        showDelta: Bool, spanDays: Int) {
         draw(text: dayLabel, font: rounded(64, .heavy),
              color: .white.withAlphaComponent(0.9),
              at: CGPoint(x: size.width / 2, y: 1420), centered: true)
@@ -272,14 +300,15 @@ enum GlowUpReelComposer {
             let color = delta > 0
                 ? UIColor(red: 0.12, green: 0.62, blue: 0.42, alpha: 1)  // deltaUp
                 : UIColor(red: 0.87, green: 0.36, blue: 0.31, alpha: 1)
-            draw(text: String(format: String(localized: "%@ IN 14 DAYS"), "\(sign)\(delta)"),
+            // Real elapsed span, not a hard-coded "14 DAYS".
+            draw(text: String(format: String(localized: "%@ IN %d DAYS"), "\(sign)\(delta)", spanDays),
                  font: rounded(46, .heavy),
                  color: color, at: CGPoint(x: size.width / 2, y: 1790),
                  centered: true, tracking: 2)
         }
     }
 
-    private static func drawOutro(appear: CGFloat, from: Int, to: Int) {
+    private static func drawOutro(appear: CGFloat, from: Int, to: Int, spanDays: Int) {
         UIColor(red: 0.055, green: 0.078, blue: 0.11, alpha: 1).setFill()  // 0E141C
         UIRectFill(CGRect(origin: .zero, size: size))
         let a = clamp01(appear)
@@ -291,7 +320,9 @@ enum GlowUpReelComposer {
                  color: UIColor(red: 0.31, green: 0.56, blue: 0.97, alpha: a),  // accent-bright
                  at: CGPoint(x: size.width / 2, y: 1010), centered: true)
         }
-        draw(text: String(localized: "The 14-day glow-up."), font: rounded(52, .semibold),
+        // Real elapsed span, not a hard-coded "14-day".
+        draw(text: String(format: String(localized: "The %d-day glow-up."), spanDays),
+             font: rounded(52, .semibold),
              color: .white.withAlphaComponent(0.85 * a),
              at: CGPoint(x: size.width / 2, y: 1130), centered: true)
         draw(text: String(localized: "Scan yours."), font: rounded(44, .bold),

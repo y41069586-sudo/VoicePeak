@@ -35,6 +35,41 @@
           }
         }
       }
+    },
+    "NSPhotoLibraryAddUsageDescription": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Glowé needs permission to save your Glow-Up Reel to your photo library."
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Glowé braucht die Berechtigung, um dein Glow-Up-Reel in deiner Fotomediathek zu speichern."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Glowé necesita permiso para guardar tu Glow-Up Reel en tu fototeca."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Glowé a besoin de l'autorisation d'enregistrer ton Glow-Up Reel dans ta photothèque."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Glowé ha bisogno dell'autorizzazione per salvare il tuo Glow-Up Reel nella tua libreria foto."
+          }
+        }
+      }
     }
   },
   "version": "1.0"

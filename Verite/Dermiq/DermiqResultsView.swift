@@ -643,12 +643,11 @@ struct DermiqPaywallCard: View {
                 planRow(.pro,
                         title: "Glowé Pro",
                         price: proAnnual
-                            ? price(for: VeriteProducts.proYearly, fallback: String(localized: "$39.99 / year"))
-                            : price(for: VeriteProducts.proWeekly, fallback: String(localized: "$4.99 / week")),
-                        badge: proAnnual ? "SAVE 84%" : nil,
-                        sub: proAnnual
-                            ? "\(String(localized: "2 scans a week · routine included")) · \(annualWeeklyEquivalent)"
-                            : String(localized: "2 scans a week · routine included"))
+                            ? livePrice(VeriteProducts.proYearly)
+                            : livePrice(VeriteProducts.proWeekly),
+                        badge: proAnnual ? proAnnualBadge : nil,
+                        sub: proAnnual ? proAnnualSub
+                                       : String(localized: "2 scans a week · routine included"))
 
                 // Pro billing term — only shown while Pro is the selection.
                 if choice == .pro {
@@ -660,7 +659,7 @@ struct DermiqPaywallCard: View {
 
                 planRow(.ratingOnce,
                         title: "Rating only",
-                        price: price(for: VeriteProducts.ratingOnce, fallback: String(localized: "$1.99 one-time")),
+                        price: livePrice(VeriteProducts.ratingOnce),
                         badge: nil,
                         sub: String(localized: "This scan · score + all 7 metrics"))
             }
@@ -733,11 +732,28 @@ struct DermiqPaywallCard: View {
         }
     }
 
-    /// "≈ $0.77 / week" — the annual price broken down so the anchor lands.
+    /// "≈ 0,77 € / week" — the annual price broken down so the anchor lands.
+    /// Empty until the live price loads (never a hard-coded USD figure).
     private var annualWeeklyEquivalent: String {
         guard let weekly = purchases.weeklyEquivalent(forYearly: VeriteProducts.proYearly)
-        else { return String(localized: "≈ $0.77 / week") }
+        else { return "" }
         return "≈ \(weekly) / week"
+    }
+
+    /// Sub-line under the annual Pro row — appends the per-week breakdown only
+    /// once the live price is available, so it never shows a placeholder amount.
+    private var proAnnualSub: String {
+        let base = String(localized: "2 scans a week · routine included")
+        let eq = annualWeeklyEquivalent
+        return eq.isEmpty ? base : "\(base) · \(eq)"
+    }
+
+    /// "SAVE 84%" computed from the LIVE yearly-vs-weekly prices, per storefront.
+    /// nil (badge hidden) until both prices load — never a hard-coded percentage.
+    private var proAnnualBadge: String? {
+        guard let pct = purchases.annualVsWeeklySavingsPercent(
+            yearly: VeriteProducts.proYearly, weekly: VeriteProducts.proWeekly) else { return nil }
+        return String(format: String(localized: "SAVE %d%%"), pct)
     }
 
     private func planRow(_ plan: PlanChoice, title: String, price: String,
@@ -753,7 +769,7 @@ struct DermiqPaywallCard: View {
                             .font(DQFont.headline)
                             .foregroundStyle(DQColor.textPrimary)
                         if let badge {
-                            Text(LocalizedStringKey(badge))
+                            Text(verbatim: badge)
                                 .font(DQFont.mono(9, weight: .bold))
                                 .foregroundStyle(Color.white)
                                 .padding(.horizontal, 6)
@@ -761,9 +777,11 @@ struct DermiqPaywallCard: View {
                                 .background(DQColor.deltaUp, in: Capsule())
                         }
                     }
-                    Text(price)
-                        .font(DQFont.caption)
-                        .foregroundStyle(DQColor.textSecondary)
+                    if !price.isEmpty {
+                        Text(price)
+                            .font(DQFont.caption)
+                            .foregroundStyle(DQColor.textSecondary)
+                    }
                     if let sub {
                         Text(verbatim: sub)
                             .font(DQFont.micro)
@@ -786,8 +804,11 @@ struct DermiqPaywallCard: View {
         .buttonStyle(PressableStyle())
     }
 
-    private func price(for productID: String, fallback: String) -> String {
-        purchases.displayPrice(for: productID) ?? fallback
+    /// The live localized StoreKit price, or "" when products haven't loaded.
+    /// We never substitute a hard-coded amount — a blank price is honest, a
+    /// wrong currency/figure is an App Review 2.3.1 rejection.
+    private func livePrice(_ productID: String) -> String {
+        purchases.displayPrice(for: productID) ?? ""
     }
 
     /// Small Annual/Weekly switch shown inside the Pro selection.
@@ -870,13 +891,30 @@ struct DermiqWinBackCard: View {
     @State private var legalDocument: LegalDocument?
     @State private var purchaseFailed = false
 
+    // Live prices only — the card is gated on the offer price having loaded
+    // (see closeButton), so these are populated when the card appears; "" is a
+    // safe blank rather than a hard-coded USD figure in any edge case.
     private var offerPrice: String {
-        purchases.displayPrice(for: VeriteProducts.proYearlyOffer)
-            ?? String(localized: "$21.99 / year")
+        purchases.displayPrice(for: VeriteProducts.proYearlyOffer) ?? ""
     }
     private var fullPrice: String {
-        purchases.displayPrice(for: VeriteProducts.proYearly)
-            ?? String(localized: "$39.99 / year")
+        purchases.displayPrice(for: VeriteProducts.proYearly) ?? ""
+    }
+    /// The real discount of the offer vs the regular yearly price, computed from
+    /// live StoreKit prices. nil until both load.
+    private var offerSavingsPercent: Int? {
+        purchases.savingsPercent(offer: VeriteProducts.proYearlyOffer,
+                                 regular: VeriteProducts.proYearly)
+    }
+    /// Headline reflects the ACTUAL discount (not a hard-coded "45%"); falls back
+    /// to a neutral line before the prices load. Built with String(format:) so the
+    /// String Catalog key is stable ("…%d%% off.") rather than a fragile
+    /// interpolated LocalizedStringKey.
+    private var winBackHeadline: String {
+        if let pct = offerSavingsPercent {
+            return String(format: String(localized: "Before you go —\nyour first year, %d%% off."), pct)
+        }
+        return String(localized: "Before you go —\nyour first year at a special price.")
     }
 
     var body: some View {
@@ -914,7 +952,7 @@ struct DermiqWinBackCard: View {
                 .accessibilityLabel("Close")
             }
 
-            Text("Before you go —\nyour first year, 45% off.")
+            Text(winBackHeadline)
                 .font(DQFont.title)
                 .foregroundStyle(DQColor.textPrimary)
                 .multilineTextAlignment(.center)

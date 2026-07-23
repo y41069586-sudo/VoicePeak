@@ -293,7 +293,11 @@ struct DermiqScanFlowView: View {
     private var planCTATitle: String {
         if planAllowed { return String(localized: "Build my 14-day plan") }
         if planPurchasing { return String(localized: "Unlocking…") }
-        let price = purchases.displayPrice(for: VeriteProducts.routineOnce) ?? "€3,99"
+        // Only append the price once StoreKit has the live figure — never a
+        // hard-coded currency amount that could mismatch the user's storefront.
+        guard let price = purchases.displayPrice(for: VeriteProducts.routineOnce) else {
+            return String(localized: "Build my 14-day plan")
+        }
         return String(format: String(localized: "Build my 14-day plan · %@"), price)
     }
 

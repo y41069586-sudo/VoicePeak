@@ -248,8 +248,9 @@ enum ScanQuota {
 /// without Pro goes straight to the paywall (DermiqTabShell.startScan).
 struct ScanLimitSheet: View {
     var nextScan: Date?
-    /// Buy one more scan now (€1.99). Displayed price passed in.
-    var extraScanPrice: String = "€1.99"
+    /// Buy one more scan now. Live StoreKit price passed in; "" while it hasn't
+    /// loaded, in which case the button drops the "· price" suffix.
+    var extraScanPrice: String = ""
     /// The purchase is in flight — the buy button shows a spinner and locks.
     var purchasing: Bool = false
     var onBuyExtraScan: (() -> Void)? = nil
@@ -301,6 +302,8 @@ struct ScanLimitSheet: View {
                     Group {
                         if purchasing {
                             ProgressView().tint(.white)
+                        } else if extraScanPrice.isEmpty {
+                            Label("Buy 1 extra scan", systemImage: "bolt.fill")
                         } else {
                             Label("Buy 1 extra scan · \(extraScanPrice)", systemImage: "bolt.fill")
                         }

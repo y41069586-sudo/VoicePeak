@@ -198,10 +198,11 @@ struct DermiqTabShell: View {
         }
     }
 
-    /// StoreKit display price for the €1.99 extra scan, or a sensible fallback
-    /// while products aren't loaded.
+    /// Live StoreKit display price for the extra scan, or "" while products
+    /// aren't loaded — the sheet drops the "· price" suffix rather than show a
+    /// hard-coded currency amount that could be wrong in the user's storefront.
     private var extraScanPrice: String {
-        purchases.displayPrice(for: VeriteProducts.extraScan) ?? "€1,99"
+        purchases.displayPrice(for: VeriteProducts.extraScan) ?? ""
     }
 
     /// Buy one extra scan (consumable). On success it becomes a scan credit

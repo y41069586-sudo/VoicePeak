@@ -19,7 +19,7 @@ final class ReelExportModel {
     var exporting = false
     var failed = false
 
-    func start(frames: [ReelFrame]) {
+    func start(frames: [ReelFrame], spanDays: Int) {
         guard !exporting else { return }
         exporting = true
         failed = false
@@ -31,10 +31,21 @@ final class ReelExportModel {
         // nested weak-self captures (which Swift 6 rejects in concurrent code).
         Task { [weak self] in
             let report: @Sendable (Double) -> Void = { p in
-                Task { @MainActor in self?.progress = p }
+                Task { @MainActor in
+                    guard let self else { return }
+                    // Each callback is its own Task and MainActor Tasks aren't
+                    // FIFO-ordered, so drop any value that would move the ring
+                    // backward — progress is monotonic by construction.
+                    if p > self.progress { self.progress = p }
+                }
             }
             do {
-                let out = try await GlowUpReelComposer.compose(frames: frames, progress: report)
+                let out = try await GlowUpReelComposer.compose(
+                    frames: frames, spanDays: spanDays, progress: report)
+                // Let the ring visibly finish filling to 100% before the view
+                // swaps to the "ready" state (otherwise it vanishes mid-fill).
+                self?.progress = 1
+                try? await Task.sleep(nanoseconds: 350_000_000)
                 self?.url = out
                 self?.exporting = false
             } catch {
@@ -203,9 +214,20 @@ struct GlowUpReelSheet: View {
     // MARK: Data
 
     private var estimatedSeconds: Int {
-        // Mirrors the composer's timeline: intro 1.8 + middles 0.8 + finale 2.8 + outro 1.6.
-        let middles = max(scans.count - 2, 0)
-        return Int((1.8 + Double(middles) * 0.8 + 2.8 + 1.6).rounded())
+        // Ask the composer for the real frame count so this can never drift from
+        // the actual timeline/pacing.
+        let frames = GlowUpReelComposer.totalFrames(photoCount: scans.count)
+        return Int((Double(frames) / Double(GlowUpReelComposer.fps)).rounded())
+    }
+
+    /// Real elapsed days between the first and last scan — drives the video's
+    /// "in N days" overlay instead of a hard-coded 14.
+    private var spanDays: Int {
+        guard let first = scans.first?.date, let last = scans.last?.date else { return 1 }
+        let days = Calendar.current.dateComponents(
+            [.day], from: Calendar.current.startOfDay(for: first),
+            to: Calendar.current.startOfDay(for: last)).day ?? 0
+        return max(1, days)
     }
 
     private func dayLabel(for index: Int) -> String {
@@ -229,7 +251,7 @@ struct GlowUpReelSheet: View {
         }
         tooFewFrames = false
         Haptics.fire(.capture)
-        model.start(frames: frames)
+        model.start(frames: frames, spanDays: spanDays)
         RampAnalytics.track("reel_export_started", ["scans": String(frames.count)])
     }
 }

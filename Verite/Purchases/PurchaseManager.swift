@@ -61,6 +61,30 @@ final class PurchaseManager {
         return formatter.string(from: weekly as NSDecimalNumber)
     }
 
+    /// Whole-percent saved by the yearly plan vs paying the weekly plan for a
+    /// full year (52×), computed from the LIVE StoreKit prices. nil until both
+    /// load — never a hard-coded claim, so the badge is correct in every
+    /// storefront/currency (regional price ladders aren't proportional).
+    func annualVsWeeklySavingsPercent(yearly: String, weekly: String) -> Int? {
+        guard let y = storeProducts[yearly]?.price,
+              let w = storeProducts[weekly]?.price, w > 0 else { return nil }
+        let weeklyYear = w * 52
+        guard weeklyYear > 0 else { return nil }
+        let ratio = (weeklyYear - y) / weeklyYear                     // Decimal
+        let saved = NSDecimalNumber(decimal: ratio).doubleValue
+        return max(0, Int((saved * 100).rounded()))
+    }
+
+    /// Whole-percent saved by a discounted product vs its regular counterpart
+    /// (same billing cadence), from the live prices. nil until both load.
+    func savingsPercent(offer: String, regular: String) -> Int? {
+        guard let o = storeProducts[offer]?.price,
+              let r = storeProducts[regular]?.price, r > 0 else { return nil }
+        let ratio = (r - o) / r                                       // Decimal
+        let saved = NSDecimalNumber(decimal: ratio).doubleValue
+        return max(0, Int((saved * 100).rounded()))
+    }
+
     /// Buy a subscription. Returns true once the `pro` entitlement is active.
     @discardableResult
     func purchase(productID: String) async -> Bool {
