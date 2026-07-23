@@ -158,7 +158,11 @@ struct GlowUpReelSheet: View {
                 Text(verbatim: "\(Int(model.progress * 100))%")
                     .font(.system(size: 16, weight: .heavy, design: .rounded).monospacedDigit())
                     .foregroundStyle(DQColor.accentBright)
+                    .contentTransition(.numericText())
             }
+            // Glide between the frequent progress updates instead of ticking —
+            // combined with the front-loaded curve it reads as a fast, fluid fill.
+            .animation(.snappy(duration: 0.3), value: model.progress)
             Text("Rendering your reel…")
                 .font(DQFont.caption)
                 .foregroundStyle(DQColor.textSecondary)

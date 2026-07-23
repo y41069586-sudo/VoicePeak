@@ -80,13 +80,19 @@ enum GlowUpReelComposer {
                 guard adaptor.append(buffer, withPresentationTime:
                     CMTime(value: written, timescale: fps)) else { throw ReelError.render }
                 written += 1
-                progress(Double(written) / Double(totalFrames))
+                // Front-load the reported progress so the ring RACES ahead early
+                // and eases in near the end — a linear bar over a few-second render
+                // reads as "stuck / slow", this reads as "fast". Purely perceptual;
+                // the real work is unchanged. Reserve the top 6% for the final mux.
+                let raw = Double(written) / Double(totalFrames)
+                progress(pow(raw, 0.5) * 0.94)
             }
         }
 
         input.markAsFinished()
         await writer.finishWriting()
         guard writer.status == .completed else { throw ReelError.render }
+        progress(1)   // finishWriting flushed — snap the ring to 100%
         return url
     }
 
