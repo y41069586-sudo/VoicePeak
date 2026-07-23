@@ -5,7 +5,7 @@ import UIKit
 // MARK: — Screen 5: The Potential Reveal
 // ============================================================
 
-/// The emotional peak: current photo vs the generated 10/10 Potential image
+/// The emotional peak: current photo vs the generated glow-potential image
 /// with a draggable divider. The Potential render started back in Screen 3;
 /// until it lands, the right side shimmers: "Rendering your potential…".
 struct DermiqPotentialView: View {
@@ -41,7 +41,7 @@ struct DermiqPotentialView: View {
                     }
                 }
                 VStack(spacing: 6) {
-                    Text("You as a 10/10!")
+                    Text("Your glow potential")
                         .font(DQFont.title)
                         .foregroundStyle(DQColor.textPrimary)
                     Text("This is your skin's ceiling. The next 14 days close the gap.")

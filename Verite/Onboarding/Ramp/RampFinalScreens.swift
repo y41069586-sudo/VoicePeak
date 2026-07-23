@@ -775,12 +775,11 @@ private struct SignatureCanvas: View {
 /// full canvas, only Apple + Google, plenty of breathing room. Apple keeps the
 /// black wordmark button; Google carries its authentic multicolor "G".
 ///
-/// The buttons currently continue WITHOUT real authentication (per product
-/// decision for TestFlight iteration).
-/// TODO: PRODUCTION — before App Store submission these MUST either perform
-/// real auth (re-add the entitlement + SDK) or be removed; placebo login
-/// buttons are an App Review 2.1 rejection. If real Google auth is added, swap
-/// GoogleGLogo for Google's official-brand asset per their sign-in guidelines.
+/// Both buttons perform REAL authentication: Apple via the system
+/// SignInWithAppleButton (identity token handed to Supabase), and Google via
+/// the GoogleSignIn SDK — the Google button only appears when it's configured
+/// (featureFlags.googleSignInEnabled), so no non-functional button ever ships.
+/// Sign-in is optional: "Not now" skips it and the app is fully usable locally.
 struct RampSignInScreen: View {
     /// Reports an optional given name (Sign in with Apple supplies one once,
     /// on first authorization).

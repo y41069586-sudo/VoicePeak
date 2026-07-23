@@ -218,7 +218,7 @@ struct DermiqResultsView: View {
                             // Free to tap — leads to the Potential reveal.
                             // Plan gating (€3.99 / replace warning) lives on
                             // THAT screen's "Build my 14-day plan" CTA.
-                            DQPrimaryButton(title: "Make me a 10/10",
+                            DQPrimaryButton(title: "Glow me up",
                                             systemImage: "sparkles") { onContinue() }
                             Button {
                                 Haptics.fire(.selection)
