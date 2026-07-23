@@ -42807,6 +42807,41 @@
           }
         }
       }
+    },
+    "Glowé is a cosmetic and lifestyle product. Your score is an estimate, not a medical diagnosis. Tap to read the full disclaimer.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Glowé is a cosmetic and lifestyle product. Your score is an estimate, not a medical diagnosis. Tap to read the full disclaimer."
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Glowé ist ein kosmetisches Lifestyle-Produkt. Dein Score ist eine Schätzung, keine medizinische Diagnose. Tippe für den vollständigen Hinweis."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Glowé es un producto cosmético y de estilo de vida. Tu puntuación es una estimación, no un diagnóstico médico. Toca para leer el aviso completo."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Glowé est un produit cosmétique et lifestyle. Ton score est une estimation, pas un diagnostic médical. Touche pour lire l'avis complet."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Glowé è un prodotto cosmetico e lifestyle. Il tuo punteggio è una stima, non una diagnosi medica. Tocca per leggere l'avviso completo."
+          }
+        }
+      }
     }
   },
   "version": "1.0"

@@ -60,6 +60,8 @@ struct DermiqResultsView: View {
     /// The paywall doesn't pounce: the blurred chart gets ~1.6s alone on
     /// screen (the tease), THEN the card slides up from the bottom.
     @State private var paywallShown = false
+    /// Presents the full Medical Disclaimer from the results footnote.
+    @State private var legalDocument: LegalDocument?
     /// The one-time win-back offer (shown once, on dismiss).
     @State private var showWinBack = false
     @AppStorage("dq.winback.shown") private var winBackSeen = false
@@ -107,6 +109,27 @@ struct DermiqResultsView: View {
                 }
             }
         }
+        .sheet(item: $legalDocument) { document in
+            DermiqLegalView(document: document)
+        }
+    }
+
+    /// Visible cosmetic-not-medical disclaimer shown right under the unlocked
+    /// analysis, tappable to open the full Medical Disclaimer. Keeps the health
+    /// framing honest at the point of the score (App Review 1.4.1 / 2.3.1).
+    private var medicalDisclaimerNote: some View {
+        Button {
+            Haptics.fire(.selection)
+            legalDocument = .disclaimer
+        } label: {
+            Text("Glowé is a cosmetic and lifestyle product. Your score is an estimate, not a medical diagnosis. Tap to read the full disclaimer.")
+                .font(DQFont.micro)
+                .foregroundStyle(DQColor.textSecondary)
+                .multilineTextAlignment(.center)
+                .fixedSize(horizontal: false, vertical: true)
+                .padding(.horizontal, 8)
+        }
+        .buttonStyle(PressableStyle())
     }
 
     private var closeButton: some View {
@@ -210,6 +233,10 @@ struct DermiqResultsView: View {
                         }
                         .animation(VMotion.gentle, value: countUpFinished)
                     }
+
+                    // Cosmetic-not-medical disclaimer, visible at the score.
+                    medicalDisclaimerNote
+                        .padding(.top, 4)
                 }
             }
             .padding(.horizontal, 24)
