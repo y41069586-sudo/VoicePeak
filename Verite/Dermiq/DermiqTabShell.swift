@@ -591,7 +591,13 @@ struct DermiqScanHome: View {
     /// the next scan.
     private var scanCard: some View {
         ZStack(alignment: .bottom) {
-            heroPhoto
+            // The flexible Color.clear owns the layout; the photo fills it as an
+            // overlay and is clipped, so a large source image can never push the
+            // card wider than the screen (scaledToFill would otherwise report its
+            // full intrinsic width up the layout chain).
+            Color.clear
+                .overlay { heroPhoto }
+                .clipped()
 
             // Legibility gradient — a long, smooth fade from clear at the top
             // to a soft shadow behind the text at the base.
