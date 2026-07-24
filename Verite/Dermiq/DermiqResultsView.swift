@@ -676,19 +676,13 @@ struct DermiqPaywallCard: View {
                         sub: proAnnual ? proAnnualSub
                                        : String(localized: "2 scans a week · routine included"))
 
-                // Pro billing term — only shown while Pro is the selection.
-                if choice == .pro {
-                    HStack(spacing: 8) {
-                        proTermChip("Annual", active: proAnnual) { proAnnual = true }
-                        proTermChip("Weekly", active: !proAnnual) { proAnnual = false }
-                    }
+                // Annual / Weekly billing term. Subscription-only paywall — no
+                // cheap one-time "Rating only" unlock, which cannibalizes the
+                // subscription (everyone takes the €1.99 and never subscribes).
+                HStack(spacing: 8) {
+                    proTermChip("Annual", active: proAnnual) { proAnnual = true }
+                    proTermChip("Weekly", active: !proAnnual) { proAnnual = false }
                 }
-
-                planRow(.ratingOnce,
-                        title: "Rating only",
-                        price: livePrice(VeriteProducts.ratingOnce),
-                        badge: nil,
-                        sub: String(localized: "This scan · score + all 7 metrics"))
             }
             .padding(.horizontal, 20)
 
