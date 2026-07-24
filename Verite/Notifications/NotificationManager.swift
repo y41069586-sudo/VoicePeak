@@ -156,7 +156,12 @@ extension Notification.Name {
 
 /// Delegate so notifications show in the foreground and their taps deep-link
 /// into the app (scan / routine) instead of just opening the last tab.
-final class DQNotificationDelegate: NSObject, UNUserNotificationCenterDelegate {
+///
+/// Holds no mutable state (only the two async delegate callbacks), so sharing
+/// the single instance across the system's notification-center threads is safe
+/// — hence `@unchecked Sendable`, which also satisfies Swift 6's concurrency
+/// check on the `static let shared` singleton.
+final class DQNotificationDelegate: NSObject, UNUserNotificationCenterDelegate, @unchecked Sendable {
     static let shared = DQNotificationDelegate()
 
     func userNotificationCenter(_ center: UNUserNotificationCenter,
