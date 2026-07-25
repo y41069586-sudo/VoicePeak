@@ -22,32 +22,56 @@ import ObjectiveC.runtime
 // lookup for `en.lproj` failed and silently fell back to the device language
 // (so `String(localized:)` stayed German).
 //
-// Fix: both mechanisms key off the SINGLE value `resolvedCode(for:)`, which
-// returns an override only when a matching bundle actually exists. If it can't
-// be resolved, both fall back to the system together — consistent either way.
+// Fix: both mechanisms key off ONE decision, `resolution(for:)`, which says how
+// (or whether) a chosen language can be served — a compiled `.lproj`, the source
+// language, or not at all. A language we cannot serve makes BOTH fall back to
+// the system together, so a half-translated screen is structurally impossible.
 
 enum AppLanguage {
     static let overrideKey = "languageOverride"
 
-    /// The override code, but ONLY when a matching compiled `.lproj` exists.
-    /// Returns nil to mean "follow the system" — which both the environment
-    /// locale and the bundle reclass then do, so they can never disagree.
+    /// How a chosen language can be served.
+    enum Resolution {
+        /// No override, or one we cannot serve — follow the device language.
+        case system
+        /// A compiled `.lproj` exists; resolve strings against it.
+        case bundle(Bundle)
+        /// The development language (English). A String Catalog keeps the
+        /// source language AS THE KEY, so there may be no `en.lproj` at all.
+        /// Serving it means returning the key itself — NOT the device
+        /// translation, which is what a plain `super` call would hand back.
+        case sourceLanguage
+    }
+
+    /// Resolve the picker's value. Read fresh on every call, so changing the
+    /// picker takes effect immediately with no relaunch.
+    static func resolution(for code: String) -> Resolution {
+        guard !code.isEmpty else { return .system }
+        if let bundle = lprojBundle(for: code) { return .bundle(bundle) }
+        if String(code.prefix(2)) == developmentCode { return .sourceLanguage }
+        return .system
+    }
+
+    /// The override code, but only when we can actually serve that language —
+    /// nil means "follow the system". Both override mechanisms key off this, so
+    /// the environment locale and the bundle reclass can never disagree.
     ///
     /// Takes the code as a parameter (rather than reading UserDefaults) so the
     /// caller in `VeriteApp` keeps its `@AppStorage` dependency and re-renders
     /// the moment the picker changes.
     static func resolvedCode(for code: String) -> String? {
-        guard !code.isEmpty, lprojBundle(for: code) != nil else { return nil }
+        if case .system = resolution(for: code) { return nil }
         return code
     }
 
-    /// The `.lproj` bundle for the chosen language, or nil to follow the system.
-    /// Read fresh on every call, so changing the picker takes effect
-    /// immediately with no relaunch.
-    static var overrideBundle: Bundle? {
-        let code = UserDefaults.standard.string(forKey: overrideKey) ?? ""
-        guard !code.isEmpty else { return nil }
-        return lprojBundle(for: code)
+    /// The current override's resolution, read from UserDefaults.
+    static var currentResolution: Resolution {
+        resolution(for: UserDefaults.standard.string(forKey: overrideKey) ?? "")
+    }
+
+    /// Two-letter code of the bundle's development language (normally "en").
+    private static var developmentCode: String {
+        String((Bundle.main.developmentLocalization ?? "en").prefix(2))
     }
 
     /// Resolve a language code to its compiled bundle, tolerant of the folder
@@ -68,8 +92,7 @@ enum AppLanguage {
         }
 
         // Development language — its strings can sit in Base.lproj.
-        let development = String((Bundle.main.developmentLocalization ?? "").prefix(2))
-        if short == development,
+        if short == developmentCode,
            let path = Bundle.main.path(forResource: "Base", ofType: "lproj"),
            let bundle = Bundle(path: path) {
             return bundle
@@ -88,9 +111,17 @@ final class LanguageAwareBundle: Bundle, @unchecked Sendable {
     override func localizedString(forKey key: String,
                                   value: String?,
                                   table tableName: String?) -> String {
-        if let bundle = AppLanguage.overrideBundle, bundle !== self {
+        switch AppLanguage.currentResolution {
+        case .bundle(let bundle) where bundle !== self:
             return bundle.localizedString(forKey: key, value: value, table: tableName)
+        case .sourceLanguage:
+            // English chosen, no en.lproj to read: the key IS the English
+            // string. Falling through to `super` here would return the DEVICE
+            // language instead — the exact mismatch this file exists to prevent.
+            if let value, !value.isEmpty { return value }
+            return key
+        case .bundle, .system:
+            return super.localizedString(forKey: key, value: value, table: tableName)
         }
-        return super.localizedString(forKey: key, value: value, table: tableName)
     }
 }
