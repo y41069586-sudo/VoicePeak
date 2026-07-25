@@ -47,13 +47,19 @@ struct VeriteApp: App {
 
 private extension View {
     /// Force a specific UI language when the user overrides it in Settings.
-    /// An empty override falls back to the system locale.
+    ///
+    /// Routed through `AppLanguage.resolvedCode(for:)` so the environment locale
+    /// is set ONLY for a language whose `.lproj` really exists in the bundle —
+    /// the same condition the `Bundle.main` reclass uses. Setting it
+    /// unconditionally is what produced half-translated screens: `Text(…)`
+    /// followed the requested locale while `String(localized:)` fell back to the
+    /// device language. Now either both switch or neither does.
     @ViewBuilder
     func applyLanguageOverride(_ code: String) -> some View {
-        if code.isEmpty {
-            self
+        if let resolved = AppLanguage.resolvedCode(for: code) {
+            self.environment(\.locale, Locale(identifier: resolved))
         } else {
-            self.environment(\.locale, Locale(identifier: code))
+            self
         }
     }
 }
