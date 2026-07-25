@@ -19,17 +19,20 @@ app via `verite://` (or shows a "Get Glowé" button if the app isn't installed).
 
    While `webBase` is empty, the app keeps sending `verite://` links (only work
    via copy-paste). Once set, share links go out as
-   `https://glowe.app/#invite?code=ABC` and are tappable everywhere.
-3. **App Store button:** replace the placeholder `id0000000000` link in
-   `index.html` (and `LinkConfig.appStoreURL`) with your real App Store URL once
-   the app is live.
+   `https://glowe.app/?go=invite&code=ABC` and are tappable everywhere.
 
 ## How the mapping works
 
 ```
-https://glowe.app/#invite?code=ABC   →   verite://invite?code=ABC   (bonus scan)
-https://glowe.app/#compare?d=<token> →   verite://compare?d=<token> (skin duel)
+https://glowe.app/?go=invite&code=ABC    →  verite://invite?code=ABC   (bonus scan)
+https://glowe.app/?go=compare&d=<token>  →  verite://compare?d=<token> (skin duel)
 ```
+
+The target host travels in a `go=` QUERY parameter, never in a `#fragment`.
+Chat link detectors (WhatsApp, iMessage, Instagram) stop at a fragment holding
+a `?`, so the older `/#invite?code=ABC` form was linkified only up to the
+domain — tapping it loaded this page with an empty hash and the invite did
+nothing. `index.html` still accepts that legacy form for links already shared.
 
 The app's `onOpenURL` handling is unchanged — it still receives `verite://`.
 Only the outgoing (shared) link changed.
