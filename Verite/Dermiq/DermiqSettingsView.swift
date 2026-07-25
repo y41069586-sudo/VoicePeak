@@ -95,6 +95,16 @@ struct DermiqSettingsView: View {
                 }
                 .tint(DQColor.accentBright)
             }
+            // The language is read once as the app starts (AppleLanguages), so a
+            // change shows on the next launch. Saying so beats a picker that
+            // looks broken because tapping it changes nothing on screen.
+            if AppLanguage.needsRelaunch(for: languageOverride) {
+                Text("Reopen Glowé to apply the new language.")
+                    .font(DQFont.micro)
+                    .foregroundStyle(DQColor.accentBright)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(.top, 6)
+            }
             divider
             HStack {
                 rowLabel(icon: "bell.badge", text: "Daily reminder")

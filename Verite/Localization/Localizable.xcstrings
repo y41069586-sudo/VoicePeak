@@ -42912,6 +42912,40 @@
           }
         }
       }
+    },
+    "Reopen Glowé to apply the new language.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reopen Glowé to apply the new language."
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Öffne Glowé neu, damit die neue Sprache greift."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vuelve a abrir Glowé para aplicar el nuevo idioma."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Rouvre Glowé pour appliquer la nouvelle langue."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Riapri Glowé per applicare la nuova lingua."
+          }
+        }
+      }
     }
   },
   "version": "1.0"

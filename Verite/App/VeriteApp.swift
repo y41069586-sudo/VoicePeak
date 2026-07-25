@@ -16,15 +16,11 @@ struct VeriteApp: App {
     /// are enabled.
     @State private var purchases = PurchaseManager()
 
-    /// Language override chosen in Settings; empty string = follow system locale.
-    @AppStorage("languageOverride") private var languageOverride: String = ""
-
     init() {
-        // Make String(localized:)/NSLocalizedString honor the in-app language
-        // picker, not just the device language — otherwise strings built in
-        // view models (e.g. the plan CTA) stay in the device language while the
-        // rest of the UI switches via .environment(\.locale).
-        AppLanguage.install()
+        // Apply the in-app language picker through `AppleLanguages`, the one
+        // lever Foundation AND SwiftUI both read. Must happen here, before any
+        // UI exists — the value is consumed as the process starts.
+        AppLanguage.apply()
         // Notifications show in the foreground and their taps deep-link.
         UNUserNotificationCenter.current().delegate = DQNotificationDelegate.shared
     }
@@ -36,7 +32,6 @@ struct VeriteApp: App {
             RootView()
                 .environment(appState)
                 .environment(purchases)
-                .applyLanguageOverride(languageOverride)
                 .task {
                     if appState.featureFlags.purchasesEnabled { await purchases.load() }
                 }
@@ -45,21 +40,6 @@ struct VeriteApp: App {
     }
 }
 
-private extension View {
-    /// Force a specific UI language when the user overrides it in Settings.
-    ///
-    /// Routed through `AppLanguage.resolvedCode(for:)` so the environment locale
-    /// is set ONLY for a language whose `.lproj` really exists in the bundle —
-    /// the same condition the `Bundle.main` reclass uses. Setting it
-    /// unconditionally is what produced half-translated screens: `Text(…)`
-    /// followed the requested locale while `String(localized:)` fell back to the
-    /// device language. Now either both switch or neither does.
-    @ViewBuilder
-    func applyLanguageOverride(_ code: String) -> some View {
-        if let resolved = AppLanguage.resolvedCode(for: code) {
-            self.environment(\.locale, Locale(identifier: resolved))
-        } else {
-            self
-        }
-    }
-}
+// No `.environment(\.locale, …)` override here on purpose. It switches only
+// `Text(…)`, leaving every `String(localized:)` on the device language — the
+// half-translated-screen bug. `AppLanguage.apply()` in `init()` covers both.
