@@ -207,7 +207,36 @@ workflows:
           else
             echo "Perfect Corp keys not set"
           fi
-          echo "(Gemini image test skipped — needs billing; app uses on-device fallback.)"
+          echo "##################### GEMINI (image) #####################"
+          # The cheap probe above only LISTS models, which a free-tier key may
+          # do even though it cannot generate images — so a build could report
+          # "GEMINI KEY OK" while every Potential render silently fell back to
+          # the on-device retouch. This runs the REAL call the app makes and
+          # prints Google's own reason (typically a billing/quota error on
+          # gemini-2.5-flash-image, which is not on the free tier).
+          if [ -n "${GEMINI_API_KEY:-}" ]; then
+            GKEY="$(printf '%s' "$GEMINI_API_KEY" | tr -d ' \t\r\n')"
+            B64="$(base64 < "$IMG" | tr -d '\n')"
+            # Built with printf, not a heredoc: a heredoc terminator must sit at
+            # column 0, which would close this YAML block scalar early.
+            printf '{"contents":[{"parts":[{"text":"Reduce visible blemishes slightly. Keep the same person. Return only the edited photograph."},{"inline_data":{"mime_type":"image/jpeg","data":"%s"}}]}],"generationConfig":{"responseModalities":["IMAGE"]}}' \
+              "$B64" > /tmp/gemini_req.json
+            GCODE="$(curl -sS -o /tmp/gemini_img.json -w '%{http_code}' \
+              -X POST -H 'Content-Type: application/json' -H "x-goog-api-key: $GKEY" \
+              --data @/tmp/gemini_req.json \
+              'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image:generateContent')"
+            echo "HTTP $GCODE"
+            if [ "$GCODE" = "200" ] && grep -q '"inlineData"\|"inline_data"' /tmp/gemini_img.json; then
+              echo ">>> GEMINI IMAGE OK — Potential renders live."
+            else
+              echo ">>> GEMINI IMAGE FAILED — the app falls back to the on-device retouch."
+              # Strip the echoed base64 so the log stays readable.
+              sed -E 's/"data"[[:space:]]*:[[:space:]]*"[^"]{80,}"/"data":"<base64 omitted>"/g' \
+                /tmp/gemini_img.json | head -c 1200; echo
+            fi
+          else
+            echo "GEMINI_API_KEY not set"
+          fi
           echo "=== E2E diagnostic done ==="
       - name: Generate Xcode project
         script: xcodegen generate --spec project.yml
