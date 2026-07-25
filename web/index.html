@@ -36,18 +36,33 @@
     <h1>GLOWÉ</h1>
     <p id="msg">Opening the app…</p>
     <a id="open" class="btn primary" href="#">Open Glowé</a>
-    <!-- Replace with your real App Store link (also set in LinkConfig.appStoreURL). -->
-    <a class="btn ghost" href="https://apps.apple.com/app/id0000000000">Get Glowé</a>
+    <a class="btn ghost" href="https://apps.apple.com/app/id6787454842">Get Glowé</a>
   </div>
   <script>
-    // Hash carries the deep link:  #invite?code=ABC  ->  verite://invite?code=ABC
-    var frag = location.hash.slice(1);
-    if (frag) {
-      var target = "verite://" + frag;
-      document.getElementById("open").setAttribute("href", target);
+    // The deep-link target rides in a normal query parameter:
+    //   ?go=invite&code=ABC  ->  verite://invite?code=ABC
+    // Query, not #fragment: chat link detectors truncate a fragment that
+    // contains a "?", so a hash-routed link arrives here with an empty hash
+    // and the invite silently dies. Legacy "#invite?code=ABC" links that are
+    // already out in the wild are still accepted below.
+    function target() {
+      var params = new URLSearchParams(location.search);
+      var go = params.get("go");
+      if (go) {
+        params.delete("go");
+        var rest = params.toString();
+        return "verite://" + go + (rest ? "?" + rest : "");
+      }
+      var frag = location.hash.slice(1);          // legacy: #host?query
+      return frag ? "verite://" + frag : null;
+    }
+
+    var deepLink = target();
+    if (deepLink) {
+      document.getElementById("open").setAttribute("href", deepLink);
       // Auto-launch the app; if it isn't installed nothing happens and the
       // buttons remain for a manual choice.
-      window.location.href = target;
+      window.location.href = deepLink;
     } else {
       document.getElementById("msg").textContent = "Skin analysis in 60 seconds.";
       document.getElementById("open").style.display = "none";
