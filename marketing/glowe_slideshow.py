@@ -318,6 +318,22 @@ h1 span{{font-size:58px;color:#8A7F99;font-weight:700}}
 </body>"""
 
 
+def chrome_binary():
+    """Lokal liegt Chromium im Playwright-Bundle, im Docker-Image unter
+    /usr/bin. CHROME_BIN sticht beides, damit der Render-Service es setzen
+    kann, ohne das Script anzufassen."""
+    if os.environ.get("CHROME_BIN"):
+        return os.environ["CHROME_BIN"]
+    hits = glob.glob("/opt/pw-browsers/chromium-*/chrome-linux/chrome")
+    if hits:
+        return hits[0]
+    for p in ("/usr/bin/chromium", "/usr/bin/chromium-browser",
+              "/usr/bin/google-chrome"):
+        if os.path.exists(p):
+            return p
+    raise RuntimeError("Kein Chromium gefunden — CHROME_BIN setzen.")
+
+
 def render(html, out):
     """Headless-Chromium liefert bei --window-size=W,H nur rund H-87px echtes
     Viewport und füllt den Rest des Screenshots WEISS auf — unten am Slide
@@ -325,13 +341,19 @@ def render(html, out):
     exakt auf W×H beschneiden, statt die 87px hart einzurechnen."""
     tmp = out.replace(".png", ".html")
     open(tmp, "w").write(html)
-    chrome = glob.glob("/opt/pw-browsers/chromium-*/chrome-linux/chrome")[0]
-    subprocess.run([chrome, "--headless=new", "--disable-gpu", "--no-sandbox",
-                    "--hide-scrollbars", "--force-device-scale-factor=1",
-                    f"--window-size={W},{H + 240}",
-                    f"--screenshot={out}", f"file://{os.path.abspath(tmp)}"],
-                   capture_output=True)
+    proc = subprocess.run(
+        [chrome_binary(), "--headless=new", "--disable-gpu", "--no-sandbox",
+         "--hide-scrollbars", "--force-device-scale-factor=1",
+         f"--window-size={W},{H + 240}",
+         f"--screenshot={out}", f"file://{os.path.abspath(tmp)}"],
+        capture_output=True)
     os.remove(tmp)
+    # Im Service muss ein fehlgeschlagener Screenshot als Fehler hochkommen,
+    # sonst landet ein halber Post in der Buffer-Queue.
+    if not os.path.exists(out):
+        raise RuntimeError(
+            f"Chromium hat {out} nicht erzeugt: "
+            f"{proc.stderr.decode('utf-8', 'replace')[:400]}")
     im = Image.open(out)
     if im.size != (W, H):
         im.crop((0, 0, W, H)).save(out)

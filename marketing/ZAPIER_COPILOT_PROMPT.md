@@ -4,13 +4,17 @@ Alles unterhalb der Linie in **Zapier Copilot** einfügen. Er baut daraus den Za
 
 Vorher einmalig bereitstellen (Copilot kann das nicht für dich anlegen):
 
-1. **Render-Service.** `glowe_slideshow.py` als kleinen HTTP-Dienst deployen
-   (Cloud Run / Render / Railway — Dockerfile mit `python:3.11-slim`,
-   `pip install pillow` + Chromium). Ein `POST /render` mit
-   `{"before_url": …, "after_url": …}` gibt `{"slide1": …, "slide4": …}` als
-   4 öffentliche URLs zurück. Das ist der einzige Weg, der pixelgleich das
-   liefert, was lokal schon gebaut ist — Bannerbear/Cloudinary-Templates
-   müssten Text-Overlay, 9:16-Cover-Crop und Kreis-Avatar neu nachbauen.
+1. **Render-Service deployen.** Liegt fertig in `marketing/service/` —
+   Deploy-Befehle stehen in `marketing/service/README.md`. Ein Aufruf:
+
+   ```bash
+   cd marketing && gcloud run deploy glowe-render --source . \
+     --region europe-west1 --allow-unauthenticated \
+     --memory 2Gi --cpu 2 --timeout 300 --concurrency 4
+   ```
+
+   Die zurückgegebene Dienst-URL brauchst du unten in Schritt 5.
+   `--memory 2Gi` nicht kleiner setzen, sonst stirbt Chromium beim Screenshot.
 2. **Buffer**-Kanal für TikTok verbunden.
 3. **OpenAI**-Connection in Zapier neu authentifiziert, falls sie älter ist —
    sie fliegt still raus und der Zap failt dann mit „default connection no
@@ -103,17 +107,27 @@ nicht auf. Setze zwischen Schritt 3 und 4 zur Sicherheit **Delay by Zapier,
 
 ### Schritt 5 — Webhooks by Zapier: POST (Slides bauen)
 
-- URL: die `/render`-URL meines Render-Service
+- URL: `<meine-cloud-run-url>/render`
 - Payload Type: **JSON**
-- Data: `before_url` = Bild-URL aus Schritt 3, `after_url` = Bild-URL aus Schritt 4
-- Antwort enthält `slide1` … `slide4` als öffentliche URLs
+- Data:
+  - `before_url` = Bild-URL aus Schritt 3
+  - `after_url` = Bild-URL aus Schritt 4
+- Unwrap Arrays: no
+
+Die Antwort enthält die Felder `slide1`, `slide2`, `slide3`, `slide4` als
+direkt abrufbare URLs (plus `job` und `expires_in_seconds`).
 
 Der Service setzt selbst: 9:16-Cover-Crop, Text-Overlay „How I got my skin to
 go from this" auf Slide 1 und „to this" auf Slide 2, den Score-Screen mit
 Kreis-Avatar aus dem Nachher-Bild (Slide 3) und den Routine-Screen (Slide 4).
+Er liefert entweder alle vier Slides oder einen Fehler — nie ein Teilergebnis.
 
 Danach **Filter by Zapier**: nur weiter, wenn `slide4` existiert und nicht leer
 ist — sonst kein halber Post in der Queue.
+
+Die Slides liegen eine Stunde auf dem Dienst. Das genügt, weil Zapier Dateien
+beim Ausführen des Schritts sofort in den eigenen Speicher zieht — Schritt 7
+läuft Sekunden später, nicht erst zum geplanten Posting-Zeitpunkt.
 
 ### Schritt 6 — ChatGPT (OpenAI): Conversation (Caption, Titel, Hashtags)
 
