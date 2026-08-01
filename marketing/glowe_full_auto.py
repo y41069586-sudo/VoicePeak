@@ -19,8 +19,8 @@ FONT = "/usr/share/fonts/truetype/liberation/LiberationSans-Bold.ttf"
 INK, PURPLE, LILAC = "#161020", "#7C4FB0", "#9B6BD3"
 PALE_A, PALE_B, MUTED = "#F5F1FC", "#EFE8FA", "#6B5F7A"
 
-CAPTIONS = {1: "this is what the scanner sees on day 0",
-            2: "this is what it's aiming for by day 14"}
+CAPTIONS = {1: "from this on day 0",
+            2: "to this — the day 14 target"}
 
 
 # Tag-14-Scores wie in der echten App (0-100, hoeher ist besser)
@@ -49,7 +49,7 @@ def cover_crop(path):
     return im.crop((left, top, left + W, top + H))
 
 
-def caption(im, text, top_frac=0.13):
+def caption(im, text, top_frac=0.60):
     """TikTok-Look: weisse Schrift, weicher dunkler Schatten darunter.
 
     NICHT die dicke schwarze Kontur - die liest sich wie ein CapCut-Meme.
@@ -66,13 +66,13 @@ def caption(im, text, top_frac=0.13):
         for n in (1, 2, 3):
             target = max(8, -(-len(txt) // n))
             cand = textwrap.wrap(txt, width=target)
-            if len(cand) <= n and max(draw.textlength(l, font=font) for l in cand) <= W * 0.80:
+            if len(cand) <= n and max(draw.textlength(l, font=font) for l in cand) <= W * 0.72:
                 return cand
         return None
 
     d0 = ImageDraw.Draw(im)
-    size = 84
-    while size > 38:
+    size = 62
+    while size > 34:
         f = ImageFont.truetype(FONT, size)
         lines = wrap_balanced(text, f, d0)
         if lines:
@@ -88,9 +88,9 @@ def caption(im, text, top_frac=0.13):
     y = int(H * top_frac)
     for line in lines:
         x = (W - ds.textlength(line, font=f)) / 2
-        ds.text((x, y + 5), line, font=f, fill=(0, 0, 0, 150))
+        ds.text((x, y + 4), line, font=f, fill=(0, 0, 0, 120))
         y += lh
-    shadow = shadow.filter(ImageFilter.GaussianBlur(9))
+    shadow = shadow.filter(ImageFilter.GaussianBlur(7))
 
     im = im.convert("RGBA")
     im.alpha_composite(shadow)
