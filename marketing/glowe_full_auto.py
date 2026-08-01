@@ -17,20 +17,23 @@ from PIL import Image, ImageDraw, ImageFont, ImageFilter, ImageEnhance
 W, H = 1080, 1920
 # TikTok-Caption-Font: Montserrat SemiBold (freier Ersatz fuer die
 # TikTok-Schrift), Fallback Liberation wenn die Datei fehlt.
-FONT_TT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "fonts", "Montserrat.ttf")
+FONT_TT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "fonts", "Mulish.ttf")
+FONT_TT2 = os.path.join(os.path.dirname(os.path.abspath(__file__)), "fonts", "Montserrat.ttf")
 FONT = "/usr/share/fonts/truetype/liberation/LiberationSans-Bold.ttf"
 
 
 def load_font(size):
-    try:
-        f = ImageFont.truetype(FONT_TT, size)
+    for path, weight in ((FONT_TT, 700), (FONT_TT2, 600)):
         try:
-            f.set_variation_by_name("SemiBold")
+            f = ImageFont.truetype(path, size)
+            try:
+                f.set_variation_by_axes([weight])
+            except Exception:
+                pass
+            return f
         except Exception:
-            f.set_variation_by_axes([600])
-        return f
-    except Exception:
-        return ImageFont.truetype(FONT, size)
+            continue
+    return ImageFont.truetype(FONT, size)
 INK, PURPLE, LILAC = "#161020", "#7C4FB0", "#9B6BD3"
 PALE_A, PALE_B, MUTED = "#F5F1FC", "#EFE8FA", "#6B5F7A"
 
@@ -128,7 +131,7 @@ def caption(im, text, top_frac=0.60, boxed=False):
         im.alpha_composite(shadow)
     d = ImageDraw.Draw(im)
     y = int(H * top_frac)
-    stroke = 0 if boxed else max(2, size // 22)
+    stroke = 0 if boxed else max(3, size // 14)
     for line in lines:
         x = (W - d.textlength(line, font=f)) / 2
         d.text((x, y), line, font=f, fill=(255, 255, 255, 255),
