@@ -20,7 +20,9 @@ INK, PURPLE, LILAC = "#161020", "#7C4FB0", "#9B6BD3"
 PALE_A, PALE_B, MUTED = "#F5F1FC", "#EFE8FA", "#6B5F7A"
 
 CAPTIONS = {1: "How to get your skin to go from this",
-            2: "To this, in one month"}
+            2: "To this, in one month",
+            3: "just scanned my face and got my score and then …",
+            4: "it gave me my 14 day routine with skincare products perfect for my face"}
 
 
 # Tag-14-Scores wie in der echten App (0-100, hoeher ist besser)
@@ -49,7 +51,7 @@ def cover_crop(path):
     return im.crop((left, top, left + W, top + H))
 
 
-def caption(im, text, top_frac=0.60):
+def caption(im, text, top_frac=0.60, boxed=False):
     """TikTok-Look: weisse Schrift, weicher dunkler Schatten darunter.
 
     NICHT die dicke schwarze Kontur - die liest sich wie ein CapCut-Meme.
@@ -63,7 +65,7 @@ def caption(im, text, top_frac=0.60):
         stehen ("... on day" / "0"). Deshalb wird pro Zeilenzahl eine
         Ziel-Zeichenbreite vorgegeben und die erste Variante genommen, die
         wirklich passt."""
-        for n in (1, 2, 3):
+        for n in (1, 2, 3, 4):
             target = max(8, -(-len(txt) // n))
             cand = textwrap.wrap(txt, width=target)
             if len(cand) <= n and max(draw.textlength(l, font=font) for l in cand) <= W * 0.72:
@@ -83,17 +85,32 @@ def caption(im, text, top_frac=0.60):
         lines = textwrap.wrap(text, width=24)
     lh = int(size * 1.30)
 
-    shadow = Image.new("RGBA", im.size, (0, 0, 0, 0))
-    ds = ImageDraw.Draw(shadow)
-    y = int(H * top_frac)
-    for line in lines:
-        x = (W - ds.textlength(line, font=f)) / 2
-        ds.text((x, y + 4), line, font=f, fill=(0, 0, 0, 120))
-        y += lh
-    shadow = shadow.filter(ImageFilter.GaussianBlur(7))
-
     im = im.convert("RGBA")
-    im.alpha_composite(shadow)
+    if boxed:
+        # TikTok-Caption mit halbtransparenter schwarzer Box - fuer die
+        # hellen App-Screens, auf denen weisse Schrift allein absaeuft.
+        box = Image.new("RGBA", im.size, (0, 0, 0, 0))
+        db = ImageDraw.Draw(box)
+        y = int(H * top_frac)
+        pad = int(size * 0.42)
+        for line in lines:
+            w = db.textlength(line, font=f)
+            x = (W - w) / 2
+            db.rounded_rectangle(
+                (x - pad, y - int(pad * 0.45), x + w + pad, y + int(size * 1.18)),
+                radius=int(size * 0.34), fill=(0, 0, 0, 150))
+            y += lh
+        im.alpha_composite(box)
+    else:
+        shadow = Image.new("RGBA", im.size, (0, 0, 0, 0))
+        ds = ImageDraw.Draw(shadow)
+        y = int(H * top_frac)
+        for line in lines:
+            x = (W - ds.textlength(line, font=f)) / 2
+            ds.text((x, y + 4), line, font=f, fill=(0, 0, 0, 120))
+            y += lh
+        shadow = shadow.filter(ImageFilter.GaussianBlur(7))
+        im.alpha_composite(shadow)
     d = ImageDraw.Draw(im)
     y = int(H * top_frac)
     for line in lines:
@@ -236,4 +253,10 @@ if __name__ == "__main__":
     photo_slide(clear, CAPTIONS[2], f"{out}/slide2.jpg")
     render(analysis_html(avatar(clear)), f"{out}/slide3.png")   # Gesicht = clear
     render(routine_html(),               f"{out}/slide4.png")
+    # TikTok-Text auch auf den App-Screens - gleicher Look und gleiche
+    # Position wie auf den Fotos, damit der Text beim Swipen stehen bleibt.
+    for n, tf in ((3, 0.60), (4, 0.515)):
+        p = f"{out}/slide{n}.png"
+        caption(Image.open(p).convert("RGB"), CAPTIONS[n], top_frac=tf, boxed=True).save(p)
+        print("ok caption", p)
     print("Fertig - 4 Slides in " + out)
