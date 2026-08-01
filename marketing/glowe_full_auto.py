@@ -20,7 +20,7 @@ INK, PURPLE, LILAC = "#161020", "#7C4FB0", "#9B6BD3"
 PALE_A, PALE_B, MUTED = "#F5F1FC", "#EFE8FA", "#6B5F7A"
 
 CAPTIONS = {1: "from this on day 0",
-            2: "to this — the day 14 target"}
+            2: "to this in 14 days"}
 
 
 # Tag-14-Scores wie in der echten App (0-100, hoeher ist besser)
