@@ -1,9 +1,7 @@
-Extreme close-up, low-angle side profile portrait of a young face tilted away from the camera. Visible: right ear, cheek, jawline, neck, edge of the nose, and lips. Cut off: top of the head, left side of the face, and lower torso.
+Ultra-realistic amateur iPhone front-camera selfie, vertical 9:16, authentic UGC aesthetic. The first input image shows the person — keep their identity exactly (same face, same hair, same distinguishing marks). The second input image is ONLY a reference for the new pose, framing, clothing style, background and lighting. A different day, two weeks later, a different place; camera slightly farther away, still only part of the face visible.
 
-Casual indoor/outdoor background with a blurred glass window, dark metallic door frame, and faint outdoor reflections. Subject is wearing a plain black crew-neck t-shirt.
+Skin: healthy hydrated skin with a subtle glass-skin glow while preserving realistic pores, micro skin texture and natural imperfections. No acne, no redness, no makeup, no retouching, no beauty filter, no airbrushing, not plastic, not perfectly smooth. Only one or two barely-visible faint marks remain.
 
-Clear, hydrated skin featuring realistic pore texture across the cheek and jaw. Dewy sheen on the cheekbone and upper cheek. Minimal faint hyperpigmentation near the upper lip and clean, subtle stubble shadow along the jawline.
+Quality: looks like a random everyday photo taken in 2 seconds and uploaded without editing — visible sensor noise, subtle JPEG compression artifacts, slightly imperfect framing, minor autofocus softness, slightly off exposure, handheld, authentic smartphone processing, low-fi phone photo, genuine camera-roll look.
 
-Captured on a front-facing smartphone camera with natural daylight. Neutral-to-cool color temperature, direct exposure, mild grain, unedited texture, and a casual selfie feel.
-
-Negative prompt: studio lighting, airbrushed skin, smoothed pores, beauty filter, heavy retouching, porcelain skin, professional portrait setup, overexposure.
+Negative prompt: warm yellow lighting, tungsten light, orange skin, golden tint, cinematic lighting, studio lighting, HDR effect, CGI, AI look, oversharpening, overprocessed skin, plastic skin, beauty filter, perfect skin, dramatic shadows, flash photography, full face visible.

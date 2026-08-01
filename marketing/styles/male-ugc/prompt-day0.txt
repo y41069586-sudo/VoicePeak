@@ -1,9 +1,7 @@
-Extreme close-up smartphone selfie shot from a low side angle. The camera focuses closely on the right cheek, temple, ear, jawline, and corner of the mouth, with the top of the head, forehead, and lower neck cropped out.
+Ultra-realistic amateur iPhone front-camera selfie, vertical 9:16, authentic UGC aesthetic. Use the reference image ONLY for pose, framing, composition and overall vibe. Extreme close-up of the cheek and jawline — head tilted, only part of the face visible, eyes not fully visible.
 
-Indoor bathroom setting with a soft-focus background. White tiled wall with subtle dark grout lines visible behind the ear, and a dark navy blue towel hanging loosely on the left edge. Bare upper chest visible at the bottom left.
+Skin: dense cluster of small raised closed comedones and tiny texture bumps across cheek and temple, oily shine, slight redness, a few mildly inflamed small red papules, pinpoint blackheads, patchy uneven redness, realistic visible pores, zero retouching, no makeup. No large pustules, no cystic acne, no thick whiteheads.
 
-Fair skin texture with an oily, shiny surface sheen. High visibility of enlarged pores, sparse facial stubble, scattering of red inflammatory acne papules, small pustules, closed comedones, and post-inflammatory red marks across the cheek, jaw, and lower temple.
+Quality: looks like a random everyday photo taken in 2 seconds and uploaded without editing — visible sensor noise, subtle JPEG compression artifacts, slightly imperfect framing, minor autofocus softness, slightly off exposure, handheld, authentic smartphone processing, low-fi phone photo, genuine camera-roll look.
 
-Casual amateur smartphone photograph. Direct indoor lighting creating hot-spot highlights on the cheekbone. Neutral-to-warm color temperature, realistic sensor noise, sharp fine detail, unpolished texture with no skin smoothing.
-
-Negative prompt: studio lighting, professional retouching, airbrushed skin, smoothed skin, perfect complexion, AI artifacts, glossy commercial look, soft focus filters, blurred skin texture.
+Negative prompt: warm yellow lighting, tungsten light, orange skin, golden tint, cinematic lighting, studio lighting, HDR effect, CGI, AI look, oversharpening, overprocessed skin, plastic skin, beauty filter, perfect skin, dramatic shadows, flash photography, full face visible.
