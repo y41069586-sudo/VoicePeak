@@ -12,10 +12,25 @@ Glowe - alle 4 Slides aus zwei KI-Fotos. Ein Befehl.
 Nur PIL + vorinstalliertes Chromium. Kein Netz, kein API-Key.
 """
 import base64, io, subprocess, sys, glob, os, textwrap
-from PIL import Image, ImageDraw, ImageFont, ImageFilter
+from PIL import Image, ImageDraw, ImageFont, ImageFilter, ImageEnhance
 
 W, H = 1080, 1920
+# TikTok-Caption-Font: Montserrat SemiBold (freier Ersatz fuer die
+# TikTok-Schrift), Fallback Liberation wenn die Datei fehlt.
+FONT_TT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "fonts", "Montserrat.ttf")
 FONT = "/usr/share/fonts/truetype/liberation/LiberationSans-Bold.ttf"
+
+
+def load_font(size):
+    try:
+        f = ImageFont.truetype(FONT_TT, size)
+        try:
+            f.set_variation_by_name("SemiBold")
+        except Exception:
+            f.set_variation_by_axes([600])
+        return f
+    except Exception:
+        return ImageFont.truetype(FONT, size)
 INK, PURPLE, LILAC = "#161020", "#7C4FB0", "#9B6BD3"
 PALE_A, PALE_B, MUTED = "#F5F1FC", "#EFE8FA", "#6B5F7A"
 
@@ -75,7 +90,7 @@ def caption(im, text, top_frac=0.60, boxed=False):
     d0 = ImageDraw.Draw(im)
     size = 62
     while size > 34:
-        f = ImageFont.truetype(FONT, size)
+        f = load_font(size)
         lines = wrap_balanced(text, f, d0)
         if lines:
             break
@@ -113,15 +128,18 @@ def caption(im, text, top_frac=0.60, boxed=False):
         im.alpha_composite(shadow)
     d = ImageDraw.Draw(im)
     y = int(H * top_frac)
+    stroke = 0 if boxed else max(2, size // 22)
     for line in lines:
         x = (W - d.textlength(line, font=f)) / 2
-        d.text((x, y), line, font=f, fill=(255, 255, 255, 255))
+        d.text((x, y), line, font=f, fill=(255, 255, 255, 255),
+               stroke_width=stroke, stroke_fill=(15, 15, 20, 235))
         y += lh
     return im.convert("RGB")
 
 
 def photo_slide(path, text, out):
-    caption(cover_crop(path), text).save(out, quality=95)
+    im = ImageEnhance.Brightness(cover_crop(path)).enhance(0.83)
+    caption(im, text).save(out, quality=95)
     print("ok", out)
 
 
