@@ -23,3 +23,5 @@ Package.resolved
 # Secrets (never commit)
 Secrets.xcconfig
 *.env
+__pycache__/
+*.pyc
