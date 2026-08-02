@@ -132,7 +132,7 @@ def caption(im, text, top_frac=0.60, boxed=False):
         im.alpha_composite(shadow)
     d = ImageDraw.Draw(im)
     y = int(H * top_frac)
-    stroke = 0 if boxed else max(3, size // 14)
+    stroke = 0
     for line in lines:
         x = (W - d.textlength(line, font=f)) / 2
         d.text((x, y), line, font=f, fill=(255, 255, 255, 255),
