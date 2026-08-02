@@ -83,10 +83,11 @@ def caption(im, text, top_frac=0.60, boxed=False):
         stehen ("... on day" / "0"). Deshalb wird pro Zeilenzahl eine
         Ziel-Zeichenbreite vorgegeben und die erste Variante genommen, die
         wirklich passt."""
-        for n in (1, 2, 3, 4):
+        allowed = (1, 2) if len(txt) <= 24 else (2,)
+        for n in allowed:
             target = max(8, -(-len(txt) // n))
             cand = textwrap.wrap(txt, width=target)
-            if len(cand) <= n and max(draw.textlength(l, font=font) for l in cand) <= W * 0.72:
+            if len(cand) <= n and max(draw.textlength(l, font=font) for l in cand) <= W * 0.84:
                 return cand
         return None
 
@@ -141,7 +142,7 @@ def caption(im, text, top_frac=0.60, boxed=False):
 
 
 def photo_slide(path, text, out):
-    im = ImageEnhance.Brightness(cover_crop(path)).enhance(0.83)
+    im = ImageEnhance.Brightness(cover_crop(path)).enhance(0.94)
     caption(im, text).save(out, quality=95)
     print("ok", out)
 
