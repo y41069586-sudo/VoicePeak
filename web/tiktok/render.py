@@ -31,6 +31,10 @@ body {{
   text-shadow: 3px 0 {GHOST}, -3px 0 {GHOST};
 }}
 .content {{ position:absolute; left:90px; top:300px; width:900px; }}
+/* Slide 1 traegt Headline + Subline + Pill und sitzt mit dem gemeinsamen
+   top:300px sichtbar zu tief. Nur diese Slide hoeher haengen — die
+   Step-Slides brauchen den Platz oben fuer die Ghost-Ziffer. */
+.content.high {{ top:200px; }}
 .eyebrow {{
   font-weight:700; font-size:38px; letter-spacing:6px;
   color:{LAV}; text-transform:uppercase; margin-bottom:44px;
@@ -64,6 +68,12 @@ body {{
 }}
 .after-pill {{ font-size:44px; color:{BODY}; line-height:1.5; margin-top:40px; }}
 .line2 {{ font-size:38px; color:{BODY}; line-height:1.5; margin-top:20px; }}
+/* Zweiter CTA unter dem GLOW-Pill. Lavendel + bold, damit er als eigener
+   Call-to-Action liest, aber kleiner bleibt als der Pill — der Kommentar
+   ist der Hauptweg, Early Access der Anschluss. */
+.early {{
+  font-weight:700; font-size:42px; color:{LAV}; line-height:1.4; margin-top:34px;
+}}
 .logo {{
   position:absolute; bottom:60px; right:90px;
   font-family:'{FONT_SCRIPT}'; font-size:62px; color:{LAV};
@@ -73,11 +83,12 @@ body {{
 RIBBON_SVG = f"""<svg class="ribbon" width="54" height="86" xmlns="http://www.w3.org/2000/svg">
 <polygon points="0,0 54,0 54,86 27,64 0,86" fill="{LAV}"/></svg>"""
 
-def page(inner, ghost=None):
+def page(inner, ghost=None, high=False):
     g = f'<div class="ghost">{ghost}</div>' if ghost else ""
+    cls = "content high" if high else "content"
     return (f"<!DOCTYPE html><html><head><meta charset='utf-8'>"
             f"<style>{BASE_CSS}</style></head><body>{g}{RIBBON_SVG}"
-            f"<div class='content'>{inner}</div>"
+            f"<div class='{cls}'>{inner}</div>"
             f"<div class='logo'>Glow&eacute;</div></body></html>")
 
 def headline_html(text, script_word=None):
@@ -97,7 +108,7 @@ def build(slide):
                  f"<div class='bar'></div>"
                  f"<div class='sub'>{slide['subline']}</div>"
                  f"<div class='pill'>SWIPE FOR THE ROUTINE</div>")
-        return page(inner)
+        return page(inner, high=True)
     if n in (2, 3, 4):
         bullets = "".join(f"<div class='bullet'><span class='dot'></span>{b}</div>"
                           for b in slide["bullets"])
@@ -111,7 +122,9 @@ def build(slide):
              f"<div class='bar'></div>"
              f"<div class='pill'>COMMENT &quot;GLOW&quot;</div>"
              f"<div class='after-pill'>and I'll send it over.</div>"
-             f"<div class='line2'>{slide['line2']}</div>")
+             f"<div class='line2'>{slide['line2']}</div>"
+             + (f"<div class='early'>{slide['early']}</div>"
+                if slide.get("early") else ""))
     return page(inner)
 
 W, H = 1080, 1440
