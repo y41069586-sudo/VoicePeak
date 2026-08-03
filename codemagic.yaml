@@ -5,7 +5,9 @@
 #
 #   • ios-compile-check → fast unsigned simulator build (the green/red "does it
 #     compile?" signal). Runs on every push to a claude/* branch.
-#   • ios-release       → signed build → TestFlight. Runs on a version tag (v*).
+#   • ios-release       → signed build → TestFlight + App-Store-Einreichung.
+#     Runs on a version tag (v*). Release-Typ AFTER_APPROVAL: die App geht
+#     live, sobald das Review durch ist.
 #
 # SIGNING: this uses Codemagic's automatic code signing. Set it up in the UI
 # (you've done this): connect App Store Connect and add your distribution
@@ -82,8 +84,12 @@ workflows:
         script: xcode-project use-profiles
       - name: Stamp build version into Info.plist
         script: |
+          # CFBundleVersion muss pro Upload steigen — 11 liegt bereits in App
+          # Store Connect (siehe "Bump build version to 11 to fix App Store
+          # Connect upload collision"), ein erneuter Upload mit 11 wird
+          # abgelehnt. Bei jedem weiteren Release hier hochzählen.
           PLIST="$CM_BUILD_DIR/Verite/Resources/Info.plist"
-          /usr/libexec/PlistBuddy -c "Set :CFBundleVersion 11" "$PLIST"
+          /usr/libexec/PlistBuddy -c "Set :CFBundleVersion 12" "$PLIST"
           /usr/libexec/PlistBuddy -c "Set :CFBundleShortVersionString 1.0.3" "$PLIST"
           echo "Stamped CFBundleVersion=$(/usr/libexec/PlistBuddy -c 'Print :CFBundleVersion' $PLIST)"
       - name: Build & sign IPA
@@ -93,7 +99,7 @@ workflows:
             --project "$XCODE_PROJECT" \
             --scheme "$XCODE_SCHEME" \
             --config Release \
-            --archive-xcargs "CURRENT_PROJECT_VERSION=11 MARKETING_VERSION=1.0.3"
+            --archive-xcargs "CURRENT_PROJECT_VERSION=12 MARKETING_VERSION=1.0.3"
     artifacts:
       - build/ios/ipa/*.ipa
       - /tmp/xcodebuild_logs/*.log
@@ -101,4 +107,14 @@ workflows:
       app_store_connect:
         auth: integration          # uses the integration referenced above
         submit_to_testflight: true
-        # submit_to_app_store: false   # flip on (+ release_type) for a public release
+        # Öffentlicher Release. AFTER_APPROVAL statt MANUAL, weil der Engpass
+        # das Review ist und nicht die Koordination — die App geht live, sobald
+        # Apple durchwinkt, ohne dass jemand nachts einen Knopf drücken muss.
+        # Auf MANUAL stellen, wenn der Launch exakt mit den Creator-Videos
+        # zusammenfallen soll.
+        submit_to_app_store: true
+        release_type: AFTER_APPROVAL
+        # Verhindert "another version is already in review", wenn eine frühere
+        # Einreichung noch hängt.
+        cancel_previous_submissions: true
+        copyright: "2026 Vérité"
