@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Glowe Carousel Renderer v2 - bolder. JSON in, 5 PNG slides (1080x1440) out."""
 import glob, html, json, os, subprocess, sys
-from PIL import Image
+from PIL import Image, ImageFont
 
 # Poppins ist hier nicht installierbar (Google-Fonts-Host liegt hinter dem
 # Proxy-Deny). Inter Display ist der naechste verfuegbare geometrische Sans
@@ -95,29 +95,88 @@ def page(inner, ghost=None, high=False):
             f"<div class='{cls}'>{inner}</div>"
             f"<div class='logo'>Glow&eacute;</div></body></html>")
 
-def headline_html(text, script_word=None):
+SANS_BOLD = "/usr/share/fonts/opentype/inter/InterDisplay-Bold.otf"
+COL_W = 900          # Breite der .content-Spalte
+HEAD_MAX, HEAD_MIN = 132, 68
+SCRIPT_RATIO = 180 / 132   # .script haengt proportional an der Headline
+
+
+def _wrap(words, font, tracking):
+    """Greedy-Umbruch wie im Browser, inkl. letter-spacing."""
+    lines, cur = [], []
+    for w in words:
+        trial = cur + [w]
+        s = " ".join(trial)
+        if not cur or font.getlength(s) + tracking * len(s) <= COL_W:
+            cur = trial
+        else:
+            lines.append(cur)
+            cur = [w]
+    if cur:
+        lines.append(cur)
+    return lines
+
+
+def fit_headline(text, script_word, budget):
+    """Groesste Headline-Groesse, mit der der Block in `budget` Pixel passt.
+
+    Die Headline stand vorher fix auf 132px. Bei "Calm acne without wrecking
+    skin" ergibt das vier Grossbuchstaben-Zeilen, der Textblock lief unten
+    raus und der Pill schob sich ueber das Glowé-Logo. Statt die Texte zu
+    kuerzen wird die Groesse an der echten Schrift gemessen und passend
+    heruntergestuft."""
+    caps = [w for w in text.split()
+            if not (script_word and w.strip("?!.,").lower() == script_word.lower())]
+    size = HEAD_MAX
+    while size > HEAD_MIN:
+        font = ImageFont.truetype(SANS_BOLD, size)
+        h = len(_wrap([w.upper() for w in caps], font, -2.0)) * size   # line-height 1.0
+        if script_word:
+            h += size * SCRIPT_RATIO * 0.9 + 6                          # .script + margin
+        if h <= budget:
+            break
+        size -= 4
+    return size
+
+
+def headline_html(text, script_word=None, size=HEAD_MAX):
+    """Nur der Inhalt — die Groesse setzt build() auf das .headline-div selbst.
+    Sie darf nicht auf einen inneren span: line-height:1.0 ist unitless und
+    bezieht sich auf die Schriftgroesse des Elements, das es traegt. Auf dem
+    div haengend blieben die Zeilenboxen sonst auf 132px stehen, egal wie
+    klein der Text darin wird."""
     words, out = text.split(), []
     for w in words:
         if script_word and w.strip("?!.,").lower() == script_word.lower():
-            out.append(f"<span class='script'>{w.lower()}</span>")
+            out.append(f"<span class='script' style='font-size:"
+                       f"{round(size * SCRIPT_RATIO)}px'>{w.lower()}</span>")
         else:
             out.append(w.upper())
     return " ".join(out)
 
+# Vertikales Budget der Headline je Slide-Typ: Spaltenhoehe bis 40px ueber
+# das Logo, minus der Bloecke mit fester Hoehe (Eyebrow, Bar, Sub/Card/Pill).
+BUDGET_COVER, BUDGET_STEP, BUDGET_CTA = 620, 470, 470
+
+
 def build(slide):
     n = slide["n"]
     if n == 1:
+        size = fit_headline(slide["headline"], slide.get("script_word"), BUDGET_COVER)
         inner = (f"<div class='eyebrow'>{slide['eyebrow']}</div>"
-                 f"<div class='headline'>{headline_html(slide['headline'], slide.get('script_word'))}</div>"
+                 f"<div class='headline' style='font-size:{size}px'>"
+                 f"{headline_html(slide['headline'], slide.get('script_word'), size)}</div>"
                  f"<div class='bar'></div>"
                  f"<div class='sub'>{slide['subline']}</div>"
                  f"<div class='pill'>SWIPE FOR THE ROUTINE</div>")
         return page(inner, high=True)
     if n in (2, 3, 4):
+        size = fit_headline(slide["headline"], None, BUDGET_STEP)
         bullets = "".join(f"<div class='bullet'><span class='dot'></span>{b}</div>"
                           for b in slide["bullets"])
         inner = (f"<div class='eyebrow'>{slide['eyebrow']}</div>"
-                 f"<div class='headline'>{headline_html(slide['headline'])}</div>"
+                 f"<div class='headline' style='font-size:{size}px'>"
+                 f"{headline_html(slide['headline'], None, size)}</div>"
                  f"<div class='bar'></div>"
                  f"<div class='card'>{bullets}</div>")
         return page(inner, ghost=slide["ghost_number"])
@@ -128,8 +187,10 @@ def build(slide):
     pill_cls = "pill long" if len(pill_raw) > 20 else "pill"
     pill = html.escape(pill_raw)
     after = slide.get("after_pill", "and I'll send it over.")
+    size = fit_headline(slide["headline"], slide.get("script_word"), BUDGET_CTA)
     inner = (f"<div class='eyebrow'>{slide['eyebrow']}</div>"
-             f"<div class='headline'>{headline_html(slide['headline'], slide.get('script_word'))}</div>"
+             f"<div class='headline' style='font-size:{size}px'>"
+             f"{headline_html(slide['headline'], slide.get('script_word'), size)}</div>"
              f"<div class='bar'></div>"
              f"<div class='{pill_cls}'>{pill}</div>"
              f"<div class='after-pill'>{after}</div>"
