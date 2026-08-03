@@ -121,10 +121,14 @@ System/Prompt sinngemäß:
 
 > Du schreibst TikTok-Captions für Glowé, eine iOS-App, die per Selfie die Haut
 > scannt, 8 Scores von 0–100 gibt und einen 14-Tage-Plan erstellt.
+> Die App ist NOCH NICHT im App Store — sie läuft ausschließlich als
+> TestFlight-Beta. Behaupte niemals, dass es sie im App Store gibt, und
+> schreib nie „lad dir Glowé im App Store", „jetzt verfügbar" oder
+> Ähnliches.
 > Schreib mir für einen Vorher/Nachher-Slideshow-Post:
 > 1. einen Titel (max. 60 Zeichen, Hook, kein Clickbait-Versprechen)
 > 2. eine Caption (max. 150 Zeichen, locker, erste Person, ein Call-to-Action
->    „Glowé im App Store")
+>    auf den TestFlight-Early-Access: „Comment GLOW for early access")
 > 3. genau 8 Hashtags, Mix aus groß und Nische, deutsch und englisch
 > Variiere Wortwahl und Hook stark gegenüber üblichen Skincare-Captions.
 > Gib JSON zurück: {"titel": …, "caption": …, "hashtags": [...]}
@@ -142,7 +146,7 @@ zum Bild passt.
 
 ---
 
-## Zwei Dinge, die der Zap nicht allein kann — bitte im Zap als Notiz hinterlegen
+## Drei Dinge, die der Zap nicht allein kann — bitte im Zap als Notiz hinterlegen
 
 **1. Trending-Sound.** TikToks Content-Posting-API erlaubt es nicht, einem
 Foto-Carousel einen bestimmten Trending-Sound zuzuweisen; Buffer reicht das
@@ -162,6 +166,14 @@ UWG. Zusätzlich zum Hinweis in der Caption muss beim Freigeben in der
 TikTok-App der **„AI-generated content"-Schalter** gesetzt werden. Der Hook
 funktioniert mit Label genauso gut — das ist kein Reichweiten-Verlust, aber
 ohne Label ist es ein Abmahnrisiko.
+
+**3. Kein App-Store-Claim, solange die App nicht im Store ist.** `codemagic.yaml`
+lädt nach TestFlight (`submit_to_testflight: true`); `submit_to_app_store` ist
+auskommentiert. Eine Caption wie „lad dir Glowé im App Store" wäre damit eine
+Falschaussage über die Verfügbarkeit — dieselbe UWG-Kategorie wie Punkt 2, und
+Apple duldet Store-Bewerbung vor Release ebenfalls nicht. Schritt 6 ist
+entsprechend auf den TestFlight-Early-Access-CTA umgestellt. **Beim
+Store-Release beides zurückdrehen:** den CTA in Schritt 6 und diesen Absatz.
 
 ## Fehlerbilder, die real aufgetreten sind — bau Retries dafür ein
 
