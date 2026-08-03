@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """Glowe Carousel Renderer v2 - bolder. JSON in, 5 PNG slides (1080x1440) out."""
-import glob, json, os, subprocess, sys
+import glob, html, json, os, subprocess, sys
 from PIL import Image
 
 # Poppins ist hier nicht installierbar (Google-Fonts-Host liegt hinter dem
@@ -66,6 +66,10 @@ body {{
   font-weight:700; font-size:46px; letter-spacing:3px;
   padding:30px 58px; border-radius:70px; margin-top:74px;
 }}
+/* Laengere CTAs ("COMMENT GLOW FOR EARLY ACCESS") sprengen bei 46px die
+   900px-Spalte und brechen um. Eine Stufe kleiner haelt sie einzeilig und
+   der Pill bleibt trotzdem das groesste Element der Slide. */
+.pill.long {{ font-size:36px; letter-spacing:2px; padding:28px 46px; }}
 .after-pill {{ font-size:44px; color:{BODY}; line-height:1.5; margin-top:40px; }}
 .line2 {{ font-size:38px; color:{BODY}; line-height:1.5; margin-top:20px; }}
 /* Zweiter CTA unter dem GLOW-Pill. Lavendel + bold, damit er als eigener
@@ -117,11 +121,18 @@ def build(slide):
                  f"<div class='bar'></div>"
                  f"<div class='card'>{bullets}</div>")
         return page(inner, ghost=slide["ghost_number"])
+    pill_raw = slide.get("pill", 'COMMENT "GLOW"')
+    # Klasse am Rohtext messen, nicht am escapten — &quot; blaeht jedes
+    # Anfuehrungszeichen auf 6 Zeichen auf und wuerde den kurzen Default
+    # faelschlich als "long" einstufen.
+    pill_cls = "pill long" if len(pill_raw) > 20 else "pill"
+    pill = html.escape(pill_raw)
+    after = slide.get("after_pill", "and I'll send it over.")
     inner = (f"<div class='eyebrow'>{slide['eyebrow']}</div>"
              f"<div class='headline'>{headline_html(slide['headline'], slide.get('script_word'))}</div>"
              f"<div class='bar'></div>"
-             f"<div class='pill'>COMMENT &quot;GLOW&quot;</div>"
-             f"<div class='after-pill'>and I'll send it over.</div>"
+             f"<div class='{pill_cls}'>{pill}</div>"
+             f"<div class='after-pill'>{after}</div>"
              f"<div class='line2'>{slide['line2']}</div>"
              + (f"<div class='early'>{slide['early']}</div>"
                 if slide.get("early") else ""))
