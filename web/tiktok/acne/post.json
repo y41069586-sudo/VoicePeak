@@ -7,21 +7,21 @@
       "headline": "Calm acne without wrecking skin",
       "script_word": "calm",
       "subline": "Three steps, twice a day.",
-      "hook": "How to get your skin to this [in 14 days]",
+      "hook": "How to fix this [in 14 days]",
       "swipe": "swipe →",
-      "photo": "assets/skin-after-girl.png",
+      "photo": "assets/hook-gen-w1.png",
       "arrow": {
         "from": [
-          210,
-          880
+          215,
+          1120
         ],
         "via": [
-          450,
-          915
+          430,
+          1130
         ],
         "to": [
-          735,
-          600
+          680,
+          880
         ]
       }
     },
