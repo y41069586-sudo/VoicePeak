@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """Glowe Carousel Renderer v2 - bolder. JSON in, 5 PNG slides (1080x1440) out."""
-import base64, glob, html, io, json, math, os, re, subprocess, sys
+import base64, glob, html, io, json, math, os, re, shutil, subprocess, sys
 from PIL import Image, ImageFont
 
 # Assets liegen neben diesem Script, nicht relativ zum Aufrufort — damit
@@ -509,7 +509,7 @@ def shoot(html_path, png_path):
     rendert dasselbe HTML/CSS. Chromium liefert bei --window-size=W,H rund
     87px weniger echtes Viewport und fuellt den Rest weiss auf, darum bewusst
     zu hoch anfordern und danach exakt auf W×H beschneiden."""
-    chrome = glob.glob("/opt/pw-browsers/chromium-*/chrome-linux/chrome")[0]
+    chrome = _find_chrome()
     subprocess.run([chrome, "--headless=new", "--disable-gpu", "--no-sandbox",
                     "--hide-scrollbars", "--force-device-scale-factor=1",
                     f"--window-size={W},{H + 240}",
@@ -520,6 +520,20 @@ def shoot(html_path, png_path):
     if im.size != (W, H):
         im = im.crop((0, 0, W, H))
     im.save(png_path, optimize=True)
+
+
+def _find_chrome():
+    """Chromium liegt je nach Umgebung woanders: im CCR-Container unter
+    /opt/pw-browsers, sonst meist im PATH. Erst globben, dann PATH."""
+    cands = glob.glob("/opt/pw-browsers/chromium-*/chrome-linux/chrome")
+    for name in ("chromium", "chromium-browser", "google-chrome", "chrome"):
+        p = shutil.which(name)
+        if p:
+            cands.append(p)
+    if not cands:
+        sys.exit("Kein Chromium gefunden — apt-get install chromium, "
+                 "oder Playwright-Chromium bereitstellen.")
+    return cands[0]
 
 
 def main(json_path, outdir):
