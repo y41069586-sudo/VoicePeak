@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """Glowe Carousel Renderer v2 - bolder. JSON in, 5 PNG slides (1080x1440) out."""
-import base64, glob, html, io, json, math, os, subprocess, sys
+import base64, glob, html, io, json, math, os, re, subprocess, sys
 from PIL import Image, ImageFont
 
 # Assets liegen neben diesem Script, nicht relativ zum Aufrufort — damit
@@ -366,13 +366,6 @@ def hand_underline(x, y, w):
             f" stroke-width='9' stroke-linecap='round' opacity='.85'/>")
 
 
-def hand_box(x, y, w, h):
-    """Rahmen mit absichtlich ungenauen Ecken und offener Naht oben rechts."""
-    return (f"<path d='M {x+14} {y+4} L {x+w-10} {y} L {x+w} {y+h-8}"
-            f" L {x+8} {y+h} Z' fill='none' stroke='{LAV}' stroke-width='8'"
-            f" stroke-linecap='round' stroke-linejoin='round'/>")
-
-
 MARK_X = 82                      # linke Kante der Textspalte
 MARK_W = 1080 - 2 * MARK_X       # nutzbare Breite
 
@@ -423,26 +416,31 @@ def build_marker_cta(slide):
     size, lines, last_w = _marker_head(slide["headline"], budget=300)
     head = "<br>".join(html.escape(" ".join(l)) for l in lines)
     head_h = len(lines) * size * 1.14
-    cta = slide.get("pill", 'comment GLOW for early access')
-    f = ImageFont.truetype(SANS_BOLD, 52)
-    box_w = min(f.getlength(cta) + 76, MARK_W)
-    box_y = 470 + head_h + 96
+    cta = slide.get("pill", 'comment "GLOW" for early access')
+    CTA_SIZE, CTA_GAP = 52, 118
+    cta_top = 470 + head_h + CTA_GAP
+    f = ImageFont.truetype(SANS_BOLD, CTA_SIZE)
+
     # Dieselbe Unterstreichung wie auf den Schritt-Slides — sie ist das
     # Element, das die fuenf Slides als Satz zusammenhaelt.
-    ink = (hand_underline(MARK_X, 470 + head_h + 26, last_w)
-           + hand_box(MARK_X - 10, box_y, box_w, 116))
+    ink = hand_underline(MARK_X, 470 + head_h + 26, last_w)
+    # Statt eines Kastens um die ganze Zeile bekommt nur das Wort in
+    # Anfuehrungszeichen den Marker. Start und Breite werden an der echten
+    # Schrift gemessen, damit der Strich exakt unter dem Wort sitzt.
+    m = re.search(r'"[^"]+"', cta)
+    if m:
+        ink += hand_underline(MARK_X + f.getlength(cta[:m.start()]),
+                              cta_top + 62, f.getlength(m.group(0)))
+
     app = ""
     if slide.get("app"):
-        app = (f"<div class='app'>"
+        app = (f"<div class='app' style='margin-top:74px'>"
                f"{html.escape(slide['app']).replace('[', '<em>').replace(']', '</em>')}"
                f"</div>")
     inner = (f"<div class='wrap'>"
              f"<div class='head' style='font-size:{size}px'>{head}</div>"
-             f"<div class='cta' style='margin-top:{96 + 34}px'>{html.escape(cta)}</div>"
-             f"<div class='after' style='margin-top:{116 - 34 + 40}px'>"
-             f"{html.escape(slide.get('after_pill', ''))}</div>"
-             f"{app}"
-             f"<div class='note'>{html.escape(slide['line2'])}</div></div>")
+             f"<div class='cta' style='margin-top:{CTA_GAP}px'>{html.escape(cta)}</div>"
+             f"{app}</div>")
     return _marker_page(ink, inner)
 
 
