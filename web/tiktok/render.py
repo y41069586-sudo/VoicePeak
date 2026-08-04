@@ -339,7 +339,11 @@ body {
   line-height:1.25;
 }
 .after { font-size:44px; color:#5A5A5A; line-height:1.4; margin-top:52px; font-weight:500; }
-.note  { font-size:37px; color:#8A8A8A; line-height:1.4; margin-top:22px; }
+/* Sagt, worauf sich "early access" ueberhaupt bezieht — ohne die Zeile ist
+   der CTA eine Einladung zu nichts Bestimmtem. */
+.app { font-size:41px; color:#2E2E2E; line-height:1.38; margin-top:40px; font-weight:600; }
+.app em { font-style:normal; color:{LAV}; }
+.note  { font-size:37px; color:#8A8A8A; line-height:1.4; margin-top:26px; }
 .mark { position:absolute; bottom:74px; right:86px;
         font-family:'{SCRIPT}'; font-size:60px; color:{LAV}; }
 """
@@ -416,19 +420,28 @@ def build_marker_step(slide):
 
 
 def build_marker_cta(slide):
-    size, lines, _ = _marker_head(slide["headline"], budget=300)
+    size, lines, last_w = _marker_head(slide["headline"], budget=300)
     head = "<br>".join(html.escape(" ".join(l)) for l in lines)
     head_h = len(lines) * size * 1.14
     cta = slide.get("pill", 'comment GLOW for early access')
     f = ImageFont.truetype(SANS_BOLD, 52)
     box_w = min(f.getlength(cta) + 76, MARK_W)
     box_y = 470 + head_h + 96
-    ink = hand_box(MARK_X - 10, box_y, box_w, 116)
+    # Dieselbe Unterstreichung wie auf den Schritt-Slides — sie ist das
+    # Element, das die fuenf Slides als Satz zusammenhaelt.
+    ink = (hand_underline(MARK_X, 470 + head_h + 26, last_w)
+           + hand_box(MARK_X - 10, box_y, box_w, 116))
+    app = ""
+    if slide.get("app"):
+        app = (f"<div class='app'>"
+               f"{html.escape(slide['app']).replace('[', '<em>').replace(']', '</em>')}"
+               f"</div>")
     inner = (f"<div class='wrap'>"
              f"<div class='head' style='font-size:{size}px'>{head}</div>"
              f"<div class='cta' style='margin-top:{96 + 34}px'>{html.escape(cta)}</div>"
              f"<div class='after' style='margin-top:{116 - 34 + 40}px'>"
              f"{html.escape(slide.get('after_pill', ''))}</div>"
+             f"{app}"
              f"<div class='note'>{html.escape(slide['line2'])}</div></div>")
     return _marker_page(ink, inner)
 
