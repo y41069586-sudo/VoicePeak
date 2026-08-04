@@ -127,7 +127,9 @@ body {{
   font-weight:400;
 }}
 .swipe {{
-  position:absolute; left:82px; bottom:96px;
+  /* Nicht tiefer — unterhalb davon liegt auf TikTok die Caption samt
+     Buttons ueber dem Bild und verdeckt den Hinweis. */
+  position:absolute; left:82px; bottom:210px;
   font-size:38px; color:#A3A099; font-weight:500;
 }}
 """
@@ -302,6 +304,135 @@ def headline_html(text, script_word=None, size=HEAD_MAX):
             out.append(w.upper())
     return " ".join(out)
 
+# ── Marker-Stil fuer Slide 2-5 ───────────────────────────────────────────────
+# Slide 1 ist Foto + handgezeichneter Pfeil. Der alte Lavendel-Verlauf mit
+# Versalien, Karte und Pill spricht dagegen eine voellig andere Sprache. Diese
+# Slides uebernehmen deshalb die DNA der Hook-Slide: warmes Papier statt
+# Farbflaeche, dieselbe enge Fettschrift in Kleinschreibung, Lavendel nur als
+# Akzent — und der Marker als durchgehendes Element (Kreis um die Schrittzahl,
+# Unterstreichung, gezeichneter Rahmen um den CTA) statt Karten und Buttons.
+
+MARKER_CSS = """
+* { margin:0; padding:0; box-sizing:border-box; }
+body {
+  width:{W}px; height:{H}px; overflow:hidden; position:relative;
+  background:#F7F5F2;
+  font-family:'{FONT}', -apple-system, 'Helvetica Neue', sans-serif;
+  -webkit-font-smoothing:antialiased;
+}
+.ink { position:absolute; inset:0; }
+.num {
+  position:absolute; left:82px; top:252px; width:132px; height:128px;
+  display:flex; align-items:center; justify-content:center;
+  font-size:62px; font-weight:700; color:#171717;
+}
+.wrap { position:absolute; left:82px; right:82px; top:470px; }
+.head {
+  font-weight:700; color:#171717; line-height:1.14; letter-spacing:-1.5px;
+}
+.body { margin-top:104px; }
+.line { font-size:48px; color:#3D3D3D; line-height:1.38; font-weight:500; }
+.line + .line { margin-top:38px; }
+.tick { color:{LAV}; font-weight:700; margin-right:22px; }
+.cta {
+  font-size:52px; font-weight:700; color:#171717; letter-spacing:-0.5px;
+  line-height:1.25;
+}
+.after { font-size:44px; color:#5A5A5A; line-height:1.4; margin-top:52px; font-weight:500; }
+.note  { font-size:37px; color:#8A8A8A; line-height:1.4; margin-top:22px; }
+.mark { position:absolute; bottom:74px; right:86px;
+        font-family:'{SCRIPT}'; font-size:60px; color:{LAV}; }
+"""
+
+
+def hand_circle(cx, cy, rx, ry):
+    """Zwei leicht versetzte Ellipsen — ein Strich allein wirkt gedruckt,
+    der doppelte Umriss liest als Stift."""
+    return (f"<ellipse cx='{cx}' cy='{cy}' rx='{rx}' ry='{ry}' fill='none'"
+            f" stroke='{LAV}' stroke-width='7' transform='rotate(-8 {cx} {cy})'/>"
+            f"<ellipse cx='{cx+3}' cy='{cy+2}' rx='{rx-4}' ry='{ry-3}' fill='none'"
+            f" stroke='{LAV}' stroke-width='5' opacity='.55'"
+            f" transform='rotate(-13 {cx} {cy})'/>")
+
+
+def hand_underline(x, y, w):
+    """Leicht welliger Strich statt gerader Linie."""
+    return (f"<path d='M {x} {y} q {w*0.25:.0f} -9 {w*0.5:.0f} -2"
+            f" t {w*0.5:.0f} 5' fill='none' stroke='{LAV}'"
+            f" stroke-width='9' stroke-linecap='round' opacity='.85'/>")
+
+
+def hand_box(x, y, w, h):
+    """Rahmen mit absichtlich ungenauen Ecken und offener Naht oben rechts."""
+    return (f"<path d='M {x+14} {y+4} L {x+w-10} {y} L {x+w} {y+h-8}"
+            f" L {x+8} {y+h} Z' fill='none' stroke='{LAV}' stroke-width='8'"
+            f" stroke-linecap='round' stroke-linejoin='round'/>")
+
+
+MARK_X = 82                      # linke Kante der Textspalte
+MARK_W = 1080 - 2 * MARK_X       # nutzbare Breite
+
+
+def _marker_head(text, budget, start=88):
+    """Groesse + Zeilen + Breite der letzten Zeile — letztere braucht die
+    Unterstreichung, damit sie genau unter dem Text endet und nicht darueber
+    hinausschiesst."""
+    size = start
+    while size > 48:
+        f = ImageFont.truetype(SANS_BOLD, size)
+        lines = _wrap(text.split(), f, -1.5, max_w=MARK_W)
+        if len(lines) * size * 1.14 <= budget:
+            break
+        size -= 4
+    f = ImageFont.truetype(SANS_BOLD, size)
+    lines = _wrap(text.split(), f, -1.5, max_w=MARK_W)
+    last = " ".join(lines[-1])
+    return size, lines, min(f.getlength(last) - 1.5 * len(last), MARK_W)
+
+
+def _marker_page(ink, inner):
+    css = (MARKER_CSS.replace("{W}", str(W)).replace("{H}", str(H))
+           .replace("{FONT}", FONT_SANS).replace("{SCRIPT}", FONT_SCRIPT)
+           .replace("{LAV}", LAV))
+    return (f"<!DOCTYPE html><html><head><meta charset='utf-8'><style>{css}</style>"
+            f"</head><body><svg class='ink' viewBox='0 0 {W} {H}'>{ink}</svg>"
+            f"{inner}<div class='mark'>Glow&eacute;</div></body></html>")
+
+
+def build_marker_step(slide):
+    size, lines, last_w = _marker_head(slide["headline"], budget=300)
+    head = "<br>".join(html.escape(" ".join(l)) for l in lines)
+    head_h = len(lines) * size * 1.14
+    ink = (hand_circle(148, 316, 74, 66)
+           + hand_underline(MARK_X, 470 + head_h + 26, last_w))
+    body = "".join(
+        f"<div class='line'><span class='tick'>—</span>{html.escape(b)}</div>"
+        for b in slide["bullets"])
+    return _marker_page(
+        ink,
+        f"<div class='num'>{html.escape(str(slide['ghost_number']))}</div>"
+        f"<div class='wrap'><div class='head' style='font-size:{size}px'>{head}</div>"
+        f"<div class='body'>{body}</div></div>")
+
+
+def build_marker_cta(slide):
+    size, lines, _ = _marker_head(slide["headline"], budget=300)
+    head = "<br>".join(html.escape(" ".join(l)) for l in lines)
+    head_h = len(lines) * size * 1.14
+    cta = slide.get("pill", 'comment GLOW for early access')
+    f = ImageFont.truetype(SANS_BOLD, 52)
+    box_w = min(f.getlength(cta) + 76, MARK_W)
+    box_y = 470 + head_h + 96
+    ink = hand_box(MARK_X - 10, box_y, box_w, 116)
+    inner = (f"<div class='wrap'>"
+             f"<div class='head' style='font-size:{size}px'>{head}</div>"
+             f"<div class='cta' style='margin-top:{96 + 34}px'>{html.escape(cta)}</div>"
+             f"<div class='after' style='margin-top:{116 - 34 + 40}px'>"
+             f"{html.escape(slide.get('after_pill', ''))}</div>"
+             f"<div class='note'>{html.escape(slide['line2'])}</div></div>")
+    return _marker_page(ink, inner)
+
+
 # Vertikales Budget der Headline je Slide-Typ: Spaltenhoehe bis 40px ueber
 # das Logo, minus der Bloecke mit fester Hoehe (Eyebrow, Bar, Sub/Card/Pill).
 BUDGET_COVER, BUDGET_STEP, BUDGET_CTA = 620, 470, 470
@@ -323,7 +454,12 @@ def build(slide):
                  f"<div class='sub'>{slide['subline']}</div>"
                  f"<div class='pill'>SWIPE FOR THE ROUTINE</div>")
         return page(inner, high=True)
+    # Marker ist der Standard und passt zur Foto-Hook-Slide; "classic" holt das
+    # alte gebrandete Layout zurueck.
+    classic = slide.get("style") == "classic"
     if n in (2, 3, 4):
+        if not classic:
+            return build_marker_step(slide)
         size = fit_headline(slide["headline"], None, BUDGET_STEP)
         bullets = "".join(f"<div class='bullet'><span class='dot'></span>{b}</div>"
                           for b in slide["bullets"])
@@ -333,6 +469,8 @@ def build(slide):
                  f"<div class='bar'></div>"
                  f"<div class='card'>{bullets}</div>")
         return page(inner, ghost=slide["ghost_number"])
+    if not classic:
+        return build_marker_cta(slide)
     pill_raw = slide.get("pill", 'COMMENT "GLOW"')
     # Klasse am Rohtext messen, nicht am escapten — &quot; blaeht jedes
     # Anfuehrungszeichen auf 6 Zeichen auf und wuerde den kurzen Default
