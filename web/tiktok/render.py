@@ -1,7 +1,12 @@
 #!/usr/bin/env python3
 """Glowe Carousel Renderer v2 - bolder. JSON in, 5 PNG slides (1080x1440) out."""
-import glob, html, json, os, subprocess, sys
+import base64, glob, html, io, json, math, os, subprocess, sys
 from PIL import Image, ImageFont
+
+# Assets liegen neben diesem Script, nicht relativ zum Aufrufort — damit
+# funktioniert `photo` in der JSON unabhaengig davon, aus welchem Verzeichnis
+# gerendert wird.
+ASSET_DIR = os.path.dirname(os.path.abspath(__file__))
 
 # Poppins ist hier nicht installierbar (Google-Fonts-Host liegt hinter dem
 # Proxy-Deny). Inter Display ist der naechste verfuegbare geometrische Sans
@@ -95,19 +100,162 @@ def page(inner, ghost=None, high=False):
             f"<div class='{cls}'>{inner}</div>"
             f"<div class='logo'>Glow&eacute;</div></body></html>")
 
+
+# ── Native Hook-Slide ────────────────────────────────────────────────────────
+# Slide 1 ist auf einem kalten Feed die einzige, die die meisten Leute sehen.
+# Das gebrandete Cover — Ribbon, Logo, Markenfarben, Versalien — liest dort in
+# Sekundenbruchteilen als Anzeige und wird weggewischt. Diese Variante hat
+# keinerlei Markenzeichen: flacher, leicht warmer Hintergrund, Systemschrift,
+# Kleinschreibung, linksbündig. Sieht aus wie in der TikTok-App getippt.
+# Slides 2–5 bleiben gebrandet — wer wischt, hat sich schon entschieden, und
+# dort ist die Marke Vertrauenssignal statt Stoppschild.
+
+NATIVE_CSS = f"""
+* {{ margin:0; padding:0; box-sizing:border-box; }}
+body {{
+  width:{{W}}px; height:{{H}}px; overflow:hidden; position:relative;
+  background:#F7F5F2;
+  font-family:'{FONT_SANS}', -apple-system, 'Helvetica Neue', sans-serif;
+  -webkit-font-smoothing:antialiased;
+}}
+.wrap {{ position:absolute; left:82px; right:82px; top:360px; }}
+.hook {{
+  font-weight:700; color:#171717; line-height:1.16; letter-spacing:-1.5px;
+}}
+.sub {{
+  font-size:44px; color:#6E6E6E; line-height:1.42; margin-top:38px;
+  font-weight:400;
+}}
+.swipe {{
+  position:absolute; left:82px; bottom:96px;
+  font-size:38px; color:#A3A099; font-weight:500;
+}}
+"""
+
+
+# ── Photo-Hook-Slide ─────────────────────────────────────────────────────────
+# Die stärkste Variante: echtes Foto als Beweis, darüber ein handgezeichnet
+# wirkender gestrichelter Pfeil, der auf die Haut zeigt. Das Format läuft in
+# der Nische, weil es zeigt statt behauptet — und der Pfeil zwingt das Auge
+# genau dorthin, wo das Versprechen sichtbar ist.
+
+PHOTO_CSS = """
+* { margin:0; padding:0; box-sizing:border-box; }
+body {
+  width:{W}px; height:{H}px; overflow:hidden; position:relative;
+  font-family:'{FONT}', -apple-system, 'Helvetica Neue', sans-serif;
+  -webkit-font-smoothing:antialiased;
+}
+.shot { position:absolute; inset:0; background-size:cover; background-position:center; }
+/* Verlauf nur oben — die Kopfzeile braucht Kontrast, das Gesicht darunter
+   soll unangetastet bleiben. */
+.scrim {
+  position:absolute; left:0; right:0; top:0; height:56%;
+  background:linear-gradient(180deg, rgba(0,0,0,.60) 0%, rgba(0,0,0,.28) 46%, rgba(0,0,0,0) 100%);
+}
+.hook {
+  position:absolute; left:72px; right:72px; top:132px;
+  font-weight:700; color:#fff; line-height:1.12; letter-spacing:-1.5px;
+  text-shadow:0 4px 26px rgba(0,0,0,.5);
+}
+.hook em { font-style:normal; color:{LAV}; }
+.arrow { position:absolute; inset:0; }
+.swipe {
+  position:absolute; left:74px; bottom:210px;
+  font-size:38px; font-weight:600; color:#fff; opacity:.85;
+  text-shadow:0 2px 14px rgba(0,0,0,.6);
+}
+"""
+
+
+def _photo_data_uri(path):
+    """Foto auf Zielgroesse bringen und als JPEG einbetten — das Original ist
+    ein 2,3-MB-PNG, als JPEG bleiben rund 250 KB, sichtbar identisch."""
+    im = Image.open(path).convert("RGB")
+    if im.size != (W, H):
+        scale = max(W / im.width, H / im.height)
+        im = im.resize((round(im.width * scale), round(im.height * scale)), Image.LANCZOS)
+        left, top = (im.width - W) // 2, (im.height - H) // 2
+        im = im.crop((left, top, left + W, top + H))
+    buf = io.BytesIO()
+    im.save(buf, format="JPEG", quality=90, optimize=True)
+    return "data:image/jpeg;base64," + base64.b64encode(buf.getvalue()).decode()
+
+
+def build_photo_hook(slide):
+    uri = _photo_data_uri(os.path.join(ASSET_DIR, slide["photo"]))
+    size = fit_hook(slide["hook"], budget=520, start=96)
+    # <em> im JSON faerbt einen Teil lavendel ein, ohne HTML im Text zu erlauben.
+    hook = html.escape(slide["hook"]).replace("[", "<em>").replace("]", "</em>")
+    a = slide.get("arrow", {})
+    x0, y0 = a.get("from", [240, 840])
+    cx, cy = a.get("via", [450, 880])
+    x1, y1 = a.get("to", [762, 566])
+    # Spitze aus der Tangente der Bezier-Kurve rechnen statt sie fest zu
+    # verdrahten — sonst zeigt sie in die falsche Richtung, sobald jemand die
+    # Kurve fuer ein anderes Foto verschiebt. Tangente am Ende = P_end - P_ctrl.
+    dx, dy = x1 - cx, y1 - cy
+    ln = math.hypot(dx, dy) or 1.0
+    ux, uy = dx / ln, dy / ln
+    barbs = []
+    for ang in (math.radians(150), math.radians(-150)):
+        bx = (ux * math.cos(ang) - uy * math.sin(ang)) * 58
+        by = (ux * math.sin(ang) + uy * math.cos(ang)) * 58
+        barbs.append(f"M {x1} {y1} l {bx:.1f} {by:.1f}")
+    arrow = (f"<svg class='arrow' viewBox='0 0 {W} {H}'>"
+             f"<path d='M {x0} {y0} Q {cx} {cy} {x1} {y1}' fill='none' stroke='{LAV}'"
+             f" stroke-width='9' stroke-linecap='round' stroke-dasharray='26 22'/>"
+             f"<path d='{' '.join(barbs)}' fill='none'"
+             f" stroke='{LAV}' stroke-width='9' stroke-linecap='round'/></svg>")
+    css = (PHOTO_CSS.replace("{W}", str(W)).replace("{H}", str(H))
+           .replace("{FONT}", FONT_SANS).replace("{LAV}", "#CBB9F2"))
+    return (f"<!DOCTYPE html><html><head><meta charset='utf-8'>"
+            f"<style>{css}</style></head><body>"
+            f"<div class='shot' style=\"background-image:url('{uri}')\"></div>"
+            f"<div class='scrim'></div>"
+            f"<div class='hook' style='font-size:{size}px'>{hook}</div>"
+            f"{arrow}"
+            f"<div class='swipe'>{html.escape(slide.get('swipe', 'swipe →'))}</div>"
+            f"</body></html>")
+
+
+def fit_hook(text, budget=560, start=104, floor=56):
+    """Wie fit_headline, aber fuer den Fliesstext der nativen Hook-Slide:
+    Kleinschreibung, kein Script-Wort, engere Spalte (916px)."""
+    size = start
+    while size > floor:
+        font = ImageFont.truetype(SANS_BOLD, size)
+        lines = _wrap(text.split(), font, -1.5, max_w=W - 164)   # 82px Rand je Seite
+        if len(lines) * size * 1.16 <= budget:
+            break
+        size -= 4
+    return size
+
+
+def build_native_hook(slide):
+    hook = html.escape(slide["hook"])
+    size = fit_hook(slide["hook"])
+    sub = f"<div class='sub'>{html.escape(slide['hook_sub'])}</div>" if slide.get("hook_sub") else ""
+    swipe = html.escape(slide.get("swipe", "swipe →"))
+    css = NATIVE_CSS.replace("{W}", str(W)).replace("{H}", str(H))
+    return (f"<!DOCTYPE html><html><head><meta charset='utf-8'>"
+            f"<style>{css}</style></head><body>"
+            f"<div class='wrap'><div class='hook' style='font-size:{size}px'>{hook}</div>{sub}</div>"
+            f"<div class='swipe'>{swipe}</div></body></html>")
+
 SANS_BOLD = "/usr/share/fonts/opentype/inter/InterDisplay-Bold.otf"
 COL_W = 900          # Breite der .content-Spalte
 HEAD_MAX, HEAD_MIN = 132, 68
 SCRIPT_RATIO = 180 / 132   # .script haengt proportional an der Headline
 
 
-def _wrap(words, font, tracking):
+def _wrap(words, font, tracking, max_w=COL_W):
     """Greedy-Umbruch wie im Browser, inkl. letter-spacing."""
     lines, cur = [], []
     for w in words:
         trial = cur + [w]
         s = " ".join(trial)
-        if not cur or font.getlength(s) + tracking * len(s) <= COL_W:
+        if not cur or font.getlength(s) + tracking * len(s) <= max_w:
             cur = trial
         else:
             lines.append(cur)
@@ -162,6 +310,11 @@ BUDGET_COVER, BUDGET_STEP, BUDGET_CTA = 620, 470, 470
 def build(slide):
     n = slide["n"]
     if n == 1:
+        # Reihenfolge: Foto schlaegt Text-Hook schlaegt gebrandetes Cover.
+        if slide.get("photo"):
+            return build_photo_hook(slide)
+        if slide.get("hook"):
+            return build_native_hook(slide)
         size = fit_headline(slide["headline"], slide.get("script_word"), BUDGET_COVER)
         inner = (f"<div class='eyebrow'>{slide['eyebrow']}</div>"
                  f"<div class='headline' style='font-size:{size}px'>"

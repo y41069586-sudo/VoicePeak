@@ -6,7 +6,24 @@
       "eyebrow": "GLOWÉ GUIDE",
       "headline": "Calm that pimple overnight",
       "script_word": "calm",
-      "subline": "What to do in the next 60 seconds."
+      "subline": "What to do in the next 60 seconds.",
+      "hook": "how to get your skin to this [in 14 days]",
+      "swipe": "swipe →",
+      "photo": "assets/skin-after.png",
+      "arrow": {
+        "from": [
+          225,
+          845
+        ],
+        "via": [
+          455,
+          885
+        ],
+        "to": [
+          762,
+          566
+        ]
+      }
     },
     {
       "n": 2,
