@@ -7,21 +7,21 @@
       "headline": "Calm that pimple overnight",
       "script_word": "calm",
       "subline": "What to do in the next 60 seconds.",
-      "hook": "How to get your skin to this [in 14 days]",
+      "hook": "How to fix this [in 14 days]",
       "swipe": "swipe →",
-      "photo": "assets/skin-after.png",
+      "photo": "assets/skin-before.png",
       "arrow": {
         "from": [
-          225,
-          845
+          215,
+          1120
         ],
         "via": [
-          455,
-          885
+          430,
+          1130
         ],
         "to": [
-          762,
-          566
+          655,
+          905
         ]
       }
     },
