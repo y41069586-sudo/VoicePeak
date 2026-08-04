@@ -7,9 +7,23 @@
       "headline": "Calm acne without wrecking skin",
       "script_word": "calm",
       "subline": "Three steps, twice a day.",
-      "hook": "Your acne routine isn't working because you keep changing it",
-      "hook_sub": "3 steps. 8 weeks. that's it.",
-      "swipe": "swipe →"
+      "hook": "How to get your skin to this [in 14 days]",
+      "swipe": "swipe →",
+      "photo": "assets/skin-after-girl.png",
+      "arrow": {
+        "from": [
+          210,
+          880
+        ],
+        "via": [
+          450,
+          915
+        ],
+        "to": [
+          735,
+          600
+        ]
+      }
     },
     {
       "n": 2,
