@@ -475,7 +475,7 @@ struct DermiqScanHome: View {
 
                 if let shareURL {
                     ShareLink(item: shareURL,
-                              message: Text("I scanned my skin — see how yours compares. Copy this whole message and paste it in Glowé.")) {
+                              message: Text("I scanned my skin — see how yours compares 👇")) {
                         duelCTALabel(icon: "person.2.fill", title: "Challenge a friend")
                     }
                     .buttonStyle(PressableStyle())

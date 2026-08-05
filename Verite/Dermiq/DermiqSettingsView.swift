@@ -189,8 +189,16 @@ struct DermiqSettingsView: View {
                     .font(DQFont.micro)
                     .foregroundStyle(DQColor.textSecondary)
                     .fixedSize(horizontal: false, vertical: true)
+                // Short message on purpose: the link is an https://glowé.app
+                // URL, which chats DO make tappable — one tap opens the app
+                // (or the App Store if it isn't installed) and credits the
+                // scan. The old "copy this whole message and paste it" line
+                // was a leftover from the verite:// era, when the link wasn't
+                // tappable; it just cluttered every invite. Paste-to-redeem
+                // still works as a silent fallback for the rare chat that
+                // doesn't linkify.
                 ShareLink(item: ReferralStore.shared.inviteURL,
-                          message: Text("Scan your skin with me — copy this whole message and paste it in Glowé for a free scan.")) {
+                          message: Text("Scan your skin with me — here's a free scan 👇")) {
                     Label("Share invite link", systemImage: "square.and.arrow.up")
                         .font(.system(size: 14, weight: .semibold, design: .rounded))
                         .foregroundStyle(DQColor.accentBright)

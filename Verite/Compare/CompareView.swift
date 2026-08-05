@@ -86,7 +86,7 @@ struct CompareView: View {
                     name: myName, analysis: analysis,
                     photo: DermiqImageStore.load(scan.photoFilename))) {
                     ShareLink(item: url,
-                              message: Text("Here's my skin score — copy this whole message and paste it in Glowé to see how we compare.")) {
+                              message: Text("Here's my skin score — see how yours compares 👇")) {
                         Label("Send my card back", systemImage: "square.and.arrow.up")
                             .font(.system(size: 16, weight: .bold, design: .rounded))
                             .foregroundStyle(.white)
