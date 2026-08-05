@@ -306,15 +306,19 @@ struct OnboardingRampFlow: View {
 
     // MARK: Navigation
 
-    /// Selection is the advance — but never a jump: the tile gets a real beat
-    /// to settle (fill, dot, haptic) before the screen glides on. Re-tapping a
-    /// different answer within the beat re-arms cleanly via the step guard.
+    /// Selection is the advance — but never a jump: the tile gets a beat to
+    /// settle (fill, dot, haptic) before the screen glides on. 280ms is the
+    /// sweet spot: the fill spring is visibly underway when the push starts,
+    /// so tap → fill → glide reads as ONE continuous motion. The original
+    /// 700ms left ~400ms of dead stillness after the fill finished, which
+    /// read as a hang followed by a jerk. Re-tapping a different answer
+    /// within the beat re-arms cleanly via the step guard.
     private func recordAnswer(question: String, answer: String) {
         Haptics.fire(.selection)
         RampAnalytics.quizAnswer(question: question, answer: answer)
         let current = step
         Task {
-            try? await Task.sleep(for: .milliseconds(700))
+            try? await Task.sleep(for: .milliseconds(280))
             guard step == current else { return }
             advance()
         }
