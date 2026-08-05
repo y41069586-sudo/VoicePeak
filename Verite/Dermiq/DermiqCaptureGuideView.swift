@@ -63,10 +63,16 @@ struct DermiqCaptureGuideView: View {
                               symbol: "xmark.circle.fill", rows: donts)
 
                     // Privacy reassurance — the reason people hesitate to scan.
+                    // Say what actually happens: the analysis provider gets the
+                    // photo and drops it, but WE keep it on the device (that's
+                    // what history, the compare avatar and the reel are built
+                    // from). The old copy said "then discarded", which read as
+                    // "the photo is gone" and contradicted both the privacy
+                    // policy and the face-data answer given to App Review.
                     HStack(spacing: 8) {
                         Image(systemName: "lock.fill")
                             .font(.system(size: 12, weight: .semibold))
-                        Text("Your photo is sent securely to generate your scores, then discarded.")
+                        Text("Your photo is sent securely for analysis and isn’t kept by the analysis service. It stays on this device so you can see your progress — delete it any time in Settings.")
                             .font(DQFont.micro)
                             .fixedSize(horizontal: false, vertical: true)
                     }

@@ -176,6 +176,41 @@
         }
       }
     },
+    "%@ IN %d DAYS": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ IN %d DAYS"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ IN %d TAGEN"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ EN %d DÍAS"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ EN %d JOURS"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ IN %d GIORNI"
+          }
+        }
+      }
+    },
     "%@ IN 14 DAYS": {
       "extractionState": "manual",
       "localizations": {
@@ -662,6 +697,34 @@
           "stringUnit": {
             "state": "translated",
             "value": "%lld dal tuo primo scan"
+          }
+        }
+      }
+    },
+    "%lld to start · %@": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld zum Start · %@"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld para empezar · %@"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld pour commencer · %@"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld per iniziare · %@"
           }
         }
       }
@@ -2626,6 +2689,34 @@
         }
       }
     },
+    "AI-generated": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "KI-generiert"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Generado por IA"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Généré par IA"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Generato dall'IA"
+          }
+        }
+      }
+    },
     "AM": {
       "extractionState": "manual",
       "localizations": {
@@ -2727,6 +2818,34 @@
           "stringUnit": {
             "state": "translated",
             "value": "AM e PM — entrambi fatti."
+          }
+        }
+      }
+    },
+    "About this image": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Über dieses Bild"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Acerca de esta imagen"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "À propos de cette image"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Informazioni su questa immagine"
           }
         }
       }
@@ -4586,6 +4705,76 @@
         }
       }
     },
+    "Before you go —\nyour first year at a special price.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Before you go —\nyour first year at a special price."
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bevor du gehst —\ndein erstes Jahr zum Sonderpreis."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Antes de irte —\ntu primer año a precio especial."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Avant de partir —\nta première année à prix spécial."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Prima di uscire —\nil primo anno a un prezzo speciale."
+          }
+        }
+      }
+    },
+    "Before you go —\nyour first year, %d%% off.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Before you go —\nyour first year, %d%% off."
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bevor du gehst —\ndein erstes Jahr, %d %% günstiger."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Antes de irte —\ntu primer año, %d %% menos."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Avant de partir —\nta première année à -%d %%."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Prima di uscire —\nil primo anno, %d%% in meno."
+          }
+        }
+      }
+    },
     "Before you go —\nyour first year, 45% off.": {
       "extractionState": "manual",
       "localizations": {
@@ -5247,6 +5436,34 @@
           "stringUnit": {
             "state": "translated",
             "value": "Creato dalla tua scansione — non un modello."
+          }
+        }
+      }
+    },
+    "Buy 1 extra scan": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "1 Extra-Scan kaufen"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Comprar 1 escaneo extra"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Acheter 1 scan supplémentaire"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Acquista 1 scansione extra"
           }
         }
       }
@@ -6472,6 +6689,34 @@
           "stringUnit": {
             "state": "translated",
             "value": "Chiudi"
+          }
+        }
+      }
+    },
+    "Close Glowé completely (swipe it away in the app switcher), then open it again.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Schließe Glowé vollständig (im App-Umschalter nach oben wischen) und öffne es dann neu."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cierra Glowé por completo (deslízala hacia arriba en el selector de apps) y vuelve a abrirla."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ferme complètement Glowé (balaye-la vers le haut dans le sélecteur d'apps), puis rouvre-la."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Chiudi completamente Glowé (scorri verso l'alto nel selettore app) e poi riaprila."
           }
         }
       }
@@ -10186,6 +10431,34 @@
         }
       }
     },
+    "Full kit: %@": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Komplettes Set: %@"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kit completo: %@"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kit complet : %@"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kit completo: %@"
+          }
+        }
+      }
+    },
     "Full plan": {
       "extractionState": "manual",
       "localizations": {
@@ -10851,6 +11124,41 @@
         }
       }
     },
+    "Glow me up": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Glow me up"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Zeig meinen Glow"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Muéstrame mi glow"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Révèle mon glow"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mostrami il mio glow"
+          }
+        }
+      }
+    },
     "Glow-Up Reel": {
       "extractionState": "manual",
       "localizations": {
@@ -10917,6 +11225,41 @@
           "stringUnit": {
             "state": "translated",
             "value": "Glow-Up Reel, card da condividere e nuove scansioni"
+          }
+        }
+      }
+    },
+    "Glowé is a cosmetic and lifestyle product. Your score is an estimate, not a medical diagnosis. Tap to read the full disclaimer.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Glowé is a cosmetic and lifestyle product. Your score is an estimate, not a medical diagnosis. Tap to read the full disclaimer."
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Glowé ist ein kosmetisches Lifestyle-Produkt. Dein Score ist eine Schätzung, keine medizinische Diagnose. Tippe für den vollständigen Hinweis."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Glowé es un producto cosmético y de estilo de vida. Tu puntuación es una estimación, no un diagnóstico médico. Toca para leer el aviso completo."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Glowé est un produit cosmétique et lifestyle. Ton score est une estimation, pas un diagnostic médical. Touche pour lire l'avis complet."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Glowé è un prodotto cosmetico e lifestyle. Il tuo punteggio è una stima, non una diagnosi medica. Tocca per leggere l'avviso completo."
           }
         }
       }
@@ -11551,6 +11894,62 @@
         }
       }
     },
+    "Here's my skin score — see how yours compares 👇": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Das ist mein Haut-Score – schau, wie deiner abschneidet 👇"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Esta es mi puntuación de piel: mira cómo se compara la tuya 👇"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Voici mon score de peau – vois comment le tien se compare 👇"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ecco il mio punteggio pelle – guarda come si confronta il tuo 👇"
+          }
+        }
+      }
+    },
+    "Hidden": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ausgeblendet"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Oculto"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Masqué"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nascosto"
+          }
+        }
+      }
+    },
     "Hide details": {
       "extractionState": "manual",
       "localizations": {
@@ -12076,6 +12475,34 @@
         }
       }
     },
+    "I scanned my skin — see how yours compares 👇": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ich hab meine Haut gescannt – schau, wie deine abschneidet 👇"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Escaneé mi piel: mira cómo se compara la tuya 👇"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "J'ai scanné ma peau – vois comment la tienne se compare 👇"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ho scansionato la mia pelle – guarda come si confronta la tua 👇"
+          }
+        }
+      }
+    },
     "I scanned my skin — see how yours compares.": {
       "extractionState": "manual",
       "localizations": {
@@ -12352,6 +12779,34 @@
           "stringUnit": {
             "state": "translated",
             "value": "Se avevi un acquisto attivo, è tornato. Niente? Non c'era nulla da ripristinare."
+          }
+        }
+      }
+    },
+    "Illustration created with AI for demonstration purposes.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mit KI erstellte Illustration zu Demonstrationszwecken."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ilustración creada con IA con fines demostrativos."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Illustration créée par IA à des fins de démonstration."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Illustrazione creata con l'IA a scopo dimostrativo."
           }
         }
       }
@@ -16906,6 +17361,34 @@
         }
       }
     },
+    "Potential image is an AI-generated preview": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Das Potenzial-Bild ist eine KI-generierte Vorschau"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "La imagen de potencial es una vista previa generada por IA"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "L'image de potentiel est un aperçu généré par IA"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "L'immagine del potenziale è un'anteprima generata dall'IA"
+          }
+        }
+      }
+    },
     "Preps skin without stripping — protects every step after it.": {
       "extractionState": "manual",
       "localizations": {
@@ -18691,6 +19174,34 @@
         }
       }
     },
+    "Rough drugstore estimates — prices vary by shop and sale.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Grobe Drogerie-Schätzung – Preise variieren je nach Shop und Angebot."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Estimaciones aproximadas de droguería: los precios varían según la tienda y las ofertas."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Estimations indicatives en droguerie – les prix varient selon la boutique et les promos."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Stime approssimative da profumeria: i prezzi variano per negozio e offerte."
+          }
+        }
+      }
+    },
     "Rough patch": {
       "extractionState": "manual",
       "localizations": {
@@ -18827,6 +19338,41 @@
           "stringUnit": {
             "state": "translated",
             "value": "Completa i tuoi 14 giorni"
+          }
+        }
+      }
+    },
+    "SAVE %d%%": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "SAVE %d%%"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "SPARE %d %%"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "AHORRA %d %%"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ÉCONOMISE %d %%"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "RISPARMIA %d%%"
           }
         }
       }
@@ -19881,6 +20427,34 @@
         }
       }
     },
+    "Scan your skin and Glowé builds a 14-day\nroutine from your results.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Scanne deine Haut und Glowé erstellt eine\n14-Tage-Routine aus deinen Ergebnissen."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Escanea tu piel y Glowé crea una\nrutina de 14 días con tus resultados."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Scanne ta peau et Glowé crée une\nroutine de 14 jours à partir de tes résultats."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Scansiona la pelle e Glowé crea una\nroutine di 14 giorni dai tuoi risultati."
+          }
+        }
+      }
+    },
     "Scan your skin and Glowé builds a 14-day\nroutine from your weakest scores.": {
       "extractionState": "manual",
       "localizations": {
@@ -19947,6 +20521,34 @@
           "stringUnit": {
             "state": "translated",
             "value": "Scansiona la pelle con me — copia tutto questo messaggio e incollalo in Glowé per una scansione gratis."
+          }
+        }
+      }
+    },
+    "Scan your skin with me — here's a free scan 👇": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Scan deine Haut mit mir – hier ist ein gratis Scan 👇"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Escanea tu piel conmigo: aquí tienes un escaneo gratis 👇"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Scanne ta peau avec moi – voici un scan gratuit 👇"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Scansiona la pelle con me – ecco una scansione gratis 👇"
           }
         }
       }
@@ -21102,6 +21704,62 @@
           "stringUnit": {
             "state": "translated",
             "value": "Mostra dettagli"
+          }
+        }
+      }
+    },
+    "Shown": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Angezeigt"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mostrado"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Affiché"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mostrato"
+          }
+        }
+      }
+    },
+    "Shows how this image was created": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Zeigt, wie dieses Bild erstellt wurde"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Muestra cómo se creó esta imagen"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Montre comment cette image a été créée"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mostra come è stata creata questa immagine"
           }
         }
       }
@@ -22506,6 +23164,34 @@
         }
       }
     },
+    "Starter kit: %@": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Starter-Set: %@"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kit inicial: %@"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kit de départ : %@"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kit iniziale: %@"
+          }
+        }
+      }
+    },
     "Starts now, more with time": {
       "extractionState": "manual",
       "localizations": {
@@ -23657,6 +24343,41 @@
           "stringUnit": {
             "state": "translated",
             "value": "Questa è la tua leva più grande."
+          }
+        }
+      }
+    },
+    "The %d-day glow-up.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The %d-day glow-up."
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Das %d-Tage-Glow-up."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "El glow-up de %d días."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Le glow-up en %d jours."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Il glow-up in %d giorni."
           }
         }
       }
@@ -27511,6 +28232,41 @@
         }
       }
     },
+    "Your glow potential": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Your glow potential"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dein Glow-Potenzial"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tu potencial de glow"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ton potentiel glow"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Il tuo potenziale glow"
+          }
+        }
+      }
+    },
     "Your glow,\nmeasured.": {
       "extractionState": "manual",
       "localizations": {
@@ -27651,37 +28407,37 @@
         }
       }
     },
-    "Your photo is sent securely to generate your scores, then discarded.": {
+    "Your photo is sent securely for analysis and isn’t kept by the analysis service. It stays on this device so you can see your progress — delete it any time in Settings.": {
       "extractionState": "manual",
       "localizations": {
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Dein Foto wird sicher übertragen, um deine Werte zu erstellen, und danach verworfen."
-          }
-        },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Your photo is sent securely to generate your scores, then discarded."
+            "value": "Your photo is sent securely for analysis and isn’t kept by the analysis service. It stays on this device so you can see your progress — delete it any time in Settings."
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dein Foto wird sicher zur Analyse übertragen und vom Analysedienst nicht gespeichert. Es bleibt auf diesem Gerät, damit du deinen Fortschritt siehst — in den Einstellungen jederzeit löschbar."
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Tu foto se envía de forma segura para generar tus resultados y luego se descarta."
+            "value": "Tu foto se envía de forma segura para el análisis y el servicio de análisis no la conserva. Permanece en este dispositivo para que veas tu progreso: puedes borrarla cuando quieras en Ajustes."
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Ta photo est envoyée en toute sécurité pour générer tes scores, puis supprimée."
+            "value": "Ta photo est envoyée de façon sécurisée pour l’analyse et n’est pas conservée par le service d’analyse. Elle reste sur cet appareil pour que tu suives tes progrès — supprime-la quand tu veux dans Réglages."
           }
         },
         "it": {
           "stringUnit": {
             "state": "translated",
-            "value": "La tua foto viene inviata in modo sicuro per generare i tuoi punteggi, poi viene eliminata."
+            "value": "La tua foto viene inviata in modo sicuro per l’analisi e non viene conservata dal servizio di analisi. Resta su questo dispositivo per farti vedere i progressi: puoi eliminarla quando vuoi nelle Impostazioni."
           }
         }
       }
@@ -42629,762 +43385,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "👀 Rivela i tuoi risultati"
-          }
-        }
-      }
-    },
-    "%@ IN %d DAYS": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "%@ IN %d DAYS"
-          }
-        },
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "%@ IN %d TAGEN"
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "%@ EN %d DÍAS"
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "%@ EN %d JOURS"
-          }
-        },
-        "it": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "%@ IN %d GIORNI"
-          }
-        }
-      }
-    },
-    "The %d-day glow-up.": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "The %d-day glow-up."
-          }
-        },
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Das %d-Tage-Glow-up."
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "El glow-up de %d días."
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Le glow-up en %d jours."
-          }
-        },
-        "it": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Il glow-up in %d giorni."
-          }
-        }
-      }
-    },
-    "SAVE %d%%": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "SAVE %d%%"
-          }
-        },
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "SPARE %d %%"
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "AHORRA %d %%"
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "ÉCONOMISE %d %%"
-          }
-        },
-        "it": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "RISPARMIA %d%%"
-          }
-        }
-      }
-    },
-    "Before you go —\nyour first year, %d%% off.": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Before you go —\nyour first year, %d%% off."
-          }
-        },
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Bevor du gehst —\ndein erstes Jahr, %d %% günstiger."
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Antes de irte —\ntu primer año, %d %% menos."
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Avant de partir —\nta première année à -%d %%."
-          }
-        },
-        "it": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Prima di uscire —\nil primo anno, %d%% in meno."
-          }
-        }
-      }
-    },
-    "Before you go —\nyour first year at a special price.": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Before you go —\nyour first year at a special price."
-          }
-        },
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Bevor du gehst —\ndein erstes Jahr zum Sonderpreis."
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Antes de irte —\ntu primer año a precio especial."
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Avant de partir —\nta première année à prix spécial."
-          }
-        },
-        "it": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Prima di uscire —\nil primo anno a un prezzo speciale."
-          }
-        }
-      }
-    },
-    "Glowé is a cosmetic and lifestyle product. Your score is an estimate, not a medical diagnosis. Tap to read the full disclaimer.": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Glowé is a cosmetic and lifestyle product. Your score is an estimate, not a medical diagnosis. Tap to read the full disclaimer."
-          }
-        },
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Glowé ist ein kosmetisches Lifestyle-Produkt. Dein Score ist eine Schätzung, keine medizinische Diagnose. Tippe für den vollständigen Hinweis."
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Glowé es un producto cosmético y de estilo de vida. Tu puntuación es una estimación, no un diagnóstico médico. Toca para leer el aviso completo."
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Glowé est un produit cosmétique et lifestyle. Ton score est une estimation, pas un diagnostic médical. Touche pour lire l'avis complet."
-          }
-        },
-        "it": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Glowé è un prodotto cosmetico e lifestyle. Il tuo punteggio è una stima, non una diagnosi medica. Tocca per leggere l'avviso completo."
-          }
-        }
-      }
-    },
-    "Glow me up": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Glow me up"
-          }
-        },
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Zeig meinen Glow"
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Muéstrame mi glow"
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Révèle mon glow"
-          }
-        },
-        "it": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Mostrami il mio glow"
-          }
-        }
-      }
-    },
-    "Your glow potential": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Your glow potential"
-          }
-        },
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Dein Glow-Potenzial"
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Tu potencial de glow"
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Ton potentiel glow"
-          }
-        },
-        "it": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Il tuo potenziale glow"
-          }
-        }
-      }
-    },
-    "Rough drugstore estimates — prices vary by shop and sale.": {
-      "localizations": {
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Grobe Drogerie-Schätzung – Preise variieren je nach Shop und Angebot."
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Estimaciones aproximadas de droguería: los precios varían según la tienda y las ofertas."
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Estimations indicatives en droguerie – les prix varient selon la boutique et les promos."
-          }
-        },
-        "it": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Stime approssimative da profumeria: i prezzi variano per negozio e offerte."
-          }
-        }
-      }
-    },
-    "Starter kit: %@": {
-      "localizations": {
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Starter-Set: %@"
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Kit inicial: %@"
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Kit de départ : %@"
-          }
-        },
-        "it": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Kit iniziale: %@"
-          }
-        }
-      }
-    },
-    "Full kit: %@": {
-      "localizations": {
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Komplettes Set: %@"
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Kit completo: %@"
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Kit complet : %@"
-          }
-        },
-        "it": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Kit completo: %@"
-          }
-        }
-      }
-    },
-    "%lld to start · %@": {
-      "localizations": {
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "%lld zum Start · %@"
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "%lld para empezar · %@"
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "%lld pour commencer · %@"
-          }
-        },
-        "it": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "%lld per iniziare · %@"
-          }
-        }
-      }
-    },
-    "AI-generated": {
-      "localizations": {
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "KI-generiert"
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Generado por IA"
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Généré par IA"
-          }
-        },
-        "it": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Generato dall'IA"
-          }
-        }
-      }
-    },
-    "Potential image is an AI-generated preview": {
-      "localizations": {
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Das Potenzial-Bild ist eine KI-generierte Vorschau"
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "La imagen de potencial es una vista previa generada por IA"
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "L'image de potentiel est un aperçu généré par IA"
-          }
-        },
-        "it": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "L'immagine del potenziale è un'anteprima generata dall'IA"
-          }
-        }
-      }
-    },
-    "Scan your skin with me — here's a free scan 👇": {
-      "localizations": {
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Scan deine Haut mit mir – hier ist ein gratis Scan 👇"
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Escanea tu piel conmigo: aquí tienes un escaneo gratis 👇"
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Scanne ta peau avec moi – voici un scan gratuit 👇"
-          }
-        },
-        "it": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Scansiona la pelle con me – ecco una scansione gratis 👇"
-          }
-        }
-      }
-    },
-    "Here's my skin score — see how yours compares 👇": {
-      "localizations": {
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Das ist mein Haut-Score – schau, wie deiner abschneidet 👇"
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Esta es mi puntuación de piel: mira cómo se compara la tuya 👇"
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Voici mon score de peau – vois comment le tien se compare 👇"
-          }
-        },
-        "it": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Ecco il mio punteggio pelle – guarda come si confronta il tuo 👇"
-          }
-        }
-      }
-    },
-    "I scanned my skin — see how yours compares 👇": {
-      "localizations": {
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Ich hab meine Haut gescannt – schau, wie deine abschneidet 👇"
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Escaneé mi piel: mira cómo se compara la tuya 👇"
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "J'ai scanné ma peau – vois comment la tienne se compare 👇"
-          }
-        },
-        "it": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Ho scansionato la mia pelle – guarda come si confronta la tua 👇"
-          }
-        }
-      }
-    },
-    "Scan your skin and Glowé builds a 14-day\nroutine from your results.": {
-      "localizations": {
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Scanne deine Haut und Glowé erstellt eine\n14-Tage-Routine aus deinen Ergebnissen."
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Escanea tu piel y Glowé crea una\nrutina de 14 días con tus resultados."
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Scanne ta peau et Glowé crée une\nroutine de 14 jours à partir de tes résultats."
-          }
-        },
-        "it": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Scansiona la pelle e Glowé crea una\nroutine di 14 giorni dai tuoi risultati."
-          }
-        }
-      }
-    },
-    "Close Glowé completely (swipe it away in the app switcher), then open it again.": {
-      "localizations": {
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Schließe Glowé vollständig (im App-Umschalter nach oben wischen) und öffne es dann neu."
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Cierra Glowé por completo (deslízala hacia arriba en el selector de apps) y vuelve a abrirla."
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Ferme complètement Glowé (balaye-la vers le haut dans le sélecteur d'apps), puis rouvre-la."
-          }
-        },
-        "it": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Chiudi completamente Glowé (scorri verso l'alto nel selettore app) e poi riaprila."
-          }
-        }
-      }
-    },
-    "Illustration created with AI for demonstration purposes.": {
-      "localizations": {
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Mit KI erstellte Illustration zu Demonstrationszwecken."
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Ilustración creada con IA con fines demostrativos."
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Illustration créée par IA à des fins de démonstration."
-          }
-        },
-        "it": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Illustrazione creata con l'IA a scopo dimostrativo."
-          }
-        }
-      }
-    },
-    "About this image": {
-      "localizations": {
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Über dieses Bild"
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Acerca de esta imagen"
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "À propos de cette image"
-          }
-        },
-        "it": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Informazioni su questa immagine"
-          }
-        }
-      }
-    },
-    "Shown": {
-      "localizations": {
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Angezeigt"
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Mostrado"
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Affiché"
-          }
-        },
-        "it": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Mostrato"
-          }
-        }
-      }
-    },
-    "Hidden": {
-      "localizations": {
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Ausgeblendet"
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Oculto"
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Masqué"
-          }
-        },
-        "it": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Nascosto"
-          }
-        }
-      }
-    },
-    "Shows how this image was created": {
-      "localizations": {
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Zeigt, wie dieses Bild erstellt wurde"
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Muestra cómo se creó esta imagen"
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Montre comment cette image a été créée"
-          }
-        },
-        "it": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Mostra come è stata creata questa immagine"
-          }
-        }
-      }
-    },
-    "Buy 1 extra scan": {
-      "localizations": {
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "1 Extra-Scan kaufen"
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Comprar 1 escaneo extra"
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Acheter 1 scan supplémentaire"
-          }
-        },
-        "it": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Acquista 1 scansione extra"
           }
         }
       }
