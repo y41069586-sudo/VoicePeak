@@ -106,7 +106,11 @@ struct DermiqSettingsView: View {
             // change shows on the next launch. Saying so beats a picker that
             // looks broken because tapping it changes nothing on screen.
             if AppLanguage.needsRelaunch(for: languageOverride) {
-                Text("Reopen Glowé to apply the new language.")
+                // "Reopen" alone reads as "switch away and back", which does
+                // NOT restart the process — iOS keeps the app alive in the
+                // background, so nothing changes and the hint looks broken.
+                // Spell out the force-quit.
+                Text("Close Glowé completely (swipe it away in the app switcher), then open it again.")
                     .font(DQFont.micro)
                     .foregroundStyle(DQColor.accentBright)
                     .frame(maxWidth: .infinity, alignment: .leading)

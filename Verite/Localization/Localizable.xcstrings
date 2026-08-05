@@ -42913,40 +42913,6 @@
         }
       }
     },
-    "Reopen Glowé to apply the new language.": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Reopen Glowé to apply the new language."
-          }
-        },
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Öffne Glowé neu, damit die neue Sprache greift."
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Vuelve a abrir Glowé para aplicar el nuevo idioma."
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Rouvre Glowé pour appliquer la nouvelle langue."
-          }
-        },
-        "it": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Riapri Glowé per applicare la nuova lingua."
-          }
-        }
-      }
-    },
     "Rough drugstore estimates — prices vary by shop and sale.": {
       "localizations": {
         "de": {
@@ -43223,6 +43189,34 @@
           "stringUnit": {
             "state": "translated",
             "value": "Scansiona la pelle e Glowé crea una\nroutine di 14 giorni dai tuoi risultati."
+          }
+        }
+      }
+    },
+    "Close Glowé completely (swipe it away in the app switcher), then open it again.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Schließe Glowé vollständig (im App-Umschalter nach oben wischen) und öffne es dann neu."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cierra Glowé por completo (deslízala hacia arriba en el selector de apps) y vuelve a abrirla."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ferme complètement Glowé (balaye-la vers le haut dans le sélecteur d'apps), puis rouvre-la."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Chiudi completamente Glowé (scorri verso l'alto nel selettore app) e poi riaprila."
           }
         }
       }
