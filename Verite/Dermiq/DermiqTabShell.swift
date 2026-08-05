@@ -634,6 +634,12 @@ struct DermiqScanHome: View {
             // deep fake of a real person or a claimed result, so the AI Act's
             // always-visible disclosure duty doesn't attach to it. The note is
             // there for transparency, not because a statute demands it.
+            //
+            // Only when the actual AI illustration is on screen: heroPhoto
+            // falls back to a hand-drawn gradient when the ScanHero asset is
+            // missing, and "created with AI" would be a false statement about
+            // that drawn placeholder.
+            if RampPhoto.load("ScanHero") != nil {
             VStack {
                 HStack(alignment: .top, spacing: 8) {
                     Button {
@@ -645,8 +651,14 @@ struct DermiqScanHome: View {
                             .foregroundStyle(.black.opacity(0.65))
                             .frame(width: 24, height: 24)
                             .background(.white.opacity(0.85), in: Circle())
+                            // 44pt hit target around the 24pt dot — the visible
+                            // circle stays small, the tap area meets the HIG min.
+                            .frame(width: 44, height: 44)
+                            .contentShape(Rectangle())
                     }
                     .accessibilityLabel(Text("About this image"))
+                    .accessibilityValue(Text(showHeroInfo ? "Shown" : "Hidden"))
+                    .accessibilityHint(Text("Shows how this image was created"))
                     if showHeroInfo {
                         Text("Illustration created with AI for demonstration purposes.")
                             .font(DQFont.micro)
@@ -661,6 +673,7 @@ struct DermiqScanHome: View {
                 }
                 .padding(12)
                 Spacer()
+            }
             }
         }
         .frame(maxWidth: .infinity)
