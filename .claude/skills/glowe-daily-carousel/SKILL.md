@@ -24,9 +24,9 @@ A compressed backup lives in `assets/reference.jpg` — if the URL ever dies, re
 
 **Variation — rotate by `day`, lists have coprime-ish lengths so combinations decorrelate:**
 
-- person: even day → "young woman in her early twenties", odd → "young man in his early twenties"
+- person: odd day → "young man in his early twenties"; even day → "young woman in her early twenties wearing a headscarf (hijab) that covers her hair, hairline and neck completely, draped in the usual way and tucked under the chin"
 - skin tone `[day % 5]`: fair · light olive · medium tan · warm brown · deep brown
-- hair `[day % 6]`, woman: dark hair down past the shoulder · shoulder-length wavy brown hair · curly dark hair · straight black hair tucked behind the ear · a loose low bun · braids past the shoulder — man: short dark hair · short textured black hair · curly top fade · buzz cut · medium wavy brown hair · short locs
+- hair `[day % 6]` — **men only**: short dark hair · short textured black hair · curly top fade · buzz cut · medium wavy brown hair · short locs. Women wear the headscarf, so no hair shows; rotate the scarf instead by `day % 6`: plain black · soft beige · dusty rose · deep navy · warm grey · muted olive. Plain matte fabric — no pattern, no shine, no sequins. The scarf frames the shot from behind and must never crop out the cheek, jawline or ear: the extreme close-up framing stays exactly as the reference.
 - t-shirt `[day % 4]`: black · white · heather grey · navy
 - background `[day % 7]`: plain sunlit pale wall outdoors · soft bathroom light, tiles out of focus · bedroom window daylight, curtains blurred · warm evening indoor light, plain wall · overcast daylight on a balcony, sky blurred · kitchen far out of focus · stairwell with soft daylight
 
@@ -45,7 +45,9 @@ A compressed backup lives in `assets/reference.jpg` — if the URL ever dies, re
 
 Download the returned `url`, save it as `<workdir>/assets/hook.png`.
 
-**Photo QA — look at the image before using it.** It must have real pores and skin texture (waxy, airbrushed skin is the one tell that kills the hook), clearly visible acne on the cheek (not cleaned up by the model), the ear and one eye at the frame edge, and a plain tee. If it fails, regenerate once with `temperature: 0.55`; if it fails again, fall back to the reference image itself rather than shipping a fake-looking face.
+**Photo QA — look at the image before using it.** It must have real pores and skin texture (waxy, airbrushed skin is the one tell that kills the hook), clearly visible acne on the cheek (not cleaned up by the model), the ear and one eye at the frame edge, and a plain tee. On even days also confirm the headscarf really covers all the hair — no strands showing. If it fails, regenerate once with `temperature: 0.55`; if it fails again, fall back to the reference image itself rather than shipping a fake-looking face.
+
+**AI tag.** The hook face is generated, so the image carries the disclosure itself: render a small `AI-generated` pill into slide 1's bottom-right corner — dark translucent background, white text, ~120px clear of the bottom edge so TikTok's own UI never covers it. The platform toggle complements this, it does not replace it (EU AI Act Art. 50). The one exception: if the run fell back to the unmodified reference photograph, do NOT tag it — labelling a real photo as AI-generated is itself false. Say in the report which one shipped.
 
 ## 3. Copy (fixed rules — never deviate)
 
@@ -79,6 +81,12 @@ Write the carousel as JSON. Language: **English**, direct "you/your skin". Short
 Banned: stiff literal translations ("entferne deine Akneporen"-style phrasing), clinical vocabulary, all-caps, emojis, healing promises. When in doubt, say it the way a 19-year-old would caption their own selfie.
 
 Bullets name product type, timing, frequency — never brands. The `pill` keeps the keyword in straight quotes (`"GLOW"`) — the renderer underlines exactly the quoted word. `[brackets]` in `app` render lavender.
+
+**Brand blackout while the app is in App Store review.** The brand name appears nowhere — not on a slide, not in the caption, not in alt text, not in the Buffer title. Two places hide it:
+- the slide-5 `app` line: write `[This app]`, not `[Glowé]`;
+- **the wordmark is hard-coded in `render.py`**, not driven by the JSON. Delete both emitters in your working copy before rendering — `<div class='logo'>Glow&eacute;</div>` in the slide-1 builder and `<div class='mark'>Glow&eacute;</div>` in the marker-slide builder. Verify afterwards: on slides 2–5 the crop x 820–1060, y 1290–1420 must stay light (min luminance > 200).
+
+"Comment GLOW" stays — a generic word, not the brand. Lift this only once the app is live.
 
 ## 4. Render
 
