@@ -61,6 +61,22 @@ enum AppLanguage {
         }
     }
 
+    /// Push a just-picked override into `AppleLanguages` IMMEDIATELY.
+    ///
+    /// Called by the Settings picker the moment the selection changes. Without
+    /// this, only `apply()` on the NEXT launch wrote the key — but Foundation
+    /// reads `AppleLanguages` before `apply()` runs, so that next launch still
+    /// showed the old language and only a second relaunch worked (with the
+    /// "reopen" hint sitting there the whole time, apparently lying).
+    static func stage(_ code: String) {
+        let defaults = UserDefaults.standard
+        if code.isEmpty {
+            defaults.removeObject(forKey: appleLanguagesKey)
+        } else {
+            defaults.set([code], forKey: appleLanguagesKey)
+        }
+    }
+
     /// True when `code` is not the language this process is running in, so the
     /// user has to reopen the app for the change to show.
     static func needsRelaunch(for code: String) -> Bool {

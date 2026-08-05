@@ -94,6 +94,13 @@ struct DermiqSettingsView: View {
                     }
                 }
                 .tint(DQColor.accentBright)
+                // Stage AppleLanguages NOW, not at next launch — Foundation
+                // reads it before our launch code runs, so writing it lazily
+                // meant the first reopen still showed the old language and
+                // only the second one applied the change.
+                .onChange(of: languageOverride) { _, code in
+                    AppLanguage.stage(code)
+                }
             }
             // The language is read once as the app starts (AppleLanguages), so a
             // change shows on the next launch. Saying so beats a picker that
