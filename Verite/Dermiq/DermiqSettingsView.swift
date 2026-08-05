@@ -261,8 +261,17 @@ struct DermiqSettingsView: View {
                 }
             }
             divider
+            // Deliberately NOT requestReview(): that is a request the system
+            // may silently ignore (hard cap of 3 prompts per year, and in
+            // TestFlight it never shows at all) — which turns an explicit
+            // button into a dead one. Apple's documented pattern for a
+            // user-initiated "rate us" action is the App Store write-review
+            // deep link, which always opens.
             settingsButton(icon: "star", text: "Rate Glowé") {
-                requestReview()
+                if let url = URL(string:
+                    "https://apps.apple.com/app/id6787454842?action=write-review") {
+                    UIApplication.shared.open(url)
+                }
             }
         }
     }
