@@ -90,20 +90,23 @@ enum NotificationManager {
         scheduleRoutineReminders(hour: 21, minute: 0)
     }
 
-    /// Schedule the AM nudge at a fixed morning hour and the PM nudge at the
-    /// user-chosen evening time (from onboarding / Settings time picker).
+    /// Schedule the ONE daily reminder the user picked. The Settings picker is
+    /// a single choice — "Morning · 8:00" or an evening time — so exactly one
+    /// notification is armed: the 8:00 slot gets the AM copy, anything else
+    /// the PM copy at the chosen time. (This used to arm the 8:00 nudge
+    /// unconditionally on top of the evening one, so picking "Evening" fired
+    /// twice a day — a promise the picker never made.)
     static func scheduleRoutineReminders(hour: Int, minute: Int) {
         cancelRoutineReminders()
-        add(id: "routine.am", hour: 8, minute: 0,
-            title: String(localized: "notif.routine.am.title"),
-            body: String(localized: "notif.routine.am.body"), route: "routine")
-        // Skip the PM reminder when it would land on the same 8:00 as the AM
-        // one (e.g. the user chose a "morning" slot) — never fire two identical
-        // daily notifications.
-        guard !(hour == 8 && minute == 0) else { return }
-        add(id: "routine.pm", hour: hour, minute: minute,
-            title: String(localized: "notif.routine.pm.title"),
-            body: String(localized: "notif.routine.pm.body"), route: "routine")
+        if hour == 8 && minute == 0 {
+            add(id: "routine.am", hour: 8, minute: 0,
+                title: String(localized: "notif.routine.am.title"),
+                body: String(localized: "notif.routine.am.body"), route: "routine")
+        } else {
+            add(id: "routine.pm", hour: hour, minute: minute,
+                title: String(localized: "notif.routine.pm.title"),
+                body: String(localized: "notif.routine.pm.body"), route: "routine")
+        }
     }
 
     static func cancelRoutineReminders() {
