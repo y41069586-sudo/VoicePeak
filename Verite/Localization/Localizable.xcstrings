@@ -43360,6 +43360,34 @@
           }
         }
       }
+    },
+    "Buy 1 extra scan": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "1 Extra-Scan kaufen"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Comprar 1 escaneo extra"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Acheter 1 scan supplémentaire"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Acquista 1 scansione extra"
+          }
+        }
+      }
     }
   },
   "version": "1.0"
