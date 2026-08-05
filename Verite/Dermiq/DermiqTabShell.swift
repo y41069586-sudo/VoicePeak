@@ -163,7 +163,18 @@ struct DermiqTabShell: View {
                 }
             }
             if ReferralStore.shared.handle(url) { return }
-            _ = CompareInbox.shared.handle(url)
+            // A duel link almost always arrives on a COLD launch — the friend
+            // taps it with Glowé not running. Stashing `pending` synchronously
+            // here flips the face-off sheet's binding during SwiftUI's very
+            // first render pass, before there's a presented shell to host it,
+            // so the sheet is silently dropped: the app opens and nothing
+            // happens. Hand it off one runloop later, once the shell is on
+            // screen, so the sheet actually presents. Warm launches just see a
+            // ~0.4s beat before the duel appears.
+            Task { @MainActor in
+                try? await Task.sleep(for: .milliseconds(400))
+                _ = CompareInbox.shared.handle(url)
+            }
         }
         .alert("Purchase unavailable", isPresented: $extraScanFailed) {
             Button("OK", role: .cancel) {}
