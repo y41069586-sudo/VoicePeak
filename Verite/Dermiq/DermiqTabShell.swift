@@ -283,6 +283,9 @@ struct DermiqScanHome: View {
 
     @Query private var profiles: [UserProfile]
 
+    /// Hero-image AI note, toggled by the small info button on the hero.
+    @State private var showHeroInfo = false
+
     // Text, not String: a composed "\(base), \(name)" would never match a
     // catalog key, so the greeting would render in English on every device.
     private var greeting: Text {
@@ -625,6 +628,40 @@ struct DermiqScanHome: View {
             }
             .padding(.horizontal, 20)
             .padding(.bottom, 22)
+
+            // Small info button, top-left: taps open the AI-illustration note.
+            // Info-on-demand is enough here — the hero is decorative UI, not a
+            // deep fake of a real person or a claimed result, so the AI Act's
+            // always-visible disclosure duty doesn't attach to it. The note is
+            // there for transparency, not because a statute demands it.
+            VStack {
+                HStack(alignment: .top, spacing: 8) {
+                    Button {
+                        Haptics.fire(.selection)
+                        withAnimation(VMotion.gentle) { showHeroInfo.toggle() }
+                    } label: {
+                        Image(systemName: "info")
+                            .font(.system(size: 11, weight: .bold))
+                            .foregroundStyle(.black.opacity(0.65))
+                            .frame(width: 24, height: 24)
+                            .background(.white.opacity(0.85), in: Circle())
+                    }
+                    .accessibilityLabel(Text("About this image"))
+                    if showHeroInfo {
+                        Text("Illustration created with AI for demonstration purposes.")
+                            .font(DQFont.micro)
+                            .foregroundStyle(.white)
+                            .padding(.horizontal, 10)
+                            .padding(.vertical, 6)
+                            .background(.black.opacity(0.55),
+                                        in: RoundedRectangle(cornerRadius: 10, style: .continuous))
+                            .transition(.opacity.combined(with: .move(edge: .leading)))
+                    }
+                    Spacer()
+                }
+                .padding(12)
+                Spacer()
+            }
         }
         .frame(maxWidth: .infinity)
         .frame(height: 460)

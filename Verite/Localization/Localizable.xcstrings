@@ -43220,6 +43220,62 @@
           }
         }
       }
+    },
+    "Illustration created with AI for demonstration purposes.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mit KI erstellte Illustration zu Demonstrationszwecken."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ilustración creada con IA con fines demostrativos."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Illustration créée par IA à des fins de démonstration."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Illustrazione creata con l'IA a scopo dimostrativo."
+          }
+        }
+      }
+    },
+    "About this image": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Über dieses Bild"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Acerca de esta imagen"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "À propos de cette image"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Informazioni su questa immagine"
+          }
+        }
+      }
     }
   },
   "version": "1.0"
