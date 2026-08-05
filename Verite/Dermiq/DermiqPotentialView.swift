@@ -48,16 +48,6 @@ struct DermiqPotentialView: View {
                         .font(DQFont.body)
                         .foregroundStyle(DQColor.textSecondary)
                         .multilineTextAlignment(.center)
-                    // Names the potential image as AI-generated in-app too, so
-                    // the label isn't only on the exported card.
-                    HStack(spacing: 5) {
-                        Image(systemName: "sparkles")
-                            .font(.system(size: 10, weight: .semibold))
-                        Text("Potential image is an AI-generated preview")
-                    }
-                    .font(DQFont.micro)
-                    .foregroundStyle(DQColor.textSecondary)
-                    .padding(.top, 2)
                 }
                 .padding(.horizontal, 44)
             }
@@ -180,6 +170,27 @@ struct DQBeforeAfterSlider: View {
 
     private func labels(size: CGSize) -> some View {
         VStack {
+            // AI-disclosure badge, pinned to the potential side (EU AI Act
+            // Art. 50 transparency). A badge on the image itself, not a text
+            // line above the slider — it reads as part of the photo, like on
+            // the exported share card, and can't be missed.
+            if after != nil {
+                HStack {
+                    Spacer()
+                    HStack(spacing: 4) {
+                        Image(systemName: "sparkles")
+                            .font(.system(size: 9, weight: .semibold))
+                        Text("AI-generated")
+                            .font(DQFont.mono(9, weight: .bold))
+                            .tracking(1)
+                    }
+                    .foregroundStyle(.white)
+                    .padding(.horizontal, 9)
+                    .padding(.vertical, 5)
+                    .background(.black.opacity(0.55), in: Capsule())
+                }
+                .padding(12)
+            }
             Spacer()
             HStack {
                 tag("NOW")
