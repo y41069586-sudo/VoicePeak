@@ -42946,6 +42946,118 @@
           }
         }
       }
+    },
+    "Starter kit: ~%lld €": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Starter-Set: ~%lld €"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kit inicial: ~%lld €"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kit de départ : ~%lld €"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kit iniziale: ~%lld €"
+          }
+        }
+      }
+    },
+    "Full kit: ~%lld €": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Komplettes Set: ~%lld €"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kit completo: ~%lld €"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kit complet : ~%lld €"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kit completo: ~%lld €"
+          }
+        }
+      }
+    },
+    "Rough drugstore estimates — prices vary by shop and sale.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Grobe Drogerie-Schätzung – Preise variieren je nach Shop und Angebot."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Estimaciones aproximadas de droguería: los precios varían según la tienda y las ofertas."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Estimations indicatives en droguerie – les prix varient selon la boutique et les promos."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Stime approssimative da profumeria: i prezzi variano per negozio e offerte."
+          }
+        }
+      }
+    },
+    "%lld to start · ~%lld €": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld zum Start · ~%lld €"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld para empezar · ~%lld €"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld pour commencer · ~%lld €"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld per iniziare · ~%lld €"
+          }
+        }
+      }
     }
   },
   "version": "1.0"

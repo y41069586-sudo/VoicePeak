@@ -65,8 +65,9 @@ struct KitProduct: Identifiable {
     let active: String
     let usage: String         // "AM + PM", "PM · 2×/week", …
     let howTo: String         // one-line application instruction
-    let cheapest: String?     // first example (the $ tier)
-    let tiers: String         // "$ – $$$"
+    let cheapest: String?     // budget pick, e.g. "CeraVe … · ~12 €"
+    let cheapestEuro: Int?    // that pick's price in euros, for the kit total
+    let tiers: String         // real span "~7–30 €", or "$ – $$$" if unpriced
     /// The starter four: cleanser, moisturizer, SPF + the single highest-
     /// priority treatment. Everything else is "add when you're ready".
     let isEssential: Bool
@@ -107,7 +108,9 @@ extension RoutinePlan {
             else if entry.blocks.contains(.am) { time = String(localized: "AM") }
             else { time = String(localized: "PM") }
             let usage = freq.map { "\(time) · \($0)" } ?? time
-            let priceTier: String = {
+            // Real euro span across this step's examples ("~7–30 €"); only if
+            // none are priced do we fall back to the abstract "$" tier.
+            let priceTier = RoutinePrices.range(for: step.examples) ?? {
                 let count = step.examples.count
                 if count >= 3 { return "$ – $$$" }
                 if count == 2 { return "$ – $$" }
@@ -128,7 +131,8 @@ extension RoutinePlan {
                 active: step.active,
                 usage: usage,
                 howTo: RoutineHowTo.instruction(for: step),
-                cheapest: step.examples.first,
+                cheapest: step.examples.first.map(RoutinePrices.pricedLabel(for:)),
+                cheapestEuro: step.examples.first.flatMap(RoutinePrices.price(for:)),
                 tiers: priceTier,
                 isEssential: isEssential
             )

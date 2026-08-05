@@ -592,6 +592,10 @@ struct DermiqRoutineTab: View {
         let essentials = kit.filter(\.isEssential)
         let extras = kit.filter { !$0.isEssential }
         let visible = kitEssentialsOnly ? essentials : kit
+        // Rough kit totals from the budget picks. compactMap so an unpriced
+        // product just drops out of the sum instead of zeroing it.
+        let startEuro = essentials.compactMap(\.cheapestEuro).reduce(0, +)
+        let fullEuro = kit.compactMap(\.cheapestEuro).reduce(0, +)
         DisclosureGroup {
             // Airy layout: every product is its own breathing mini-card —
             // name row, usage chips, a HOW-TO line, and the budget pick —
@@ -666,6 +670,27 @@ struct DermiqRoutineTab: View {
                 .fixedSize(horizontal: false, vertical: true)
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .padding(.top, 2)
+
+                // Kit total on the budget picks + an honest "these are
+                // estimates" note, since real prices move with shop and sale.
+                if fullEuro > 0 {
+                    HStack(spacing: 6) {
+                        Image(systemName: "eurosign.circle.fill")
+                            .font(.system(size: 12, weight: .semibold))
+                            .foregroundStyle(DQColor.accentBright)
+                        Text(kitEssentialsOnly
+                             ? "Starter kit: ~\(startEuro) €"
+                             : "Full kit: ~\(fullEuro) €")
+                            .font(.system(size: 13, weight: .bold, design: .rounded))
+                            .foregroundStyle(DQColor.textPrimary)
+                        Spacer(minLength: 6)
+                    }
+                    .padding(.top, 6)
+                    Text("Rough drugstore estimates — prices vary by shop and sale.")
+                        .font(DQFont.micro)
+                        .foregroundStyle(DQColor.textSecondary)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
             }
         } label: {
             HStack(spacing: 10) {
@@ -678,7 +703,9 @@ struct DermiqRoutineTab: View {
                     Text("Your kit")
                         .font(.system(size: 16, weight: .bold, design: .rounded))
                         .foregroundStyle(DQColor.textPrimary)
-                    Text("\(essentials.count) to start · \(kit.count) in full")
+                    Text(startEuro > 0
+                         ? "\(essentials.count) to start · ~\(startEuro) €"
+                         : "\(essentials.count) to start · \(kit.count) in full")
                         .font(DQFont.micro)
                         .foregroundStyle(DQColor.textSecondary)
                 }
