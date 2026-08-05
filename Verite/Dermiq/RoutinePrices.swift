@@ -92,6 +92,62 @@ enum RoutinePrices {
         "By Wishtrend Bakuchiol": 22,
     ]
 
+    // ---- Region → currency ------------------------------------------------
+    //
+    // The euro table above is the single source of truth. For a user outside
+    // the eurozone we convert it to their currency with a fixed rate — no
+    // network, so this is a rough, offline conversion, which is exactly why
+    // every price stays prefixed "~" and the kit footer says the numbers are
+    // estimates. It answers "£10 or £40", not a checkout total. Skincare
+    // prices genuinely differ per market beyond FX, so precise per-country
+    // tables would be false precision; a labelled approximation is the honest
+    // version. A currency we have no rate for falls back to euros.
+
+    /// Euros per one unit of the currency is the wrong way round — this is
+    /// units-of-currency per one euro. Rounded, refreshed occasionally.
+    private static let ratePerEuro: [String: Double] = [
+        "EUR": 1, "USD": 1.08, "GBP": 0.86, "CHF": 0.96, "CAD": 1.48,
+        "AUD": 1.63, "SEK": 11.4, "NOK": 11.7, "DKK": 7.46, "PLN": 4.30,
+    ]
+    private static let symbol: [String: String] = [
+        "EUR": "€", "USD": "$", "GBP": "£", "CHF": "CHF", "CAD": "$",
+        "AUD": "$", "SEK": "kr", "NOK": "kr", "DKK": "kr", "PLN": "zł",
+    ]
+    private static let symbolLeads: Set<String> = ["USD", "GBP", "CAD", "AUD", "CHF"]
+
+    /// The device-region currency, but only if we can convert to it; else EUR.
+    static var currencyCode: String {
+        let code = Locale.current.currency?.identifier ?? "EUR"
+        return ratePerEuro[code] != nil ? code : "EUR"
+    }
+
+    /// Convert a euro amount into the display currency, rounded to a clean
+    /// unit (whole, or nearest 5 for the high-denomination krona currencies).
+    private static func converted(_ euro: Int) -> Int {
+        let code = currencyCode
+        let value = Double(euro) * (ratePerEuro[code] ?? 1)
+        if ["SEK", "NOK", "DKK"].contains(code) { return Int((value / 5).rounded()) * 5 }
+        return Int(value.rounded())
+    }
+
+    /// A single amount formatted in the user's currency: "~12 €", "~$13".
+    static func format(euro: Int) -> String {
+        let code = currencyCode
+        let sym = symbol[code] ?? "€"
+        let n = converted(euro)
+        return symbolLeads.contains(code) ? "~\(sym)\(n)" : "~\(n) \(sym)"
+    }
+
+    /// A low–high span with one currency symbol: "~7–30 €", "~$6–$35".
+    private static func formatSpan(_ low: Int, _ high: Int) -> String {
+        let code = currencyCode
+        let sym = symbol[code] ?? "€"
+        let lo = converted(low), hi = converted(high)
+        return symbolLeads.contains(code)
+            ? "~\(sym)\(lo)–\(sym)\(hi)"
+            : "~\(lo)–\(hi) \(sym)"
+    }
+
     /// The bare product name from an example string like "CeraVe … · $$".
     private static func name(from example: String) -> String {
         if let range = example.range(of: " · ") {
@@ -105,20 +161,21 @@ enum RoutinePrices {
         euro[name(from: example)]
     }
 
-    /// "CeraVe Foaming Cleanser · ~12 €" — the name with a real price in place
-    /// of the "· $" tier. Falls back to the original string when the product
-    /// isn't in the table, so an added example can never render blank.
+    /// "CeraVe Foaming Cleanser · ~12 €" — the name with the price in the
+    /// user's currency in place of the "· $" tier. Falls back to the original
+    /// string when the product isn't in the table, so an added example can
+    /// never render blank.
     static func pricedLabel(for example: String) -> String {
         guard let price = price(for: example) else { return example }
-        return "\(name(from: example)) · ~\(price) €"
+        return "\(name(from: example)) · \(format(euro: price))"
     }
 
-    /// The price span across a step's examples: "~7 €" for one, "~7–30 €" for
-    /// a range. Returns nil when none of the examples are priced (caller keeps
-    /// the old "$ – $$$" tier).
+    /// The price span across a step's examples, in the user's currency:
+    /// "~7 €" for one, "~7–30 €" for a range. Returns nil when none of the
+    /// examples are priced (caller keeps the old "$ – $$$" tier).
     static func range(for examples: [String]) -> String? {
         let prices = examples.compactMap(price(for:)).sorted()
         guard let low = prices.first, let high = prices.last else { return nil }
-        return low == high ? "~\(low) €" : "~\(low)–\(high) €"
+        return low == high ? format(euro: low) : formatSpan(low, high)
     }
 }

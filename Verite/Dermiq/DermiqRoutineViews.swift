@@ -679,8 +679,8 @@ struct DermiqRoutineTab: View {
                             .font(.system(size: 12, weight: .semibold))
                             .foregroundStyle(DQColor.accentBright)
                         Text(kitEssentialsOnly
-                             ? "Starter kit: ~\(startEuro) €"
-                             : "Full kit: ~\(fullEuro) €")
+                             ? "Starter kit: \(RoutinePrices.format(euro: startEuro))"
+                             : "Full kit: \(RoutinePrices.format(euro: fullEuro))")
                             .font(.system(size: 13, weight: .bold, design: .rounded))
                             .foregroundStyle(DQColor.textPrimary)
                         Spacer(minLength: 6)
@@ -704,7 +704,7 @@ struct DermiqRoutineTab: View {
                         .font(.system(size: 16, weight: .bold, design: .rounded))
                         .foregroundStyle(DQColor.textPrimary)
                     Text(startEuro > 0
-                         ? "\(essentials.count) to start · ~\(startEuro) €"
+                         ? "\(essentials.count) to start · \(RoutinePrices.format(euro: startEuro))"
                          : "\(essentials.count) to start · \(kit.count) in full")
                         .font(DQFont.micro)
                         .foregroundStyle(DQColor.textSecondary)

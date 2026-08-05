@@ -42947,62 +42947,6 @@
         }
       }
     },
-    "Starter kit: ~%lld €": {
-      "localizations": {
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Starter-Set: ~%lld €"
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Kit inicial: ~%lld €"
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Kit de départ : ~%lld €"
-          }
-        },
-        "it": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Kit iniziale: ~%lld €"
-          }
-        }
-      }
-    },
-    "Full kit: ~%lld €": {
-      "localizations": {
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Komplettes Set: ~%lld €"
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Kit completo: ~%lld €"
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Kit complet : ~%lld €"
-          }
-        },
-        "it": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Kit completo: ~%lld €"
-          }
-        }
-      }
-    },
     "Rough drugstore estimates — prices vary by shop and sale.": {
       "localizations": {
         "de": {
@@ -43031,30 +42975,86 @@
         }
       }
     },
-    "%lld to start · ~%lld €": {
+    "Starter kit: %@": {
       "localizations": {
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "%lld zum Start · ~%lld €"
+            "value": "Starter-Set: %@"
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "%lld para empezar · ~%lld €"
+            "value": "Kit inicial: %@"
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "%lld pour commencer · ~%lld €"
+            "value": "Kit de départ : %@"
           }
         },
         "it": {
           "stringUnit": {
             "state": "translated",
-            "value": "%lld per iniziare · ~%lld €"
+            "value": "Kit iniziale: %@"
+          }
+        }
+      }
+    },
+    "Full kit: %@": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Komplettes Set: %@"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kit completo: %@"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kit complet : %@"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kit completo: %@"
+          }
+        }
+      }
+    },
+    "%lld to start · %@": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld zum Start · %@"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld para empezar · %@"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld pour commencer · %@"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld per iniziare · %@"
           }
         }
       }
