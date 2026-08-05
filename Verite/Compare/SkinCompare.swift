@@ -41,8 +41,14 @@ struct ComparePayload: Codable, Identifiable {
         return UIImage(data: data)
     }
 
-    /// Build my own card from a scan — with a small thumbnail so the link
-    /// stays light enough to travel (≈120px, low quality).
+    /// Build my own card from a scan — with a TINY thumbnail so the whole
+    /// duel link stays short enough to survive every chat client. The photo
+    /// rides inside the URL as base64, so its size is the URL's size; a 72px
+    /// low-quality JPEG keeps the link around ~2 KB (a 120px one pushed ~5 KB,
+    /// which some clients truncate — and a truncated payload opens the app but
+    /// decodes to nothing, i.e. "the duel link does nothing"). The receiver's
+    /// card shows a person-icon placeholder when the thumb is absent, so a
+    /// small or missing photo never blanks the face-off.
     static func mine(name: String, analysis: DermiqAnalysis, photo: UIImage?) -> ComparePayload {
         ComparePayload(
             name: name.isEmpty ? String(localized: "A friend") : name,
@@ -52,8 +58,9 @@ struct ComparePayload: Codable, Identifiable {
         )
     }
 
-    /// Center-crop to a square, downscale, JPEG, base64. Kept tiny on purpose.
-    private static func thumbToken(from image: UIImage, side: CGFloat = 120) -> String? {
+    /// Center-crop to a square, downscale, JPEG, base64. Kept tiny on purpose
+    /// — see `mine`: this thumbnail IS the bulk of the shared link's length.
+    private static func thumbToken(from image: UIImage, side: CGFloat = 72) -> String? {
         let source = image
         let minEdge = min(source.size.width, source.size.height)
         let cropRect = CGRect(
@@ -72,7 +79,7 @@ struct ComparePayload: Codable, Identifiable {
         let small = renderer.image { _ in
             square.draw(in: CGRect(x: 0, y: 0, width: side, height: side))
         }
-        return small.jpegData(compressionQuality: 0.5)?.base64EncodedString()
+        return small.jpegData(compressionQuality: 0.4)?.base64EncodedString()
     }
     #endif
 }
