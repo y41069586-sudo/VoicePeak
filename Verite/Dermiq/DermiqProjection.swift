@@ -85,6 +85,34 @@ enum DermiqProjection {
         }
     }
 
+    /// Max realistic 14-day gain as a function of the CURRENT score — the
+    /// curve the Now⇄14-days toggle swipes along. Low scores have the most
+    /// headroom and climb hard; near the ceiling almost nothing moves, so a
+    /// 90 barely ticks up while a 55 jumps a lot. Anchored to feel right:
+    ///   55 → ~20 · 70 → ~18 · 80 → ~15 · 85 → ~10 · 90 → ~4 · 95 → ~1.
+    /// Piecewise-linear between the anchors, flat below 55.
+    private static func curveGain(for score: Int) -> Double {
+        let anchors: [(x: Int, y: Double)] = [
+            (0, 22), (55, 20), (70, 18), (80, 15), (85, 10), (90, 4), (95, 1), (100, 0),
+        ]
+        for i in 1..<anchors.count where score <= anchors[i].x {
+            let a = anchors[i - 1], b = anchors[i]
+            let t = Double(score - a.x) / Double(max(b.x - a.x, 1))
+            return a.y + (b.y - a.y) * t
+        }
+        return 0
+    }
+
+    /// How much of that curve a trait realistically captures in 14 days —
+    /// derived from `cap` (√ so the spread stays gentle), floored at 0.55 so
+    /// even the slow structural traits still move visibly. Fast traits
+    /// (hydration, glow, redness) take nearly the full curve; texture/pores
+    /// take less, because a 20-point texture jump in two weeks would be a lie
+    /// the day-14 rescan exposes.
+    private static func responsiveness(_ category: DermiqCategory) -> Double {
+        max(0.55, (cap(category) / 14).squareRoot())
+    }
+
     static func project(_ analysis: DermiqAnalysis) -> Projected {
         let targeted = Set(analysis.weakestThree.map(\.category))
 
@@ -93,12 +121,12 @@ enum DermiqProjection {
         var totalThen = 0
 
         for score in analysis.subScores {
-            let headroom = Double(100 - score.value) / 100.0
-            // Targeted metrics get the plan's full attention; the rest only
-            // drift up slightly from general consistency.
-            let focus = targeted.contains(score.category) ? 1.0 : 0.25
-            let gain = min(cap(score.category) * focus,
-                           Double(100 - score.value) * 0.5) * headroom.squareRoot()
+            // Score-driven curve × trait responsiveness. Targeted metrics get
+            // the full curve; the rest drift up from general consistency only.
+            let focus = targeted.contains(score.category) ? 1.0 : 0.4
+            let gain = curveGain(for: score.value)
+                     * responsiveness(score.category)
+                     * focus
             let value = min(score.value + Int(gain.rounded()), 96)
             projected[score.category] = value
             totalNow += score.value
