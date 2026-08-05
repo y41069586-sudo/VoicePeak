@@ -1,6 +1,7 @@
 import SwiftUI
 import SwiftData
 import UIKit
+import GoogleSignIn
 
 // ============================================================
 // MARK: — v2 shell: Scan / Routine / Progress
@@ -143,14 +144,26 @@ struct DermiqTabShell: View {
             transaction.disablesAnimations = true
             withTransaction(transaction) { showFlow = true }
         }
-        // Widget taps: verite://routine → the plan, verite://scan → home.
+        // Deep links. This must be a SUPERSET of RootView's handler, not just
+        // widget taps: SwiftUI delivers an opened URL to only ONE onOpenURL,
+        // and this inner one shadows RootView's. Handling only routine/scan
+        // here (with `default: break`) is exactly why a tapped duel/compare
+        // link opened the app and then died — the compare + invite routing in
+        // RootView never ran. So mirror all of it. Every branch is idempotent
+        // (Google returns false for non-auth URLs, invite has a one-per-install
+        // guard, compare only stashes `pending`), so it's safe even on the iOS
+        // versions where BOTH handlers fire.
         .onOpenURL { url in
-            guard url.scheme == "verite" else { return }
-            switch url.host {
-            case "routine": withAnimation(VMotion.snappy) { tab = .routine }
-            case "scan": withAnimation(VMotion.snappy) { tab = .scan }
-            default: break
+            if GIDSignIn.sharedInstance.handle(url) { return }
+            if url.scheme == "verite" {
+                switch url.host {
+                case "routine": withAnimation(VMotion.snappy) { tab = .routine }; return
+                case "scan": withAnimation(VMotion.snappy) { tab = .scan }; return
+                default: break
+                }
             }
+            if ReferralStore.shared.handle(url) { return }
+            _ = CompareInbox.shared.handle(url)
         }
         .alert("Purchase unavailable", isPresented: $extraScanFailed) {
             Button("OK", role: .cancel) {}
