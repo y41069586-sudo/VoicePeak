@@ -43114,6 +43114,118 @@
           }
         }
       }
+    },
+    "Scan your skin with me — here's a free scan 👇": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Scan deine Haut mit mir – hier ist ein gratis Scan 👇"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Escanea tu piel conmigo: aquí tienes un escaneo gratis 👇"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Scanne ta peau avec moi – voici un scan gratuit 👇"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Scansiona la pelle con me – ecco una scansione gratis 👇"
+          }
+        }
+      }
+    },
+    "Here's my skin score — see how yours compares 👇": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Das ist mein Haut-Score – schau, wie deiner abschneidet 👇"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Esta es mi puntuación de piel: mira cómo se compara la tuya 👇"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Voici mon score de peau – vois comment le tien se compare 👇"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ecco il mio punteggio pelle – guarda come si confronta il tuo 👇"
+          }
+        }
+      }
+    },
+    "I scanned my skin — see how yours compares 👇": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ich hab meine Haut gescannt – schau, wie deine abschneidet 👇"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Escaneé mi piel: mira cómo se compara la tuya 👇"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "J'ai scanné ma peau – vois comment la tienne se compare 👇"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ho scansionato la mia pelle – guarda come si confronta la tua 👇"
+          }
+        }
+      }
+    },
+    "Scan your skin and Glowé builds a 14-day\nroutine from your results.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Scanne deine Haut und Glowé erstellt eine\n14-Tage-Routine aus deinen Ergebnissen."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Escanea tu piel y Glowé crea una\nrutina de 14 días con tus resultados."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Scanne ta peau et Glowé crée une\nroutine de 14 jours à partir de tes résultats."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Scansiona la pelle e Glowé crea una\nroutine di 14 giorni dai tuoi risultati."
+          }
+        }
+      }
     }
   },
   "version": "1.0"
