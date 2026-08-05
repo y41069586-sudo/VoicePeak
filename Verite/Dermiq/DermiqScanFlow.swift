@@ -287,18 +287,14 @@ struct DermiqScanFlowView: View {
 
     private var hasActivePlan: Bool { allPlans.contains { $0.isActive } }
 
-    /// The potential screen's CTA title: plain when the plan is included,
-    /// price-suffixed when tapping it starts the €3.99 purchase (no surprise
-    /// charges), and a busy label mid-purchase.
+    /// The potential screen's CTA title. No price on the button — an amount
+    /// there reads as a cost and deters the tap. When a purchase is needed
+    /// StoreKit's own sheet shows and takes consent to the exact price the
+    /// instant the buy starts, so the charge is never hidden; this is a
+    /// one-time consumable, not a subscription that must price on the paywall.
     private var planCTATitle: String {
-        if planAllowed { return String(localized: "Build my 14-day plan") }
         if planPurchasing { return String(localized: "Unlocking…") }
-        // Only append the price once StoreKit has the live figure — never a
-        // hard-coded currency amount that could mismatch the user's storefront.
-        guard let price = purchases.displayPrice(for: VeriteProducts.routineOnce) else {
-            return String(localized: "Build my 14-day plan")
-        }
-        return String(format: String(localized: "Build my 14-day plan · %@"), price)
+        return String(localized: "Build my 14-day plan")
     }
 
     /// When a Pro user is on a credit scan, their NEXT weekly-included scan

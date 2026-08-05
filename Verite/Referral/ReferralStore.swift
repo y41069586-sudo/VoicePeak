@@ -302,10 +302,14 @@ struct ScanLimitSheet: View {
                     Group {
                         if purchasing {
                             ProgressView().tint(.white)
-                        } else if extraScanPrice.isEmpty {
-                            Label("Buy 1 extra scan", systemImage: "bolt.fill")
                         } else {
-                            Label("Buy 1 extra scan · \(extraScanPrice)", systemImage: "bolt.fill")
+                            // No price on the button — it reads as a cost and
+                            // deters the tap. The exact amount is still shown
+                            // (and consented to) on Apple's purchase sheet the
+                            // moment the buy starts, so nothing is hidden from
+                            // the actual charge; this is a one-time consumable,
+                            // not a subscription that must price on the paywall.
+                            Label("Buy 1 extra scan", systemImage: "bolt.fill")
                         }
                     }
                     .font(.system(size: 16, weight: .bold, design: .rounded))
