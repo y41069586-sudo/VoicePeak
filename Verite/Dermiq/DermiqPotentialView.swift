@@ -48,6 +48,16 @@ struct DermiqPotentialView: View {
                         .font(DQFont.body)
                         .foregroundStyle(DQColor.textSecondary)
                         .multilineTextAlignment(.center)
+                    // Names the potential image as AI-generated in-app too, so
+                    // the label isn't only on the exported card.
+                    HStack(spacing: 5) {
+                        Image(systemName: "sparkles")
+                            .font(.system(size: 10, weight: .semibold))
+                        Text("Potential image is an AI-generated preview")
+                    }
+                    .font(DQFont.micro)
+                    .foregroundStyle(DQColor.textSecondary)
+                    .padding(.top, 2)
                 }
                 .padding(.horizontal, 44)
             }
@@ -270,7 +280,12 @@ struct DQShareCard: View {
         VStack(spacing: 0) {
             HStack(spacing: 2) {
                 sharePhoto(current, label: "NOW")
-                sharePhoto(potential, label: "POTENTIAL")
+                // The POTENTIAL half is the Gemini-generated image. This card
+                // gets posted to social media, so the generated side carries a
+                // visible "AI" tag — an AI-manipulated image of a real person
+                // leaving the app is exactly the deep-fake case the EU AI Act's
+                // transparency rule (Art. 50, in force since Aug 2026) targets.
+                sharePhoto(potential, label: "POTENTIAL", aiTag: true)
             }
             .frame(height: 340)
             .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
@@ -299,12 +314,24 @@ struct DQShareCard: View {
         .background(DQColor.background)
     }
 
-    private func sharePhoto(_ image: UIImage, label: String) -> some View {
+    private func sharePhoto(_ image: UIImage, label: String, aiTag: Bool = false) -> some View {
         Image(uiImage: image)
             .resizable()
             .scaledToFill()
             .frame(width: 150, height: 340)
             .clipped()
+            .overlay(alignment: .topLeading) {
+                if aiTag {
+                    Text("AI-generated")
+                        .font(DQFont.mono(8, weight: .bold))
+                        .tracking(1)
+                        .foregroundStyle(.white)
+                        .padding(.horizontal, 7)
+                        .padding(.vertical, 3)
+                        .background(.black.opacity(0.62), in: Capsule())
+                        .padding(8)
+                }
+            }
             .overlay(alignment: .bottom) {
                 Text(LocalizedStringKey(label))
                     .font(DQFont.mono(9, weight: .bold))
