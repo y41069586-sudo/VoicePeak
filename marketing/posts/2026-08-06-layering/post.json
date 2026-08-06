@@ -1,0 +1,20 @@
+{
+  "topic": "how to layer skincare correctly",
+  "slides": [
+    { "n": 1, "photo": "assets/hook.png",
+      "hook": "Why this got worse [after you added more products]",
+      "swipe": "swipe →",
+      "arrow": { "from": [230, 1120], "via": [450, 1085], "to": [747, 720] } },
+    { "n": 2, "ghost_number": "1", "headline": "Thin to thick",
+      "bullets": ["watery serums before creams", "oils and balms go last"] },
+    { "n": 3, "ghost_number": "2", "headline": "Wait 60 seconds",
+      "bullets": ["let each layer sink in", "damp skin dilutes what follows"] },
+    { "n": 4, "ghost_number": "3", "headline": "Split your actives",
+      "bullets": ["vitamin C in the morning", "retinol or acids at night"] },
+    { "n": 5, "headline": "Is your order wrong?",
+      "pill": "comment \"GLOW\" for early access",
+      "app": "[This app] scans your skin, scores it 0–100 and builds the 14-day plan." }
+  ],
+  "caption": "Why your breakout got worse after you added more products. The order matters more than the products themselves — thin to thick, and actives split between morning and night. Comment GLOW for the full routine.",
+  "hashtags": ["#skincare", "#glowup", "#skincareroutine", "#skincaretips", "#skincarelayering", "#acneskincare"]
+}
