@@ -245,7 +245,54 @@ def build_native_hook(slide):
             f"<div class='wrap'><div class='hook' style='font-size:{size}px'>{hook}</div>{sub}</div>"
             f"<div class='swipe'>{swipe}</div></body></html>")
 
-SANS_BOLD = "/usr/share/fonts/opentype/inter/InterDisplay-Bold.otf"
+def _find_font(*names, bundled=None):
+    """Resolve a font file without assuming the machine has it installed.
+
+    Order: the copy that ships with the skill (assets/fonts/, next to this
+    script or one level up), then whatever fontconfig knows, then DejaVu.
+    The old code hard-coded /usr/share/fonts/opentype/inter/... — on a
+    container without Inter that path does not exist and ImageFont.truetype
+    raises, which killed the whole run over a typeface.
+    """
+    if bundled:
+        for base in (ASSET_DIR, os.path.dirname(ASSET_DIR)):
+            p = os.path.join(base, "assets", "fonts", bundled)
+            if os.path.isfile(p):
+                return p
+    for name in names:
+        try:
+            p = subprocess.run(["fc-match", "-f", "%{file}", name],
+                               capture_output=True, text=True, timeout=10).stdout.strip()
+            if p and os.path.isfile(p):
+                return p
+        except Exception:
+            pass
+    for p in ("/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf",
+              "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf"):
+        if os.path.isfile(p):
+            return p
+    raise RuntimeError("no usable font found")
+
+
+SANS_BOLD = _find_font("Inter Display:bold", "Inter:bold", "sans-serif:bold",
+                       bundled="InterDisplay-Bold.otf")
+_SANS_REG = _find_font("Inter Display", "Inter", "sans-serif",
+                       bundled="InterDisplay-Regular.otf")
+_SCRIPT = _find_font("TeX Gyre Chorus", "serif",
+                     bundled="texgyrechorus-mediumitalic.otf")
+
+# Hand the same files to Chromium, so the rendered slides look identical
+# whether or not the container happens to have the fonts installed.
+FONT_FACE_CSS = "".join(
+    f"@font-face{{font-family:'{fam}';src:url('file://{path}');"
+    f"font-weight:{weight};font-style:normal;}}"
+    for fam, path, weight in (
+        (FONT_SANS, _SANS_REG, "normal"),
+        (FONT_SANS, SANS_BOLD, "bold"),
+        (FONT_SCRIPT, _SCRIPT, "normal"),
+    ))
+BASE_CSS = FONT_FACE_CSS + BASE_CSS
+NATIVE_CSS = FONT_FACE_CSS + NATIVE_CSS
 COL_W = 900          # Breite der .content-Spalte
 HEAD_MAX, HEAD_MIN = 132, 68
 SCRIPT_RATIO = 180 / 132   # .script haengt proportional an der Headline
@@ -344,6 +391,32 @@ body {
 .app { font-size:41px; color:#2E2E2E; line-height:1.38; margin-top:40px; font-weight:600; }
 .app em { font-style:normal; color:{LAV}; }
 .note  { font-size:37px; color:#8A8A8A; line-height:1.4; margin-top:26px; }
+/* Store-Karte auf der letzten Slide. Das Icon traegt die Wiedererkennung,
+   deshalb steht der Name daneben statt darunter — die Karte bleibt eine
+   Zeile hoch und liest als Produkt, nicht als vierter Textabsatz. */
+.store {
+  display:flex; align-items:center; gap:36px;
+  background:#FFFFFF; border:3px solid #ECE6F7; border-radius:44px;
+  padding:36px 44px; margin-top:60px; width:916px;
+  box-shadow:0 12px 34px rgba(35,25,60,.06);
+}
+.store-icon {
+  width:150px; height:150px; border-radius:34px; flex:none;
+  box-shadow:0 10px 24px rgba(124,79,176,.22);
+}
+.store-text { min-width:0; }
+.store-name {
+  font-weight:700; font-size:58px; color:#171717; letter-spacing:-1.5px;
+  line-height:1.04; white-space:nowrap;
+}
+.store-claim {
+  font-family:'{SCRIPT}'; font-size:50px; color:{LAV};
+  line-height:1.1; margin-top:8px;
+}
+.store-sub {
+  font-size:41px; color:#3D3D3D; line-height:1.42; margin-top:30px;
+  width:916px; font-weight:500;
+}
 .mark { position:absolute; bottom:74px; right:86px;
         font-family:'{SCRIPT}'; font-size:60px; color:{LAV}; }
 """
@@ -387,13 +460,17 @@ def _marker_head(text, budget, start=88):
     return size, lines, min(f.getlength(last) - 1.5 * len(last), MARK_W)
 
 
-def _marker_page(ink, inner):
+def _marker_page(ink, inner, mark=True):
+    """`mark=False` unterdrueckt den Eck-Schriftzug. Auf der Endkarte traegt
+    die Store-Karte die Marke schon mit Icon und Namen; der Schriftzug wuerde
+    "Glowé" ein zweites Mal auf derselben Slide sagen."""
     css = (MARKER_CSS.replace("{W}", str(W)).replace("{H}", str(H))
            .replace("{FONT}", FONT_SANS).replace("{SCRIPT}", FONT_SCRIPT)
            .replace("{LAV}", LAV))
+    wordmark = "<div class='mark'>Glow&eacute;</div>" if mark else ""
     return (f"<!DOCTYPE html><html><head><meta charset='utf-8'><style>{css}</style>"
             f"</head><body><svg class='ink' viewBox='0 0 {W} {H}'>{ink}</svg>"
-            f"{inner}<div class='mark'>Glow&eacute;</div></body></html>")
+            f"{inner}{wordmark}</body></html>")
 
 
 def build_marker_step(slide):
@@ -437,11 +514,36 @@ def build_marker_cta(slide):
         app = (f"<div class='app' style='margin-top:74px'>"
                f"{html.escape(slide['app']).replace('[', '<em>').replace(']', '</em>')}"
                f"</div>")
+
+    # Store-Karte: Icon + Name + Claim + eine Zeile, was die App tut. Sie ist
+    # das Ziel des ganzen Carousels, deshalb bekommt sie eine eigene Flaeche
+    # statt einer weiteren Textzeile — der Blick faellt auf das Icon, nicht
+    # auf den vierten Absatz in Folge.
+    store = ""
+    if slide.get("store"):
+        s = slide["store"]
+        icon_path = os.path.join(ASSET_DIR, "assets", "appicon.png")
+        if not os.path.isfile(icon_path):
+            icon_path = os.path.join(os.path.dirname(ASSET_DIR), "assets", "appicon.png")
+        icon = ""
+        if os.path.isfile(icon_path):
+            with open(icon_path, "rb") as fh:
+                b64 = base64.b64encode(fh.read()).decode()
+            icon = f"<img class='store-icon' src='data:image/png;base64,{b64}'>"
+        store = (
+            f"<div class='store'>"
+            f"{icon}"
+            f"<div class='store-text'>"
+            f"<div class='store-name'>{html.escape(s.get('name', ''))}</div>"
+            f"<div class='store-claim'>{html.escape(s.get('claim', ''))}</div>"
+            f"</div></div>"
+            f"<div class='store-sub'>{html.escape(s.get('sub', ''))}</div>")
+
     inner = (f"<div class='wrap'>"
              f"<div class='head' style='font-size:{size}px'>{head}</div>"
              f"<div class='cta' style='margin-top:{CTA_GAP}px'>{html.escape(cta)}</div>"
-             f"{app}</div>")
-    return _marker_page(ink, inner)
+             f"{app}{store}</div>")
+    return _marker_page(ink, inner, mark=not slide.get("store"))
 
 
 # Vertikales Budget der Headline je Slide-Typ: Spaltenhoehe bis 40px ueber

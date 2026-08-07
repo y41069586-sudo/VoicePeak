@@ -20,7 +20,9 @@ The reference image never changes; the person and setting in it do. It shows **m
 
 **Reference** (pinned, public):
 `https://raw.githubusercontent.com/y41069586-sudo/VoicePeak/fc43c3015c68a65cfde7f1440ad89265e637f468/web/tiktok/assets/skin-before.png`
-A compressed backup lives in `assets/reference.jpg` — if the URL ever dies, re-host that file anywhere public and use the new URL.
+A copy ships with this skill at `assets/reference.png` — if the URL ever dies, re-host that file anywhere public and use the new URL.
+
+**Sanity check before you build anything:** slide 1 of this pipeline is a PHOTOGRAPH of a face carrying the hook line and a dashed lavender arrow. An older text-only version of this skill exists under the same name and has been picked up by mistake before. If you catch yourself writing slide 1 as a text card with an eyebrow like "SKIN GUIDE" and a script word, you are following the wrong file — stop and re-read this one. Never ship that text format as a substitute: if the hook photo cannot be generated, stop and report the failing call rather than posting the wrong thing.
 
 **Variation — rotate by `day`, lists have coprime-ish lengths so combinations decorrelate:**
 
@@ -31,7 +33,13 @@ A compressed backup lives in `assets/reference.jpg` — if the URL ever dies, re
 - background `[day % 7]`: plain sunlit pale wall outdoors · soft bathroom light, tiles out of focus · bedroom window daylight, curtains blurred · warm evening indoor light, plain wall · overcast daylight on a balcony, sky blurred · kitchen far out of focus · stairwell with soft daylight
 
 **Zapier call** — `execute_zapier_write_action`, `selected_api: GoogleMakerSuiteCLIAPI`, `action: generate_image`, `tool_name: google_ai_studio_gemini_generate_image`, params:
-`model: "gemini-3-pro-image-preview"` (on a model-not-found error retry once with `"gemini-2.5-flash-image"`), `apiVersion: "v1beta"`, `temperature: 0.4`, `files: [<reference URL>]`, and this prompt with the slots filled:
+`apiVersion: "v1beta"`, `temperature: 0.4`, `files: [<reference URL>]`, and the prompt below with the slots filled. Work down this model chain, moving on when a call comes back overloaded (503 / RESOURCE_EXHAUSTED), model-not-found, or empty:
+
+1. `gemini-3-pro-image-preview`
+2. `gemini-2.5-flash-image` — note there is no `-preview` suffix on this one; `gemini-2.5-flash-image-preview` does not exist under v1beta and returns model-not-found
+3. `gemini-2.5-flash-image` again with `temperature: 0.55`
+
+If all three fail, stop and report the last error verbatim. Do not post.
 
 > Recreate the reference photograph as closely as possible, changing only the person and the background.
 >
@@ -45,13 +53,19 @@ A compressed backup lives in `assets/reference.jpg` — if the URL ever dies, re
 
 Download the returned `url`, save it as `<workdir>/assets/hook.png`.
 
-**Photo QA — look at the image before using it.** It must have real pores and skin texture (waxy, airbrushed skin is the one tell that kills the hook), clearly visible acne on the cheek (not cleaned up by the model), the ear and one eye at the frame edge, and a plain tee. On even days also confirm the headscarf really covers all the hair — no strands showing. If it fails, regenerate once with `temperature: 0.55`; if it fails again, fall back to the reference image itself rather than shipping a fake-looking face.
+**Photo QA — look at the image before using it.** It must have real pores and skin texture (waxy, airbrushed skin is the one tell that kills the hook), clearly visible acne on the cheek (not cleaned up by the model), the ear and one eye at the frame edge, and a plain tee. On even days also confirm the headscarf really covers all the hair — no strands showing.
+
+It must also be **visibly a different person from the reference** — that is the whole point of the daily variation. Same crop, same lighting, same acne, different face and background. If the model handed back something that is essentially the reference photo unchanged, treat that as a failed generation.
+
+If QA fails, regenerate once with `temperature: 0.55`.
+
+**The reference image is never the post.** It is input for Gemini and nothing else: it is one real, identifiable person, and shipping it would mean the same face every single day and a real human presented as the day's example. If generation fails twice, or cannot run at all, do not post — stop and report the exact failing call. A missed day costs nothing; the same real face on every post costs the account.
 
 **AI tag.** The hook face is generated, so the image carries the disclosure itself: render a small `AI-generated` pill into slide 1's bottom-right corner — dark translucent background, white text, ~120px clear of the bottom edge so TikTok's own UI never covers it. The platform toggle complements this, it does not replace it (EU AI Act Art. 50). The one exception: if the run fell back to the unmodified reference photograph, do NOT tag it — labelling a real photo as AI-generated is itself false. Say in the report which one shipped.
 
 ## 3. Copy (fixed rules — never deviate)
 
-Write the carousel as JSON. Language: **English**, direct "you/your skin". Short, concrete, numbers where possible. No emojis on slides, no exclamation chains. **No healing promises** — never "cures", "removes", "forever"; only "helps fade", "supports", "reduces", "calms". CTA keyword is always **GLOW**. Never claim the app is on the App Store (it is TestFlight-only until the store release).
+Write the carousel as JSON. Language: **English**, direct "you/your skin". Short, concrete, numbers where possible. No emojis on slides, no exclamation chains. **No healing promises** — never "cures", "removes", "forever"; only "helps fade", "supports", "reduces", "calms". CTA keyword is always **GLOW**. Glowé is live on the App Store, so "download" is accurate — say it plainly; the store card on slide 5 carries it.
 
 ```json
 {
@@ -62,8 +76,9 @@ Write the carousel as JSON. Language: **English**, direct "you/your skin". Short
     { "n": 2, "ghost_number": "1", "headline": "2–4 words, sentence case", "bullets": ["max 7 words", "max 7 words"] },
     { "n": 3, "ghost_number": "2", "headline": "…", "bullets": ["…", "…"] },
     { "n": 4, "ghost_number": "3", "headline": "…", "bullets": ["…", "…"] },
-    { "n": 5, "headline": "question, max 5 words", "pill": "comment \"GLOW\" for early access",
-      "app": "[Glowé] scans your skin, scores it 0–100 and builds the 14-day plan." }
+    { "n": 5, "headline": "question, max 5 words", "pill": "comment \"GLOW\" for the routine",
+      "store": { "name": "Download Glowé", "claim": "Reach Your Potential",
+                 "sub": "Scan your skin and get your 14-day plan." } }
   ],
   "caption": "hook sentence + 1 line context + 'Comment GLOW for the full routine'",
   "hashtags": ["#skincare", "#glowup", "#skincareroutine", "+3 topic-specific"]
@@ -82,11 +97,9 @@ Banned: stiff literal translations ("entferne deine Akneporen"-style phrasing), 
 
 Bullets name product type, timing, frequency — never brands. The `pill` keeps the keyword in straight quotes (`"GLOW"`) — the renderer underlines exactly the quoted word. `[brackets]` in `app` render lavender.
 
-**Brand blackout while the app is in App Store review.** The brand name appears nowhere — not on a slide, not in the caption, not in alt text, not in the Buffer title. Two places hide it:
-- the slide-5 `app` line: write `[This app]`, not `[Glowé]`;
-- **the wordmark is hard-coded in `render.py`**, not driven by the JSON. Delete both emitters in your working copy before rendering — `<div class='logo'>Glow&eacute;</div>` in the slide-1 builder and `<div class='mark'>Glow&eacute;</div>` in the marker-slide builder. Verify afterwards: on slides 2–5 the crop x 820–1060, y 1290–1420 must stay light (min luminance > 200).
+**The app is live on the App Store.** The brand blackout that applied during review is over: name Glowé freely on the slides, in the caption and in the Buffer title, keep the wordmark in `render.py`, and say the app is downloadable — because it now is. (The blackout, the `[This app]` substitution and the wordmark-deletion step were review-only measures; do not reapply them.)
 
-"Comment GLOW" stays — a generic word, not the brand. Lift this only once the app is live.
+The closing slide carries the store card — see below. "Comment GLOW" stays as the engagement hook alongside it: the comment drives reach, the card converts.
 
 ## 4. Render
 
@@ -99,7 +112,9 @@ cp <skill_dir>/scripts/render.py <workdir>/
 python3 <workdir>/render.py <workdir>/post.json <workdir>/out
 ```
 
-`render.py` is self-contained: it finds Chromium itself (Playwright path or PATH; no wkhtmltoimage anymore) and resolves `photo` relative to its own location, which is why hook.png goes into `<workdir>/assets/`. Fonts: Inter Display + TeX Gyre Chorus — if `fc-match "Inter Display"` misses, `apt-get install -y fonts-inter fonts-texgyre`.
+`render.py` is self-contained: it finds Chromium itself (Playwright path or PATH; no wkhtmltoimage anymore) and resolves `photo` relative to its own location, which is why hook.png goes into `<workdir>/assets/`.
+
+**Fonts need no install.** Inter Display and TeX Gyre Chorus ship in `assets/fonts/`; the renderer loads them from there and hands the same files to Chromium, so the output is byte-identical whether or not the container has them installed. Copy `assets/fonts/` into the workdir alongside `render.py` and never `apt-get` a typeface — the old hard-coded `/usr/share/fonts/opentype/inter/...` path is what used to abort a run on a bare container.
 
 **QA before delivering:**
 - exactly 5 PNGs, each 1080×1440;
