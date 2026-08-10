@@ -9,12 +9,8 @@ enum Persistence {
     /// Every `@Model` in the app. Add new models here.
     static let schema = Schema([
         UserProfile.self,
-        Scan.self,
-        Product.self,
-        HalfFaceTest.self,
-        RoutineItem.self,
-        Streak.self,
-        SavingsLedger.self,
+        ScanRecord.self,
+        RoutinePlan.self,
     ])
 
     /// The on-disk container the live app uses.
@@ -35,7 +31,14 @@ enum Persistence {
         let configuration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: true)
         do {
             let container = try ModelContainer(for: schema, configurations: [configuration])
-            SeedData.populatePreview(container.mainContext)
+            let profile = UserProfile(
+                skinType: .combination,
+                concerns: [.redness, .pores, .texture],
+                sensitivities: ["fragrance"],
+                goal: "calmer skin",
+                onboardingComplete: true
+            )
+            container.mainContext.insert(profile)
             return container
         } catch {
             fatalError("Failed to create preview ModelContainer: \(error)")

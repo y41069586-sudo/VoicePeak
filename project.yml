@@ -17,8 +17,16 @@ settings:
     ENABLE_USER_SCRIPT_SANDBOXING: YES
     GENERATE_INFOPLIST_FILE: NO
     CODE_SIGN_STYLE: Automatic
-    MARKETING_VERSION: "1.0.3"
-    CURRENT_PROJECT_VERSION: "11"
+    MARKETING_VERSION: "1.0"
+    CURRENT_PROJECT_VERSION: "13"
+
+packages:
+  GoogleSignIn:
+    url: https://github.com/google/GoogleSignIn-iOS
+    from: "8.0.0"
+  RevenueCat:
+    url: https://github.com/RevenueCat/purchases-ios
+    from: "5.0.0"
 
 targets:
   Verite:
@@ -32,14 +40,57 @@ targets:
     settings:
       base:
         INFOPLIST_FILE: Verite/Resources/Info.plist
+        # Entitlements carry the App Group (shared with the widget). The group
+        # `group.verite.com` must be enabled for App ID com.verite.com in
+        # the Apple Developer portal, or release archiving fails at signing.
+        # Sign in with Apple lives in the same file but stays commented until
+        # its own capability is enabled in the portal.
+        CODE_SIGN_ENTITLEMENTS: Verite/Verite.entitlements
         PRODUCT_BUNDLE_IDENTIFIER: com.verite.com
         ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
         SUPPORTS_MACCATALYST: NO
         TARGETED_DEVICE_FAMILY: "1" # iPhone only
         # The two feature-flag SDKs (StoreKit/Supabase) are OFF by default and
         # require no linked frameworks until their milestones are enabled.
-    info:
-      path: Verite/Resources/Info.plist
+    dependencies:
+      - target: VeriteWidget
+        embed: true
+      - package: GoogleSignIn
+        product: GoogleSignIn
+      - package: RevenueCat
+        product: RevenueCat
+    # DO NOT add an `info:` block here. XcodeGen REGENERATES the plist at
+    # `info.path` on every `xcodegen generate` (CI runs it every build),
+    # overwriting the hand-written Verite/Resources/Info.plist with 8 boiler-
+    # plate keys — silently dropping UILaunchStoryboardName (=> tiny legacy
+    # compatibility window on iPad), NSCameraUsageDescription, UIAppFonts,
+    # orientations, and everything else. INFOPLIST_FILE above is sufficient.
+
+  VeriteWidget:
+    type: app-extension
+    platform: iOS
+    deploymentTarget: "17.0"
+    sources:
+      # The extension compiles its own files plus the shared snapshot type.
+      # WidgetShared.swift is ALSO in the app target (via the Verite glob) —
+      # that's intended; it's the one type both sides encode/decode.
+      - path: VeriteWidget
+        excludes:
+          - "**/*.md"
+      - path: Verite/Widget/WidgetShared.swift
+      # The widget renders localized copy (Routine, day/step line, gallery
+      # description) too — it needs its own copy of the String Catalog, or
+      # every widget string falls back to English regardless of device language.
+      - path: Verite/Localization/Localizable.xcstrings
+    settings:
+      base:
+        INFOPLIST_FILE: VeriteWidget/Info.plist
+        CODE_SIGN_ENTITLEMENTS: VeriteWidget/VeriteWidget.entitlements
+        PRODUCT_BUNDLE_IDENTIFIER: com.verite.com.widget
+        SUPPORTS_MACCATALYST: NO
+        TARGETED_DEVICE_FAMILY: "1" # iPhone only
+        # WidgetKit extensions ship a display name + no launch storyboard.
+        CFBundleDisplayName: "Glowé"
 
 schemes:
   Verite:

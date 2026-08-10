@@ -4,34 +4,69 @@
     "NSCameraUsageDescription": {
       "extractionState": "manual",
       "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Vérité uses the camera to analyze your skin and scan product barcodes. Photos are processed on your device and never uploaded."
-          }
-        },
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "Vérité verwendet die Kamera, um deine Haut zu analysieren und Produkt-Barcodes zu scannen. Fotos werden auf deinem Gerät verarbeitet und niemals hochgeladen."
+            "value": "Glowé nutzt die Kamera, um deine Haut aufzunehmen. Dein Foto wird sicher übertragen, um deine Haut-Analyse zu erstellen, und wird nach deinen Ergebnissen nicht gespeichert."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Glowé uses the camera to capture your skin. Your photo is sent securely to generate your skin analysis and isn't stored after your results are ready."
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Vérité usa la cámara para analizar tu piel y escanear códigos de barras de productos. Las fotos se procesan en tu dispositivo y nunca se suben."
+            "value": "Glowé usa la cámara para capturar tu piel. Tu foto se envía de forma segura para generar tu análisis y no se almacena una vez listos tus resultados."
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Vérité utilise l’appareil photo pour analyser votre peau et scanner les codes-barres des produits. Les photos sont traitées sur votre appareil et ne sont jamais téléchargées."
+            "value": "Glowé utilise l'appareil photo pour capturer ta peau. Ta photo est envoyée de façon sécurisée pour générer ton analyse et n'est pas conservée une fois tes résultats prêts."
           }
         },
         "it": {
           "stringUnit": {
             "state": "translated",
-            "value": "Vérité usa la fotocamera per analizzare la tua pelle e scansionare i codici a barre dei prodotti. Le foto vengono elaborate sul dispositivo e non vengono mai caricate."
+            "value": "Glowé usa la fotocamera per acquisire la tua pelle. La foto viene inviata in modo sicuro per generare la tua analisi e non viene conservata dopo i risultati."
+          }
+        }
+      }
+    },
+    "NSPhotoLibraryAddUsageDescription": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Glowé needs permission to save your Glow-Up Reel to your photo library."
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Glowé braucht die Berechtigung, um dein Glow-Up-Reel in deiner Fotomediathek zu speichern."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Glowé necesita permiso para guardar tu Glow-Up Reel en tu fototeca."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Glowé a besoin de l'autorisation d'enregistrer ton Glow-Up Reel dans ta photothèque."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Glowé ha bisogno dell'autorizzazione per salvare il tuo Glow-Up Reel nella tua libreria foto."
           }
         }
       }

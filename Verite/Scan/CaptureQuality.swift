@@ -12,11 +12,21 @@ struct CaptureQuality: Equatable {
     var faceCenterOffset: Double = 1
     /// Average frame luminance, 0...1.
     var brightness: Double = 0
+    /// Both eyes read as open (landmark aspect-ratio heuristic). Used by the
+    /// v2 guided capture checklist; not part of `isStandardized` (v1 semantics).
+    var eyesOpen: Bool = false
 
     // Target bands. Forgiving on purpose — guidance, not a lab rig.
-    static let minFaceHeight = 0.70
-    static let maxFaceHeight = 0.80
-    static let maxCenterOffset = 0.14
+    // Distance is the Vision face-box height as a fraction of the FULL sensor
+    // buffer. The preview is aspect-fill (full-bleed), so it CROPS the buffer:
+    // a face that fills the on-screen 265×360 oval only occupies ~0.25–0.30 of
+    // the uncropped buffer height Vision measures against. The old 0.40 floor
+    // therefore forced users uncomfortably close before "Distance" went green.
+    // Lowered so filling the oval is enough, while still rejecting a truly
+    // distant face.
+    static let minFaceHeight = 0.24
+    static let maxFaceHeight = 0.92
+    static let maxCenterOffset = 0.22
     static let minBrightness = 0.25  // was 0.70 – most indoor lighting sits 0.30-0.55
     static let maxBrightness = 0.97  // allow very bright environments
 
@@ -25,6 +35,7 @@ struct CaptureQuality: Equatable {
     }
     var centeredOK: Bool { faceDetected && faceCenterOffset <= Self.maxCenterOffset }
     var lightingOK: Bool { brightness >= Self.minBrightness && brightness <= Self.maxBrightness }
+    var eyesOK: Bool { faceDetected && eyesOpen }
     var isStandardized: Bool { distanceOK && centeredOK && lightingOK }
 
     /// Continuous 0...1 quality, persisted as `Scan.captureQuality`.

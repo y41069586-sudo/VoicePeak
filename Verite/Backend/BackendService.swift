@@ -11,10 +11,15 @@ protocol BackendService: Sendable {
 
     func currentUser() -> BackendUser?
     func signInWithApple(idToken: String, nonce: String) async throws -> BackendUser
+    func signInWithGoogle(idToken: String) async throws -> BackendUser
     func signOut() async
 
     /// Push numeric metrics + routine (opt-in). Never photos.
     func syncMetrics(_ payload: MetricsPayload) async throws
+
+    /// Pull this signed-in user's own stored metrics back (cross-device
+    /// restore). Returns nil when there's nothing stored yet. Never photos.
+    func fetchMetrics() async throws -> MetricsPayload?
 
     /// Opt-in, anonymized aggregate efficacy.
     func fetchCommunityEfficacy(skinType: String?) async throws -> [CommunityEfficacy]
@@ -33,8 +38,12 @@ struct LocalOnlyBackend: BackendService {
     func signInWithApple(idToken: String, nonce: String) async throws -> BackendUser {
         throw BackendError.notEnabled
     }
+    func signInWithGoogle(idToken: String) async throws -> BackendUser {
+        throw BackendError.notEnabled
+    }
     func signOut() async {}
     func syncMetrics(_ payload: MetricsPayload) async throws {}
+    func fetchMetrics() async throws -> MetricsPayload? { nil }
     func fetchCommunityEfficacy(skinType: String?) async throws -> [CommunityEfficacy] { [] }
     func submitEfficacy(_ record: EfficacyRecord) async throws {}
     func deleteAccount() async throws { throw BackendError.notEnabled }

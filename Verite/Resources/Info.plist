@@ -5,21 +5,26 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>en</string>
 	<key>CFBundleDisplayName</key>
-	<string>Vérité</string>
+	<string>Glowé</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>
 	<string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
+	<!-- Hard-coded to the brand, NOT $(PRODUCT_NAME) (= the Xcode target name
+	     "Verite"). System-generated dialogs read CFBundleName, not
+	     CFBundleDisplayName — so the Sign in with Google sheet announced
+	     itself as "Verite" wants to use accounts.google.com', a name the
+	     user has never seen. -->
 	<key>CFBundleName</key>
-	<string>$(PRODUCT_NAME)</string>
+	<string>Glowé</string>
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
-	<string>1.0.3</string>
+	<string>1.0</string>
 	<key>CFBundleVersion</key>
-	<string>11</string>
+	<string>13</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 
@@ -32,6 +37,38 @@
 	     manual export-compliance question on every TestFlight build. -->
 	<key>ITSAppUsesNonExemptEncryption</key>
 	<false/>
+
+	<!-- Custom URL scheme for Skin Duel invite/result deep links
+	     (verite://duel?d=…). Opened via .onOpenURL in RootView.
+	     The second entry is Google Sign-In's reversed iOS client ID — the
+	     callback scheme GoogleSignIn opens after the consent sheet. -->
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleURLName</key>
+			<string>com.verite.com</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>verite</string>
+			</array>
+		</dict>
+		<dict>
+			<key>CFBundleURLName</key>
+			<string>google-signin</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>com.googleusercontent.apps.115881181976-1mdtr88idlr46cb71iqfmts8t1lo9pr2</string>
+			</array>
+		</dict>
+	</array>
+
+	<!-- Google Sign-In. GIDClientID = the iOS OAuth client; GIDServerClientID
+	     = the Web client, so the returned ID token's audience is accepted by
+	     Supabase (both IDs are listed in the Supabase Google provider). -->
+	<key>GIDClientID</key>
+	<string>115881181976-1mdtr88idlr46cb71iqfmts8t1lo9pr2.apps.googleusercontent.com</string>
+	<key>GIDServerClientID</key>
+	<string>115881181976-c58ut1hmt4bi9v2u309i2300knl9f3f3.apps.googleusercontent.com</string>
 
 	<!-- App Store category. -->
 	<key>LSApplicationCategoryType</key>
@@ -49,16 +86,34 @@
 
 	<!-- Honest, specific camera reason. Localized via InfoPlist.xcstrings. -->
 	<key>NSCameraUsageDescription</key>
-	<string>Vérité uses the camera to analyze your skin and scan product barcodes. Photos are processed on your device and never uploaded.</string>
+	<string>Glowé uses the camera to capture your skin. Your photo is sent securely to generate your skin analysis and isn't stored after your results are ready.</string>
 
-	<!-- Light-first white-and-blue committed look. -->
+	<!-- Required so "Save Video" in the share sheet (Glow-Up Reel export) can
+	     write to the photo library. Without this key iOS terminates the app the
+	     moment the user taps Save. Localized via InfoPlist.xcstrings. -->
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>Glowé needs permission to save your Glow-Up Reel to your photo library.</string>
+
+	<!-- Warm, light GlamUp look — committed app-wide. -->
 	<key>UIUserInterfaceStyle</key>
 	<string>Light</string>
 
-	<key>UILaunchScreen</key>
+	<!-- A compiled launch storyboard is the decisive "supports every screen
+	     size" signal. The previous UILaunchScreen dict (asset-color reference)
+	     is the known-flaky path with manual plists — when iOS fails to resolve
+	     it at snapshot time, the app is letterboxed into the small legacy
+	     canvas (the shrunken 3:4-ish iPad compatibility window). -->
+	<key>UILaunchStoryboardName</key>
+	<string>LaunchScreen</string>
+
+	<!-- Opt into the modern scene lifecycle. Without this, a manually-managed
+	     Info.plist makes iOS treat the app as legacy and render it in a small
+	     letterboxed compatibility window on iPad instead of full native size.
+	     SwiftUI's App lifecycle supplies the scene; single-window app. -->
+	<key>UIApplicationSceneManifest</key>
 	<dict>
-		<key>UIColorName</key>
-		<string>LaunchBackground</string>
+		<key>UIApplicationSupportsMultipleScenes</key>
+		<false/>
 	</dict>
 
 	<key>UISupportedInterfaceOrientations</key>
@@ -66,9 +121,11 @@
 		<string>UIInterfaceOrientationPortrait</string>
 	</array>
 
+	<!-- arm64 is the only architecture on every supported device; the old
+	     armv7 (32-bit) value is legacy and also flags the app as pre-modern. -->
 	<key>UIRequiredDeviceCapabilities</key>
 	<array>
-		<string>armv7</string>
+		<string>arm64</string>
 	</array>
 
 	<!-- Display font: Playfair Display (SIL OFL), two variable TTFs (upright +

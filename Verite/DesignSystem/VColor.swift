@@ -6,18 +6,18 @@ import SwiftUI
 /// ONLY on honest risk flags — never decoratively.
 enum VColor {
     // Backgrounds — light elevation ladder
-    static let bgBase        = Color(hex: "EEF3FD") // app background, always
+    static let bgBase        = Color(hex: "F5F0FB") // app background, always
     static let bgSurface     = Color(hex: "FFFFFF") // first elevation (cards on base)
-    static let bgElevated    = Color(hex: "F4F8FF") // second elevation (cards on cards)
-    static let bgElevated2   = Color(hex: "EAF1FE") // stacked/nested cards
-    static let strokeSubtle  = Color(hex: "DCE5F5") // hairline on every card
-    static let strokeBright  = Color(hex: "B9CBEC") // focused/active borders
+    static let bgElevated    = Color(hex: "F6F1FC") // second elevation (cards on cards)
+    static let bgElevated2   = Color(hex: "EFE7F8") // stacked/nested cards
+    static let strokeSubtle  = Color(hex: "E6DCF2") // hairline on every card
+    static let strokeBright  = Color(hex: "C9B6E4") // focused/active borders
 
     // Brand
-    static let primary       = Color(hex: "3E6BFF")
-    static let primaryBright = Color(hex: "6E9BFF")
+    static let primary       = Color(hex: "9B6BD3")
+    static let primaryBright = Color(hex: "B48FDF")
     /// Legible cyan on white (spec's dark-theme value is #5AD1FF).
-    static let accent        = Color(hex: "1CA3E6")
+    static let accent        = Color(hex: "B57BD8")
 
     // Semantic (honest flags only)
     static let success       = Color(hex: "10A87E")
@@ -25,9 +25,9 @@ enum VColor {
     static let danger        = Color(hex: "E24857")
 
     // Text
-    static let textPrimary   = Color(hex: "0E1B34")
-    static let textSecondary = Color(hex: "5D6E90")
-    static let textTertiary  = Color(hex: "8595B5") // captions, metadata, timestamps
+    static let textPrimary   = Color(hex: "1A1225")
+    static let textSecondary = Color(hex: "6B5F7A")
+    static let textTertiary  = Color(hex: "9C93AC") // captions, metadata, timestamps
 
     /// The signature gradient — reserved for the primary action, scan ring,
     /// score-reveal fills, and the logo mark. Never decorative.

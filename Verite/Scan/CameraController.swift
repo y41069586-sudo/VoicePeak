@@ -7,8 +7,9 @@ import UIKit
 /// detection + a luminance estimate on the video stream (throttled, off the main
 /// thread) to drive the AR alignment guide, and captures a still photo on demand.
 ///
-/// Everything here stays on-device. Nothing is transmitted; the captured image is
-/// handed back to the caller, which stores only a local thumbnail.
+/// Capture and framing run entirely on-device; this class transmits nothing on
+/// its own. The still it hands back is later sent to the analysis providers by
+/// the scan pipeline (see DermiqScanFlow); only a local thumbnail is stored here.
 final class CameraController: NSObject, ObservableObject, @unchecked Sendable,
                              AVCaptureVideoDataOutputSampleBufferDelegate,
                              AVCapturePhotoCaptureDelegate {
@@ -140,13 +141,14 @@ final class CameraController: NSObject, ObservableObject, @unchecked Sendable,
         guard let pixelBuffer = CMSampleBufferGetImageBuffer(sampleBuffer) else { return }
 
         let brightness = averageLuminance(of: pixelBuffer)
-        let (detected, height, offset) = detectFace(in: pixelBuffer)
+        let (detected, height, offset, eyesOpen) = detectFace(in: pixelBuffer)
 
         var updated = CaptureQuality()
         updated.faceDetected = detected
         updated.normalizedFaceHeight = height
         updated.faceCenterOffset = offset
         updated.brightness = brightness
+        updated.eyesOpen = eyesOpen
 
         DispatchQueue.main.async { [weak self] in
             guard let self, self.quality != updated else { return }
@@ -154,19 +156,36 @@ final class CameraController: NSObject, ObservableObject, @unchecked Sendable,
         }
     }
 
-    /// Largest-face bounding-box height + center offset in normalized coordinates.
-    private func detectFace(in pixelBuffer: CVPixelBuffer) -> (Bool, Double, Double) {
-        let request = VNDetectFaceRectanglesRequest()
+    /// Largest-face bounding-box height + center offset in normalized
+    /// coordinates, plus an eyes-open estimate from the eye landmarks.
+    private func detectFace(in pixelBuffer: CVPixelBuffer) -> (Bool, Double, Double, Bool) {
+        let request = VNDetectFaceLandmarksRequest()
         // Front camera in portrait: the sensor buffer maps to `.leftMirrored`.
         let handler = VNImageRequestHandler(cvPixelBuffer: pixelBuffer, orientation: .leftMirrored, options: [:])
         try? handler.perform([request])
 
         guard let face = (request.results ?? []).max(by: { $0.boundingBox.height < $1.boundingBox.height }) else {
-            return (false, 0, 1)
+            return (false, 0, 1, false)
         }
         let box = face.boundingBox
         let offset = hypot(box.midX - 0.5, box.midY - 0.5)
-        return (true, Double(box.height), Double(offset))
+        return (true, Double(box.height), Double(offset), eyesLookOpen(face))
+    }
+
+    /// Eye openness heuristic: height/width aspect ratio of both eye outlines.
+    private func eyesLookOpen(_ face: VNFaceObservation) -> Bool {
+        guard let left = face.landmarks?.leftEye, let right = face.landmarks?.rightEye else {
+            return false
+        }
+        func aspect(_ eye: VNFaceLandmarkRegion2D) -> CGFloat {
+            let points = eye.normalizedPoints
+            guard points.count >= 4,
+                  let minX = points.map(\.x).min(), let maxX = points.map(\.x).max(),
+                  let minY = points.map(\.y).min(), let maxY = points.map(\.y).max(),
+                  maxX > minX else { return 0 }
+            return (maxY - minY) / (maxX - minX)
+        }
+        return aspect(left) > 0.14 && aspect(right) > 0.14
     }
 
     /// Average frame luminance (0...1) via a 1×1 area-average reduction.

@@ -17,6 +17,8 @@ struct MetricsPayload: Codable, Sendable {
         let isBaseline: Bool
         let captureQuality: Double
         let attributes: [String: Double]
+        /// Overall 0–100. Optional for forward-compat with any older row.
+        var overall: Int? = nil
     }
     struct RoutineMetric: Codable, Sendable {
         let timeOfDay: String

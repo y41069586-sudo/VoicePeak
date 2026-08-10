@@ -1,9 +1,9 @@
 import SwiftUI
 
-/// The four localized legal documents reachable from Settings → Legal. Full
-/// localized bodies (Impressum, Datenschutz/Privacy, AGB/Terms) are authored in
-/// Milestone 10 and marked "lawyer review before publishing". The medical
-/// disclaimer body already exists (it's baked in from day one).
+/// The four localized legal documents reachable from Settings → Legal and from
+/// the paywall's Terms/Privacy links. The Impressum, Privacy Policy, Terms and
+/// medical disclaimer bodies are final and localized in all five languages,
+/// with the real provider-identity details already filled in.
 enum LegalDocument: String, CaseIterable, Identifiable {
     case impressum
     case privacy
@@ -12,13 +12,28 @@ enum LegalDocument: String, CaseIterable, Identifiable {
 
     var id: String { rawValue }
 
-    var titleKey: LocalizedStringKey { "legal.\(rawValue).title" }
+    /// Literal keys — NOT interpolated. A `LocalizedStringKey` built from
+    /// `"legal.\(rawValue).title"` is parsed as the key `legal.%@.title` with
+    /// `rawValue` as an argument; since the catalog has the concrete keys and
+    /// no `%@` variant, the lookup misses and SwiftUI renders the raw key on
+    /// screen. Returning compile-time literals keeps the lookup exact.
+    var titleKey: LocalizedStringKey {
+        switch self {
+        case .impressum:  return "legal.impressum.title"
+        case .privacy:    return "legal.privacy.title"
+        case .terms:      return "legal.terms.title"
+        case .disclaimer: return "legal.disclaimer.title"
+        }
+    }
 
-    /// Localized body key. The disclaimer resolves to real copy now; the others
-    /// resolve to a "coming in a later milestone / see the Markdown file" notice
-    /// until M10 fills them in.
+    /// Localized body key. All four resolve to final localized copy.
     var bodyKey: LocalizedStringKey {
-        rawValue == "disclaimer" ? "disclaimer.full" : "legal.\(rawValue).body"
+        switch self {
+        case .impressum:  return "legal.impressum.body"
+        case .privacy:    return "legal.privacy.body"
+        case .terms:      return "legal.terms.body"
+        case .disclaimer: return "disclaimer.full"
+        }
     }
 
     var systemImage: String {

@@ -1,5 +1,6 @@
 import SwiftUI
 import SwiftData
+import UserNotifications
 
 /// Application entry point. Sets up the SwiftData container, injects global state,
 /// commits to the dark "Aesthetic Blue" look, and applies any language override.
@@ -15,16 +16,22 @@ struct VeriteApp: App {
     /// are enabled.
     @State private var purchases = PurchaseManager()
 
-    /// Language override chosen in Settings; empty string = follow system locale.
-    @AppStorage("languageOverride") private var languageOverride: String = ""
+    init() {
+        // Apply the in-app language picker through `AppleLanguages`, the one
+        // lever Foundation AND SwiftUI both read. Must happen here, before any
+        // UI exists — the value is consumed as the process starts.
+        AppLanguage.apply()
+        // Notifications show in the foreground and their taps deep-link.
+        UNUserNotificationCenter.current().delegate = DQNotificationDelegate.shared
+    }
 
     var body: some Scene {
         WindowGroup {
+            // Color scheme lives in RootView: dark for the cinematic onboarding
+            // stage, then the committed light-first white-and-blue look.
             RootView()
                 .environment(appState)
                 .environment(purchases)
-                .preferredColorScheme(.light) // light-first white-and-blue, committed look
-                .applyLanguageOverride(languageOverride)
                 .task {
                     if appState.featureFlags.purchasesEnabled { await purchases.load() }
                 }
@@ -33,15 +40,6 @@ struct VeriteApp: App {
     }
 }
 
-private extension View {
-    /// Force a specific UI language when the user overrides it in Settings.
-    /// An empty override falls back to the system locale.
-    @ViewBuilder
-    func applyLanguageOverride(_ code: String) -> some View {
-        if code.isEmpty {
-            self
-        } else {
-            self.environment(\.locale, Locale(identifier: code))
-        }
-    }
-}
+// No `.environment(\.locale, …)` override here on purpose. It switches only
+// `Text(…)`, leaving every `String(localized:)` on the device language — the
+// half-translated-screen bug. `AppLanguage.apply()` in `init()` covers both.

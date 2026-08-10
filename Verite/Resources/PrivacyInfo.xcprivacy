@@ -1,8 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <!--
-  Vérité privacy manifest. Local-first: no tracking, no data collection off-device.
-  Face photos are never collected or transmitted. Expanded/verified in Milestone 11.
+  Glowé privacy manifest. No third-party tracking SDK and no analytics SDK ship in
+  the app (NSPrivacyTracking = false). The scan photo IS sent (encrypted in transit)
+  to our skin-analysis providers (Perfect Corp for the analysis, Google Gemini for
+  the "Potential" preview) to compute the user's scores and is not retained after
+  the result — it is used only to service the user's own request. It is NOT used
+  for tracking and is never sold. Because the photo leaves the device to a third
+  party, it is declared below as a collected "Photos or Videos" data type, used
+  for app functionality only, not linked to identity, not used for tracking.
+  Keep the App Store Connect privacy label ("nutrition label") in sync with this.
 -->
 <plist version="1.0">
 <dict>
@@ -11,7 +18,20 @@
 	<key>NSPrivacyTrackingDomains</key>
 	<array/>
 	<key>NSPrivacyCollectedDataTypes</key>
-	<array/>
+	<array>
+		<dict>
+			<key>NSPrivacyCollectedDataType</key>
+			<string>NSPrivacyCollectedDataTypePhotosorVideos</string>
+			<key>NSPrivacyCollectedDataTypeLinked</key>
+			<false/>
+			<key>NSPrivacyCollectedDataTypeTracking</key>
+			<false/>
+			<key>NSPrivacyCollectedDataTypePurposes</key>
+			<array>
+				<string>NSPrivacyCollectedDataTypePurposeAppFunctionality</string>
+			</array>
+		</dict>
+	</array>
 	<key>NSPrivacyAccessedAPITypes</key>
 	<array>
 		<!-- @AppStorage / UserDefaults for app settings (language override, etc.). -->
