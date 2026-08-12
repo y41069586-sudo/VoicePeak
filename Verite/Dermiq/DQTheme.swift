@@ -4,10 +4,21 @@ import SwiftUI
 // MARK: — SkinFix v2 design system (MASTER PROMPT §6)
 // ============================================================
 //
-// Warm GlamUp light world — the app now shares one visual language with the
-// onboarding stage (RampStage): cream ground, white surfaces, cocoa ink, one
-// coral accent. This file remains the ONLY place the v2 tokens are defined.
+// Warm light-linen world — a pale, warm neutral ground with white surfaces,
+// warm-black ink, and ONE cool accent set against the warm ground. This file
+// remains the ONLY place the v2 tokens are defined.
 // (The v1 white-blue `VColor` system remains for legacy screens only.)
+//
+// Why warm neutral rather than the old lavender: the screen is mostly
+// photographs of skin. Lavender tints skin, blue makes it sallow, grey drains
+// it — a warm neutral is the one ground every skin tone sits correctly on. It
+// also drops the "beauty product" read that lavender carries, which fought the
+// product's own name.
+//
+// Why the accent is COOL on a warm ground: warm-on-warm (the cream/terracotta
+// pairing) is the default everyone lands on, and it reads as decoration. The
+// temperature contrast is what makes the palette look decided. It also keeps
+// the accent from ever competing with skin tones in the photo.
 //
 // Haptics are part of the design system:
 //   .rigid  → captures / commits        (Haptics.fire(.capture))
@@ -15,17 +26,17 @@ import SwiftUI
 //   .light  → count-up ticks            (Haptics.fire(.tick))
 
 enum DQColor {
-    static let background      = Color(hex: "F8F5FC")
+    static let background      = Color(hex: "FAF7F1")
     static let surface         = Color(hex: "FFFFFF")
-    static let surfaceElevated = Color(hex: "F1EAFB")
-    static let accent          = Color(hex: "9B6BD3")
-    /// On the light ground the "bright" accent role needs the DEEPER blue for
+    static let surfaceElevated = Color(hex: "F3EFE6")
+    static let accent          = Color(hex: "12655D")
+    /// On the light ground the "bright" accent role needs the DEEPER shade for
     /// contrast — it is used for accent text and small indicators.
-    static let accentBright    = Color(hex: "7C4FB0")
+    static let accentBright    = Color(hex: "0C4A44")
     /// Soft accent tint for icon chips, segmented backgrounds, soft fills.
-    static let accentSoft      = Color(hex: "EFE5FA")
-    static let textPrimary     = Color(hex: "1A1225")
-    static let textSecondary   = Color(hex: "6B5F7A")
+    static let accentSoft      = Color(hex: "E4EDEA")
+    static let textPrimary     = Color(hex: "1C1A17")
+    static let textSecondary   = Color(hex: "6E6862")
     static let deltaUp         = Color(hex: "1F9D6B")
     static let deltaDown       = Color(hex: "DE5B4E")
 
@@ -36,7 +47,7 @@ enum DQColor {
     )
 
     /// Hairline stroke on cards (derived, not a new hue).
-    static let stroke = Color(hex: "1A1225").opacity(0.10)
+    static let stroke = Color(hex: "1C1A17").opacity(0.10)
 }
 
 enum DQFont {

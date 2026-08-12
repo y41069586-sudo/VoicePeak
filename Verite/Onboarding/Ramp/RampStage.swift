@@ -14,28 +14,30 @@ import UIKit
 // the flow always ships whole.
 
 enum RampStage {
-    // Ground & ink — modern, airy "baby-blue" world with a near-black slate
-    // ink for crisp, high-contrast, app-modern typography.
-    static let porcelain = Color(hex: "F8F5FC") // light blue-white background (name kept for call sites)
-    static let recess     = Color(hex: "EFE7F8") // recessed panel
-    static let ink        = Color(hex: "1A1225") // near-black slate, maximum contrast
-    static let inkSoft    = Color(hex: "6B5F7A") // secondary text
-    static let inkFaint   = Color(hex: "9C93AC") // tertiary text
-    static let hair       = Color(hex: "ECE6F4") // cool hairline
+    // Ground & ink — pale warm linen with a warm-black ink. Matches DQColor;
+    // see the rationale there for why the ground is a warm neutral (skin sits
+    // correctly on it) and the accent is cool (temperature contrast, and it
+    // never competes with skin tones in a photo).
+    static let porcelain = Color(hex: "FAF7F1") // light linen background (name kept for call sites)
+    static let recess     = Color(hex: "F1ECE2") // recessed panel
+    static let ink        = Color(hex: "1C1A17") // warm near-black, maximum contrast
+    static let inkSoft    = Color(hex: "6E6862") // secondary text
+    static let inkFaint   = Color(hex: "9A938A") // tertiary text
+    static let hair       = Color(hex: "E7E0D4") // warm hairline
 
-    // The single accent (modern blue) + a deeper shade for on-light text and
+    // The single accent (deep teal) + a deeper shade for on-light text and
     // a soft tint used as fills/pools.
-    static let accent     = Color(hex: "9B6BD3")
-    static let accentDeep = Color(hex: "7C4FB0")
-    static let glow       = Color(hex: "E2D3F5")
+    static let accent     = Color(hex: "12655D")
+    static let accentDeep = Color(hex: "0C4A44")
+    static let glow       = Color(hex: "EFE7D9")
 
-    // Cool light pools layered behind the content (names kept for call sites).
-    static let dawnPeach  = Color(hex: "E4D8F5")
-    static let dawnLilac  = Color(hex: "EDE4F8") // (name kept for call sites)
-    static let dawnSky    = Color(hex: "F5F0FB") // (name kept for call sites)
+    // Warm light pools layered behind the content (names kept for call sites).
+    static let dawnPeach  = Color(hex: "F0E6D6")
+    static let dawnLilac  = Color(hex: "F4EDE2") // (name kept for call sites)
+    static let dawnSky    = Color(hex: "F8F4EC") // (name kept for call sites)
 
     /// Soft accent tint for icon chips, segmented backgrounds, soft buttons.
-    static let accentSoft = Color(hex: "EFE5FA")
+    static let accentSoft = Color(hex: "E4EDEA")
 
     // Named text roles.
     static let textPrimary   = ink
@@ -125,16 +127,16 @@ struct RampPhoto: View {
     }
     #endif
 
-    /// Soft blue gradient placeholder — deliberately pretty on its own.
+    /// Soft warm gradient placeholder — deliberately pretty on its own.
     private var placeholder: some View {
         ZStack {
-            LinearGradient(colors: [Color(hex: "DCEBFB"), Color(hex: "AFCDF3"),
-                                    Color(hex: "7FA9E6")],
+            LinearGradient(colors: [Color(hex: "F6EFE3"), Color(hex: "E8DCC8"),
+                                    Color(hex: "D3C3A8")],
                            startPoint: .topLeading, endPoint: .bottomTrailing)
             RadialGradient(colors: [.white.opacity(0.55), .clear],
                            center: UnitPoint(x: 0.25, y: 0.2),
                            startRadius: 0, endRadius: 220)
-            RadialGradient(colors: [Color(hex: "E2D3F5").opacity(0.8), .clear],
+            RadialGradient(colors: [Color(hex: "EFE7D9").opacity(0.8), .clear],
                            center: UnitPoint(x: 0.85, y: 0.85),
                            startRadius: 0, endRadius: 260)
         }
