@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <!--
-  Glowé privacy manifest. No third-party tracking SDK and no analytics SDK ship in
+  SkinFix privacy manifest. No third-party tracking SDK and no analytics SDK ship in
   the app (NSPrivacyTracking = false). The scan photo IS sent (encrypted in transit)
   to our skin-analysis providers (Perfect Corp for the analysis, Google Gemini for
   the "Potential" preview) to compute the user's scores and is not retained after

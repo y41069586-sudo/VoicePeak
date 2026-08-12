@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Glowé outreach sender — tiny local web GUI (no dependencies).
+SkinFix outreach sender — tiny local web GUI (no dependencies).
 
 Runs a small web page on your own machine where you paste your list, write the
 email once with a {{first_name}} placeholder, and hit Send. It emails each
@@ -34,22 +34,22 @@ HOST, PORT = "127.0.0.1", 8765
 
 FOOTER = '\n\n--\nNot your thing? Just reply "stop" and we won\'t message again.'
 
-DEFAULT_SUBJECT = "Paid collab with Glowé?"
+DEFAULT_SUBJECT = "Paid collab with SkinFix?"
 DEFAULT_BODY = """Hey {{first_name}},
 
-We're the founders of Glowé — an app that scans your skin, gives an honest 0–100 score and a personalized 14-day glow-up plan (plus an AI "you as a 10/10" preview). Super visual, made for skincare content.
+We're the founders of SkinFix — an app that scans your skin, gives an honest 0–100 score and a personalized 14-day glow-up plan (plus an AI "you as a 10/10" preview). Super visual, made for skincare content.
 
 We'd love to do a paid collab with you. Your audience is exactly who we built this for.
 
 Interested? Happy to send you free lifetime access to try it first.
 
-— The Glowé Team"""
+— The SkinFix Team"""
 
 DEFAULT_LEADS = """email,first_name
 example@gmail.com,Jane"""
 
 PAGE = """<!doctype html><html><head><meta charset="utf-8">
-<title>Glowé Sender</title>
+<title>SkinFix Sender</title>
 <style>
  body{{font-family:-apple-system,Segoe UI,Roboto,sans-serif;background:#efe7f7;color:#2a2140;margin:0;padding:24px}}
  .card{{max-width:720px;margin:0 auto;background:#fff;border-radius:20px;padding:28px;box-shadow:0 16px 50px rgba(120,90,180,.15)}}
@@ -62,7 +62,7 @@ PAGE = """<!doctype html><html><head><meta charset="utf-8">
  .note{{font-size:12px;color:#8a82a0;margin-top:6px}}
  .warn{{background:#fbeaea;color:#a23;padding:10px 12px;border-radius:10px;font-size:13px;margin-bottom:16px}}
 </style></head><body><div class="card">
-<h1>Glowé Sender</h1>
+<h1>SkinFix Sender</h1>
 <p class="sub">Jeder bekommt seine eigene Mail. {{first_name}} wird ersetzt.</p>
 <div class="warn">Klein halten (ein paar Dutzend/Tag) — sonst sperrt Gmail dein Konto. Opt-out + Impressum werden automatisch angehängt.</div>
 <form method="POST" action="/send">
@@ -70,7 +70,7 @@ PAGE = """<!doctype html><html><head><meta charset="utf-8">
   <div><label>Deine Gmail</label><input name="user" type="email" placeholder="du@gmail.com" required></div>
   <div><label>App-Passwort (16 Zeichen)</label><input name="pw" type="password" required></div>
  </div>
- <label>Absender-Name</label><input name="from_name" value="Glowé">
+ <label>Absender-Name</label><input name="from_name" value="SkinFix">
  <label>Betreff</label><input name="subject" value="{subject}">
  <label>Nachricht (nutze {{{{first_name}}}} als Platzhalter)</label>
  <textarea name="body" rows="12">{body}</textarea>
@@ -113,7 +113,7 @@ class Handler(BaseHTTPRequestHandler):
         g = lambda k, d="": form.get(k, [d])[0]
         user, pw = g("user").strip(), g("pw").strip()
         subject, body = g("subject"), g("body")
-        from_name = g("from_name") or "Glowé"
+        from_name = g("from_name") or "SkinFix"
         try:
             delay = max(0, float(g("delay", "8")))
         except ValueError:
@@ -160,6 +160,6 @@ class Handler(BaseHTTPRequestHandler):
 
 
 if __name__ == "__main__":
-    print(f"Glowé Sender läuft → öffne http://{HOST}:{PORT} im Browser")
+    print(f"SkinFix Sender läuft → öffne http://{HOST}:{PORT} im Browser")
     print("(Zum Beenden: Strg+C)")
     HTTPServer((HOST, PORT), Handler).serve_forever()

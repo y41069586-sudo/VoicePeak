@@ -164,7 +164,7 @@ struct DermiqTabShell: View {
             }
             if ReferralStore.shared.handle(url) { return }
             // A duel link almost always arrives on a COLD launch — the friend
-            // taps it with Glowé not running. Stashing `pending` synchronously
+            // taps it with SkinFix not running. Stashing `pending` synchronously
             // here flips the face-off sheet's binding during SwiftUI's very
             // first render pass, before there's a presented shell to host it,
             // so the sheet is silently dropped: the app opens and nothing
@@ -398,7 +398,7 @@ struct DermiqScanHome: View {
             .padding(.bottom, 28)
         }
         .scrollIndicators(.hidden)
-        .alert("No Glowé link found", isPresented: $pasteFailed) {
+        .alert("No SkinFix link found", isPresented: $pasteFailed) {
             Button("OK", role: .cancel) {}
         } message: {
             Text("Copy your friend's whole message, then try again.")

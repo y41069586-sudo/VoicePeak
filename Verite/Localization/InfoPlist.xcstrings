@@ -7,31 +7,31 @@
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "Glowé nutzt die Kamera, um deine Haut aufzunehmen. Dein Foto wird sicher übertragen, um deine Haut-Analyse zu erstellen, und wird nach deinen Ergebnissen nicht gespeichert."
+            "value": "SkinFix nutzt die Kamera, um deine Haut aufzunehmen. Dein Foto wird sicher übertragen, um deine Haut-Analyse zu erstellen, und wird nach deinen Ergebnissen nicht gespeichert."
           }
         },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Glowé uses the camera to capture your skin. Your photo is sent securely to generate your skin analysis and isn't stored after your results are ready."
+            "value": "SkinFix uses the camera to capture your skin. Your photo is sent securely to generate your skin analysis and isn't stored after your results are ready."
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Glowé usa la cámara para capturar tu piel. Tu foto se envía de forma segura para generar tu análisis y no se almacena una vez listos tus resultados."
+            "value": "SkinFix usa la cámara para capturar tu piel. Tu foto se envía de forma segura para generar tu análisis y no se almacena una vez listos tus resultados."
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Glowé utilise l'appareil photo pour capturer ta peau. Ta photo est envoyée de façon sécurisée pour générer ton analyse et n'est pas conservée une fois tes résultats prêts."
+            "value": "SkinFix utilise l'appareil photo pour capturer ta peau. Ta photo est envoyée de façon sécurisée pour générer ton analyse et n'est pas conservée une fois tes résultats prêts."
           }
         },
         "it": {
           "stringUnit": {
             "state": "translated",
-            "value": "Glowé usa la fotocamera per acquisire la tua pelle. La foto viene inviata in modo sicuro per generare la tua analisi e non viene conservata dopo i risultati."
+            "value": "SkinFix usa la fotocamera per acquisire la tua pelle. La foto viene inviata in modo sicuro per generare la tua analisi e non viene conservata dopo i risultati."
           }
         }
       }
@@ -42,31 +42,31 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Glowé needs permission to save your Glow-Up Reel to your photo library."
+            "value": "SkinFix needs permission to save your Glow-Up Reel to your photo library."
           }
         },
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "Glowé braucht die Berechtigung, um dein Glow-Up-Reel in deiner Fotomediathek zu speichern."
+            "value": "SkinFix braucht die Berechtigung, um dein Glow-Up-Reel in deiner Fotomediathek zu speichern."
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Glowé necesita permiso para guardar tu Glow-Up Reel en tu fototeca."
+            "value": "SkinFix necesita permiso para guardar tu Glow-Up Reel en tu fototeca."
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Glowé a besoin de l'autorisation d'enregistrer ton Glow-Up Reel dans ta photothèque."
+            "value": "SkinFix a besoin de l'autorisation d'enregistrer ton Glow-Up Reel dans ta photothèque."
           }
         },
         "it": {
           "stringUnit": {
             "state": "translated",
-            "value": "Glowé ha bisogno dell'autorizzazione per salvare il tuo Glow-Up Reel nella tua libreria foto."
+            "value": "SkinFix ha bisogno dell'autorizzazione per salvare il tuo Glow-Up Reel nella tua libreria foto."
           }
         }
       }

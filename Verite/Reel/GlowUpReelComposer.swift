@@ -267,7 +267,7 @@ enum GlowUpReelComposer {
     }
 
     private static func drawBrandTag() {
-        draw(text: "Glowé", font: rounded(38, .heavy), color: .white.withAlphaComponent(0.8),
+        draw(text: "SkinFix", font: rounded(38, .heavy), color: .white.withAlphaComponent(0.8),
              at: CGPoint(x: 64, y: 92), tracking: 7)
     }
 
@@ -312,7 +312,7 @@ enum GlowUpReelComposer {
         UIColor(red: 0.055, green: 0.078, blue: 0.11, alpha: 1).setFill()  // 0E141C
         UIRectFill(CGRect(origin: .zero, size: size))
         let a = clamp01(appear)
-        draw(text: "Glowé", font: rounded(150, .heavy),
+        draw(text: "SkinFix", font: rounded(150, .heavy),
              color: .white.withAlphaComponent(a),
              at: CGPoint(x: size.width / 2, y: 800), centered: true)
         if to != from {

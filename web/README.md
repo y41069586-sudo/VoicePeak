@@ -1,9 +1,9 @@
-# Glowé share-link redirect
+# SkinFix share-link redirect
 
 Chats (WhatsApp, iMessage, …) only make `https://` links tappable — never a
 custom scheme like `verite://`. This one-file page makes share links clickable:
 a friend taps the `https://` link, this page opens and bounces them into the
-app via `verite://` (or shows a "Get Glowé" button if the app isn't installed).
+app via `verite://` (or shows a "Get SkinFix" button if the app isn't installed).
 
 ## Setup (one-time)
 

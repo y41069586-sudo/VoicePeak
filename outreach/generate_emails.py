@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Glowé creator cold-email generator.
+SkinFix creator cold-email generator.
 
 Reads a leads CSV, scores each creator by fit, fills a personalized 3-step
 email sequence, and writes an import-ready CSV for a cold-email tool
@@ -23,24 +23,24 @@ import sys
 import argparse
 
 # ---- Sender identity (EDIT THESE — required for legal cold email) ----------
-FROM_NAME   = "Glowé Team"
-SENDER_LINE = "Doaa & the Glowé team"
+FROM_NAME   = "SkinFix Team"
+SENDER_LINE = "Doaa & the SkinFix team"
 # CAN-SPAM / GDPR: a real postal address + a working opt-out are mandatory.
-COMPANY_ADDRESS = "Glowé · Wilhelm-Diess-Weg 3a · 94081 Fürstenzell · Germany"
+COMPANY_ADDRESS = "SkinFix · Wilhelm-Diess-Weg 3a · 94081 Fürstenzell · Germany"
 UNSUB_LINE = "Not your thing? Just reply \"stop\" and we won't message again."
 
 # ---- The sequence ----------------------------------------------------------
 SUBJECTS = {
-    1: "Paid collab with Glowé, {first_name}?",
+    1: "Paid collab with SkinFix, {first_name}?",
     2: "Quick one, {first_name} 👀",
-    3: "Last note from Glowé, {first_name}",
+    3: "Last note from SkinFix, {first_name}",
 }
 
 EMAIL_1 = """Hey {first_name},
 
 {hook_sentence}
 
-We're the founders of Glowé — an app that scans your skin, gives an honest
+We're the founders of SkinFix — an app that scans your skin, gives an honest
 0–100 score and a personalized 14-day glow-up plan (plus an AI "you as a 10/10"
 preview). Super visual, made for {niche} content.
 
@@ -57,7 +57,7 @@ Interested? Happy to send you free lifetime access to try it first.
 EMAIL_2 = """Hey {first_name},
 
 Just floating this back up — still keen to set up a paid collab with you for
-Glowé. Takes 2 minutes to try (I'll send free access), and it makes for a
+SkinFix. Takes 2 minutes to try (I'll send free access), and it makes for a
 really clean before/after piece of content.
 
 Worth a quick chat?
@@ -69,7 +69,7 @@ Worth a quick chat?
 
 EMAIL_3 = """Hey {first_name},
 
-Last one from me, promise. If a paid Glowé collab could be a fit — even later
+Last one from me, promise. If a paid SkinFix collab could be a fit — even later
 this year — just reply and I'll send over the details + free access. If not,
 all good, I'll leave you be.
 

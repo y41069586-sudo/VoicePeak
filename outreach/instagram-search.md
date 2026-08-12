@@ -1,4 +1,4 @@
-# Instagram creator search — Glowé playbook
+# Instagram creator search — SkinFix playbook
 
 No legal bulk API exists for Instagram, but manual search with a system is
 fast: ~20 quality leads in 30 minutes once you're warm. Target: 150 leads in

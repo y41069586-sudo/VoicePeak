@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Glowé lead merger — combine ANY creator CSVs into one clean leads.csv.
+SkinFix lead merger — combine ANY creator CSVs into one clean leads.csv.
 
 Feed it exports from anywhere (find_youtube.py output, an Apify actor export
 you ran yourself, a hand-collected sheet) — it auto-detects columns, digs

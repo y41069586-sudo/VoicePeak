@@ -1003,7 +1003,7 @@ struct DermiqRoutineTab: View {
             Text("No active plan")
                 .font(DQFont.title)
                 .foregroundStyle(DQColor.textPrimary)
-            Text("Scan your skin and Glowé builds a 14-day\nroutine from your weakest scores.")
+            Text("Scan your skin and SkinFix builds a 14-day\nroutine from your weakest scores.")
                 .font(DQFont.body)
                 .foregroundStyle(DQColor.textSecondary)
                 .multilineTextAlignment(.center)

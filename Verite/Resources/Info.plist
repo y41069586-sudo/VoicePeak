@@ -5,7 +5,7 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>en</string>
 	<key>CFBundleDisplayName</key>
-	<string>Glowé</string>
+	<string>SkinFix</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>
@@ -18,7 +18,7 @@
 	     itself as "Verite" wants to use accounts.google.com', a name the
 	     user has never seen. -->
 	<key>CFBundleName</key>
-	<string>Glowé</string>
+	<string>SkinFix</string>
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
@@ -86,13 +86,13 @@
 
 	<!-- Honest, specific camera reason. Localized via InfoPlist.xcstrings. -->
 	<key>NSCameraUsageDescription</key>
-	<string>Glowé uses the camera to capture your skin. Your photo is sent securely to generate your skin analysis and isn't stored after your results are ready.</string>
+	<string>SkinFix uses the camera to capture your skin. Your photo is sent securely to generate your skin analysis and isn't stored after your results are ready.</string>
 
 	<!-- Required so "Save Video" in the share sheet (Glow-Up Reel export) can
 	     write to the photo library. Without this key iOS terminates the app the
 	     moment the user taps Save. Localized via InfoPlist.xcstrings. -->
 	<key>NSPhotoLibraryAddUsageDescription</key>
-	<string>Glowé needs permission to save your Glow-Up Reel to your photo library.</string>
+	<string>SkinFix needs permission to save your Glow-Up Reel to your photo library.</string>
 
 	<!-- Warm, light GlamUp look — committed app-wide. -->
 	<key>UIUserInterfaceStyle</key>

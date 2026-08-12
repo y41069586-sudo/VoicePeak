@@ -122,7 +122,7 @@ struct DermiqResultsView: View {
             Haptics.fire(.selection)
             legalDocument = .disclaimer
         } label: {
-            Text("Glowé is a cosmetic and lifestyle product. Your score is an estimate, not a medical diagnosis. Tap to read the full disclaimer.")
+            Text("SkinFix is a cosmetic and lifestyle product. Your score is an estimate, not a medical diagnosis. Tap to read the full disclaimer.")
                 .font(DQFont.micro)
                 .foregroundStyle(DQColor.textSecondary)
                 .multilineTextAlignment(.center)
@@ -668,7 +668,7 @@ struct DermiqPaywallCard: View {
 
             VStack(spacing: 10) {
                 planRow(.pro,
-                        title: "Glowé Pro",
+                        title: "SkinFix Pro",
                         price: proAnnual
                             ? livePrice(VeriteProducts.proYearly)
                             : livePrice(VeriteProducts.proWeekly),

@@ -1,7 +1,7 @@
 import SwiftUI
 import SwiftData
 
-/// Glowé onboarding — "Lumière". A soft, editorial ritual: warm porcelain,
+/// SkinFix onboarding — "Lumière". A soft, editorial ritual: warm porcelain,
 /// dawn light and film grain, restrained serif headlines, quiet answer tiles.
 /// No mascot, no hero object — the content carries every screen. Same honest
 /// mechanic (score, range, 14-day plan) in a calm shell. Hands off to Guided
@@ -87,7 +87,7 @@ struct OnboardingRampFlow: View {
             RampSplitScreen { advance() }
         case .attribution:
             RampQuizScreen(
-                question: "Where did you find Glowé?",
+                question: "Where did you find SkinFix?",
                 options: RampQuizAnswers.AcquisitionSource.allCases.map {
                     RampQuizOption(id: $0.rawValue, label: $0.label, icon: $0.icon)
                 },

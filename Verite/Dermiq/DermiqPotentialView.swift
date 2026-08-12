@@ -246,7 +246,7 @@ struct DQShareButton: View {
             if let rendered {
                 ShareLink(
                     item: rendered,
-                    preview: SharePreview("My Glowé score", image: rendered)
+                    preview: SharePreview("My SkinFix score", image: rendered)
                 ) {
                     shareLabel
                 }
@@ -312,7 +312,7 @@ struct DQShareCard: View {
                         .foregroundStyle(DQColor.textPrimary)
                 }
                 Spacer()
-                Text("Glowé")
+                Text("SkinFix")
                     .font(.system(size: 17, weight: .semibold, design: .monospaced))
                     .tracking(5)
                     .foregroundStyle(DQColor.textPrimary)

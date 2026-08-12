@@ -1,4 +1,4 @@
-# Glowé creator outreach — cold email system
+# SkinFix creator outreach — cold email system
 
 Legal, scalable creator outreach. You collect leads into a CSV; the generator
 scores each creator and produces a personalized 3-email sequence, import-ready

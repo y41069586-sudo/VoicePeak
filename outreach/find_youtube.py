@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Glowé YouTube creator finder (official Data API v3 — legal, no scraping).
+SkinFix YouTube creator finder (official Data API v3 — legal, no scraping).
 
 Searches YouTube for creators in a niche, pulls real channel stats, extracts a
 business email from the channel description where present, scores by fit, and

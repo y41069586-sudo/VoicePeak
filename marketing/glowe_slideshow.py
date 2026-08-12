@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # ============================================================================
-#  GLOWÉ — TIKTOK-SLIDESHOW.  AUFTRAG + WERKZEUG IN EINER DATEI.
+#  SKINFIX — TIKTOK-SLIDESHOW.  AUFTRAG + WERKZEUG IN EINER DATEI.
 # ============================================================================
 #
 #  An die neue Session: lies diesen Block, arbeite ihn ab, frag nicht
@@ -22,10 +22,10 @@
 #
 #     slides/slide1.jpg   akne.jpg  + "How I got my skin to go from this"
 #     slides/slide2.jpg   clear.jpg + "to this, in one month"
-#     slides/slide3.png   Glowé Skin-Analyse Tag 14 — der Kreis-Avatar im
+#     slides/slide3.png   SkinFix Skin-Analyse Tag 14 — der Kreis-Avatar im
 #                         Chart wird automatisch aus clear.jpg geschnitten,
 #                         also dieselbe Person wie auf Slide 1 und 2
-#     slides/slide4.png   Glowé Routine Tag 14
+#     slides/slide4.png   SkinFix Routine Tag 14
 #
 #     Text-Overlay, 9:16-Cover-Crop und Avatar macht das Script selbst.
 #     Nichts von Hand nachbauen. Braucht nur PIL + das vorinstallierte
@@ -41,7 +41,7 @@
 #     mit Label genauso gut.
 #
 #  ── KONTEXT ──
-#     Glowé, iOS-Skincare-App, Bundle com.verite.com, App-Store-ID
+#     SkinFix, iOS-Skincare-App, Bundle com.verite.com, App-Store-ID
 #     6787454842. Scannt die Haut, gibt 8 Scores (0–100, höher = besser)
 #     und einen 14-Tage-Plan. Farbwelt: Lila #7C4FB0 / #9B6BD3 auf hellem
 #     Flieder-Verlauf.
@@ -157,7 +157,7 @@ def photo_slide(path, caption, out):
 
 
 # ============================================================
-# MARK: — Slide 3 & 4: echte Glowé-Screens
+# MARK: — Slide 3 & 4: echte SkinFix-Screens
 # ============================================================
 
 def circle_avatar(path, size=560):

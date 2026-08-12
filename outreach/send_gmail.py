@@ -59,7 +59,7 @@ def main():
     ap.add_argument("--delay", type=float, default=90,
                     help="seconds between sends (default 90 — looks human, avoids flags)")
     ap.add_argument("--suppress", help="optional CSV of emails to skip (opt-outs)")
-    ap.add_argument("--from-name", default="Glowé")
+    ap.add_argument("--from-name", default="SkinFix")
     ap.add_argument("--dry-run", action="store_true", help="print, send nothing")
     args = ap.parse_args()
 
@@ -95,7 +95,7 @@ def main():
     try:
         for i, row in enumerate(rows):
             to = row["email"].strip()
-            subject = row.get("subject_1") or "Paid collab with Glowé?"
+            subject = row.get("subject_1") or "Paid collab with SkinFix?"
             body = row.get("body_1") or ""
             if args.dry_run:
                 print(f"[dry-run] → {to} | {subject}")

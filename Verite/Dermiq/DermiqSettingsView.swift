@@ -110,7 +110,7 @@ struct DermiqSettingsView: View {
                 // NOT restart the process — iOS keeps the app alive in the
                 // background, so nothing changes and the hint looks broken.
                 // Spell out the force-quit.
-                Text("Close Glowé completely (swipe it away in the app switcher), then open it again.")
+                Text("Close SkinFix completely (swipe it away in the app switcher), then open it again.")
                     .font(DQFont.micro)
                     .foregroundStyle(DQColor.accentBright)
                     .frame(maxWidth: .infinity, alignment: .leading)
@@ -286,7 +286,7 @@ struct DermiqSettingsView: View {
             // button into a dead one. Apple's documented pattern for a
             // user-initiated "rate us" action is the App Store write-review
             // deep link, which always opens.
-            settingsButton(icon: "star", text: "Rate Glowé") {
+            settingsButton(icon: "star", text: "Rate SkinFix") {
                 if let url = URL(string:
                     "https://apps.apple.com/app/id6787454842?action=write-review") {
                     UIApplication.shared.open(url)
@@ -331,7 +331,7 @@ struct DermiqSettingsView: View {
 
     private var footer: some View {
         VStack(spacing: 3) {
-            Text("Glowé")
+            Text("SkinFix")
                 .font(DQFont.mono(11, weight: .semibold))
                 .tracking(4)
                 .foregroundStyle(DQColor.textSecondary)
