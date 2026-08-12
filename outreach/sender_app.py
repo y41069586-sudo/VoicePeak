@@ -52,13 +52,13 @@ PAGE = """<!doctype html><html><head><meta charset="utf-8">
 <title>SkinFix Sender</title>
 <style>
  body{{font-family:-apple-system,Segoe UI,Roboto,sans-serif;background:#efe7f7;color:#2a2140;margin:0;padding:24px}}
- .card{{max-width:720px;margin:0 auto;background:#fff;border-radius:20px;padding:28px;box-shadow:0 16px 50px rgba(120,90,180,.15)}}
+ .card{{max-width:720px;margin:0 auto;background:#fff;border-radius:20px;padding:28px;box-shadow:0 16px 50px rgba(40,34,26,.15)}}
  h1{{margin:0 0 4px}} p.sub{{color:#6b6382;margin:0 0 20px}}
  label{{display:block;font-weight:600;margin:14px 0 4px;font-size:14px}}
  input,textarea{{width:100%;box-sizing:border-box;padding:11px;border:1px solid #d9cfe8;border-radius:10px;font-size:14px;font-family:inherit}}
  textarea{{resize:vertical}}
  .row{{display:flex;gap:12px}} .row>div{{flex:1}}
- button{{margin-top:20px;width:100%;padding:15px;border:0;border-radius:12px;background:#7b5ec6;color:#fff;font-size:16px;font-weight:700;cursor:pointer}}
+ button{{margin-top:20px;width:100%;padding:15px;border:0;border-radius:12px;background:#12655D;color:#fff;font-size:16px;font-weight:700;cursor:pointer}}
  .note{{font-size:12px;color:#8a82a0;margin-top:6px}}
  .warn{{background:#fbeaea;color:#a23;padding:10px 12px;border-radius:10px;font-size:13px;margin-bottom:16px}}
 </style></head><body><div class="card">

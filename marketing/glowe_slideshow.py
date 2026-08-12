@@ -43,7 +43,7 @@
 #  ── KONTEXT ──
 #     SkinFix, iOS-Skincare-App, Bundle com.verite.com, App-Store-ID
 #     6787454842. Scannt die Haut, gibt 8 Scores (0–100, höher = besser)
-#     und einen 14-Tage-Plan. Farbwelt: Lila #7C4FB0 / #9B6BD3 auf hellem
+#     und einen 14-Tage-Plan. Farbwelt: Lila #0C4A44 / #12655D auf hellem
 #     Flieder-Verlauf.
 # ============================================================================
 
@@ -178,7 +178,7 @@ def analysis_html(avatar_uri, day):
     now_active = day == 0
     cells = ""
     for label, val in s.items():
-        accent = "color:#7C4FB0" if label == "Overall" else "color:#1A1225"
+        accent = "color:#0C4A44" if label == "Overall" else "color:#1C1A17"
         cells += f"""
         <div class="cell">
           <div class="lbl">{label}</div>
@@ -188,28 +188,28 @@ def analysis_html(avatar_uri, day):
     return f"""<!doctype html><meta charset="utf-8"><style>
 *{{margin:0;padding:0;box-sizing:border-box;-webkit-font-smoothing:antialiased}}
 body{{width:{W}px;height:{H}px;font-family:-apple-system,'Segoe UI',Helvetica,Arial,sans-serif;
-  background:linear-gradient(180deg,#F5F1FC 0%,#EFE8FA 100%);padding:96px 62px 0;overflow:hidden;
+  background:linear-gradient(180deg,#FAF7F1 0%,#F3EFE6 100%);padding:96px 62px 0;overflow:hidden;
   position:relative}}
-h1{{font-size:82px;font-weight:800;color:#161020;text-align:center;letter-spacing:-1.5px}}
-.sub{{font-size:37px;color:#6B5F7A;text-align:center;margin-top:22px}}
+h1{{font-size:82px;font-weight:800;color:#1C1A17;text-align:center;letter-spacing:-1.5px}}
+.sub{{font-size:37px;color:#6E6862;text-align:center;margin-top:22px}}
 .toggle{{margin:52px auto 0;width:820px;height:118px;border-radius:60px;
-  background:linear-gradient(90deg,#EFE6FB,#E3D5F6);display:flex;padding:9px}}
+  background:linear-gradient(90deg,#F3EFE6,#E8DCC8);display:flex;padding:9px}}
 .toggle div{{flex:1;border-radius:52px;display:flex;align-items:center;justify-content:center;
   font-size:42px;font-weight:700}}
-.on{{background:#fff;color:#7C4FB0;box-shadow:0 4px 14px rgba(26,18,37,.08)}}
-.off{{color:#4A3F5C}}
+.on{{background:#fff;color:#0C4A44;box-shadow:0 4px 14px rgba(28,26,23,.08)}}
+.off{{color:#4A443D}}
 .avatar{{width:280px;height:280px;border-radius:50%;margin:44px auto -140px;
   border:9px solid #fff;box-shadow:0 0 0 5px rgba(155,107,211,.30),0 18px 44px rgba(124,79,176,.28);
   background-size:cover;background-position:center;position:relative;z-index:2}}
 .card{{background:#fff;border-radius:56px;padding:190px 58px 52px;
-  box-shadow:0 22px 60px rgba(26,18,37,.07)}}
+  box-shadow:0 22px 60px rgba(28,26,23,.07)}}
 .grid{{display:grid;grid-template-columns:1fr 1fr;gap:52px 60px}}
-.lbl{{font-size:36px;color:#6B5F7A;margin-bottom:10px}}
+.lbl{{font-size:36px;color:#6E6862;margin-bottom:10px}}
 .val{{font-size:74px;font-weight:800;letter-spacing:-2px;font-variant-numeric:tabular-nums}}
-.bar{{height:15px;border-radius:8px;background:#ECECEF;margin-top:16px}}
-.bar i{{display:block;height:100%;border-radius:8px;background:#9B6BD3}}
-.foot{{display:flex;align-items:center;gap:16px;margin-top:52px;font-size:31px;color:#6B5F7A}}
-.foot b{{width:38px;height:38px;border-radius:50%;background:#7C4FB0;color:#fff;font-size:22px;
+.bar{{height:15px;border-radius:8px;background:#E7E0D4;margin-top:16px}}
+.bar i{{display:block;height:100%;border-radius:8px;background:#12655D}}
+.foot{{display:flex;align-items:center;gap:16px;margin-top:52px;font-size:31px;color:#6E6862}}
+.foot b{{width:38px;height:38px;border-radius:50%;background:#0C4A44;color:#fff;font-size:22px;
   display:flex;align-items:center;justify-content:center;flex:none}}
 </style><body>
 <h1>Your skin analysis</h1>
@@ -247,7 +247,7 @@ def routine_html(day):
     rows = ""
     for i, (t, tm, d) in enumerate(steps, 1):
         check = "✓" if done else ""
-        fill = "background:#7C4FB0;border-color:#7C4FB0;color:#fff" if done else ""
+        fill = "background:#0C4A44;border-color:#0C4A44;color:#fff" if done else ""
         rows += f"""
       <div class="step">
         <div class="check" style="{fill}">{check}</div>
@@ -259,43 +259,43 @@ def routine_html(day):
     return f"""<!doctype html><meta charset="utf-8"><style>
 *{{margin:0;padding:0;box-sizing:border-box;-webkit-font-smoothing:antialiased}}
 body{{width:{W}px;height:{H}px;font-family:-apple-system,'Segoe UI',Helvetica,Arial,sans-serif;
-  background:linear-gradient(180deg,#F7F4FD 0%,#F1EBFA 100%);padding:104px 62px 0;overflow:hidden;
+  background:linear-gradient(180deg,#FAF7F1 0%,#F3EFE6 100%);padding:104px 62px 0;overflow:hidden;
   position:relative}}
-h1{{font-size:104px;font-weight:800;color:#161020;letter-spacing:-2.5px}}
-h1 span{{font-size:58px;color:#8A7F99;font-weight:700}}
-.note{{background:#EDE4FA;border-radius:40px;padding:40px 44px;margin-top:44px;display:flex;gap:28px}}
+h1{{font-size:104px;font-weight:800;color:#1C1A17;letter-spacing:-2.5px}}
+h1 span{{font-size:58px;color:#8A837B;font-weight:700}}
+.note{{background:#F1ECE2;border-radius:40px;padding:40px 44px;margin-top:44px;display:flex;gap:28px}}
 .leaf{{font-size:44px;flex:none}}
-.note .t{{font-size:42px;font-weight:800;color:#161020;margin-bottom:12px}}
-.note .d{{font-size:36px;color:#4A3F5C;line-height:1.45}}
+.note .t{{font-size:42px;font-weight:800;color:#1C1A17;margin-bottom:12px}}
+.note .d{{font-size:36px;color:#4A443D;line-height:1.45}}
 .prog{{height:16px;border-radius:8px;background:#E4E0EA;margin:52px 0 28px}}
-.cnt{{font-size:36px;color:#4A3F5C;margin-bottom:44px}}
+.cnt{{font-size:36px;color:#4A443D;margin-bottom:44px}}
 .chips{{display:flex;gap:22px;margin-bottom:52px}}
 .chip{{width:118px;height:118px;border-radius:34px;background:#fff;display:flex;align-items:center;
-  justify-content:center;font-size:52px;font-weight:700;color:#161020;
-  box-shadow:0 4px 12px rgba(26,18,37,.05)}}
-.chip.sel{{background:#E7DBF8;border:5px solid #9B6BD3;color:#5B3A8C}}
-.card{{background:#fff;border-radius:52px;padding:46px 44px;box-shadow:0 18px 50px rgba(26,18,37,.06)}}
+  justify-content:center;font-size:52px;font-weight:700;color:#1C1A17;
+  box-shadow:0 4px 12px rgba(28,26,23,.05)}}
+.chip.sel{{background:#F1ECE2;border:5px solid #12655D;color:#0C4A44}}
+.card{{background:#fff;border-radius:52px;padding:46px 44px;box-shadow:0 18px 50px rgba(28,26,23,.06)}}
 .hd{{display:flex;align-items:center;gap:28px;margin-bottom:40px}}
-.sun{{width:92px;height:92px;border-radius:28px;background:#EDE4FA;display:flex;align-items:center;
+.sun{{width:92px;height:92px;border-radius:28px;background:#F1ECE2;display:flex;align-items:center;
   justify-content:center;font-size:44px}}
-.hd .t{{font-size:50px;font-weight:800;color:#161020}}
-.hd .d{{font-size:32px;color:#6B5F7A;margin-top:6px}}
-.hd .c{{margin-left:auto;font-size:44px;font-weight:700;color:#8A7F99}}
+.hd .t{{font-size:50px;font-weight:800;color:#1C1A17}}
+.hd .d{{font-size:32px;color:#6E6862;margin-top:6px}}
+.hd .c{{margin-left:auto;font-size:44px;font-weight:700;color:#8A837B}}
 .step{{display:flex;align-items:center;gap:26px;padding:30px 0;border-top:2px solid #F0EDF5}}
 .check{{width:62px;height:62px;border-radius:50%;border:4px solid #D8D3E0;flex:none;
   display:flex;align-items:center;justify-content:center;font-size:34px;font-weight:800}}
-.num{{width:58px;height:58px;border-radius:50%;background:#EDE4FA;color:#7C4FB0;flex:none;
+.num{{width:58px;height:58px;border-radius:50%;background:#F1ECE2;color:#0C4A44;flex:none;
   display:flex;align-items:center;justify-content:center;font-size:32px;font-weight:800}}
 .txt{{flex:1}}
-.txt .t{{font-size:47px;font-weight:800;color:#161020;line-height:1.15}}
-.txt .d{{font-size:31px;color:#6B5F7A;margin-top:10px;font-family:ui-monospace,Menlo,monospace}}
-.txt .d span{{color:#7C4FB0}}
+.txt .t{{font-size:47px;font-weight:800;color:#1C1A17;line-height:1.15}}
+.txt .d{{font-size:31px;color:#6E6862;margin-top:10px;font-family:ui-monospace,Menlo,monospace}}
+.txt .d span{{color:#0C4A44}}
 .chev{{font-size:44px;color:#9A90A8;flex:none}}
 .tabs{{position:absolute;left:50%;transform:translateX(-50%);bottom:64px;background:#fff;
-  border-radius:60px;padding:22px 34px;display:flex;gap:56px;box-shadow:0 16px 46px rgba(26,18,37,.13)}}
+  border-radius:60px;padding:22px 34px;display:flex;gap:56px;box-shadow:0 16px 46px rgba(28,26,23,.13)}}
 .tab{{display:flex;flex-direction:column;align-items:center;gap:8px;font-size:30px;
-  font-weight:700;color:#161020;padding:12px 26px;border-radius:44px}}
-.tab.on{{background:#EDE4FA;color:#7C4FB0}}
+  font-weight:700;color:#1C1A17;padding:12px 26px;border-radius:44px}}
+.tab.on{{background:#F1ECE2;color:#0C4A44}}
 .tab i{{font-size:40px;font-style:normal}}
 </style><body>
 <h1>{title} <span>of 14</span></h1>
