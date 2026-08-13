@@ -147,7 +147,10 @@ struct CompareView: View {
                 .foregroundStyle(active ? .white : DQColor.textSecondary)
                 .lineLimit(1)
                 .frame(maxWidth: .infinity, minHeight: 40)
-                .background(active ? AnyShapeStyle(DQColor.accentGradient) : AnyShapeStyle(.clear),
+                // Solid, not `accentGradient`: the gradient's light end is the
+                // sand CTA colour, and white type on that is 2.6:1. The deep
+                // end alone carries white at 5.5:1.
+                .background(active ? AnyShapeStyle(DQColor.accentBright) : AnyShapeStyle(.clear),
                             in: Capsule())
         }
         .buttonStyle(PressableStyle())

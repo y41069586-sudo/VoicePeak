@@ -15,10 +15,16 @@ import SwiftUI
 // also drops the "beauty product" read that lavender carries, which fought the
 // product's own name.
 //
-// Why the accent is COOL on a warm ground: warm-on-warm (the cream/terracotta
-// pairing) is the default everyone lands on, and it reads as decoration. The
-// temperature contrast is what makes the palette look decided. It also keeps
-// the accent from ever competing with skin tones in the photo.
+// The accent is a DEEPER SHADE OF THE GROUND, not a second hue: the app is
+// tonal beige throughout, and the only high-contrast element on screen is the
+// warm near-black type. An earlier version used a teal accent for temperature
+// contrast; on full-width CTAs that read as a green app sitting on beige,
+// which is not what this is. Contrast now comes from value, not hue — so the
+// one saturated thing on screen is the skin photograph itself.
+//
+// Consequence to keep in mind when adding UI: a beige CTA cannot carry white
+// text. Labels on `accent` are `textPrimary`. Accent TEXT uses `accentBright`,
+// which is deliberately far darker than `accent` for exactly this reason.
 //
 // Haptics are part of the design system:
 //   .rigid  → captures / commits        (Haptics.fire(.capture))
@@ -29,12 +35,15 @@ enum DQColor {
     static let background      = Color(hex: "FAF7F1")
     static let surface         = Color(hex: "FFFFFF")
     static let surfaceElevated = Color(hex: "F3EFE6")
-    static let accent          = Color(hex: "12655D")
-    /// On the light ground the "bright" accent role needs the DEEPER shade for
-    /// contrast — it is used for accent text and small indicators.
-    static let accentBright    = Color(hex: "0C4A44")
+    /// Deep sand — CTAs, the portal ring, the scan line. Carries ink, not
+    /// white: white on this fails contrast, warm near-black passes at 6.8:1.
+    static let accent          = Color(hex: "B3A07B")
+    /// The "bright" accent role is accent TEXT on the pale ground, so it needs
+    /// to be much DARKER than `accent` — this passes AA at 5.15:1, where
+    /// `accent` itself would only reach 2.4:1 and be unreadable.
+    static let accentBright    = Color(hex: "7A6644")
     /// Soft accent tint for icon chips, segmented backgrounds, soft fills.
-    static let accentSoft      = Color(hex: "E4EDEA")
+    static let accentSoft      = Color(hex: "EDE3D0")
     static let textPrimary     = Color(hex: "1C1A17")
     static let textSecondary   = Color(hex: "6E6862")
     static let deltaUp         = Color(hex: "1F9D6B")
@@ -98,11 +107,12 @@ struct DQPrimaryButton: View {
                 Text(LocalizedStringKey(title))
             }
             .font(Font.system(size: 17, weight: .bold))
-            .foregroundStyle(.white)
+            // Ink, not white — white on the sand CTA is 1.9:1 and unreadable.
+            .foregroundStyle(DQColor.textPrimary)
             .frame(maxWidth: .infinity, minHeight: 58)
             .background(DQColor.accent,
                         in: RoundedRectangle(cornerRadius: 20, style: .continuous))
-            .shadow(color: DQColor.accent.opacity(isEnabled ? 0.30 : 0), radius: 12, y: 6)
+            .shadow(color: Color(hex: "1C1A17").opacity(isEnabled ? 0.16 : 0), radius: 12, y: 6)
             .opacity(isEnabled ? 1 : 0.35)
         }
         .buttonStyle(PressableStyle(brightenOnPress: true))

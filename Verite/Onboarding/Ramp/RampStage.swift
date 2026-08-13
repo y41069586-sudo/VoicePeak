@@ -16,8 +16,9 @@ import UIKit
 enum RampStage {
     // Ground & ink — pale warm linen with a warm-black ink. Matches DQColor;
     // see the rationale there for why the ground is a warm neutral (skin sits
-    // correctly on it) and the accent is cool (temperature contrast, and it
-    // never competes with skin tones in a photo).
+    // correctly on it) and why the accent is a deeper shade of that same
+    // ground rather than a second hue — the app is tonal beige, and contrast
+    // comes from value, not colour.
     static let porcelain = Color(hex: "FAF7F1") // light linen background (name kept for call sites)
     static let recess     = Color(hex: "F1ECE2") // recessed panel
     static let ink        = Color(hex: "1C1A17") // warm near-black, maximum contrast
@@ -25,10 +26,11 @@ enum RampStage {
     static let inkFaint   = Color(hex: "9A938A") // tertiary text
     static let hair       = Color(hex: "E7E0D4") // warm hairline
 
-    // The single accent (deep teal) + a deeper shade for on-light text and
-    // a soft tint used as fills/pools.
-    static let accent     = Color(hex: "12655D")
-    static let accentDeep = Color(hex: "0C4A44")
+    // The single accent (deep sand) + a much deeper shade for on-light TEXT
+    // (the sand itself only reaches 2.4:1 on the ground) + a soft tint used
+    // as fills/pools.
+    static let accent     = Color(hex: "B3A07B")
+    static let accentDeep = Color(hex: "7A6644")
     static let glow       = Color(hex: "EFE7D9")
 
     // Warm light pools layered behind the content (names kept for call sites).
@@ -37,7 +39,7 @@ enum RampStage {
     static let dawnSky    = Color(hex: "F8F4EC") // (name kept for call sites)
 
     /// Soft accent tint for icon chips, segmented backgrounds, soft buttons.
-    static let accentSoft = Color(hex: "E4EDEA")
+    static let accentSoft = Color(hex: "EDE3D0")
 
     // Named text roles.
     static let textPrimary   = ink
@@ -92,7 +94,7 @@ struct RampPhoto: View {
             RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
                 .strokeBorder(Color.white.opacity(0.6), lineWidth: 1)
         )
-        .shadow(color: RampStage.accent.opacity(0.22), radius: 24, y: 12)
+        .shadow(color: RampStage.ink.opacity(0.14), radius: 24, y: 12)
         .accessibilityHidden(true)
     }
 
@@ -298,11 +300,12 @@ struct RampPrimaryButton: View {
                 Text(LocalizedStringKey(title))
             }
             .font(.system(size: 17, weight: .bold, design: .rounded))
-            .foregroundStyle(.white)
+            // Ink, not white — the sand CTA can't carry white type (1.9:1).
+            .foregroundStyle(RampStage.ink)
             .frame(maxWidth: .infinity, minHeight: 58)
             .background(RampStage.accent,
                         in: RoundedRectangle(cornerRadius: 20, style: .continuous))
-            .shadow(color: RampStage.accent.opacity(isEnabled ? 0.30 : 0), radius: 12, y: 6)
+            .shadow(color: RampStage.ink.opacity(isEnabled ? 0.16 : 0), radius: 12, y: 6)
             .opacity(isEnabled ? 1 : 0.4)
         }
         .buttonStyle(PressableStyle())
