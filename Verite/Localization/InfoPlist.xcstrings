@@ -7,31 +7,31 @@
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "SkinFix nutzt die Kamera, um deine Haut aufzunehmen. Dein Foto wird sicher übertragen, um deine Haut-Analyse zu erstellen, und wird nach deinen Ergebnissen nicht gespeichert."
+            "value": "SkinFix nutzt die Kamera, um deine Haut aufzunehmen. Dein Foto wird sicher zur Analyse übertragen und vom Analysedienst nicht gespeichert — es bleibt auf diesem Gerät, damit du deinen Fortschritt siehst, und ist jederzeit löschbar."
           }
         },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "SkinFix uses the camera to capture your skin. Your photo is sent securely to generate your skin analysis and isn't stored after your results are ready."
+            "value": "SkinFix uses the camera to capture your skin. Your photo is sent securely for analysis and isn't kept by the analysis service — it stays on this device so you can track your progress, and you can delete it any time."
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "SkinFix usa la cámara para capturar tu piel. Tu foto se envía de forma segura para generar tu análisis y no se almacena una vez listos tus resultados."
+            "value": "SkinFix usa la cámara para capturar tu piel. Tu foto se envía de forma segura para el análisis y el servicio no la conserva: permanece en este dispositivo para que veas tu progreso y puedes borrarla cuando quieras."
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "SkinFix utilise l'appareil photo pour capturer ta peau. Ta photo est envoyée de façon sécurisée pour générer ton analyse et n'est pas conservée une fois tes résultats prêts."
+            "value": "SkinFix utilise l’appareil photo pour capturer ta peau. Ta photo est envoyée de façon sécurisée pour l’analyse et n’est pas conservée par le service — elle reste sur cet appareil pour suivre tes progrès, et tu peux la supprimer à tout moment."
           }
         },
         "it": {
           "stringUnit": {
             "state": "translated",
-            "value": "SkinFix usa la fotocamera per acquisire la tua pelle. La foto viene inviata in modo sicuro per generare la tua analisi e non viene conservata dopo i risultati."
+            "value": "SkinFix usa la fotocamera per acquisire la tua pelle. La foto viene inviata in modo sicuro per l’analisi e non viene conservata dal servizio: resta su questo dispositivo per farti vedere i progressi e puoi eliminarla quando vuoi."
           }
         }
       }
