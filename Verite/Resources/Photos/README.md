@@ -57,6 +57,12 @@ lesion or the crop eats it. Supply at least **600 × 460 px**.
 | `AcneWhiteheads` | Whiteheads | Small closed bumps | Closed comedones |
 | `AcnePapules` | Red bumps | Sore, no head | Inflamed papules |
 | `AcneCysts` | Deep, painful | Under the skin | Nodules / cystic |
+| `AcneScars` | Marks & scars | Left behind after healing | Post-acne marks and atrophic scarring |
+
+There is a sixth tile, "Not sure", which has no photograph — it draws a
+question mark and clears every other selection when picked. Continue stays
+disabled until something is chosen, so without that opt-out an uncertain user
+is stuck on the second screen of the flow.
 
 **The rule these four live under: macro crops of skin, nobody identifiable.**
 No eyes, no jawline, no tattoo, no background. It is not a style preference.

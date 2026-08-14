@@ -25,12 +25,18 @@ import SwiftUI
 // ============================================================
 
 /// Photo tiles, two per row, multi-select, with a Continue that stays disabled
-/// until something is picked. The photos are supplied assets — `AcneBlackheads`,
-/// `AcneWhiteheads`, `AcnePapules`, `AcneCysts` dropped into
-/// `Resources/Photos/`. Until they exist each tile draws a soft placeholder,
-/// so this screen ships and works before the photography does.
+/// until something is picked. Five photographed presentations — blackheads,
+/// whiteheads, papules, cysts, scarring — plus an opt-out for anyone who
+/// cannot name theirs. The photos are supplied assets in `Resources/Photos/`;
+/// until a file exists that tile draws a placeholder, so the screen ships and
+/// works before the photography does.
 ///
-/// ONE HARD RULE FOR THOSE FOUR FILES: macro crops of skin only — no face, no
+/// Scarring earns its tile by not being active acne at all. Somebody whose
+/// breakouts have stopped but whose marks have not is a different plan and a
+/// different promise, and without this tile they would have to claim a lesion
+/// they no longer have.
+///
+/// ONE HARD RULE FOR THE PHOTOGRAPHS: macro crops of skin only — no face, no
 /// eyes, no jawline, nothing that identifies a person. It is not a style note.
 /// A recognisable person shown as having a skin condition engages personality
 /// rights, and the stock libraries put exactly that case behind a separate
@@ -45,9 +51,16 @@ struct RampAcneTypeScreen: View {
     struct AcneType: Identifiable {
         let id: String
         let label: String
-        let photo: String
+        /// nil on the opt-out tile — there is nothing to photograph.
+        let photo: String?
         let hint: String
     }
+
+    /// The opt-out. Anyone who cannot name what they have needs a way past
+    /// this screen: Continue is disabled until something is picked, so
+    /// without it an uncertain user is simply stuck — on a screen that comes
+    /// second in the flow, before we have given them anything.
+    static let unsureID = "unsure"
 
     static let types: [AcneType] = [
         AcneType(id: "blackheads", label: "Blackheads",
@@ -58,6 +71,10 @@ struct RampAcneTypeScreen: View {
                  photo: "AcnePapules", hint: "Sore, no head"),
         AcneType(id: "cysts", label: "Deep, painful",
                  photo: "AcneCysts", hint: "Under the skin"),
+        AcneType(id: "scars", label: "Marks & scars",
+                 photo: "AcneScars", hint: "Left behind after healing"),
+        AcneType(id: unsureID, label: "Not sure",
+                 photo: nil, hint: "The scan will tell us"),
     ]
 
     private let columns = [GridItem(.flexible(), spacing: 12),
@@ -82,7 +99,7 @@ struct RampAcneTypeScreen: View {
                         .fixedSize(horizontal: false, vertical: true)
                         .padding(.horizontal, VSpace.lg)
 
-                    Text("Pick everything you recognise — most skin has more than one kind.")
+                    Text("Pick everything you recognise — most skin has more than one kind. Not sure is a fine answer.")
                         .font(VType.body)
                         .foregroundStyle(RampStage.textSecondary)
                         .fixedSize(horizontal: false, vertical: true)
@@ -118,11 +135,28 @@ struct RampAcneTypeScreen: View {
         return Button {
             Haptics.fire(.selection)
             withAnimation(VMotion.snappy) {
-                if isOn { selected.remove(type.id) } else { selected.insert(type.id) }
+                if type.id == Self.unsureID {
+                    // Claiming uncertainty clears every specific answer.
+                    selected = isOn ? [] : [Self.unsureID]
+                } else {
+                    selected.remove(Self.unsureID)
+                    if isOn { selected.remove(type.id) } else { selected.insert(type.id) }
+                }
             }
         } label: {
             VStack(spacing: 0) {
-                RampAcnePhoto(name: type.photo)
+                Group {
+                    if let photo = type.photo {
+                        RampAcnePhoto(name: photo)
+                    } else {
+                        ZStack {
+                            RampStage.accentSoft
+                            Image(systemName: "questionmark")
+                                .font(.system(size: 28, weight: .light))
+                                .foregroundStyle(RampStage.accentDeep)
+                        }
+                    }
+                }
                     .frame(height: 116)
                     .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
                     .overlay(alignment: .topTrailing) {
