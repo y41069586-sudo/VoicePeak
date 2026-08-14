@@ -222,11 +222,15 @@ struct RampBrandScreen: View {
             }
             .padding(.horizontal, 14)
             .frame(maxWidth: .infinity, minHeight: 66)
-            .background(isOn ? RampStage.accentSoft : RampStage.card,
+            // The card stays white in BOTH states. Selection is carried by the
+            // border and the check instead of a fill, because eleven of the
+            // twelve logo files are opaque white plates: tint the card and
+            // every one of them frames itself in a white rectangle.
+            .background(RampStage.card,
                         in: RoundedRectangle(cornerRadius: 16, style: .continuous))
             .overlay(RoundedRectangle(cornerRadius: 16, style: .continuous)
                 .strokeBorder(isOn ? RampStage.accentEdge : RampStage.hairline,
-                              lineWidth: isOn ? 1.5 : 1))
+                              lineWidth: isOn ? 2 : 1))
         }
         .buttonStyle(PressableStyle())
         .accessibilityAddTraits(isOn ? [.isButton, .isSelected] : .isButton)
@@ -288,30 +292,25 @@ struct RampBrandScreen: View {
 /// The supplied logo, fitted inside a neutral box — or, until the file
 /// exists, a monogram in our own type on our own ground.
 ///
-/// `scaledToFit` rather than fill, and a plain white box behind it: the logos
-/// arrive at wildly different aspect ratios and most are drawn for white. This
-/// gives each one the same room without cropping any of them, and without us
-/// inventing a background colour for someone else's mark.
+/// `scaledToFit`, drawn straight onto the row with no plate or outline of its
+/// own: the logos arrive at wildly different aspect ratios, and a fitted frame
+/// gives each the same room without cropping any of them or inventing a
+/// background colour for someone else's mark.
 ///
-/// The white box also does quiet work on the assets. Most of these marks are
-/// only published as opaque white-background files, and against a white box
-/// they are indistinguishable from cut-out ones — so no keying is needed, and
-/// none is done. Keying dark type off white leaves halos on the anti-aliased
-/// edges, which is worse than the problem it solves.
+/// Eleven of the twelve files are opaque white-background assets rather than
+/// cut-outs, and they are left that way on purpose. Against a white row they
+/// are indistinguishable from cut-outs, and keying dark type off white leaves
+/// halos on the anti-aliased edges — worse than the plate it removes.
 ///
-/// The consequence: this fill must stay white. Tint it and every opaque asset
-/// shows its plate as a rectangle. If the design ever wants a coloured box,
-/// the assets have to be cut out first — not the other way round.
+/// The condition that buys: THE ROW MUST STAY WHITE IN EVERY STATE. That is
+/// why selection is a border and a check rather than a tint. Fill the card and
+/// eleven logos frame themselves in white rectangles. A design that wants a
+/// coloured card has to cut the assets out first, not the other way round.
 private struct RampBrandMark: View {
     let brand: RampBrandScreen.Brand
 
     var body: some View {
         ZStack {
-            RoundedRectangle(cornerRadius: 10, style: .continuous)
-                .fill(Color.white)
-            RoundedRectangle(cornerRadius: 10, style: .continuous)
-                .strokeBorder(RampStage.hairline, lineWidth: 1)
-
             #if canImport(UIKit)
             if let image = RampPhoto.load(brand.logoAsset) {
                 // Capped on BOTH axes, with height the tighter of the two.
