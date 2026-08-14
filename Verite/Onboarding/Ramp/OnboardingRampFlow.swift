@@ -210,6 +210,17 @@ struct OnboardingRampFlow: View {
                 answers.sawSensitivities = true
                 advance()
             }
+        case .brands:
+            RampBrandScreen(selected: brandsBinding,
+                            onAdvance: {
+                                let picked = answers.brands.sorted()
+                                RampAnalytics.quizAnswer(question: "brands",
+                                                         answer: picked.joined(separator: ","))
+                                UserDefaults.standard.set(picked, forKey: "dq.brands")
+                                Haptics.fire(.selection)
+                                advance()
+                            },
+                            onSkip: { advance() })
         case .spend:
             RampSpendScreen(bucket: spendBinding) {
                 RampAnalytics.quizAnswer(question: "monthly_spend_bucket",
@@ -264,6 +275,10 @@ struct OnboardingRampFlow: View {
 
     private var acneTypesBinding: Binding<Set<String>> {
         Binding(get: { answers.acneTypes }, set: { answers.acneTypes = $0 })
+    }
+
+    private var brandsBinding: Binding<Set<String>> {
+        Binding(get: { answers.brands }, set: { answers.brands = $0 })
     }
 
     private var spendBinding: Binding<Int> {

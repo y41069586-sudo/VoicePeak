@@ -37,28 +37,29 @@ enum RampStep: Int, CaseIterable {
     case quizSPF         // 11 — Q · your life
     case insightLife     // 12 — mirrored insight, chapter 2
     case sensitivities   // 13 — allergies the routine must avoid
+    case brands          // 14 — what's already on the shelf (names, never logos)
     // Spend, then the loop it bought. Naming the monthly figure and THEN
     // naming the cycle it funded is the argument for a plan, made with the
     // user's own number rather than ours — and it is the anchor every later
     // price is read against.
-    case spend           // 14 — what you already spend each month
-    case theCycle        // 15 — the loop, named
+    case spend           // 15 — what you already spend each month
+    case theCycle        // 16 — the loop, named
     // The goal-setting act. Everything downstream — the curve, the plan, the
     // paywall headline — refers back to the sentence chosen here.
-    case goal            // 16 — "what does better look like for you?"
-    case theReading      // 17 — visible processing + prediction range
-    case theCurve        // 18 — where do you land?
-    case planPreview     // 19 — your first plan, previewed
-    case evidence        // 20 — the science behind the plan (tappable sources)
-    case commitment      // 21 — sign your 14-day commitment
-    case dailyRitual     // 22 — time choice + notifications
+    case goal            // 17 — "what does better look like for you?"
+    case theReading      // 18 — visible processing + prediction range
+    case theCurve        // 19 — where do you land?
+    case planPreview     // 20 — your first plan, previewed
+    case evidence        // 21 — the science behind the plan (tappable sources)
+    case commitment      // 22 — sign your 14-day commitment
+    case dailyRitual     // 23 — time choice + notifications
     // Attribution sits here, not at position 3. It serves our reporting, not
     // the user, and it used to be the fourth thing the app did — a screen that
     // takes before anything has been given. Asked once they're committed, it
     // costs nothing and the answer is just as usable.
-    case attribution     // 23 — "where did you find us?" (marketing attribution)
-    case signIn          // 24 — register before the first scan
-    case handoff         // 25 — "now, the real you" → the scan
+    case attribution     // 24 — "where did you find us?" (marketing attribution)
+    case signIn          // 25 — register before the first scan
+    case handoff         // 26 — "now, the real you" → the scan
 
     var next: RampStep? { RampStep(rawValue: rawValue + 1) }
     var previous: RampStep? { RampStep(rawValue: rawValue - 1) }
@@ -83,6 +84,7 @@ enum RampStep: Int, CaseIterable {
         case .insightLife:    return "insight_life"
         case .acneType:       return "acne_type"
         case .sensitivities:  return "sensitivities"
+        case .brands:         return "brands"
         case .spend:          return "spend"
         case .theCycle:       return "the_cycle"
         case .goal:           return "goal"
@@ -425,6 +427,10 @@ struct RampQuizAnswers {
     /// Which kinds of acne were recognised on the photo grid. Multi-select —
     /// most skin carries more than one, and the routine builder branches on it.
     var acneTypes: Set<String> = []
+
+    /// Brand names the user already owns. Names only — see RampBrandScreen
+    /// for why this app never ships third-party logos.
+    var brands: Set<String> = []
 
     /// Index into the spend screen's buckets, not an amount. Kept as a bucket
     /// because nobody knows this figure precisely, and a number implying they
