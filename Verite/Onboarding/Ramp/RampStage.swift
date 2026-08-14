@@ -20,26 +20,26 @@ enum RampStage {
     // ground rather than a second hue — the app is tonal beige, and contrast
     // comes from value, not colour.
     static let porcelain = Color(hex: "FAF7F1") // light linen background (name kept for call sites)
-    static let recess     = Color(hex: "F1ECE2") // recessed panel
+    static let recess     = Color(hex: "F4EDDF") // recessed panel
     static let ink        = Color(hex: "1C1A17") // warm near-black, maximum contrast
-    static let inkSoft    = Color(hex: "6E6862") // secondary text
-    static let inkFaint   = Color(hex: "9A938A") // tertiary text
-    static let hair       = Color(hex: "E7E0D4") // warm hairline
+    static let inkSoft    = Color(hex: "6B6053") // secondary text
+    static let inkFaint   = Color(hex: "96897B") // tertiary text
+    static let hair       = Color(hex: "EBE0CE") // warm hairline
 
     // The single accent (deep sand) + a much deeper shade for on-light TEXT
-    // (the sand itself only reaches 2.4:1 on the ground) + a soft tint used
+    // (the sand itself only reaches 2.2:1 on the ground) + a soft tint used
     // as fills/pools.
-    static let accent     = Color(hex: "B3A07B")
-    static let accentDeep = Color(hex: "7A6644")
-    static let glow       = Color(hex: "EFE7D9")
+    static let accent     = Color(hex: "C6A46B")
+    static let accentDeep = Color(hex: "7D5F33")
+    static let glow       = Color(hex: "F4EBD8")
 
     // Warm light pools layered behind the content (names kept for call sites).
-    static let dawnPeach  = Color(hex: "F0E6D6")
-    static let dawnLilac  = Color(hex: "F4EDE2") // (name kept for call sites)
-    static let dawnSky    = Color(hex: "F8F4EC") // (name kept for call sites)
+    static let dawnPeach  = Color(hex: "F6E9D4")
+    static let dawnLilac  = Color(hex: "F8F0E2") // (name kept for call sites)
+    static let dawnSky    = Color(hex: "FBF6EA") // (name kept for call sites)
 
     /// Soft accent tint for icon chips, segmented backgrounds, soft buttons.
-    static let accentSoft = Color(hex: "EDE3D0")
+    static let accentSoft = Color(hex: "F2E5CD")
 
     // Named text roles.
     static let textPrimary   = ink
@@ -138,7 +138,7 @@ struct RampPhoto: View {
             RadialGradient(colors: [.white.opacity(0.55), .clear],
                            center: UnitPoint(x: 0.25, y: 0.2),
                            startRadius: 0, endRadius: 220)
-            RadialGradient(colors: [Color(hex: "EFE7D9").opacity(0.8), .clear],
+            RadialGradient(colors: [Color(hex: "F4EBD8").opacity(0.8), .clear],
                            center: UnitPoint(x: 0.85, y: 0.85),
                            startRadius: 0, endRadius: 260)
         }
@@ -300,7 +300,7 @@ struct RampPrimaryButton: View {
                 Text(LocalizedStringKey(title))
             }
             .font(.system(size: 17, weight: .bold, design: .rounded))
-            // Ink, not white — the sand CTA can't carry white type (1.9:1).
+            // Ink, not white — the sand CTA can't carry white type (2.4:1).
             .foregroundStyle(RampStage.ink)
             .frame(maxWidth: .infinity, minHeight: 58)
             .background(RampStage.accent,

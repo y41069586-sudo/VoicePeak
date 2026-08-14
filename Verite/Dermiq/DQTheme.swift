@@ -22,6 +22,13 @@ import SwiftUI
 // which is not what this is. Contrast now comes from value, not hue — so the
 // one saturated thing on screen is the skin photograph itself.
 //
+// Tonal does NOT mean desaturated. The first pass at this held the accent at
+// 27% saturation, which on a full-width CTA reads as khaki — grey-brown, not
+// beige. The sand tokens now sit near 40-45% saturation around hue 37°, warm
+// enough to read as a colour while staying the same family as the ground. The
+// neutrals carry a little of that warmth too (13% saturation rather than 6%),
+// because a truly neutral grey next to sand is what made the screen look grey.
+//
 // Consequence to keep in mind when adding UI: a beige CTA cannot carry white
 // text. Labels on `accent` are `textPrimary`. Accent TEXT uses `accentBright`,
 // which is deliberately far darker than `accent` for exactly this reason.
@@ -34,18 +41,18 @@ import SwiftUI
 enum DQColor {
     static let background      = Color(hex: "FAF7F1")
     static let surface         = Color(hex: "FFFFFF")
-    static let surfaceElevated = Color(hex: "F3EFE6")
-    /// Deep sand — CTAs, the portal ring, the scan line. Carries ink, not
-    /// white: white on this fails contrast, warm near-black passes at 6.8:1.
-    static let accent          = Color(hex: "B3A07B")
+    static let surfaceElevated = Color(hex: "F6F0E3")
+    /// Warm sand — CTAs, the portal ring, the scan line. Carries ink, not
+    /// white: white on this fails contrast, warm near-black passes at 7.4:1.
+    static let accent          = Color(hex: "C6A46B")
     /// The "bright" accent role is accent TEXT on the pale ground, so it needs
-    /// to be much DARKER than `accent` — this passes AA at 5.15:1, where
-    /// `accent` itself would only reach 2.4:1 and be unreadable.
-    static let accentBright    = Color(hex: "7A6644")
+    /// to be much DARKER than `accent` — this passes AA at 5.5:1, where
+    /// `accent` itself would only reach 2.2:1 and be unreadable.
+    static let accentBright    = Color(hex: "7D5F33")
     /// Soft accent tint for icon chips, segmented backgrounds, soft fills.
-    static let accentSoft      = Color(hex: "EDE3D0")
+    static let accentSoft      = Color(hex: "F2E5CD")
     static let textPrimary     = Color(hex: "1C1A17")
-    static let textSecondary   = Color(hex: "6E6862")
+    static let textSecondary   = Color(hex: "6B6053")
     static let deltaUp         = Color(hex: "1F9D6B")
     static let deltaDown       = Color(hex: "DE5B4E")
 
@@ -107,7 +114,7 @@ struct DQPrimaryButton: View {
                 Text(LocalizedStringKey(title))
             }
             .font(Font.system(size: 17, weight: .bold))
-            // Ink, not white — white on the sand CTA is 1.9:1 and unreadable.
+            // Ink, not white — white on the sand CTA is 2.4:1 and unreadable.
             .foregroundStyle(DQColor.textPrimary)
             .frame(maxWidth: .infinity, minHeight: 58)
             .background(DQColor.accent,
