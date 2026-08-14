@@ -1,0 +1,539 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>SkinFix onboarding — intro mockups</title>
+<style>
+  :root{
+    --porcelain:#FAF7F1; --recess:#F4EDDF; --ink:#1C1A17; --inkSoft:#6B6053;
+    --inkFaint:#96897B; --hair:#EBE0CE; --accent:#E6D4B4; --accentEdge:#BCA070;
+    --accentDeep:#7D5F33; --accentSoft:#F5EBD8; --dawnPeach:#F6E9D4;
+    --dawnLilac:#F8F0E2; --dawnSky:#FBF6EA;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:"Liberation Sans",Arial,sans-serif;background:#111;-webkit-font-smoothing:antialiased}
+
+  /* ---- the onboarding page, at iPhone size ---- */
+  .page{width:402px;height:874px;position:relative;overflow:hidden;background:var(--porcelain)}
+  .backdrop{position:absolute;inset:0;
+    background:
+      radial-gradient(440px at 20% 6%, rgba(246,233,212,.9), transparent),
+      radial-gradient(460px at 90% 20%, rgba(248,240,226,.9), transparent),
+      radial-gradient(560px at 50% 102%, rgba(251,246,234,.9), transparent),
+      var(--porcelain);}
+  .pageInner{position:relative;height:100%;display:flex;flex-direction:column;padding-bottom:24px}
+  .artSlot{flex:1;display:flex;align-items:center;justify-content:center;padding:16px 24px 24px}
+  .copy{padding:0 16px;text-align:center}
+  .copy h1{font-size:30px;font-weight:700;color:var(--ink);line-height:1.15;letter-spacing:-.2px}
+  .copy p{font-size:17px;color:var(--inkSoft);margin-top:8px;padding:0 24px;line-height:1.35}
+  .dots{display:flex;gap:6px;justify-content:center;margin-top:24px}
+  .dot{width:6px;height:6px;border-radius:3px;background:var(--hair)}
+  .dot.on{width:18px;background:var(--accentEdge)}
+  .cta{margin:16px 24px 0;height:58px;border-radius:20px;background:var(--accent);
+    border:1.5px solid var(--accentEdge);display:flex;align-items:center;justify-content:center;
+    font-size:17px;font-weight:700;color:var(--ink);box-shadow:0 6px 12px rgba(28,26,23,.16)}
+  .signin{margin-top:4px;height:44px;display:flex;align-items:center;justify-content:center;
+    font-size:15px;color:var(--inkSoft)}
+
+  /* ---- the drawn iPhone ---- */
+  .phone{position:relative;flex:none}
+  .phoneBody{position:absolute;inset:0;
+    background:linear-gradient(135deg,#C9C2B8,#6E665C 33%,#3A352F 66%,#8E867B)}
+  .phoneCore{position:absolute;background:#1B1917}
+  .phoneScreen{position:absolute;overflow:hidden;background:#000}
+  .island{position:absolute;left:50%;transform:translateX(-50%);background:#000;z-index:5;
+    display:flex;align-items:center;justify-content:flex-end}
+  .islandCam{border-radius:50%;background:#16181C}
+  .homebar{position:absolute;left:50%;transform:translateX(-50%);background:rgba(0,0,0,.28);z-index:5}
+  .glare{position:absolute;inset:0;z-index:6;pointer-events:none;
+    background:linear-gradient(135deg,rgba(255,255,255,.16) 0%,rgba(255,255,255,.05) 18%,
+      transparent 42%,rgba(255,255,255,.07) 72%,transparent 86%)}
+  .sideBtn{position:absolute;border-radius:99px;
+    background:linear-gradient(#8E867B,#4A443D)}
+  .scaler{position:absolute;top:0;left:0;width:402px;height:874px;transform-origin:top left}
+
+  /* ---- shared screen furniture (authored at 402pt) ---- */
+  .scr{width:402px;height:874px;display:flex;flex-direction:column;background:var(--porcelain);
+    font-size:15px;color:var(--ink)}
+  .status{height:62px;display:flex;align-items:flex-start;justify-content:space-between;
+    padding:18px 30px 0;font-size:15px;font-weight:600}
+  .statusRight{display:flex;gap:5px;align-items:center}
+  .tabbar{display:flex;background:#fff;border-top:1px solid var(--hair);padding:12px 0 34px}
+  .tab{flex:1;display:flex;flex-direction:column;align-items:center;gap:5px;
+    font-size:11px;font-weight:500;color:var(--inkFaint)}
+  .tab.on{color:var(--accentDeep)}
+  .eyebrow{font-size:11px;font-weight:600;letter-spacing:1.4px;color:var(--inkFaint)}
+  .card{background:#fff;border:1px solid var(--hair);border-radius:24px;padding:20px}
+  .hdr{display:flex;align-items:center;padding:0 24px 18px}
+  .hdr h2{font-size:24px;font-weight:700}
+
+  /* home */
+  .scoreRow{display:flex;align-items:center;gap:18px}
+  .avatar{width:84px;height:84px;border-radius:50%;object-fit:cover;
+    border:3px solid #fff;box-shadow:0 0 0 3px var(--accentSoft)}
+  .bigScore{font-size:46px;font-weight:800;line-height:1.05;letter-spacing:-1px}
+  .gauge{display:flex;gap:2px;align-items:center;height:14px;margin-top:16px}
+  .tick{flex:1;border-radius:99px}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px;padding:14px 20px 0}
+  .tile{background:#fff;border:1px solid var(--hair);border-radius:18px;padding:14px}
+  .tile .lbl{font-size:12px;font-weight:600;color:var(--inkSoft)}
+  .tile .val{font-size:24px;font-weight:800;margin-top:7px;letter-spacing:-.5px}
+  .bar{height:5px;border-radius:99px;background:rgba(235,224,206,.8);margin-top:7px;overflow:hidden}
+  .bar i{display:block;height:100%;border-radius:99px;background:var(--accent);
+    border:1px solid var(--accentEdge)}
+  .nextScan{margin:0 20px 18px;height:52px;border-radius:16px;background:rgba(230,212,180,.16);
+    display:flex;align-items:center;gap:10px;padding:0 18px;color:var(--accentDeep);
+    font-size:14px;font-weight:500}
+
+  /* scan */
+  .scanScr{position:relative;width:402px;height:874px;overflow:hidden;background:#2A2622}
+  .scanScr img.portrait{position:absolute;width:402px;height:874px;object-fit:cover}
+  .scanDim{position:absolute;inset:0;background:linear-gradient(rgba(0,0,0,.42),rgba(0,0,0,.10) 33%,
+    rgba(0,0,0,.16) 66%,rgba(0,0,0,.58))}
+  .scanScr canvas{position:absolute;inset:0;width:402px;height:874px}
+  .scanUI{position:absolute;inset:0;display:flex;flex-direction:column;color:#fff}
+  .passes{width:250px;margin-top:6px;display:flex;flex-direction:column;gap:8px;align-self:center}
+  .pass{height:40px;border-radius:99px;background:rgba(0,0,0,.34);border:1px solid rgba(255,255,255,.22);
+    display:flex;align-items:center;padding:0 16px;font-size:14px;font-weight:500;gap:12px}
+  .pass span{flex:1}
+  .spinner{width:13px;height:13px;border-radius:50%;border:2px solid #fff;
+    border-right-color:transparent;border-bottom-color:transparent}
+  .scanFoot{margin-top:auto;padding-bottom:44px;display:flex;flex-direction:column;
+    align-items:center;gap:12px}
+  .scanFoot .hint{font-size:13px;font-weight:500;color:rgba(255,255,255,.86)}
+  .scanChip{height:38px;border-radius:99px;background:rgba(255,255,255,.16);
+    border:1px solid rgba(255,255,255,.30);display:flex;align-items:center;gap:8px;
+    padding:0 16px;font-size:13px;font-weight:600}
+
+  /* routine */
+  .ring{width:52px;height:52px;position:relative}
+  .ringTxt{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+    font-size:12px;font-weight:700;color:var(--accentDeep)}
+  .sect{margin-bottom:18px}
+  .sectHd{display:flex;align-items:center;gap:7px;margin-bottom:10px;color:var(--accentDeep)}
+  .steps{background:#fff;border:1px solid var(--hair);border-radius:20px;overflow:hidden}
+  .step{height:62px;display:flex;align-items:center;gap:14px;padding:0 16px}
+  .step+.step{border-top:1px solid var(--hair);margin-left:56px;padding-left:0}
+  .step+.step .chk{margin-left:-56px}
+  .chk{width:26px;height:26px;border-radius:50%;border:1.5px solid var(--hair);flex:none;
+    display:flex;align-items:center;justify-content:center}
+  .chk.on{background:var(--accentEdge);border-color:var(--accentEdge)}
+  .step .nm{font-size:15px;font-weight:600}
+  .step.done .nm{color:var(--inkFaint);text-decoration:line-through}
+  .step .sb{font-size:12px;color:var(--inkFaint);margin-top:2px}
+
+  /* progress */
+  .pill{height:30px;border-radius:99px;background:rgba(230,212,180,.18);color:var(--accentDeep);
+    font-size:12px;font-weight:600;display:flex;align-items:center;padding:0 12px}
+  .calGrid{display:grid;grid-template-columns:repeat(7,1fr);gap:7px;margin-top:12px}
+  .cal{aspect-ratio:1;border-radius:8px;background:var(--recess);border:1px solid var(--hair);
+    display:flex;align-items:center;justify-content:center}
+  .cal.on{background:var(--accent);border-color:var(--accentEdge)}
+  .dayLbls{display:flex;justify-content:space-between;font-size:10px;font-weight:600;
+    letter-spacing:1.2px;color:var(--inkFaint)}
+
+  .sheet{display:flex;gap:34px;padding:34px;align-items:flex-start}
+</style>
+<body>
+<div class="sheet" id="sheet"></div>
+
+<script>
+// ============================================================
+// A direct port of RampFaceMeshGeometry / RampFaceMesh, so the preview
+// renders the same mesh the Swift draws rather than an impression of it.
+// ============================================================
+const PROFILE=[0.700,0.802,0.879,0.934,0.973,0.995,1.000,0.989,0.962,0.912,0.838,0.732,0.598,0.430,0.232];
+const place=(o,v)=>({x:0.5+o*0.5,y:v});
+
+function halfWidth(v){
+  const c=Math.min(Math.max(v,0),1), x=c*(PROFILE.length-1);
+  const i=Math.min(Math.floor(x),PROFILE.length-2), t=x-i, s=t*t*(3-2*t);
+  return PROFILE[i]+(PROFILE[i+1]-PROFILE[i])*s;
+}
+function vertex(u,v){
+  const th=u*Math.PI/2, across=u*0.35+Math.sin(th)*0.65;
+  return {x:0.5+across*halfWidth(v)*0.5, y:v+(1-Math.cos(th))*0.020};
+}
+const mirror = pts => pts.map(p=>({x:1-p.x,y:p.y}));
+const EYE_OFF=0.52, EYE_LINE=0.390;
+
+function eye(right){
+  const cx=EYE_OFF, cy=EYE_LINE, rx=0.175, ry=0.037;
+  const p=[place(cx-rx,cy+0.002),place(cx-rx*0.56,cy-ry*0.84),place(cx+rx*0.02,cy-ry),
+           place(cx+rx*0.60,cy-ry*0.74),place(cx+rx,cy+0.008),place(cx+rx*0.58,cy+ry*0.78),
+           place(cx,cy+ry*0.96),place(cx-rx*0.58,cy+ry*0.82)];
+  return right?p:mirror(p);
+}
+function brow(right){
+  const p=[place(0.20,0.316),place(0.39,0.292),place(0.57,0.286),
+           place(0.72,0.299),place(0.83,0.321)];
+  return right?p:mirror(p);
+}
+const NOSE_BRIDGE=[place(0,0.318),place(0,0.430),place(0,0.545),place(0,0.632)];
+const NOSE_BASE=[place(-0.215,0.668),place(-0.160,0.694),place(-0.080,0.703),place(0,0.694),
+                 place(0.080,0.703),place(0.160,0.694),place(0.215,0.668)];
+const LIP_OUTER=[place(-0.345,0.792),place(-0.198,0.755),place(-0.078,0.767),place(0,0.752),
+                 place(0.078,0.767),place(0.198,0.755),place(0.345,0.792),
+                 place(0.184,0.848),place(0,0.862),place(-0.184,0.848)];
+const LIP_LINE=[place(-0.345,0.792),place(-0.159,0.799),place(0,0.795),
+                place(0.159,0.799),place(0.345,0.792)];
+const CONTOURS=[[brow(false),0],[brow(true),0],[eye(false),1],[eye(true),1],
+                [NOSE_BRIDGE,0],[NOSE_BASE,0],[LIP_OUTER,1],[LIP_LINE,0]];
+
+// faceRect matches RampIntroScanScreen.faceRect
+function drawMesh(cv, faceRect, opts){
+  const o = Object.assign({columns:15, rows:19, sweep:0.34, tint:'255,255,255'}, opts||{});
+  const dpr = 3;
+  cv.width = 402*dpr; cv.height = 874*dpr;
+  const g = cv.getContext('2d');
+  g.scale(dpr,dpr);
+  const box = {x:faceRect.x*402, y:faceRect.y*874, w:faceRect.w*402, h:faceRect.h*874};
+  const placePt = p => ({x:box.x+p.x*box.w, y:box.y+p.y*box.h});
+  const reveal = () => 1;                              // written on, in the still
+  const lit = v => { const d=Math.abs(v-o.sweep); return d>0.14?0:Math.pow(1-d/0.14,2); };
+  const col = a => `rgba(${o.tint},${a})`;
+
+  g.lineCap='round'; g.lineJoin='round';
+
+  // rows
+  g.lineWidth=0.6;
+  for(let r=0;r<o.rows;r++){
+    const v=r/(o.rows-1); g.beginPath();
+    for(let c=0;c<o.columns;c++){
+      const u=c/(o.columns-1)*2-1, p=placePt(vertex(u,v));
+      c?g.lineTo(p.x,p.y):g.moveTo(p.x,p.y);
+    }
+    g.strokeStyle=col(reveal()*(0.26+0.42*lit(v))); g.stroke();
+  }
+  // columns
+  for(let c=0;c<o.columns;c++){
+    const u=c/(o.columns-1)*2-1; g.beginPath();
+    for(let r=0;r<o.rows;r++){
+      const v=r/(o.rows-1), p=placePt(vertex(u,v));
+      r?g.lineTo(p.x,p.y):g.moveTo(p.x,p.y);
+    }
+    g.strokeStyle=col(0.20); g.stroke();
+  }
+  // sweep bar
+  const y = box.y + o.sweep*box.h, bh = box.h*0.11;
+  const grad = g.createLinearGradient(0,y-bh/2,0,y+bh/2);
+  grad.addColorStop(0,col(0)); grad.addColorStop(.5,col(.26)); grad.addColorStop(1,col(0));
+  g.fillStyle=grad; g.fillRect(box.x-box.w*0.06, y-bh/2, box.w*1.12, bh);
+
+  // contours + landmark dots
+  g.lineWidth=1.0;
+  for(const [pts,closed] of CONTOURS){
+    const v = pts.reduce((s,p)=>s+p.y,0)/pts.length;
+    g.beginPath();
+    pts.forEach((p,i)=>{const q=placePt(p); i?g.lineTo(q.x,q.y):g.moveTo(q.x,q.y);});
+    if(closed) g.closePath();
+    g.strokeStyle=col(0.70+0.30*lit(v)); g.stroke();
+    g.fillStyle=col(0.95);
+    for(const p of pts){const q=placePt(p); g.beginPath(); g.arc(q.x,q.y,1.1,0,7); g.fill();}
+  }
+  // irises
+  g.lineWidth=0.8; g.strokeStyle=col(0.55);
+  for(const right of [true,false]){
+    const c0=place(right?EYE_OFF:-EYE_OFF, EYE_LINE+0.004);
+    const cP=placePt(c0);
+    const r=placePt({x:c0.x+0.075*0.5, y:c0.y}).x - cP.x;
+    g.beginPath(); g.arc(cP.x,cP.y,Math.abs(r),0,7); g.stroke();
+  }
+  // grid vertices
+  for(let r=0;r<o.rows;r++){
+    const v=r/(o.rows-1), glow=lit(v), rad=0.75+0.85*glow;
+    g.fillStyle=col(0.38+0.55*glow);
+    for(let c=0;c<o.columns;c++){
+      const u=c/(o.columns-1)*2-1, p=placePt(vertex(u,v));
+      g.beginPath(); g.arc(p.x,p.y,rad,0,7); g.fill();
+    }
+  }
+}
+
+// ============================================================
+// Icons (SF Symbols stand-ins)
+// ============================================================
+const I = {
+  gear:'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M19 12a7 7 0 0 0-.1-1.2l2-1.5-2-3.4-2.3 1a7 7 0 0 0-2-1.2L14.2 3H9.8l-.4 2.7a7 7 0 0 0-2 1.2l-2.3-1-2 3.4 2 1.5a7 7 0 0 0 0 2.4l-2 1.5 2 3.4 2.3-1a7 7 0 0 0 2 1.2l.4 2.7h4.4l.4-2.7a7 7 0 0 0 2-1.2l2.3 1 2-3.4-2-1.5c.06-.4.1-.8.1-1.2z"/></svg>',
+  house:'<svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 3 2.5 10.4V21h6.4v-5.6h6.2V21h6.4V10.4z"/></svg>',
+  list:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="m3 6 1.6 1.6L7.6 4.6"/><path d="M10.5 6H21"/><path d="m3 12.5 1.6 1.6 3-3"/><path d="M10.5 12.5H21"/><path d="m3 19 1.6 1.6 3-3"/><path d="M10.5 19H21"/></svg>',
+  chart:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17.5 9 11l4 4 8-8.5"/><path d="M16 6.5h5v5"/></svg>',
+  clock:'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5.5l3.5 2"/></svg>',
+  chevron:'<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="m9 5 7 7-7 7"/></svg>',
+  check:v=>`<svg width="${v}" height="${v}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round"><path d="m4 12.5 5.5 5.5L20 6.5"/></svg>`,
+  sun:'<svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="5"/><g stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 1.5v2.6M12 19.9v2.6M22.5 12h-2.6M4.1 12H1.5M19.4 4.6l-1.8 1.8M6.4 17.6l-1.8 1.8M19.4 19.4l-1.8-1.8M6.4 6.4 4.6 4.6"/></g></svg>',
+  moon:'<svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M20 14.5A8.6 8.6 0 0 1 9.5 4 8.6 8.6 0 1 0 20 14.5z"/></svg>',
+  camera:'<svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><path d="M9 3.5 7.6 6H4a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-3.6L15 3.5z"/><circle cx="12" cy="13" r="4" fill="#E6D4B4"/></svg>',
+  arrowUp:'<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17 17 7"/><path d="M8 7h9v9"/></svg>',
+  cal:'<svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><rect x="2.5" y="4.5" width="19" height="17" rx="3"/><rect x="2.5" y="4.5" width="19" height="5" rx="2" fill="#fff" fill-opacity=".55"/><rect x="6" y="1.5" width="2.4" height="5" rx="1.2"/><rect x="15.6" y="1.5" width="2.4" height="5" rx="1.2"/></svg>',
+  sparkles:'<svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="m12 2 1.9 5.6L19.5 9.5l-5.6 1.9L12 17l-1.9-5.6L4.5 9.5l5.6-1.9z"/><path d="m19 15 .9 2.6 2.6.9-2.6.9-.9 2.6-.9-2.6-2.6-.9 2.6-.9z"/></svg>',
+  cell:'<svg width="17" height="12" viewBox="0 0 17 12" fill="currentColor"><rect x="0" y="8" width="3" height="4" rx="1"/><rect x="4.6" y="5.6" width="3" height="6.4" rx="1"/><rect x="9.2" y="3" width="3" height="9" rx="1"/><rect x="13.8" y="0" width="3" height="12" rx="1"/></svg>',
+  wifi:'<svg width="15" height="12" viewBox="0 0 16 12" fill="currentColor"><path d="M8 11.4 5.6 8.7a3.6 3.6 0 0 1 4.8 0z"/><path d="M8 5.6c-1.6 0-3.1.6-4.2 1.7L2.2 5.6A8.2 8.2 0 0 1 8 3.2c2.2 0 4.3.9 5.8 2.4l-1.6 1.7A5.9 5.9 0 0 0 8 5.6z"/><path d="M8 .6C5.1.6 2.4 1.8.4 3.8L2 5.4A8.4 8.4 0 0 1 8 2.9c2.3 0 4.4.9 6 2.5l1.6-1.6A11.3 11.3 0 0 0 8 .6z"/></svg>',
+  battery:'<svg width="25" height="12" viewBox="0 0 25 12" fill="none"><rect x=".5" y=".5" width="21" height="11" rx="3.2" stroke="currentColor" stroke-opacity=".4"/><rect x="2" y="2" width="15" height="8" rx="2" fill="currentColor"/><path d="M23 4.2v3.6a2 2 0 0 0 0-3.6z" fill="currentColor" fill-opacity=".4"/></svg>',
+};
+
+// ============================================================
+// The four screens, authored at 402 × 874 — mirroring RampIntroScreens.swift
+// ============================================================
+const statusBar = (tint) => `<div class="status" style="color:${tint||'var(--ink)'}">
+  <div>9:41</div><div class="statusRight">${I.cell}${I.wifi}${I.battery}</div></div>`;
+
+const tabbar = (active) => `<div class="tabbar">
+  ${[['Home',I.house],['Routine',I.list],['Progress',I.chart]].map((t,i)=>
+    `<div class="tab${i===active?' on':''}">${t[1]}<div>${t[0]}</div></div>`).join('')}
+</div>`;
+
+const PAIRED=[['Glow',69],['Hydration',63],['Texture',65],['Redness',61]];
+const WIDE=['Evenness',68];
+
+function homeScreen(){
+  const ticks = Array.from({length:40},(_,i)=>
+    `<i class="tick" style="height:${i<26?14:9}px;background:${i<26?'var(--accentEdge)':'var(--hair)'}"></i>`).join('');
+  return `<div class="scr">
+    ${statusBar()}
+    <div class="hdr" style="padding-bottom:18px">
+      <h2 style="font-size:22px">SkinFix</h2><div style="flex:1"></div>
+      <div style="color:var(--inkSoft)">${I.gear}</div>
+    </div>
+    <div style="padding:0 20px">
+      <div class="card">
+        <div class="scoreRow">
+          <img class="avatar" src="../../Verite/Resources/Photos/SampleFace.jpg">
+          <div>
+            <div class="eyebrow">OVERALL</div>
+            <div style="display:flex;align-items:baseline;gap:2px">
+              <div class="bigScore">66</div>
+              <div style="font-size:17px;font-weight:600;color:var(--inkFaint)">/100</div>
+            </div>
+            <div style="font-size:12px;font-weight:500;color:var(--accentDeep)">Up 4 since your last scan</div>
+          </div>
+        </div>
+        <div class="gauge">${ticks}</div>
+      </div>
+    </div>
+    <div class="grid2">
+      ${PAIRED.map(([l,v])=>`<div class="tile"><div class="lbl">${l}</div>
+        <div class="val">${v}</div><div class="bar"><i style="width:${v}%"></i></div></div>`).join('')}
+      <div class="tile" style="grid-column:1/3"><div class="lbl">${WIDE[0]}</div>
+        <div class="val">${WIDE[1]}</div><div class="bar"><i style="width:${WIDE[1]}%"></i></div></div>
+    </div>
+    <div style="padding:14px 20px 0">
+      <div class="card" style="border-radius:20px;padding:18px">
+        <div style="display:flex;align-items:center">
+          <div class="eyebrow">YOUR 14-DAY PLAN</div><div style="flex:1"></div>
+          <div style="font-size:12px;font-weight:600;color:var(--accentDeep)">Day 6</div>
+        </div>
+        <div style="display:flex;gap:4px;margin:12px 0">
+          ${Array.from({length:14},(_,i)=>`<i style="flex:1;height:6px;border-radius:99px;
+            background:${i<6?'var(--accentEdge)':'var(--hair)'}"></i>`).join('')}
+        </div>
+        <div style="font-size:13px;font-weight:500;color:var(--inkSoft)">Tonight: adapalene, then ceramides</div>
+      </div>
+    </div>
+    <div style="flex:1"></div>
+    <div class="nextScan">${I.clock}<div>Next scan in 6d 4h</div><div style="flex:1"></div>${I.chevron}</div>
+    ${tabbar(0)}
+  </div>`;
+}
+
+const PASSES=[['Reading your skin',1],['Finding what drives it',1],['Building your plan',0]];
+function scanScreen(id){
+  return `<div class="scanScr">
+    <img class="portrait" src="../../Verite/Resources/Photos/SampleFace.jpg">
+    <div class="scanDim"></div>
+    <canvas id="${id}"></canvas>
+    <div class="scanUI">
+      ${statusBar('#fff')}
+      <div class="passes">
+        ${PASSES.map(([t,done])=>`<div class="pass"><span>${t}</span>
+          ${done?I.check(13):'<div class="spinner"></div>'}</div>`).join('')}
+      </div>
+      <div class="scanFoot">
+        <div class="hint">Hold still — reading seven metrics</div>
+        <div class="scanChip">${I.sparkles}<div>SkinFix · Face scan</div></div>
+      </div>
+    </div>
+  </div>`;
+}
+
+const MORNING=[['Gentle gel cleanser','Lukewarm water, 30 seconds',1],
+               ['Niacinamide 10%','Three drops, press in',1],
+               ['SPF 50 fluid','Two fingers, every morning',0]];
+const EVENING=[['Double cleanse','Oil first, then the gel',1],
+               ['Adapalene 0.1%','Pea-sized, alternate nights',0],
+               ['Ceramide moisturiser','Seal everything in',0]];
+const WEEKLY=[['Gentle exfoliant','Sundays, after cleansing',0]];
+
+function routineScreen(){
+  const sect=(title,icon,steps)=>`<div class="sect">
+    <div class="sectHd">${icon}<div class="eyebrow">${title}</div></div>
+    <div class="steps">${steps.map(([n,s,d])=>`<div class="step${d?' done':''}">
+      <div class="chk${d?' on':''}" style="color:#fff">${d?I.check(12):''}</div>
+      <div><div class="nm">${n}</div><div class="sb">${s}</div></div></div>`).join('')}</div></div>`;
+  return `<div class="scr">
+    ${statusBar()}
+    <div class="hdr">
+      <div><h2>Your routine</h2>
+        <div style="font-size:13px;font-weight:500;color:var(--inkSoft)">3 of 6 done today</div></div>
+      <div style="flex:1"></div>
+      <div class="ring">
+        <svg width="52" height="52" viewBox="0 0 52 52">
+          <circle cx="26" cy="26" r="23.5" fill="none" stroke="var(--hair)" stroke-width="5"/>
+          <circle cx="26" cy="26" r="23.5" fill="none" stroke="var(--accentEdge)" stroke-width="5"
+            stroke-linecap="round" stroke-dasharray="73.8 147.6" transform="rotate(-90 26 26)"/>
+        </svg><div class="ringTxt">50%</div>
+      </div>
+    </div>
+    <div style="padding:0 20px">${sect('MORNING',I.sun,MORNING)}${sect('EVENING',I.moon,EVENING)}${sect('WEEKLY',I.cal,WEEKLY)}</div>
+    <div style="flex:1"></div>
+    ${tabbar(1)}
+  </div>`;
+}
+
+const SERIES=[52,54,53,49,47,51,55,57,56,59,62,61,64,66];
+function sparkline(w,h){
+  const lo=Math.min(...SERIES)-6, hi=Math.max(...SERIES)+6;
+  const pts=SERIES.map((v,i)=>[w*i/(SERIES.length-1), h-(v-lo)/(hi-lo)*h]);
+  const line=pts.map((p,i)=>`${i?'L':'M'}${p[0].toFixed(1)} ${p[1].toFixed(1)}`).join(' ');
+  const area=`M0 ${h} ${line} L${w} ${h} Z`;
+  return `<svg width="${w}" height="${h}" viewBox="0 0 ${w} ${h}">
+    <defs><linearGradient id="fill" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#E6D4B4" stop-opacity=".55"/>
+      <stop offset="1" stop-color="#E6D4B4" stop-opacity="0"/></linearGradient></defs>
+    <path d="${area}" fill="url(#fill)"/>
+    <path d="${line}" fill="none" stroke="var(--accentEdge)" stroke-width="2.5"
+      stroke-linecap="round" stroke-linejoin="round"/>
+    ${pts.map((p,i)=>{const last=i===pts.length-1;
+      return `<circle cx="${p[0].toFixed(1)}" cy="${p[1].toFixed(1)}" r="${last?5.5:3}"
+        fill="${last?'var(--accentDeep)':'#fff'}" stroke="var(--accentEdge)" stroke-width="1.5"/>`;}).join('')}
+  </svg>`;
+}
+
+function progressScreen(){
+  const cells=Array.from({length:21},(_,i)=>
+    `<div class="cal${i<14?' on':''}" style="color:var(--accentDeep)">${i===13?I.camera:''}</div>`).join('');
+  return `<div class="scr">
+    ${statusBar()}
+    <div class="hdr"><h2>Your evolution</h2><div style="flex:1"></div>
+      <div class="pill">14 days</div></div>
+    <div style="padding:0 20px">
+      <div class="card">
+        <div style="display:flex;align-items:baseline;gap:6px">
+          <div style="font-size:32px;font-weight:800;letter-spacing:-.6px">66</div>
+          <div style="font-size:13px;font-weight:500;color:var(--inkSoft)">overall</div>
+          <div style="flex:1"></div>
+          <div style="display:flex;align-items:center;gap:3px;color:var(--accentDeep);
+            font-size:13px;font-weight:700">${I.arrowUp}+14</div>
+        </div>
+        <div style="margin:14px 0">${sparkline(322,96)}</div>
+        <div class="dayLbls"><div>DAY 1</div><div>DAY 14</div></div>
+      </div>
+      <div class="card" style="margin-top:14px;border-radius:20px;padding:18px">
+        <div class="eyebrow">WHAT MOVED</div>
+        ${[['Hydration',9],['Glow',7],['Redness',5],['Texture',3]].map(([l,v])=>
+          `<div style="display:flex;align-items:center;gap:12px;margin-top:12px">
+            <div style="width:78px;font-size:13px;font-weight:500;color:var(--inkSoft)">${l}</div>
+            <div class="bar" style="flex:1;margin-top:0"><i style="width:${v/12*100}%"></i></div>
+            <div style="width:28px;text-align:right;font-size:13px;font-weight:700;
+              color:var(--accentDeep)">+${v}</div></div>`).join('')}
+      </div>
+      <div class="card" style="margin-top:14px">
+        <div style="display:flex;align-items:center">
+          <div class="eyebrow">PHOTO CALENDAR</div><div style="flex:1"></div>
+          <div style="font-size:12px;font-weight:600;color:var(--inkSoft)">March</div>
+        </div>
+        <div class="calGrid">${cells}</div>
+      </div>
+    </div>
+    <div style="flex:1"></div>
+    ${tabbar(2)}
+  </div>`;
+}
+
+// ============================================================
+// The drawn iPhone — mirrors RampPhoneFrame's geometry
+// ============================================================
+let uid = 0;
+function phone(width, screenHTML, glare=true){
+  const bezel = width*0.023;
+  const sw = width - bezel*2, sh = sw*874/402, h = sh + bezel*2;
+  const sr = sw*55/402, or_ = sr + bezel, scale = sw/402;
+  const th = width*0.014, rw = Math.max(1,width*0.007);
+  const btn = (bh,y,left)=>`<div class="sideBtn" style="width:${th*2}px;height:${bh}px;
+     left:${left?-th:width-th}px;top:${h/2+y-bh/2}px"></div>`;
+  return `<div class="phone" style="width:${width}px;height:${h}px;
+      filter:drop-shadow(0 ${width*0.075}px ${width*0.14}px rgba(28,26,23,.30))">
+    ${btn(h*0.038,-h*0.212,1)}${btn(h*0.068,-h*0.118,1)}${btn(h*0.068,-h*0.030,1)}
+    ${btn(h*0.104,-h*0.086,0)}
+    <div class="phoneBody" style="border-radius:${or_}px"></div>
+    <div class="phoneCore" style="inset:${rw}px;border-radius:${or_-rw}px"></div>
+    <div class="phoneScreen" style="left:${bezel}px;top:${bezel}px;width:${sw}px;height:${sh}px;
+        border-radius:${sr}px">
+      <div class="scaler" style="transform:scale(${scale})">${screenHTML}</div>
+      <div class="island" style="width:${sw*125/402}px;height:${sw*37/402}px;
+        top:${sw*11/402}px;border-radius:99px">
+        <div class="islandCam" style="width:${sw*15/402}px;height:${sw*15/402}px;
+          margin-right:${sw*6/402}px"></div></div>
+      <div class="homebar" style="width:${sw*139/402}px;height:${Math.max(1.5,sw*5/402)}px;
+        bottom:${sw*8/402}px;border-radius:99px"></div>
+      ${glare?'<div class="glare"></div>':''}
+    </div>
+  </div>`;
+}
+
+function trio(width, L, C, R){
+  const cw = width*0.475, sw = cw*0.88;
+  const box = `position:absolute;left:50%;top:50%;transform-origin:center`;
+  return `<div style="position:relative;width:${width}px;height:${cw*874/402*1.10}px">
+    <div style="${box};transform:translate(-50%,-50%) translate(${-cw*0.60}px,${-cw*0.02}px) rotate(-5deg)">
+      ${phone(sw,L,false)}<div style="position:absolute;inset:0;border-radius:${sw*0.16}px;
+        background:rgba(250,247,241,.22)"></div></div>
+    <div style="${box};transform:translate(-50%,-50%) translate(${cw*0.60}px,${-cw*0.02}px) rotate(5deg)">
+      ${phone(sw,R,false)}<div style="position:absolute;inset:0;border-radius:${sw*0.16}px;
+        background:rgba(250,247,241,.22)"></div></div>
+    <div style="${box};transform:translate(-50%,-50%);z-index:2">${phone(cw,C)}</div>
+  </div>`;
+}
+
+// ============================================================
+// The four carousel pages
+// ============================================================
+const PAGES=[
+  {t:'The honest way<br>to clear your skin.',
+   s:'One scan, one real score from 0 to 100 — no filter, no sugarcoating.'},
+  {t:"See what's driving<br>your breakouts.",
+   s:'Seven metrics read from a single photo of your face — blemishes first.'},
+  {t:'A routine built<br>around your skin.',
+   s:'Morning and evening, matched to your concerns and the ingredients you react to.'},
+  {t:'Watch it change<br>over 14 days.',
+   s:'Every scan updates the plan and shows you what actually moved.'},
+];
+
+const scanIds=[];
+function art(i){
+  if(i===1){ const id='mesh'+(uid++); scanIds.push(id); return phone(171, scanScreen(id)); }
+  const H=homeScreen(), R=routineScreen(), P=progressScreen();
+  if(i===2) return trio(330,H,R,P);
+  if(i===3) return trio(330,R,P,H);
+  return trio(330,P,H,R);
+}
+
+document.getElementById('sheet').innerHTML = PAGES.map((p,i)=>`
+  <div class="page"><div class="backdrop"></div><div class="pageInner">
+    <div class="artSlot">${art(i)}</div>
+    <div class="copy"><h1>${p.t}</h1><p>${p.s}</p></div>
+    <div class="dots">${PAGES.map((_,j)=>`<div class="dot${j===i?' on':''}"></div>`).join('')}</div>
+    <div class="cta">Get started</div>
+    <div class="signin">Already have an account?</div>
+  </div></div>`).join('');
+
+// Draw every mesh, with the faceRect from RampIntroScanScreen.
+const FACE_RECT = {x:0.115, y:0.203, w:0.716, h:0.467};
+window.__ready = false;
+addEventListener('load', ()=>{
+  scanIds.forEach(id=>drawMesh(document.getElementById(id), FACE_RECT));
+  window.__ready = true;
+});
+// Hooks the render script uses to shoot the scan screen on its own.
+window.__scanSolo = () => scanScreen('solomesh');
+window.__drawSolo = () => drawMesh(document.getElementById('solomesh'), FACE_RECT);
+</script>
+</body>
