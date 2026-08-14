@@ -292,6 +292,16 @@ struct RampBrandScreen: View {
 /// arrive at wildly different aspect ratios and most are drawn for white. This
 /// gives each one the same room without cropping any of them, and without us
 /// inventing a background colour for someone else's mark.
+///
+/// The white box also does quiet work on the assets. Most of these marks are
+/// only published as opaque white-background files, and against a white box
+/// they are indistinguishable from cut-out ones — so no keying is needed, and
+/// none is done. Keying dark type off white leaves halos on the anti-aliased
+/// edges, which is worse than the problem it solves.
+///
+/// The consequence: this fill must stay white. Tint it and every opaque asset
+/// shows its plate as a rectangle. If the design ever wants a coloured box,
+/// the assets have to be cut out first — not the other way round.
 private struct RampBrandMark: View {
     let brand: RampBrandScreen.Brand
 
