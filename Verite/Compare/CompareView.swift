@@ -177,7 +177,7 @@ struct CompareView: View {
             .frame(maxWidth: .infinity)
             .background(DQColor.surface, in: RoundedRectangle(cornerRadius: 24, style: .continuous))
             .overlay(RoundedRectangle(cornerRadius: 24, style: .continuous)
-                .strokeBorder(lead ? DQColor.accent.opacity(0.5) : DQColor.stroke, lineWidth: lead ? 1.5 : 1))
+                .strokeBorder(lead ? DQColor.accentEdge.opacity(0.5) : DQColor.stroke, lineWidth: lead ? 1.5 : 1))
 
             avatar(photo)
                 .offset(y: -52)
@@ -224,7 +224,7 @@ struct CompareView: View {
         .clipShape(Circle())
         .overlay(Circle().strokeBorder(DQColor.surface, lineWidth: 4))
         .overlay(Circle().strokeBorder(DQColor.accentSoft, lineWidth: 4).padding(-4))
-        .shadow(color: DQColor.accent.opacity(0.28), radius: 14, y: 8)
+        .shadow(color: DQColor.accentEdge.opacity(0.28), radius: 14, y: 8)
     }
 
     // MARK: No scan yet

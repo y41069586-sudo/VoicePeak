@@ -26,10 +26,12 @@ enum RampStage {
     static let inkFaint   = Color(hex: "96897B") // tertiary text
     static let hair       = Color(hex: "EBE0CE") // warm hairline
 
-    // The single accent (deep sand) + a much deeper shade for on-light TEXT
-    // (the sand itself only reaches 2.2:1 on the ground) + a soft tint used
-    // as fills/pools.
-    static let accent     = Color(hex: "C6A46B")
+    // The single accent (light beige) + a much deeper shade for on-light TEXT
+    // (the beige itself only reaches 1.4:1 on the ground) + a soft tint used
+    // as fills/pools. `accentEdge` bounds every filled accent surface: at this
+    // lightness the fill alone does not separate from the ground.
+    static let accent     = Color(hex: "E6D4B4")
+    static let accentEdge = Color(hex: "BCA070")
     static let accentDeep = Color(hex: "7D5F33")
     static let glow       = Color(hex: "F4EBD8")
 
@@ -39,7 +41,7 @@ enum RampStage {
     static let dawnSky    = Color(hex: "FBF6EA") // (name kept for call sites)
 
     /// Soft accent tint for icon chips, segmented backgrounds, soft buttons.
-    static let accentSoft = Color(hex: "F2E5CD")
+    static let accentSoft = Color(hex: "F5EBD8")
 
     // Named text roles.
     static let textPrimary   = ink
@@ -220,8 +222,10 @@ struct RampProgressLine: View {
         GeometryReader { geo in
             ZStack(alignment: .leading) {
                 Capsule().fill(RampStage.hair)
+                // Edge, not accent: this hairline is 2pt tall, too thin to
+                // carry an outline, so it takes the darker tone outright.
                 Capsule()
-                    .fill(RampStage.accent)
+                    .fill(RampStage.accentEdge)
                     .frame(width: geo.size.width * max(0, min(1, fraction)))
             }
         }
@@ -300,11 +304,14 @@ struct RampPrimaryButton: View {
                 Text(LocalizedStringKey(title))
             }
             .font(.system(size: 17, weight: .bold, design: .rounded))
-            // Ink, not white — the sand CTA can't carry white type (2.4:1).
+            // Ink, not white — the beige CTA can't carry white type (1.7:1).
             .foregroundStyle(RampStage.ink)
             .frame(maxWidth: .infinity, minHeight: 58)
             .background(RampStage.accent,
                         in: RoundedRectangle(cornerRadius: 20, style: .continuous))
+            // The pale fill needs the edge to read as a control at all.
+            .overlay(RoundedRectangle(cornerRadius: 20, style: .continuous)
+                .strokeBorder(RampStage.accentEdge, lineWidth: 1.5))
             .shadow(color: RampStage.ink.opacity(isEnabled ? 0.16 : 0), radius: 12, y: 6)
             .opacity(isEnabled ? 1 : 0.4)
         }
@@ -378,7 +385,7 @@ struct RampOptionCard: View {
             )
             .overlay(
                 RoundedRectangle(cornerRadius: 18, style: .continuous)
-                    .strokeBorder(selected ? RampStage.accent : RampStage.hairline, lineWidth: 1)
+                    .strokeBorder(selected ? RampStage.accentEdge : RampStage.hairline, lineWidth: 1)
             )
         }
         .buttonStyle(PressableStyle())
@@ -388,10 +395,10 @@ struct RampOptionCard: View {
     private var selectionDot: some View {
         ZStack {
             Circle()
-                .strokeBorder(selected ? RampStage.accent : RampStage.hair, lineWidth: 1.5)
+                .strokeBorder(selected ? RampStage.accentEdge : RampStage.hair, lineWidth: 1.5)
                 .frame(width: 20, height: 20)
             if selected {
-                Circle().fill(RampStage.accent).frame(width: 20, height: 20)
+                Circle().fill(RampStage.accentEdge).frame(width: 20, height: 20)
                 Circle().fill(Color.white).frame(width: 7, height: 7)
             }
         }
@@ -429,7 +436,7 @@ struct RampDistributionCurve: View {
                 .fill(LinearGradient(colors: [RampStage.accent.opacity(0.22), .clear],
                                      startPoint: .top, endPoint: .bottom))
             RampBellShape(progress: drawProgress, filled: false)
-                .stroke(RampStage.accent.opacity(0.85),
+                .stroke(RampStage.accentEdge.opacity(0.85),
                         style: StrokeStyle(lineWidth: 2, lineCap: .round, lineJoin: .round))
             peerDots.opacity(Double(drawProgress))
             bandOverlay.opacity(Double(bandOpacity))
@@ -490,14 +497,14 @@ struct RampDistributionCurve: View {
                 var line = Path()
                 line.move(to: CGPoint(x: edge * w, y: y(edge)))
                 line.addLine(to: CGPoint(x: edge * w, y: h))
-                context.stroke(line, with: .color(RampStage.accent.opacity(0.5)),
+                context.stroke(line, with: .color(RampStage.accentEdge.opacity(0.5)),
                                style: StrokeStyle(lineWidth: 1, dash: [3, 3]))
             }
             let mid = (x1 + x2) / 2, my = y(mid)
             context.fill(Path(ellipseIn: CGRect(x: mid * w - 15, y: my - 15, width: 30, height: 30)),
                          with: .color(RampStage.accent.opacity(0.2)))
             context.fill(Path(ellipseIn: CGRect(x: mid * w - 5, y: my - 5, width: 10, height: 10)),
-                         with: .color(RampStage.accent))
+                         with: .color(RampStage.accentEdge))
             context.draw(Text(verbatim: "?").font(RampStage.serif(13))
                             .foregroundColor(RampStage.accentDeep),
                          at: CGPoint(x: mid * w, y: my - 22))

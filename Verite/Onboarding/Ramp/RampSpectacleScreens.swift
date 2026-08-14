@@ -48,7 +48,7 @@ struct RampBootScreen: View {
                 HStack(spacing: 6) {
                     ForEach(0..<3, id: \.self) { index in
                         Capsule()
-                            .fill(index == (page ?? 0) ? RampStage.accent : RampStage.hair)
+                            .fill(index == (page ?? 0) ? RampStage.accentEdge : RampStage.hair)
                             .frame(width: index == (page ?? 0) ? 18 : 6, height: 6)
                     }
                 }
@@ -119,13 +119,13 @@ private struct RampMirrorArt: View {
                 Spacer().frame(height: 150)
                 Capsule()
                     .fill(RampStage.dawnPeach)
-                    .overlay(Capsule().strokeBorder(RampStage.accent, lineWidth: 4))
+                    .overlay(Capsule().strokeBorder(RampStage.accentEdge, lineWidth: 4))
                     .frame(width: 34, height: 86)
             }
             // Frame + glass with a soft diagonal shine.
             Ellipse()
                 .fill(Color.white)
-                .overlay(Ellipse().strokeBorder(RampStage.accent, lineWidth: 5))
+                .overlay(Ellipse().strokeBorder(RampStage.accentEdge, lineWidth: 5))
                 .frame(width: 140, height: 168)
                 .offset(y: -32)
             Ellipse()
@@ -144,15 +144,15 @@ private struct RampMirrorArt: View {
 
             Image(systemName: "sparkle")
                 .font(.system(size: 26, weight: .bold))
-                .foregroundStyle(RampStage.accent)
+                .foregroundStyle(RampStage.accentEdge)
                 .offset(x: -98, y: -92)
             Image(systemName: "sparkle")
                 .font(.system(size: 16, weight: .bold))
-                .foregroundStyle(RampStage.accent)
+                .foregroundStyle(RampStage.accentEdge)
                 .offset(x: 96, y: -30)
             Image(systemName: "sparkle")
                 .font(.system(size: 14, weight: .bold))
-                .foregroundStyle(RampStage.accent)
+                .foregroundStyle(RampStage.accentEdge)
                 .offset(x: -86, y: 56)
         }
         .accessibilityHidden(true)
@@ -164,14 +164,14 @@ private struct RampScanFaceArt: View {
     var body: some View {
         ZStack {
             RampIntroBrackets()
-                .stroke(RampStage.accent, style: StrokeStyle(lineWidth: 7, lineCap: .round))
+                .stroke(RampStage.accentEdge, style: StrokeStyle(lineWidth: 7, lineCap: .round))
                 .frame(width: 190, height: 190)
 
             // A friendly abstract face.
             ZStack {
                 Circle()
                     .fill(Color.white)
-                    .overlay(Circle().strokeBorder(RampStage.accent, lineWidth: 4))
+                    .overlay(Circle().strokeBorder(RampStage.accentEdge, lineWidth: 4))
                     .frame(width: 96, height: 96)
                 HStack(spacing: 26) {
                     Circle().fill(RampStage.accentDeep).frame(width: 7, height: 7)
@@ -193,10 +193,10 @@ private struct RampScanFaceArt: View {
             ZStack {
                 Circle()
                     .fill(Color.white)
-                    .overlay(Circle().strokeBorder(RampStage.accent, lineWidth: 4))
+                    .overlay(Circle().strokeBorder(RampStage.accentEdge, lineWidth: 4))
                 Image(systemName: "checkmark")
                     .font(.system(size: 26, weight: .bold))
-                    .foregroundStyle(RampStage.accent)
+                    .foregroundStyle(RampStage.accentEdge)
             }
             .frame(width: 62, height: 62)
             .offset(x: 78, y: 66)
@@ -213,7 +213,7 @@ private struct RampPlanArt: View {
                 .fill(Color.white)
                 .overlay(
                     RoundedRectangle(cornerRadius: 22, style: .continuous)
-                        .strokeBorder(RampStage.accent, lineWidth: 5)
+                        .strokeBorder(RampStage.accentEdge, lineWidth: 5)
                 )
                 .frame(width: 170, height: 160)
             UnevenRoundedRectangle(topLeadingRadius: 18, topTrailingRadius: 18)
@@ -222,7 +222,8 @@ private struct RampPlanArt: View {
                 .offset(y: -60)
             Text("14 DAYS")
                 .font(.system(size: 15, weight: .heavy, design: .rounded))
-                .foregroundStyle(Color.white)
+                // Ink: white on the beige tab is 1.7:1.
+                .foregroundStyle(RampStage.ink)
                 .tracking(1)
                 .offset(y: -60)
 
@@ -233,7 +234,7 @@ private struct RampPlanArt: View {
                         ForEach(0..<5, id: \.self) { column in
                             let done = row == 0 || column < 2
                             Circle()
-                                .fill(done ? RampStage.accent : RampStage.dawnPeach)
+                                .fill(done ? RampStage.accentEdge : RampStage.dawnPeach)
                                 .frame(width: 16, height: 16)
                         }
                     }
@@ -243,7 +244,7 @@ private struct RampPlanArt: View {
 
             Image(systemName: "sparkle")
                 .font(.system(size: 22, weight: .bold))
-                .foregroundStyle(RampStage.accent)
+                .foregroundStyle(RampStage.accentEdge)
                 .offset(x: 96, y: -84)
         }
         .accessibilityHidden(true)
@@ -382,7 +383,7 @@ struct RampSampleReadingScreen: View {
             .background(Color.white, in: RoundedRectangle(cornerRadius: 26, style: .continuous))
             .overlay(RoundedRectangle(cornerRadius: 26, style: .continuous)
                 .strokeBorder(RampStage.hairline, lineWidth: 1))
-            .shadow(color: RampStage.accent.opacity(0.16), radius: 26, y: 14)
+            .shadow(color: RampStage.ink.opacity(0.16), radius: 26, y: 14)
 
             avatar
                 .offset(y: -56)
@@ -410,6 +411,10 @@ struct RampSampleReadingScreen: View {
                     Capsule().fill(RampStage.hair.opacity(0.7))
                     Capsule()
                         .fill(lead ? RampStage.accentDeep : RampStage.accent)
+                        // Only the pale fill needs bounding; accentDeep carries
+                        // its own separation from the track.
+                        .overlay(Capsule().strokeBorder(lead ? .clear : RampStage.accentEdge,
+                                                        lineWidth: 1))
                         .frame(width: proxy.size.width * CGFloat(shown) / 100)
                 }
             }
@@ -437,7 +442,7 @@ struct RampSampleReadingScreen: View {
         .clipShape(Circle())
         .overlay(Circle().strokeBorder(Color.white, lineWidth: 4))
         .overlay(Circle().strokeBorder(RampStage.accentSoft, lineWidth: 4).padding(-4))
-        .shadow(color: RampStage.accent.opacity(0.28), radius: 14, y: 8)
+        .shadow(color: RampStage.ink.opacity(0.20), radius: 14, y: 8)
     }
 }
 
@@ -499,8 +504,12 @@ struct RampSplitScreen: View {
                         GeometryReader { proxy in
                             ZStack(alignment: .leading) {
                                 Capsule().fill(RampStage.hair.opacity(0.6))
+                                // Edged: the beige fill is only 1.2:1 against
+                                // the track, so the bar's length would be
+                                // guesswork without the outline.
                                 Capsule()
                                     .fill(RampStage.accent)
+                                    .overlay(Capsule().strokeBorder(RampStage.accentEdge, lineWidth: 1))
                                     .frame(width: proxy.size.width * metric.value(at: t))
                             }
                         }
@@ -602,13 +611,15 @@ struct RampMorphSlider: View {
                     .fill(RampStage.hair.opacity(0.6))
                     .frame(height: 5)
                 Capsule()
-                    .fill(RampStage.accent)
+                    .fill(RampStage.accentEdge)
                     .frame(width: x + knob / 2, height: 5)
                 Circle()
                     .fill(Color.white)
                     .frame(width: knob, height: knob)
-                    .overlay(Circle().strokeBorder(RampStage.accent, lineWidth: 2))
-                    .shadow(color: RampStage.accent.opacity(0.35), radius: 8, y: 3)
+                    // Edge, not accent: a white knob ringed in pale beige has
+                    // no visible boundary on this ground.
+                    .overlay(Circle().strokeBorder(RampStage.accentEdge, lineWidth: 2))
+                    .shadow(color: RampStage.ink.opacity(0.18), radius: 8, y: 3)
                     .offset(x: x)
             }
             .frame(maxHeight: .infinity, alignment: .center)

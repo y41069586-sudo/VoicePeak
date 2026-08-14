@@ -90,7 +90,7 @@ struct DermiqProgressTab: View {
                 DQColor.accentGradient,
                 in: RoundedRectangle(cornerRadius: DQRadius.card, style: .continuous)
             )
-            .shadow(color: DQColor.accent.opacity(0.25), radius: 14, y: 6)
+            .shadow(color: DQColor.accentEdge.opacity(0.25), radius: 14, y: 6)
         }
         .buttonStyle(PressableStyle())
     }
@@ -109,7 +109,7 @@ struct DermiqProgressTab: View {
                         x: .value("Date", scan.date),
                         y: .value("Score", scan.overall)
                     )
-                    .foregroundStyle(DQColor.accent)
+                    .foregroundStyle(DQColor.accentEdge)
                     .interpolationMethod(.catmullRom)
                     .lineStyle(StrokeStyle(lineWidth: 2.5, lineCap: .round))
                     PointMark(
@@ -170,7 +170,7 @@ struct DermiqProgressTab: View {
                                 } label: {
                                     Text(LocalizedStringKey(category.displayName))
                                         .font(.system(size: 12, weight: .semibold, design: .rounded))
-                                        .foregroundStyle(on ? Color.white : DQColor.accentBright)
+                                        .foregroundStyle(on ? DQColor.textPrimary : DQColor.accentBright)
                                         .padding(.horizontal, 11)
                                         .padding(.vertical, 6)
                                         .background(on ? AnyShapeStyle(DQColor.accent)
@@ -197,7 +197,7 @@ struct DermiqProgressTab: View {
                             x: .value("Date", point.date),
                             y: .value("Score", point.value)
                         )
-                        .foregroundStyle(DQColor.accent)
+                        .foregroundStyle(DQColor.accentEdge)
                         .interpolationMethod(.catmullRom)
                         .lineStyle(StrokeStyle(lineWidth: 2.5, lineCap: .round))
                         PointMark(
@@ -300,7 +300,7 @@ struct DermiqProgressTab: View {
                 .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
                 .overlay(
                     RoundedRectangle(cornerRadius: 12, style: .continuous)
-                        .strokeBorder(selected ? DQColor.accent : DQColor.stroke,
+                        .strokeBorder(selected ? DQColor.accentEdge : DQColor.stroke,
                                       lineWidth: selected ? 2 : 1)
                 )
                 Text(scan.date, format: .dateTime.day().month(.abbreviated))

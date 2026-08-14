@@ -260,7 +260,7 @@ struct DermiqResultsView: View {
         .clipShape(Circle())
         .overlay(Circle().strokeBorder(DQColor.surface, lineWidth: 4))
         .overlay(Circle().strokeBorder(DQColor.accentSoft, lineWidth: 4).padding(-4))
-        .shadow(color: DQColor.accent.opacity(0.28), radius: 14, y: 8)
+        .shadow(color: DQColor.accentEdge.opacity(0.28), radius: 14, y: 8)
     }
 
     /// The iOS-style segmented toggle. A white pill slides between the two
@@ -286,7 +286,7 @@ struct DermiqResultsView: View {
                     if active {
                         Capsule()
                             .fill(DQColor.surface)
-                            .shadow(color: DQColor.accent.opacity(0.18), radius: 6, y: 2)
+                            .shadow(color: DQColor.accentEdge.opacity(0.18), radius: 6, y: 2)
                             .matchedGeometryEffect(id: "segmentPill", in: segmentNS)
                     }
                 }
@@ -811,14 +811,14 @@ struct DermiqPaywallCard: View {
                 }
                 Spacer()
                 Image(systemName: choice == plan ? "checkmark.circle.fill" : "circle")
-                    .foregroundStyle(choice == plan ? DQColor.accent : DQColor.stroke)
+                    .foregroundStyle(choice == plan ? DQColor.accentEdge : DQColor.stroke)
                     .font(.system(size: 22))
             }
             .padding(14)
             .background(DQColor.surface, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
             .overlay(
                 RoundedRectangle(cornerRadius: 16, style: .continuous)
-                    .strokeBorder(choice == plan ? DQColor.accent : DQColor.stroke,
+                    .strokeBorder(choice == plan ? DQColor.accentEdge : DQColor.stroke,
                                   lineWidth: choice == plan ? 1.5 : 1)
             )
         }

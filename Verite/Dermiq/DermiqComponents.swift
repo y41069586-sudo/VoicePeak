@@ -25,7 +25,7 @@ struct DQScoreRing: View {
                     style: StrokeStyle(lineWidth: lineWidth, lineCap: .round)
                 )
                 .rotationEffect(.degrees(-90))
-                .shadow(color: DQColor.accent.opacity(0.5), radius: 8)
+                .shadow(color: DQColor.accentEdge.opacity(0.5), radius: 8)
         }
     }
 }
@@ -146,7 +146,7 @@ struct DQDayTile: View {
             RoundedRectangle(cornerRadius: 12, style: .continuous)
                 .fill(background)
             RoundedRectangle(cornerRadius: 12, style: .continuous)
-                .strokeBorder(state == .today ? DQColor.accent : DQColor.stroke,
+                .strokeBorder(state == .today ? DQColor.accentEdge : DQColor.stroke,
                               lineWidth: state == .today ? 1.5 : 1)
             if isRescanTile && state != .completed {
                 Image(systemName: "lock.fill")

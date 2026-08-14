@@ -195,9 +195,13 @@ struct GlowUpReelSheet: View {
                     Text("Share video")
                 }
                 .font(.system(size: 17, weight: .bold))
-                .foregroundStyle(.white)
+                // Ink + edge, same as DQPrimaryButton: white on the beige fill
+                // is 1.45:1, and the fill alone does not bound the control.
+                .foregroundStyle(DQColor.textPrimary)
                 .frame(maxWidth: .infinity, minHeight: 58)
                 .background(DQColor.accent, in: RoundedRectangle(cornerRadius: 20, style: .continuous))
+                .overlay(RoundedRectangle(cornerRadius: 20, style: .continuous)
+                    .strokeBorder(DQColor.accentEdge, lineWidth: 1.5))
             }
             .padding(.horizontal, 24)
             Button {

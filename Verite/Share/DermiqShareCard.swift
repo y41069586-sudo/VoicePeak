@@ -80,7 +80,7 @@ struct DermiqShareCard: View {
         .clipShape(Circle())
         .overlay(Circle().strokeBorder(DQColor.surface, lineWidth: 4))
         .overlay(Circle().strokeBorder(DQColor.accentSoft, lineWidth: 4).padding(-4))
-        .shadow(color: DQColor.accent.opacity(0.28), radius: 12, y: 6)
+        .shadow(color: DQColor.accentEdge.opacity(0.28), radius: 12, y: 6)
     }
 
     private var grid: some View {
@@ -129,7 +129,7 @@ struct DermiqShareCard: View {
             RoundedRectangle(cornerRadius: 22, style: .continuous)
                 .strokeBorder(DQColor.stroke, lineWidth: 1)
         )
-        .shadow(color: DQColor.accent.opacity(0.10), radius: 16, y: 8)
+        .shadow(color: DQColor.accentEdge.opacity(0.10), radius: 16, y: 8)
     }
 
     private var potentialLine: some View {

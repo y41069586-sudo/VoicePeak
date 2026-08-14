@@ -111,7 +111,7 @@ struct DermiqZoneMapCard: View {
                     .foregroundStyle(isSelected ? .white : DQColor.textPrimary)
                 Text(LocalizedStringKey(score.zone.shortName))
                     .font(.system(size: 8.5, weight: .semibold, design: .rounded))
-                    .foregroundStyle(isSelected ? .white.opacity(0.85) : DQColor.textSecondary)
+                    .foregroundStyle(isSelected ? DQColor.textPrimary : DQColor.textSecondary)
                     .lineLimit(1)
                     .minimumScaleFactor(0.8)
             }

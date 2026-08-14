@@ -551,7 +551,7 @@ struct DermiqScanHome: View {
             RoundedRectangle(cornerRadius: 28, style: .continuous)
                 .strokeBorder(DQColor.stroke, lineWidth: 1)
         )
-        .shadow(color: DQColor.accent.opacity(0.12), radius: 18, y: 8)
+        .shadow(color: DQColor.accentEdge.opacity(0.12), radius: 18, y: 8)
     }
 
     /// One side of the face-off: a big avatar ring, an eyebrow label and —
@@ -707,7 +707,7 @@ struct DermiqScanHome: View {
             RoundedRectangle(cornerRadius: 28, style: .continuous)
                 .strokeBorder(DQColor.stroke, lineWidth: 1)
         )
-        .shadow(color: DQColor.accent.opacity(0.12), radius: 18, y: 8)
+        .shadow(color: DQColor.accentEdge.opacity(0.12), radius: 18, y: 8)
     }
 
     /// The bundled scan hero image (a face with an analysis mesh). Falls back to
@@ -856,7 +856,7 @@ private struct DeckScanVisual: View {
                 }
             }
             DeckBrackets()
-                .stroke(DQColor.accent, style: StrokeStyle(lineWidth: 3.5, lineCap: .round))
+                .stroke(DQColor.accentEdge, style: StrokeStyle(lineWidth: 3.5, lineCap: .round))
                 .frame(width: 130, height: 146)
             LinearGradient(colors: [.clear, DQColor.accent.opacity(0.7), .clear],
                            startPoint: .leading, endPoint: .trailing)

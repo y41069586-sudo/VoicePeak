@@ -29,7 +29,7 @@ struct RootView: View {
             }
         }
         .veriteAnimation(value: onboardingComplete)
-        .tint(DQColor.accent)
+        .tint(DQColor.accentBright)
         .preferredColorScheme(.light) // warm GlamUp light, app-wide
         // Referral links (verite://invite?…) credit bonus scans; compare
         // links (verite://compare?d=…) open the friend face-off sheet.

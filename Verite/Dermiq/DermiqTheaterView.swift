@@ -114,7 +114,7 @@ struct DermiqTheaterView: View {
     private func readoutChip(label: String, fill: CGFloat) -> some View {
         VStack(alignment: .leading, spacing: 6) {
             HStack(spacing: 5) {
-                Circle().fill(DQColor.accent).frame(width: 5, height: 5)
+                Circle().fill(DQColor.accentEdge).frame(width: 5, height: 5)
                 Text(LocalizedStringKey(label))
                     .font(DQFont.mono(9, weight: .semibold))
                     .tracking(1.4)
@@ -146,7 +146,7 @@ struct DermiqTheaterView: View {
             Rectangle()
                 .fill(DQColor.accentBright)
                 .frame(height: 2)
-                .shadow(color: DQColor.accent, radius: 8)
+                .shadow(color: DQColor.accentEdge, radius: 8)
         }
         .frame(width: size.width)
         .position(x: size.width / 2, y: size.height * sweepProgress)

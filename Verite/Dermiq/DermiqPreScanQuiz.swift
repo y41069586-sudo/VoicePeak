@@ -25,7 +25,7 @@ struct DermiqPreScanQuiz: View {
             HStack(spacing: 6) {
                 ForEach(0..<2, id: \.self) { i in
                     Capsule()
-                        .fill(i <= question ? DQColor.accent : DQColor.stroke)
+                        .fill(i <= question ? DQColor.accentEdge : DQColor.stroke)
                         .frame(height: 4)
                 }
             }
@@ -161,7 +161,7 @@ struct DermiqPreScanQuiz: View {
             .background(DQColor.surface, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
             .overlay(
                 RoundedRectangle(cornerRadius: 16, style: .continuous)
-                    .strokeBorder(selected ? DQColor.accent : DQColor.stroke,
+                    .strokeBorder(selected ? DQColor.accentEdge : DQColor.stroke,
                                   lineWidth: selected ? 1.5 : 1)
             )
         }

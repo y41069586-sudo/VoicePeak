@@ -361,7 +361,8 @@ struct RampDailyReportScreen: View {
                 .overlay(
                     Text(verbatim: "G")
                         .font(.system(size: 17, weight: .heavy, design: .serif))
-                        .foregroundStyle(.white)
+                        // Ink: white on the beige app tile is 1.7:1.
+                        .foregroundStyle(RampStage.ink)
                 )
             VStack(alignment: .leading, spacing: 1) {
                 HStack {
@@ -421,7 +422,7 @@ struct RampDailyReportScreen: View {
             )
             .overlay(
                 RoundedRectangle(cornerRadius: 18, style: .continuous)
-                    .strokeBorder(selected ? RampStage.accent : RampStage.hairline, lineWidth: 1)
+                    .strokeBorder(selected ? RampStage.accentEdge : RampStage.hairline, lineWidth: 1)
             )
         }
         .buttonStyle(PressableStyle())
@@ -590,7 +591,7 @@ struct RampPlanPreviewScreen: View {
         .background(Color.white, in: RoundedRectangle(cornerRadius: 20, style: .continuous))
         .overlay(RoundedRectangle(cornerRadius: 20, style: .continuous)
             .strokeBorder(RampStage.hairline, lineWidth: 1))
-        .shadow(color: RampStage.accent.opacity(0.12), radius: 16, y: 8)
+        .shadow(color: RampStage.ink.opacity(0.12), radius: 16, y: 8)
     }
 }
 
@@ -682,7 +683,7 @@ struct RampCommitmentScreen: View {
             RoundedRectangle(cornerRadius: 22, style: .continuous)
                 .fill(Color.white.opacity(0.8))
             RoundedRectangle(cornerRadius: 22, style: .continuous)
-                .strokeBorder(signed ? RampStage.accent : RampStage.hairline,
+                .strokeBorder(signed ? RampStage.accentEdge : RampStage.hairline,
                               lineWidth: signed ? 1.5 : 1)
 
             // Baseline + hint, fading once ink lands.
@@ -727,7 +728,7 @@ struct RampCommitmentScreen: View {
             }
         }
         .frame(height: 190)
-        .shadow(color: RampStage.accent.opacity(signed ? 0.18 : 0.08), radius: 18, y: 8)
+        .shadow(color: RampStage.ink.opacity(signed ? 0.18 : 0.08), radius: 18, y: 8)
         .animation(VMotion.gentle, value: strokes.isEmpty)
     }
 }

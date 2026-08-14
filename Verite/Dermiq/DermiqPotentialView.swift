@@ -153,7 +153,7 @@ struct DQBeforeAfterSlider: View {
             Rectangle()
                 .fill(DQColor.textPrimary)
                 .frame(width: 2)
-                .shadow(color: DQColor.accent.opacity(0.8), radius: 6)
+                .shadow(color: DQColor.accentEdge.opacity(0.8), radius: 6)
             Circle()
                 .fill(DQColor.surfaceElevated)
                 .frame(width: 34, height: 34)

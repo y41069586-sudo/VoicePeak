@@ -185,13 +185,13 @@ struct DermiqCaptureView: View {
         } label: {
             ZStack {
                 Circle()
-                    .stroke(allPass ? DQColor.accent : DQColor.textSecondary.opacity(0.4), lineWidth: 3)
+                    .stroke(allPass ? DQColor.accentEdge : DQColor.textSecondary.opacity(0.4), lineWidth: 3)
                     .frame(width: 76, height: 76)
                 Circle()
                     .fill(allPass ? AnyShapeStyle(DQColor.accentGradient) : AnyShapeStyle(DQColor.surfaceElevated))
                     .frame(width: 62, height: 62)
             }
-            .shadow(color: DQColor.accent.opacity(allPass ? 0.45 : 0), radius: 18)
+            .shadow(color: DQColor.accentEdge.opacity(allPass ? 0.45 : 0), radius: 18)
         }
         .disabled(!allPass || capturing)
         .animation(VMotion.crossfade, value: allPass)

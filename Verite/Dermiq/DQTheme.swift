@@ -22,12 +22,19 @@ import SwiftUI
 // which is not what this is. Contrast now comes from value, not hue — so the
 // one saturated thing on screen is the skin photograph itself.
 //
-// Tonal does NOT mean desaturated. The first pass at this held the accent at
-// 27% saturation, which on a full-width CTA reads as khaki — grey-brown, not
-// beige. The sand tokens now sit near 40-45% saturation around hue 37°, warm
-// enough to read as a colour while staying the same family as the ground. The
-// neutrals carry a little of that warmth too (13% saturation rather than 6%),
-// because a truly neutral grey next to sand is what made the screen look grey.
+// Tonal does NOT mean desaturated, and it does not mean dark. Two earlier
+// passes got this wrong in opposite directions: one held the accent at 27%
+// saturation, which on a full-width CTA reads as khaki, and the correction
+// pushed saturation up while keeping the value mid-range, which reads as
+// brown. The accent is now a genuinely LIGHT beige — 80% lightness at 50%
+// saturation, hue 38°. The neutrals carry a little of that warmth too (13%
+// saturation rather than 6%), because a truly neutral grey next to sand is
+// what made the screen look grey.
+//
+// The cost of a pale fill is that it barely separates from the ground (1.4:1),
+// so a fill alone no longer says "button". Every filled accent surface takes
+// `accentEdge` as a hairline — that plus the drop shadow is what identifies
+// the control; the fill is decoration.
 //
 // Consequence to keep in mind when adding UI: a beige CTA cannot carry white
 // text. Labels on `accent` are `textPrimary`. Accent TEXT uses `accentBright`,
@@ -42,15 +49,18 @@ enum DQColor {
     static let background      = Color(hex: "FAF7F1")
     static let surface         = Color(hex: "FFFFFF")
     static let surfaceElevated = Color(hex: "F6F0E3")
-    /// Warm sand — CTAs, the portal ring, the scan line. Carries ink, not
-    /// white: white on this fails contrast, warm near-black passes at 7.4:1.
-    static let accent          = Color(hex: "C6A46B")
+    /// Light beige — CTAs, the portal ring, the scan line. Carries ink, not
+    /// white: warm near-black reads at 11.9:1 here, white at 1.7:1.
+    static let accent          = Color(hex: "E6D4B4")
+    /// Hairline on every filled accent surface. The fill itself is only 1.4:1
+    /// against the ground, which is not enough to bound a control on its own.
+    static let accentEdge      = Color(hex: "BCA070")
     /// The "bright" accent role is accent TEXT on the pale ground, so it needs
-    /// to be much DARKER than `accent` — this passes AA at 5.5:1, where
-    /// `accent` itself would only reach 2.2:1 and be unreadable.
+    /// to be far DARKER than `accent` — this passes AA at 5.5:1, where
+    /// `accent` itself would only reach 1.4:1 and be invisible.
     static let accentBright    = Color(hex: "7D5F33")
     /// Soft accent tint for icon chips, segmented backgrounds, soft fills.
-    static let accentSoft      = Color(hex: "F2E5CD")
+    static let accentSoft      = Color(hex: "F5EBD8")
     static let textPrimary     = Color(hex: "1C1A17")
     static let textSecondary   = Color(hex: "6B6053")
     static let deltaUp         = Color(hex: "1F9D6B")
@@ -114,11 +124,14 @@ struct DQPrimaryButton: View {
                 Text(LocalizedStringKey(title))
             }
             .font(Font.system(size: 17, weight: .bold))
-            // Ink, not white — white on the sand CTA is 2.4:1 and unreadable.
+            // Ink, not white — white on the beige CTA is 1.7:1 and unreadable.
             .foregroundStyle(DQColor.textPrimary)
             .frame(maxWidth: .infinity, minHeight: 58)
             .background(DQColor.accent,
                         in: RoundedRectangle(cornerRadius: 20, style: .continuous))
+            // The pale fill needs the edge to read as a control at all.
+            .overlay(RoundedRectangle(cornerRadius: 20, style: .continuous)
+                .strokeBorder(DQColor.accentEdge, lineWidth: 1.5))
             .shadow(color: Color(hex: "1C1A17").opacity(isEnabled ? 0.16 : 0), radius: 12, y: 6)
             .opacity(isEnabled ? 1 : 0.35)
         }

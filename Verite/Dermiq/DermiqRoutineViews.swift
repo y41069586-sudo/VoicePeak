@@ -253,15 +253,15 @@ private struct PlanRouteView: View {
                 PlanRouteShape(progress: progress)
                     .stroke(DQColor.accentGradient,
                             style: StrokeStyle(lineWidth: 4.5, lineCap: .round))
-                    .shadow(color: DQColor.accent.opacity(0.45), radius: 6)
+                    .shadow(color: DQColor.accentEdge.opacity(0.45), radius: 6)
 
                 // The moving tip.
                 if progress > 0.001, !finished {
                     Circle()
                         .fill(Color.white)
                         .frame(width: 13, height: 13)
-                        .overlay(Circle().strokeBorder(DQColor.accent, lineWidth: 3.5))
-                        .shadow(color: DQColor.accent.opacity(0.6), radius: 7)
+                        .overlay(Circle().strokeBorder(DQColor.accentEdge, lineWidth: 3.5))
+                        .shadow(color: DQColor.accentEdge.opacity(0.6), radius: 7)
                         .position(PlanRoute.point(at: progress, in: size))
                 }
 
@@ -320,7 +320,7 @@ private struct PlanRouteView: View {
             }
         }
         .frame(width: side, height: side)
-        .shadow(color: DQColor.accent.opacity(reached ? 0.35 : 0), radius: 9, y: 4)
+        .shadow(color: DQColor.accentEdge.opacity(reached ? 0.35 : 0), radius: 9, y: 4)
         .scaleEffect(reached ? 1 : 0.86)
         .animation(VMotion.snappy, value: reached)
     }
@@ -477,7 +477,7 @@ struct DermiqRoutineTab: View {
                     ZStack(alignment: .leading) {
                         Capsule().fill(DQColor.stroke.opacity(0.5))
                         Capsule()
-                            .fill(allDone ? DQColor.deltaUp : DQColor.accent)
+                            .fill(allDone ? DQColor.deltaUp : DQColor.accentEdge)
                             .frame(width: proxy.size.width * CGFloat(done) / CGFloat(max(total, 1)))
                     }
                 }
@@ -815,7 +815,8 @@ struct DermiqRoutineTab: View {
             } else {
                 Text(verbatim: "\(day)")
                     .font(.system(size: 15, weight: .bold, design: .rounded).monospacedDigit())
-                    .foregroundStyle(isToday ? DQColor.accentBright : DQColor.textSecondary)
+                    .foregroundStyle(isDone ? DQColor.textPrimary
+                                     : (isToday ? DQColor.accentBright : DQColor.textSecondary))
             }
         }
         .frame(width: 44, height: 48)
@@ -827,7 +828,7 @@ struct DermiqRoutineTab: View {
         .overlay {
             if isToday {
                 RoundedRectangle(cornerRadius: 15, style: .continuous)
-                    .strokeBorder(DQColor.accent, lineWidth: 1.5)
+                    .strokeBorder(DQColor.accentEdge, lineWidth: 1.5)
             }
         }
         .opacity(state == .missed ? 0.45 : 1)

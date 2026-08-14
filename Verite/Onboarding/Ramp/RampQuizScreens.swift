@@ -195,7 +195,7 @@ struct RampNameScreen: View {
                 .background(RampStage.card, in: RoundedRectangle(cornerRadius: 18, style: .continuous))
                 .overlay(
                     RoundedRectangle(cornerRadius: 18, style: .continuous)
-                        .strokeBorder(focused ? RampStage.accent : RampStage.hairline, lineWidth: 1)
+                        .strokeBorder(focused ? RampStage.accentEdge : RampStage.hairline, lineWidth: 1)
                 )
                 .padding(.horizontal, VSpace.lg)
                 .animation(VMotion.gentle, value: focused)
@@ -474,6 +474,7 @@ struct RampRevealScreen: View {
                                 Capsule().fill(RampStage.hair.opacity(0.6))
                                 Capsule()
                                     .fill(RampStage.accent)
+                                    .overlay(Capsule().strokeBorder(RampStage.accentEdge, lineWidth: 1))
                                     .frame(width: proxy.size.width
                                            * CGFloat(stepCount) / CGFloat(max(steps.count, 1)))
                             }
@@ -486,7 +487,7 @@ struct RampRevealScreen: View {
                             HStack(spacing: 10) {
                                 Image(systemName: done ? "checkmark.circle.fill" : "circle")
                                     .font(.system(size: 15, weight: .medium))
-                                    .foregroundStyle(done ? RampStage.accent : RampStage.hair)
+                                    .foregroundStyle(done ? RampStage.accentEdge : RampStage.hair)
                                 Text(LocalizedStringKey(steps[index]))
                                     .font(VType.caption)
                                     .foregroundStyle(done ? RampStage.ink : RampStage.textTertiary)
@@ -506,7 +507,7 @@ struct RampRevealScreen: View {
                 RoundedRectangle(cornerRadius: 24, style: .continuous)
                     .strokeBorder(RampStage.hairline, lineWidth: 1)
             )
-            .shadow(color: RampStage.accent.opacity(0.10), radius: 22, y: 10)
+            .shadow(color: RampStage.ink.opacity(0.10), radius: 22, y: 10)
             .padding(.horizontal, VSpace.lg)
             .opacity(appeared ? 1 : 0)
             .scaleEffect(appeared ? 1 : 0.96)

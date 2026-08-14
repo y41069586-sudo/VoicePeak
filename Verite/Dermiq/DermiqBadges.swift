@@ -176,7 +176,7 @@ struct DermiqBadgeAwardView: View {
                         .foregroundStyle(DQColor.accentBright)
                         .scaleEffect(iconShown ? 1 : 0.2)
                         .opacity(iconShown ? 1 : 0)
-                        .shadow(color: DQColor.accent.opacity(0.8), radius: 14)
+                        .shadow(color: DQColor.accentEdge.opacity(0.8), radius: 14)
                 }
                 .frame(height: 170)
 
@@ -211,7 +211,7 @@ struct DermiqBadgeAwardView: View {
                     .strokeBorder(DQColor.stroke, lineWidth: 1)
             )
             .padding(.horizontal, 36)
-            .shadow(color: DQColor.accent.opacity(0.25), radius: 40)
+            .shadow(color: DQColor.accentEdge.opacity(0.25), radius: 40)
         }
         .task(id: badge.rawValue) { await play() }
     }
@@ -335,7 +335,7 @@ private struct DermiqBadgeTile: View {
                     .font(.system(size: 19, weight: .medium))
                     .foregroundStyle(earned ? DQColor.textPrimary : DQColor.textSecondary.opacity(0.6))
             }
-            .shadow(color: DQColor.accent.opacity(earned ? 0.4 : 0), radius: 10)
+            .shadow(color: DQColor.accentEdge.opacity(earned ? 0.4 : 0), radius: 10)
             Text(LocalizedStringKey(badge.title))
                 .font(DQFont.micro)
                 .foregroundStyle(earned ? DQColor.textPrimary : DQColor.textSecondary)
