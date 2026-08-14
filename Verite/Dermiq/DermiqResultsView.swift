@@ -586,6 +586,8 @@ struct DermiqPaywallCard: View {
     let onUnlocked: () -> Void
 
     @Environment(PurchaseManager.self) private var purchases
+    /// Read for the headline only — the name they gave during onboarding.
+    @Query private var profiles: [UserProfile]
 
     /// Two cards: the Pro sub or a one-time rating unlock. (The 14-day plan
     /// is sold contextually on the results CTA, not here.)
@@ -647,12 +649,29 @@ struct DermiqPaywallCard: View {
         }
     }
 
+    /// The headline hands back what they asked for, in the words they chose on
+    /// the goal screen — "Amir, your plan for fewer breakouts is ready."
+    /// A generic trial prompt after twenty screens of questions reads as though
+    /// nothing was listened to.
+    private var headline: Text {
+        let name = profiles.first?.displayName?.trimmingCharacters(in: .whitespaces) ?? ""
+        guard let goal = RampQuizAnswers.Goal.stored else {
+            return name.isEmpty
+                ? Text("Your score is ready.")
+                : Text("\(name), your score is ready.")
+        }
+        return name.isEmpty
+            ? Text("Your plan for \(goal.phrase) is ready.")
+            : Text("\(name), your plan for \(goal.phrase) is ready.")
+    }
+
     private var cardContent: some View {
         VStack(spacing: 18) {
             VStack(spacing: 12) {
-                Text("Your score is ready.")
+                headline
                     .font(DQFont.title)
                     .foregroundStyle(DQColor.textPrimary)
+                    .multilineTextAlignment(.center)
 
                 // The value stack — what unlocking actually gets you, scannable
                 // in two seconds at the moment of peak curiosity.

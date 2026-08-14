@@ -107,7 +107,7 @@ struct OnboardingRampFlow: View {
             RampNameScreen(name: nameBinding) { advance() }
         case .quizSelfRating:
             RampQuizScreen(
-                chapter: "YOUR SKIN · ONE OF THREE",
+                chapter: "YOUR SKIN · ONE OF TWO",
                 question: personalized("How does your skin feel lately?",
                                        named: "%@, how does your skin feel lately?"),
                 options: RampQuizAnswers.SelfRating.allCases.map {
@@ -121,7 +121,7 @@ struct OnboardingRampFlow: View {
             }
         case .quizConcern:
             RampQuizScreen(
-                chapter: "YOUR SKIN · TWO OF THREE",
+                chapter: "WHERE WE START",
                 question: "What draws your eye in the mirror?",
                 options: RampQuizAnswers.MirrorConcern.allCases.map {
                     RampQuizOption(id: $0.rawValue, label: $0.label,
@@ -134,7 +134,7 @@ struct OnboardingRampFlow: View {
             }
         case .quizAge:
             RampQuizScreen(
-                chapter: "YOUR SKIN · THREE OF THREE",
+                chapter: "YOUR SKIN · TWO OF TWO",
                 question: "Your age group?",
                 options: RampQuizAnswers.AgeBand.allCases.map {
                     RampQuizOption(id: $0.rawValue, label: $0.label, icon: ageIcon($0))
@@ -154,7 +154,7 @@ struct OnboardingRampFlow: View {
             ) { advance() }
         case .quizRoutine:
             RampQuizScreen(
-                chapter: "YOUR LIFE · ONE OF THREE",
+                chapter: "YOUR LIFE · ONE OF FOUR",
                 question: "Your routine, honestly?",
                 options: RampQuizAnswers.RoutineLevel.allCases.map {
                     RampQuizOption(id: $0.rawValue, label: $0.label, icon: routineIcon($0))
@@ -166,7 +166,7 @@ struct OnboardingRampFlow: View {
             }
         case .quizSleep:
             RampQuizScreen(
-                chapter: "YOUR LIFE · TWO OF THREE",
+                chapter: "YOUR LIFE · TWO OF FOUR",
                 question: "Sleep, on an average night?",
                 options: RampQuizAnswers.SleepBucket.allCases.map {
                     RampQuizOption(id: $0.rawValue, label: $0.label, icon: sleepIcon($0))
@@ -178,7 +178,7 @@ struct OnboardingRampFlow: View {
             }
         case .quizSPF:
             RampQuizScreen(
-                chapter: "YOUR LIFE · THREE OF THREE",
+                chapter: "YOUR LIFE · THREE OF FOUR",
                 question: "Sun protection?",
                 options: RampQuizAnswers.SunProtection.allCases.map {
                     RampQuizOption(id: $0.rawValue, label: $0.label, icon: spfIcon($0))
@@ -196,10 +196,35 @@ struct OnboardingRampFlow: View {
                 chips: [answers.routine?.label, answers.sleep?.label, answers.spf?.label]
                     .compactMap { $0 }
             ) { advance() }
+        case .acneType:
+            RampAcneTypeScreen(selected: acneTypesBinding) {
+                let picked = answers.acneTypes.sorted()
+                RampAnalytics.quizAnswer(question: "acne_types",
+                                         answer: picked.joined(separator: ","))
+                UserDefaults.standard.set(picked, forKey: "dq.acneTypes")
+                Haptics.fire(.selection)
+                advance()
+            }
         case .sensitivities:
             RampSensitivityScreen(selected: sensitivitiesBinding) {
                 answers.sawSensitivities = true
                 advance()
+            }
+        case .spend:
+            RampSpendScreen(bucket: spendBinding) {
+                RampAnalytics.quizAnswer(question: "monthly_spend_bucket",
+                                         answer: "\(answers.spendBucket)")
+                UserDefaults.standard.set(answers.spendBucket, forKey: "dq.spendBucket")
+                Haptics.fire(.selection)
+                advance()
+            }
+        case .theCycle:
+            RampCycleScreen { advance() }
+        case .goal:
+            RampGoalScreen(selected: answers.goal) { goal in
+                answers.goal = goal
+                goal.store()
+                recordAnswer(question: "goal", answer: goal.rawValue)
             }
         case .theReading:
             RampRevealScreen(answers: answers) { advance() }
@@ -235,6 +260,14 @@ struct OnboardingRampFlow: View {
 
     private var sensitivitiesBinding: Binding<Set<String>> {
         Binding(get: { answers.sensitivities }, set: { answers.sensitivities = $0 })
+    }
+
+    private var acneTypesBinding: Binding<Set<String>> {
+        Binding(get: { answers.acneTypes }, set: { answers.acneTypes = $0 })
+    }
+
+    private var spendBinding: Binding<Int> {
+        Binding(get: { answers.spendBucket }, set: { answers.spendBucket = $0 })
     }
 
     /// Swaps in the name-addressed variant once the user has given a name.

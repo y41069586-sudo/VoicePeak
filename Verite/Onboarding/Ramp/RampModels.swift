@@ -10,52 +10,58 @@ import os
 /// luminous Teint-Orb lives behind every screen and only re-stages between
 /// them.
 ///
-///   opening → number → split → 5 questions → the reading → the curve
-///   → daily ritual → handoff (the scan).
+///   opening → concern → acne type → demo → questions → insights
+///   → spend → the loop → goal → the reading → the curve → the plan
+///   → commitment → daily ritual → handoff (the scan).
 ///
 /// Quiz selection IS the advance. (Case names are kept stable so analytics and
 /// the routing stay compatible with earlier builds.)
 enum RampStep: Int, CaseIterable {
-    case boot            // 0  — opening
-    case sampleReading   // 1  — the real results chart, previewed
-    case theSplit        // 2  — what 14 days moves (interactive bars)
-    case name            // 3  — "what should we call you?" (optional)
-    case quizSelfRating  // 4  — Q1 · your skin
-    case quizConcern     // 6  — Q2 · your skin
-    case quizAge         // 7  — Q3 · your skin
-    case insightSkin     // 8  — mirrored insight, chapter 1
-    case quizRoutine     // 9  — Q4 · your life
-    case quizSleep       // 10 — Q5 · your life
-    case quizSPF         // 11 — Q6 · your life
+    case boot            // 0  — opening carousel
+    // The concern comes FIRST, before anything is demonstrated. It is the
+    // question the user actually came to answer, it is about them rather than
+    // about us, and every screen after it can mirror it back. A demo shown
+    // before we know what is wrong is a demo about somebody else.
+    case quizConcern     // 1  — the one question they came to answer
+    case acneType        // 2  — which kind, over photographs
+    case sampleReading   // 3  — the real results chart, previewed
+    case theSplit        // 4  — what 14 days moves (interactive bars)
+    case quizSelfRating  // 5  — Q · your skin
+    case quizAge         // 6  — Q · your skin
+    case insightSkin     // 7  — mirrored insight, chapter 1
+    // Asked once, immediately after the first insight — so the name is given
+    // in exchange for something, not before anything.
+    case name            // 8  — "what should we call you?" (optional)
+    case quizRoutine     // 9  — Q · your life
+    case quizSleep       // 10 — Q · your life
+    case quizSPF         // 11 — Q · your life
     case insightLife     // 12 — mirrored insight, chapter 2
     case sensitivities   // 13 — allergies the routine must avoid
-    case theReading      // 14 — visible processing + prediction range
-    case theCurve        // 14 — where do you land?
-    case planPreview     // 15 — your first plan, previewed
-    case evidence        // 16 — the science behind the plan (tappable sources)
-    case commitment      // 17 — sign your 14-day commitment
-    case dailyRitual     // 18 — time choice + notifications
+    // Spend, then the loop it bought. Naming the monthly figure and THEN
+    // naming the cycle it funded is the argument for a plan, made with the
+    // user's own number rather than ours — and it is the anchor every later
+    // price is read against.
+    case spend           // 14 — what you already spend each month
+    case theCycle        // 15 — the loop, named
+    // The goal-setting act. Everything downstream — the curve, the plan, the
+    // paywall headline — refers back to the sentence chosen here.
+    case goal            // 16 — "what does better look like for you?"
+    case theReading      // 17 — visible processing + prediction range
+    case theCurve        // 18 — where do you land?
+    case planPreview     // 19 — your first plan, previewed
+    case evidence        // 20 — the science behind the plan (tappable sources)
+    case commitment      // 21 — sign your 14-day commitment
+    case dailyRitual     // 22 — time choice + notifications
     // Attribution sits here, not at position 3. It serves our reporting, not
     // the user, and it used to be the fourth thing the app did — a screen that
     // takes before anything has been given. Asked once they're committed, it
     // costs nothing and the answer is just as usable.
-    case attribution     // 19 — "where did you find us?" (marketing attribution)
-    case signIn          // 20 — register before the first scan
-    case handoff         // 21 — "now, the real you" → the scan
+    case attribution     // 23 — "where did you find us?" (marketing attribution)
+    case signIn          // 24 — register before the first scan
+    case handoff         // 25 — "now, the real you" → the scan
 
     var next: RampStep? { RampStep(rawValue: rawValue + 1) }
     var previous: RampStep? { RampStep(rawValue: rawValue - 1) }
-
-    /// True for the six interrogation questions.
-    var isQuiz: Bool {
-        switch self {
-        case .quizSelfRating, .quizConcern, .quizAge,
-             .quizRoutine, .quizSleep, .quizSPF:
-            return true
-        default:
-            return false
-        }
-    }
 
     /// Conceptual screen index (0…18) for the progress hairline.
     var screenIndex: Int { rawValue }
@@ -75,7 +81,11 @@ enum RampStep: Int, CaseIterable {
         case .quizSleep:      return "quiz_sleep"
         case .quizSPF:        return "quiz_spf"
         case .insightLife:    return "insight_life"
+        case .acneType:       return "acne_type"
         case .sensitivities:  return "sensitivities"
+        case .spend:          return "spend"
+        case .theCycle:       return "the_cycle"
+        case .goal:           return "goal"
         case .theReading:     return "the_reading"
         case .theCurve:       return "the_curve"
         case .planPreview:    return "plan_preview"
@@ -358,6 +368,69 @@ struct RampQuizAnswers {
     /// Persist onto the SwiftData profile. The routine/plan generation and the
     /// Match engine read these fields — this is where quiz answers start
     /// influencing the product, not just the funnel.
+    /// What "better" means to this person, in their words. Chosen on the goal
+    /// screen and repeated verbatim by the curve, the plan and the paywall —
+    /// the ask stops being a generic trial prompt and becomes the delivery of
+    /// the thing they said they wanted.
+    enum Goal: String, CaseIterable, Identifiable {
+        case fewerBreakouts, calmerSkin, evenTone, smootherTexture, notThinkAboutIt
+        var id: String { rawValue }
+
+        /// First person, present tense — the sentence they are choosing to own.
+        var label: String {
+            switch self {
+            case .fewerBreakouts:   return "Fewer breakouts"
+            case .calmerSkin:       return "Calmer, less angry skin"
+            case .evenTone:         return "Marks that finally fade"
+            case .smootherTexture:  return "Skin that feels smooth"
+            case .notThinkAboutIt:  return "Skin I don't think about"
+            }
+        }
+
+        /// Used mid-sentence, e.g. "Your 14-day plan for fewer breakouts".
+        var phrase: String {
+            switch self {
+            case .fewerBreakouts:   return "fewer breakouts"
+            case .calmerSkin:       return "calmer skin"
+            case .evenTone:         return "fading marks"
+            case .smootherTexture:  return "smoother skin"
+            case .notThinkAboutIt:  return "skin you don't think about"
+            }
+        }
+
+        var icon: String {
+            switch self {
+            case .fewerBreakouts:   return "allergens"
+            case .calmerSkin:       return "flame"
+            case .evenTone:         return "circle.lefthalf.filled"
+            case .smootherTexture:  return "square.stack.3d.up"
+            case .notThinkAboutIt:  return "checkmark.seal"
+            }
+        }
+
+        /// Where the paywall and the results screen read it back from. Kept in
+        /// UserDefaults rather than on `UserProfile` deliberately: it is copy
+        /// input, not skin data, and it costs no SwiftData migration.
+        static let storageKey = "dq.goal"
+
+        static var stored: Goal? {
+            UserDefaults.standard.string(forKey: storageKey).flatMap(Goal.init(rawValue:))
+        }
+
+        func store() { UserDefaults.standard.set(rawValue, forKey: Self.storageKey) }
+    }
+
+    var goal: Goal?
+
+    /// Which kinds of acne were recognised on the photo grid. Multi-select —
+    /// most skin carries more than one, and the routine builder branches on it.
+    var acneTypes: Set<String> = []
+
+    /// Index into the spend screen's buckets, not an amount. Kept as a bucket
+    /// because nobody knows this figure precisely, and a number implying they
+    /// do would be a false record.
+    var spendBucket: Int = 2
+
     /// Set once the sensitivity screen has been seen. An EMPTY set is a real
     /// answer there ("Nothing I know of"), so emptiness alone can't tell us
     /// whether the question was asked — this flag can.
