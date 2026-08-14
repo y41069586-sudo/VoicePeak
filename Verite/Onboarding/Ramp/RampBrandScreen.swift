@@ -30,6 +30,11 @@ import SwiftUI
 /// mark the same honest room, and a single column means a long name never
 /// truncates.
 ///
+/// The box is 84x44 because the marks demanded it. At 56x40 the two widest
+/// wordmarks came out 9-10pt tall — Bioderma's "LABORATOIRE DERMATOLOGIQUE"
+/// line rendered around 2pt, which is not small, it is absent. These lockups
+/// are 5:1; a box narrow enough to feel tidy makes half of them unreadable.
+///
 /// ASSETS. Each brand loads `logoAsset` through `RampPhoto.load` — drop
 /// `BrandCeraVe.png` and friends into `Verite/Resources/Photos/`. Until a file
 /// exists the row shows a monogram in OUR typeface on OUR ground, never an
@@ -74,28 +79,28 @@ struct RampBrandScreen: View {
         /// page, which no automatic fit can measure — dense, compact marks
         /// want a value below 1, thin extended wordmarks above it.
         ///
-        /// These are starting values reasoned from each file's aspect ratio.
-        /// They want one pass of eyeballing on a device once the real files
-        /// are in; nudge in steps of 0.05.
+        /// Measured against the real files rather than guessed: every
+        /// wordmark here is 2.3:1 or wider, so all of them hit the WIDTH cap
+        /// and their scale does nothing. Only a compact mark — the NIVEA disc
+        /// is the one in this set — is height-limited, and that is where the
+        /// value bites. So leave this at 1.0 for wordmarks; reach for it when
+        /// a round or square mark reads too heavy. Nudge in steps of 0.05.
         var opticalScale: CGFloat = 1.0
     }
 
     static let brands: [Brand] = [
         Brand(id: "cerave",        name: "CeraVe",         logoAsset: "BrandCeraVe",       monogram: "CV"),
         Brand(id: "larocheposay",  name: "La Roche-Posay", logoAsset: "BrandLaRochePosay", monogram: "LRP"),
-        Brand(id: "theordinary",   name: "The Ordinary",   logoAsset: "BrandTheOrdinary",  monogram: "TO",
-              opticalScale: 1.05),
+        Brand(id: "theordinary",   name: "The Ordinary",   logoAsset: "BrandTheOrdinary",  monogram: "TO"),
         Brand(id: "cetaphil",      name: "Cetaphil",       logoAsset: "BrandCetaphil",     monogram: "CE"),
-        // ~4.5:1, light strokes — needs room to read.
-        Brand(id: "neutrogena",    name: "Neutrogena",     logoAsset: "BrandNeutrogena",   monogram: "NG",
-              opticalScale: 1.10),
-        // Square and solid. Left at parity it out-weighs every wordmark here.
+        Brand(id: "neutrogena",    name: "Neutrogena",     logoAsset: "BrandNeutrogena",   monogram: "NG"),
+        // The one compact mark in the set, so the only one the scale moves.
+        // A filled disc reads heavier than type at equal size — 0.9 lands it
+        // just under the wordmarks' cap height instead of matching it.
         Brand(id: "nivea",         name: "NIVEA",          logoAsset: "BrandNivea",        monogram: "NV",
-              opticalScale: 0.85),
+              opticalScale: 0.90),
         Brand(id: "eucerin",       name: "Eucerin",        logoAsset: "BrandEucerin",      monogram: "EU"),
-        // ~5:1, the most extended mark in the set.
-        Brand(id: "bioderma",      name: "Bioderma",       logoAsset: "BrandBioderma",     monogram: "BD",
-              opticalScale: 1.10),
+        Brand(id: "bioderma",      name: "Bioderma",       logoAsset: "BrandBioderma",     monogram: "BD"),
         Brand(id: "avene",         name: "Avène",          logoAsset: "BrandAvene",        monogram: "AV"),
         Brand(id: "vichy",         name: "Vichy",          logoAsset: "BrandVichy",        monogram: "VI"),
         Brand(id: "paulaschoice",  name: "Paula's Choice", logoAsset: "BrandPaulasChoice", monogram: "PC"),
@@ -202,7 +207,7 @@ struct RampBrandScreen: View {
         } label: {
             HStack(spacing: 14) {
                 RampBrandMark(brand: brand)
-                    .frame(width: 56, height: 40)
+                    .frame(width: 84, height: 44)
 
                 // Verbatim: proper names are never localised or restyled.
                 Text(verbatim: brand.name)
@@ -306,8 +311,8 @@ private struct RampBrandMark: View {
                 Image(uiImage: image)
                     .resizable()
                     .scaledToFit()
-                    .frame(maxWidth: 44 * brand.opticalScale,
-                           maxHeight: 22 * brand.opticalScale)
+                    .frame(maxWidth: 72 * brand.opticalScale,
+                           maxHeight: 32 * brand.opticalScale)
             } else {
                 monogram
             }
