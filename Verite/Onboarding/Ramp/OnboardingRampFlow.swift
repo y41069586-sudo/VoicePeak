@@ -80,7 +80,11 @@ struct OnboardingRampFlow: View {
     private var currentScreen: some View {
         switch step {
         case .boot:
-            RampBootScreen { advance() }
+            RampBootScreen(onAdvance: { advance() },
+                           onSignIn: {
+                               RampAnalytics.track("intro_sign_in_tapped")
+                               step = .signIn
+                           })
         case .sampleReading:
             RampSampleReadingScreen { advance() }
         case .theSplit:
@@ -193,7 +197,10 @@ struct OnboardingRampFlow: View {
                     .compactMap { $0 }
             ) { advance() }
         case .sensitivities:
-            RampSensitivityScreen(selected: sensitivitiesBinding) { advance() }
+            RampSensitivityScreen(selected: sensitivitiesBinding) {
+                answers.sawSensitivities = true
+                advance()
+            }
         case .theReading:
             RampRevealScreen(answers: answers) { advance() }
         case .theCurve:

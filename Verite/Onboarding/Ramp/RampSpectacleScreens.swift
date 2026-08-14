@@ -7,106 +7,174 @@ import UIKit
 // MARK: — Screen 0: Opening
 // ============================================================
 
-/// The GlamUp-style intro: three illustrated pages — mirror, scan, plan —
-/// with a big rounded title, a short line and one coral button. Paged
-/// VERTICALLY: swiping down (or tapping Continue) moves to the next page;
-/// the last page hands off into the flow. Pure-SwiftUI line-art in the
-/// brand's coral/blush palette — no assets needed.
+/// The opening carousel. Four product-led pages: a real screenshot of what the
+/// app produces, an acne-first headline, one line of substance. Horizontal
+/// paging with dots, and — the part that matters for conversion — the SAME
+/// primary CTA on every page, so nobody has to swipe four times to begin.
+///
+/// Two deliberate choices here:
+///
+/// 1. The art slot takes a real screenshot (`IntroScore`, `IntroScan`,
+///    `IntroRoutine`, `IntroProgress` — drop any of them into
+///    `Resources/Photos/`). Until a file exists the original line-art stands
+///    in, so the flow never looks broken while the assets are being made.
+///    Screenshots of the actual product outsell illustrations of it: the page
+///    stops describing the app and starts showing what you get.
+///
+/// 2. "Already have an account?" sits on page one. Sign-in used to be step 18
+///    of 21, and `onboardingComplete` lives only in the local store — so a
+///    subscriber who reinstalled had to walk the entire funnel before they
+///    could reach the button that restores what they already paid for.
 struct RampBootScreen: View {
     let onAdvance: () -> Void
+    /// Jump straight to sign-in. Returning users are not prospects; making
+    /// them re-run the pitch is how you lose the ones you already won.
+    var onSignIn: () -> Void = {}
 
-    @State private var page: Int? = 0
+    @State private var page = 0
 
-    private let titles = ["Your glow,\nmeasured.", "Discover\nyour skin.", "Glow in\n14 days."]
-    private let subs = [
-        "One scan. One honest score from 0 to 100 — no filter, no sugarcoating.",
-        "Seven metrics, clear insights and a plan made for your face.",
-        "A simple morning & evening ritual, rebuilt from every scan.",
+    private struct IntroPage: Identifiable {
+        let id: Int
+        let photo: String
+        let title: String
+        let sub: String
+    }
+
+    /// Acne first, in the app's own voice. No percentage claims and no
+    /// "clear in N days" promise — the product measures and plans, it does
+    /// not guarantee an outcome, and the copy stays inside what it can do.
+    private let pages: [IntroPage] = [
+        IntroPage(id: 0, photo: "IntroScore",
+                  title: "The honest way\nto clear your skin.",
+                  sub: "One scan, one real score from 0 to 100 — no filter, no sugarcoating."),
+        IntroPage(id: 1, photo: "IntroScan",
+                  title: "See what's driving\nyour breakouts.",
+                  sub: "Seven metrics read from a single photo of your face — blemishes first."),
+        IntroPage(id: 2, photo: "IntroRoutine",
+                  title: "A routine built\naround your skin.",
+                  sub: "Morning and evening, matched to your concerns and the ingredients you react to."),
+        IntroPage(id: 3, photo: "IntroProgress",
+                  title: "Watch it change\nover 14 days.",
+                  sub: "Every scan updates the plan and shows you what actually moved."),
     ]
 
     var body: some View {
-        ScrollView(.vertical) {
-            // Eager VStack (not Lazy) so every page is laid out up front — the
-            // programmatic scroll to ANY page then animates identically, with
-            // no snap when a not-yet-rendered page would otherwise pop in.
-            VStack(spacing: 0) {
-                ForEach(0..<3, id: \.self) { index in
-                    introPage(index)
-                        .containerRelativeFrame(.vertical)
-                        .id(index)
+        VStack(spacing: 0) {
+            TabView(selection: $page) {
+                ForEach(pages) { item in
+                    introPage(item).tag(item.id)
                 }
             }
-            .scrollTargetLayout()
-        }
-        .scrollTargetBehavior(.paging)
-        .scrollIndicators(.hidden)
-        .scrollPosition(id: $page)
-        .ignoresSafeArea()
-        .overlay(alignment: .bottom) {
-            VStack(spacing: VSpace.md) {
-                // Page dots — reflect the vertical position.
-                HStack(spacing: 6) {
-                    ForEach(0..<3, id: \.self) { index in
-                        Capsule()
-                            .fill(index == (page ?? 0) ? RampStage.accentEdge : RampStage.hair)
-                            .frame(width: index == (page ?? 0) ? 18 : 6, height: 6)
-                    }
-                }
-                .animation(VMotion.snappy, value: page)
+            .tabViewStyle(.page(indexDisplayMode: .never))
+            .frame(maxHeight: .infinity)
 
-                RampPrimaryButton(title: (page ?? 0) >= 2 ? "Get started" : "Continue") {
-                    let current = page ?? 0
-                    if current >= 2 {
-                        onAdvance()
-                    } else {
-                        // One consistent scroll for every Continue press.
-                        withAnimation(.easeInOut(duration: 0.5)) { page = current + 1 }
-                    }
-                }
+            dots
+                .padding(.top, VSpace.sm)
+
+            RampPrimaryButton(title: "Get started") { onAdvance() }
                 .padding(.horizontal, VSpace.lg)
+                .padding(.top, VSpace.md)
+
+            Button {
+                Haptics.fire(.selection)
+                onSignIn()
+            } label: {
+                Text("Already have an account?")
+                    .font(VType.body)
+                    .foregroundStyle(RampStage.textSecondary)
+                    .frame(minHeight: 44)
+                    .contentShape(Rectangle())
             }
-            .padding(.bottom, 44) // clear of the home indicator (full-bleed pager)
+            .padding(.top, VSpace.xs)
         }
+        .padding(.bottom, VSpace.lg)
+        .animation(VMotion.snappy, value: page)
     }
 
-    private func introPage(_ index: Int) -> some View {
-        VStack(spacing: 0) {
-            Spacer()
-
-            ZStack {
-                Circle()
-                    .fill(RampStage.dawnLilac.opacity(0.75))
-                    .frame(width: 270, height: 270)
-                switch index {
-                case 0:  RampMirrorArt()
-                case 1:  RampScanFaceArt()
-                default: RampPlanArt()
-                }
+    private var dots: some View {
+        HStack(spacing: 6) {
+            ForEach(pages) { item in
+                Capsule()
+                    .fill(item.id == page ? RampStage.accentEdge : RampStage.hair)
+                    .frame(width: item.id == page ? 18 : 6, height: 6)
             }
+        }
+        .accessibilityHidden(true)
+    }
 
-            Spacer()
+    private func introPage(_ item: IntroPage) -> some View {
+        VStack(spacing: 0) {
+            Spacer(minLength: VSpace.md)
 
-            VStack(spacing: VSpace.md) {
-                Text(LocalizedStringKey(titles[index]))
-                    .font(RampStage.serif(34))
+            RampIntroArt(photo: item.photo, index: item.id)
+                .frame(maxWidth: .infinity)
+                .padding(.horizontal, VSpace.lg)
+
+            Spacer(minLength: VSpace.lg)
+
+            VStack(spacing: VSpace.sm) {
+                Text(LocalizedStringKey(item.title))
+                    .font(RampStage.serif(30))
                     .foregroundStyle(RampStage.ink)
                     .multilineTextAlignment(.center)
                     .lineSpacing(2)
-                Text(LocalizedStringKey(subs[index]))
+                    .fixedSize(horizontal: false, vertical: true)
+                Text(LocalizedStringKey(item.sub))
                     .font(VType.bodyLarge)
                     .foregroundStyle(RampStage.textSecondary)
                     .multilineTextAlignment(.center)
                     .fixedSize(horizontal: false, vertical: true)
-                    .padding(.horizontal, VSpace.xl)
+                    .padding(.horizontal, VSpace.lg)
             }
+            .padding(.horizontal, VSpace.md)
 
-            Spacer()
-            // Room for the fixed dots + button overlay.
-            Spacer().frame(height: 150)
+            Spacer(minLength: VSpace.md)
         }
         .frame(maxWidth: .infinity)
     }
 }
+
+/// The intro's visual slot: a supplied screenshot if one has been dropped in,
+/// otherwise the original line-art for that page. Composed mockups carry their
+/// own framing, so nothing is added around the image — no card, no shadow.
+private struct RampIntroArt: View {
+    let photo: String
+    let index: Int
+
+    var body: some View {
+        Group {
+            #if canImport(UIKit)
+            if let image = RampPhoto.load(photo) {
+                Image(uiImage: image)
+                    .resizable()
+                    .scaledToFit()
+            } else {
+                lineArt
+            }
+            #else
+            lineArt
+            #endif
+        }
+        .frame(maxHeight: 340)
+        .accessibilityHidden(true)
+    }
+
+    @ViewBuilder
+    private var lineArt: some View {
+        ZStack {
+            Circle()
+                .fill(RampStage.dawnLilac.opacity(0.75))
+                .frame(width: 270, height: 270)
+            switch index {
+            case 0:  RampMirrorArt()
+            case 1:  RampScanFaceArt()
+            default: RampPlanArt()
+            }
+        }
+        .frame(height: 300)
+    }
+}
+
 
 // MARK: Intro line-art (pure SwiftUI, coral/blush)
 

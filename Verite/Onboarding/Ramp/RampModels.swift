@@ -19,9 +19,8 @@ enum RampStep: Int, CaseIterable {
     case boot            // 0  — opening
     case sampleReading   // 1  — the real results chart, previewed
     case theSplit        // 2  — what 14 days moves (interactive bars)
-    case attribution     // 3  — "where did you find us?" (marketing attribution)
-    case name            // 4  — "what should we call you?" (optional)
-    case quizSelfRating  // 5  — Q1 · your skin
+    case name            // 3  — "what should we call you?" (optional)
+    case quizSelfRating  // 4  — Q1 · your skin
     case quizConcern     // 6  — Q2 · your skin
     case quizAge         // 7  — Q3 · your skin
     case insightSkin     // 8  — mirrored insight, chapter 1
@@ -35,9 +34,14 @@ enum RampStep: Int, CaseIterable {
     case planPreview     // 15 — your first plan, previewed
     case evidence        // 16 — the science behind the plan (tappable sources)
     case commitment      // 17 — sign your 14-day commitment
-    case dailyRitual     // 17 — time choice + notifications
-    case signIn          // 18 — register before the first scan
-    case handoff         // 19 — "now, the real you" → the scan
+    case dailyRitual     // 18 — time choice + notifications
+    // Attribution sits here, not at position 3. It serves our reporting, not
+    // the user, and it used to be the fourth thing the app did — a screen that
+    // takes before anything has been given. Asked once they're committed, it
+    // costs nothing and the answer is just as usable.
+    case attribution     // 19 — "where did you find us?" (marketing attribution)
+    case signIn          // 20 — register before the first scan
+    case handoff         // 21 — "now, the real you" → the scan
 
     var next: RampStep? { RampStep(rawValue: rawValue + 1) }
     var previous: RampStep? { RampStep(rawValue: rawValue - 1) }
@@ -354,18 +358,30 @@ struct RampQuizAnswers {
     /// Persist onto the SwiftData profile. The routine/plan generation and the
     /// Match engine read these fields — this is where quiz answers start
     /// influencing the product, not just the funnel.
+    /// Set once the sensitivity screen has been seen. An EMPTY set is a real
+    /// answer there ("Nothing I know of"), so emptiness alone can't tell us
+    /// whether the question was asked — this flag can.
+    var sawSensitivities = false
+
     func apply(to profile: UserProfile) {
         if let mapped = concern?.skinConcern, !profile.concerns.contains(mapped) {
             profile.concerns.append(mapped)
         }
-        profile.selfRating = selfRating?.rawValue
-        profile.routineLevel = routine?.rawValue
-        profile.sleepBucket = sleep?.rawValue
-        profile.sunProtection = spf?.rawValue
-        profile.displayName = displayName
-        profile.ageBand = age?.rawValue
+        // Write only what was actually answered. Onboarding can now be left
+        // early — "Already have an account?" jumps from the intro straight to
+        // sign-in — and a re-run from Settings starts against a profile that
+        // already holds answers. Assigning the optionals unconditionally would
+        // blank those out with the nils of questions that were never asked.
+        if let selfRating { profile.selfRating = selfRating.rawValue }
+        if let routine    { profile.routineLevel = routine.rawValue }
+        if let sleep      { profile.sleepBucket = sleep.rawValue }
+        if let spf        { profile.sunProtection = spf.rawValue }
+        if let age        { profile.ageBand = age.rawValue }
+        if let displayName, !displayName.isEmpty { profile.displayName = displayName }
         // Persist sensitivities for the routine builder (avoid flagged actives).
-        SkinSensitivities.save(Set(sensitivities.compactMap(SkinSensitivity.init(rawValue:))))
+        if sawSensitivities {
+            SkinSensitivities.save(Set(sensitivities.compactMap(SkinSensitivity.init(rawValue:))))
+        }
     }
 }
 

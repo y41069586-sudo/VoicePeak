@@ -72,7 +72,17 @@ enum RampStage {
 /// layout never breaks. The image can be added EITHER as an asset-catalog set
 /// OR as a loose bundled file in `Verite/Resources/Photos/` (just drop
 /// `GlowHero.jpg` etc. — no Contents.json needed). Both are picked up with no
-/// code change. Expected names: "GlowHero", "GlowTexture", "GlowRitual".
+/// code change.
+///
+/// Slots in use:
+///   GlowHero, GlowTexture, GlowRitual   — quiz + insight screens
+///   IntroScore, IntroScan,              — the four opening carousel pages
+///   IntroRoutine, IntroProgress           (see RampBootScreen)
+///
+/// The Intro slots want composed product mockups — a screenshot of the real
+/// dashboard, scan, routine and progress view, framed however you like. They
+/// are drawn without a card or shadow, so whatever framing the file carries is
+/// what shows. Until each file lands, that page falls back to its line-art.
 struct RampPhoto: View {
     let name: String
     var cornerRadius: CGFloat = 28
