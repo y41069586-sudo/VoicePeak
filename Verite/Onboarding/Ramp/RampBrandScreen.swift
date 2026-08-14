@@ -33,9 +33,23 @@ import SwiftUI
 /// ASSETS. Each brand loads `logoAsset` through `RampPhoto.load` — drop
 /// `BrandCeraVe.png` and friends into `Verite/Resources/Photos/`. Until a file
 /// exists the row shows a monogram in OUR typeface on OUR ground, never an
-/// approximation of the brand's own colour-and-lettering. Supply PNGs with a
-/// transparent background at roughly 3x the 56x40pt box (≈168x120px); the box
-/// fits them by aspect so wordmarks and discs both land correctly.
+/// approximation of the brand's own colour-and-lettering. Transparent PNG at
+/// roughly 3x the 56x40pt box (≈168x120px) is the safe format for this loose-
+/// file path; the box fits by aspect, so wordmarks and discs both land.
+///
+/// Most of these marks are only published as SVG. Two ways round that, both
+/// cheaper than running a converter: Wikimedia renders any SVG to PNG at a
+/// width you name —
+/// `commons.wikimedia.org/wiki/Special:FilePath/<File>.svg?width=512` — and
+/// Xcode has accepted SVG directly in an ASSET CATALOG since Xcode 12 (Single
+/// Scale + Preserve Vector Data, back to iOS 13). `RampPhoto.load` checks the
+/// asset catalog first, so an SVG imported there wins over any loose file.
+///
+/// One asset choice is not cosmetic: for NIVEA, prefer the plain WORDMARK file
+/// over the blue-disc lockup. Beiersdorf holds a registered abstract colour
+/// mark on NIVEA blue (Pantone 280C) — Unilever's cancellation action failed,
+/// BGH 9 July 2015, I ZB 65/13 "Nivea-Blau", and the mark still stands. The
+/// wordmark engages one right; the disc engages two.
 struct RampBrandScreen: View {
     @Binding var selected: Set<String>
     let onAdvance: () -> Void
