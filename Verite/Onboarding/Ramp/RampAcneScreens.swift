@@ -29,6 +29,15 @@ import SwiftUI
 /// `AcneWhiteheads`, `AcnePapules`, `AcneCysts` dropped into
 /// `Resources/Photos/`. Until they exist each tile draws a soft placeholder,
 /// so this screen ships and works before the photography does.
+///
+/// ONE HARD RULE FOR THOSE FOUR FILES: macro crops of skin only — no face, no
+/// eyes, no jawline, nothing that identifies a person. It is not a style note.
+/// A recognisable person shown as having a skin condition engages personality
+/// rights, and the stock libraries put exactly that case behind a separate
+/// "sensitive use" licence that a standard purchase does NOT include — so a
+/// face here would breach the licence we bought, quite apart from any claim
+/// the person could bring. Cropped to skin, none of that attaches. It also
+/// happens to be the better tile: these frames are wider than they are tall.
 struct RampAcneTypeScreen: View {
     @Binding var selected: Set<String>
     let onAdvance: () -> Void
