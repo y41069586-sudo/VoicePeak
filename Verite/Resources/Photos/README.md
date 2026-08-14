@@ -15,35 +15,24 @@ shows a warm gradient placeholder, so the build is always green.
 
 ---
 
-# Still missing: the intro carousel and the acne picker
+# Still missing: the acne picker
 
-Eight files, two very different jobs. Both screens already work without them —
-the intro falls back to its line-art and the acne tiles to a placeholder — so
-neither blocks a build.
+Four macro skin photos. The screen already works without them — the tiles fall
+back to a placeholder — so this does not block a build.
 
-## Intro carousel — four product screenshots
+The intro carousel used to be listed here too, waiting on four product
+screenshots (`IntroScore`, `IntroScan`, `IntroRoutine`, `IntroProgress`). It no
+longer needs them. `RampIntroArt` now draws real iPhones in SwiftUI with the
+app's own screens running live inside them (`RampDeviceMockup.swift`,
+`RampIntroScreens.swift`, `RampFaceMesh.swift`), which removes the two
+dependencies that made those files hard to produce: they needed a working build
+to capture, and they needed re-capturing after every palette change. Live
+screens have neither problem.
 
-`RampBootScreen`. Drawn with `scaledToFit` at up to 340pt tall and full width
-inside the page margins, with **no card, shadow or frame added** — whatever
-composition the file carries is what shows. Roughly square, so supply at least
-**1200 × 1200 px**.
-
-Each image has to earn the sentence printed under it:
-
-| File | Headline it sits under | What it must show |
-|---|---|---|
-| `IntroScore` | "The honest way to clear your skin." | The results screen with the 0–100 score visible |
-| `IntroScan` | "See what's driving your breakouts." | The capture screen mid-scan, mesh over the face |
-| `IntroRoutine` | "A routine built around your skin." | The routine screen, morning and evening steps |
-| `IntroProgress` | "Watch it change over 14 days." | The progress or comparison view across scans |
-
-Two dependencies worth knowing before you start:
-
-1. **These need a working build first.** They are screenshots of screens that
-   have to run before they can be captured.
-2. **Capture them after the palette change.** Older screenshots still show the
-   teal accent and would put the wrong-coloured app on the first screen the
-   user ever sees.
+One image the carousel does use: `SampleFace`, already committed here. It is the
+portrait the scan mockup lays its mesh over, and the avatar on the results
+mockup. If it is ever swapped, re-measure `RampIntroScanScreen.faceRect` — the
+comment there says which two landmarks to read off.
 
 ## Acne picker — four macro skin photos
 

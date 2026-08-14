@@ -7,19 +7,18 @@ import UIKit
 // MARK: — Screen 0: Opening
 // ============================================================
 
-/// The opening carousel. Four product-led pages: a real screenshot of what the
-/// app produces, an acne-first headline, one line of substance. Horizontal
+/// The opening carousel. Four product-led pages: the app itself running inside
+/// a drawn iPhone, an acne-first headline, one line of substance. Horizontal
 /// paging with dots, and — the part that matters for conversion — the SAME
 /// primary CTA on every page, so nobody has to swipe four times to begin.
 ///
 /// Two deliberate choices here:
 ///
-/// 1. The art slot takes a real screenshot (`IntroScore`, `IntroScan`,
-///    `IntroRoutine`, `IntroProgress` — drop any of them into
-///    `Resources/Photos/`). Until a file exists the original line-art stands
-///    in, so the flow never looks broken while the assets are being made.
-///    Screenshots of the actual product outsell illustrations of it: the page
-///    stops describing the app and starts showing what you get.
+/// 1. The art slot renders live screens (see `RampIntroArt`), not screenshots.
+///    Showing the product outsells illustrating it — the page stops describing
+///    the app and starts showing what you get — and building it from the app's
+///    own views means there is no capture step to redo, and no chance of the
+///    first screen a user ever sees showing last quarter's palette.
 ///
 /// 2. "Already have an account?" sits on page one. Sign-in used to be step 18
 ///    of 21, and `onboardingComplete` lives only in the local store — so a
@@ -35,7 +34,6 @@ struct RampBootScreen: View {
 
     private struct IntroPage: Identifiable {
         let id: Int
-        let photo: String
         let title: String
         let sub: String
     }
@@ -44,16 +42,16 @@ struct RampBootScreen: View {
     /// "clear in N days" promise — the product measures and plans, it does
     /// not guarantee an outcome, and the copy stays inside what it can do.
     private let pages: [IntroPage] = [
-        IntroPage(id: 0, photo: "IntroScore",
+        IntroPage(id: 0,
                   title: "The honest way\nto clear your skin.",
                   sub: "One scan, one real score from 0 to 100 — no filter, no sugarcoating."),
-        IntroPage(id: 1, photo: "IntroScan",
+        IntroPage(id: 1,
                   title: "See what's driving\nyour breakouts.",
                   sub: "Seven metrics read from a single photo of your face — blemishes first."),
-        IntroPage(id: 2, photo: "IntroRoutine",
+        IntroPage(id: 2,
                   title: "A routine built\naround your skin.",
                   sub: "Morning and evening, matched to your concerns and the ingredients you react to."),
-        IntroPage(id: 3, photo: "IntroProgress",
+        IntroPage(id: 3,
                   title: "Watch it change\nover 14 days.",
                   sub: "Every scan updates the plan and shows you what actually moved."),
     ]
@@ -106,7 +104,7 @@ struct RampBootScreen: View {
         VStack(spacing: 0) {
             Spacer(minLength: VSpace.md)
 
-            RampIntroArt(photo: item.photo, index: item.id)
+            RampIntroArt(index: item.id)
                 .frame(maxWidth: .infinity)
                 .padding(.horizontal, VSpace.lg)
 
@@ -134,222 +132,76 @@ struct RampBootScreen: View {
     }
 }
 
-/// The intro's visual slot: a supplied screenshot if one has been dropped in,
-/// otherwise the original line-art for that page. Composed mockups carry their
-/// own framing, so nothing is added around the image — no card, no shadow.
+/// The intro's visual slot: real iPhones, drawn, with the app's own screens
+/// running live inside them.
+///
+/// This replaced three pieces of line-art — a mirror, a smiling circle and a
+/// calendar. They were honest about being drawings, which was the problem: the
+/// first four screens a new user sees were illustrations OF the product rather
+/// than the product. What is here now is the actual code — `RampIntroHomeScreen`
+/// and friends, laid out at the iPhone's true 402 × 874pt and scaled into a
+/// drawn device — so the carousel shows what you get, and it cannot go stale
+/// the way the screenshots this slot used to wait on would have.
 private struct RampIntroArt: View {
-    let photo: String
     let index: Int
 
     var body: some View {
-        Group {
-            #if canImport(UIKit)
-            if let image = RampPhoto.load(photo) {
-                Image(uiImage: image)
-                    .resizable()
-                    .scaledToFit()
-            } else {
-                lineArt
-            }
-            #else
-            lineArt
-            #endif
-        }
-        .frame(maxHeight: 340)
-        .accessibilityHidden(true)
-    }
-
-    @ViewBuilder
-    private var lineArt: some View {
-        ZStack {
-            Circle()
-                .fill(RampStage.dawnLilac.opacity(0.75))
-                .frame(width: 270, height: 270)
+        RampFitted(designSize: CGSize(width: 340, height: 372)) {
             switch index {
-            case 0:  RampMirrorArt()
-            case 1:  RampScanFaceArt()
-            default: RampPlanArt()
+            case 1:
+                // The scan is the moment the product turns on. It gets the
+                // whole slot to itself, at the biggest size that fits.
+                RampPhoneFrame(width: 171) { RampIntroScanScreen() }
+            case 2:
+                RampPhoneTrio(width: 330) {
+                    RampIntroHomeScreen()
+                } center: {
+                    RampIntroRoutineScreen()
+                } right: {
+                    RampIntroProgressScreen()
+                }
+            case 3:
+                RampPhoneTrio(width: 330) {
+                    RampIntroRoutineScreen()
+                } center: {
+                    RampIntroProgressScreen()
+                } right: {
+                    RampIntroHomeScreen()
+                }
+            default:
+                RampPhoneTrio(width: 330) {
+                    RampIntroProgressScreen()
+                } center: {
+                    RampIntroHomeScreen()
+                } right: {
+                    RampIntroRoutineScreen()
+                }
             }
         }
-        .frame(height: 300)
-    }
-}
-
-
-// MARK: Intro line-art (pure SwiftUI, coral/blush)
-
-/// Page 1 — the hand mirror with sparkles.
-private struct RampMirrorArt: View {
-    var body: some View {
-        ZStack {
-            // Handle.
-            VStack(spacing: 0) {
-                Spacer().frame(height: 150)
-                Capsule()
-                    .fill(RampStage.dawnPeach)
-                    .overlay(Capsule().strokeBorder(RampStage.accentEdge, lineWidth: 4))
-                    .frame(width: 34, height: 86)
-            }
-            // Frame + glass with a soft diagonal shine.
-            Ellipse()
-                .fill(Color.white)
-                .overlay(Ellipse().strokeBorder(RampStage.accentEdge, lineWidth: 5))
-                .frame(width: 140, height: 168)
-                .offset(y: -32)
-            Ellipse()
-                .fill(RampStage.dawnPeach)
-                .frame(width: 108, height: 136)
-                .overlay(
-                    Rectangle()
-                        .fill(Color.white.opacity(0.75))
-                        .frame(width: 34, height: 200)
-                        .rotationEffect(.degrees(38))
-                        .offset(x: -16)
-                        .clipShape(Ellipse())
-                )
-                .clipShape(Ellipse())
-                .offset(y: -32)
-
-            Image(systemName: "sparkle")
-                .font(.system(size: 26, weight: .bold))
-                .foregroundStyle(RampStage.accentEdge)
-                .offset(x: -98, y: -92)
-            Image(systemName: "sparkle")
-                .font(.system(size: 16, weight: .bold))
-                .foregroundStyle(RampStage.accentEdge)
-                .offset(x: 96, y: -30)
-            Image(systemName: "sparkle")
-                .font(.system(size: 14, weight: .bold))
-                .foregroundStyle(RampStage.accentEdge)
-                .offset(x: -86, y: 56)
-        }
+        .frame(maxHeight: 372)
         .accessibilityHidden(true)
     }
 }
 
-/// Page 2 — the face inside a scan frame, check landed.
-private struct RampScanFaceArt: View {
+/// Draws its content at a fixed design size, scaled down to whatever room the
+/// page actually has. The mockups are laid out in absolute points, so without
+/// this they would overrun the art slot on a small phone.
+private struct RampFitted<Content: View>: View {
+    let designSize: CGSize
+    @ViewBuilder var content: () -> Content
+
     var body: some View {
-        ZStack {
-            RampIntroBrackets()
-                .stroke(RampStage.accentEdge, style: StrokeStyle(lineWidth: 7, lineCap: .round))
-                .frame(width: 190, height: 190)
-
-            // A friendly abstract face.
-            ZStack {
-                Circle()
-                    .fill(Color.white)
-                    .overlay(Circle().strokeBorder(RampStage.accentEdge, lineWidth: 4))
-                    .frame(width: 96, height: 96)
-                HStack(spacing: 26) {
-                    Circle().fill(RampStage.accentDeep).frame(width: 7, height: 7)
-                    Circle().fill(RampStage.accentDeep).frame(width: 7, height: 7)
-                }
-                .offset(y: -8)
-                HStack(spacing: 52) {
-                    Circle().fill(RampStage.dawnPeach).frame(width: 12, height: 12)
-                    Circle().fill(RampStage.dawnPeach).frame(width: 12, height: 12)
-                }
-                .offset(y: 6)
-                RampIntroSmile()
-                    .stroke(RampStage.accentDeep, style: StrokeStyle(lineWidth: 3.5, lineCap: .round))
-                    .frame(width: 30, height: 14)
-                    .offset(y: 18)
-            }
-
-            // Check badge, bottom-right of the frame.
-            ZStack {
-                Circle()
-                    .fill(Color.white)
-                    .overlay(Circle().strokeBorder(RampStage.accentEdge, lineWidth: 4))
-                Image(systemName: "checkmark")
-                    .font(.system(size: 26, weight: .bold))
-                    .foregroundStyle(RampStage.accentEdge)
-            }
-            .frame(width: 62, height: 62)
-            .offset(x: 78, y: 66)
+        GeometryReader { proxy in
+            let scale = min(proxy.size.width / designSize.width,
+                            proxy.size.height / designSize.height, 1)
+            content()
+                .frame(width: designSize.width, height: designSize.height)
+                .scaleEffect(scale)
+                .frame(width: proxy.size.width, height: proxy.size.height)
         }
-        .accessibilityHidden(true)
     }
 }
 
-/// Page 3 — the 14-day plan calendar.
-private struct RampPlanArt: View {
-    var body: some View {
-        ZStack {
-            RoundedRectangle(cornerRadius: 22, style: .continuous)
-                .fill(Color.white)
-                .overlay(
-                    RoundedRectangle(cornerRadius: 22, style: .continuous)
-                        .strokeBorder(RampStage.accentEdge, lineWidth: 5)
-                )
-                .frame(width: 170, height: 160)
-            UnevenRoundedRectangle(topLeadingRadius: 18, topTrailingRadius: 18)
-                .fill(RampStage.accent)
-                .frame(width: 170, height: 40)
-                .offset(y: -60)
-            Text("14 DAYS")
-                .font(.system(size: 15, weight: .heavy, design: .rounded))
-                // Ink: white on the beige tab is 1.7:1.
-                .foregroundStyle(RampStage.ink)
-                .tracking(1)
-                .offset(y: -60)
-
-            // Day dots: first row done, second underway.
-            VStack(spacing: 14) {
-                ForEach(0..<2, id: \.self) { row in
-                    HStack(spacing: 14) {
-                        ForEach(0..<5, id: \.self) { column in
-                            let done = row == 0 || column < 2
-                            Circle()
-                                .fill(done ? RampStage.accentEdge : RampStage.dawnPeach)
-                                .frame(width: 16, height: 16)
-                        }
-                    }
-                }
-            }
-            .offset(y: 8)
-
-            Image(systemName: "sparkle")
-                .font(.system(size: 22, weight: .bold))
-                .foregroundStyle(RampStage.accentEdge)
-                .offset(x: 96, y: -84)
-        }
-        .accessibilityHidden(true)
-    }
-}
-
-/// Four rounded viewfinder corners as one shape.
-private struct RampIntroBrackets: Shape {
-    func path(in rect: CGRect) -> Path {
-        let l = rect.width * 0.22
-        var p = Path()
-        p.move(to: CGPoint(x: rect.minX, y: rect.minY + l))
-        p.addLine(to: CGPoint(x: rect.minX, y: rect.minY))
-        p.addLine(to: CGPoint(x: rect.minX + l, y: rect.minY))
-        p.move(to: CGPoint(x: rect.maxX - l, y: rect.minY))
-        p.addLine(to: CGPoint(x: rect.maxX, y: rect.minY))
-        p.addLine(to: CGPoint(x: rect.maxX, y: rect.minY + l))
-        p.move(to: CGPoint(x: rect.maxX, y: rect.maxY - l))
-        p.addLine(to: CGPoint(x: rect.maxX, y: rect.maxY))
-        p.addLine(to: CGPoint(x: rect.maxX - l, y: rect.maxY))
-        p.move(to: CGPoint(x: rect.minX + l, y: rect.maxY))
-        p.addLine(to: CGPoint(x: rect.minX, y: rect.maxY))
-        p.addLine(to: CGPoint(x: rect.minX, y: rect.maxY - l))
-        return p
-    }
-}
-
-/// A gentle smile arc.
-private struct RampIntroSmile: Shape {
-    func path(in rect: CGRect) -> Path {
-        var p = Path()
-        p.move(to: CGPoint(x: rect.minX, y: rect.minY))
-        p.addQuadCurve(to: CGPoint(x: rect.maxX, y: rect.minY),
-                       control: CGPoint(x: rect.midX, y: rect.maxY + rect.height))
-        return p
-    }
-}
 
 // ============================================================
 // MARK: — Screen 1: A Reading (the real results chart, previewed)
