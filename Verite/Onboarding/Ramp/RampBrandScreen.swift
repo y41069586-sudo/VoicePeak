@@ -64,17 +64,38 @@ struct RampBrandScreen: View {
         let logoAsset: String
         /// Fallback initials, shown until the logo file lands.
         let monogram: String
+        /// Per-mark nudge so twelve logos of wildly different proportions
+        /// carry the same visual WEIGHT down the column.
+        ///
+        /// Fitting each file into one box is not enough. Bioderma is nearly
+        /// 5:1 and NIVEA is square, so a shared box renders the disc three
+        /// times taller than the wordmark and the rows stop looking like a
+        /// set. Optical balance is about how much ink a mark puts on the
+        /// page, which no automatic fit can measure — dense, compact marks
+        /// want a value below 1, thin extended wordmarks above it.
+        ///
+        /// These are starting values reasoned from each file's aspect ratio.
+        /// They want one pass of eyeballing on a device once the real files
+        /// are in; nudge in steps of 0.05.
+        var opticalScale: CGFloat = 1.0
     }
 
     static let brands: [Brand] = [
         Brand(id: "cerave",        name: "CeraVe",         logoAsset: "BrandCeraVe",       monogram: "CV"),
         Brand(id: "larocheposay",  name: "La Roche-Posay", logoAsset: "BrandLaRochePosay", monogram: "LRP"),
-        Brand(id: "theordinary",   name: "The Ordinary",   logoAsset: "BrandTheOrdinary",  monogram: "TO"),
+        Brand(id: "theordinary",   name: "The Ordinary",   logoAsset: "BrandTheOrdinary",  monogram: "TO",
+              opticalScale: 1.05),
         Brand(id: "cetaphil",      name: "Cetaphil",       logoAsset: "BrandCetaphil",     monogram: "CE"),
-        Brand(id: "neutrogena",    name: "Neutrogena",     logoAsset: "BrandNeutrogena",   monogram: "NG"),
-        Brand(id: "nivea",         name: "NIVEA",          logoAsset: "BrandNivea",        monogram: "NV"),
+        // ~4.5:1, light strokes — needs room to read.
+        Brand(id: "neutrogena",    name: "Neutrogena",     logoAsset: "BrandNeutrogena",   monogram: "NG",
+              opticalScale: 1.10),
+        // Square and solid. Left at parity it out-weighs every wordmark here.
+        Brand(id: "nivea",         name: "NIVEA",          logoAsset: "BrandNivea",        monogram: "NV",
+              opticalScale: 0.85),
         Brand(id: "eucerin",       name: "Eucerin",        logoAsset: "BrandEucerin",      monogram: "EU"),
-        Brand(id: "bioderma",      name: "Bioderma",       logoAsset: "BrandBioderma",     monogram: "BD"),
+        // ~5:1, the most extended mark in the set.
+        Brand(id: "bioderma",      name: "Bioderma",       logoAsset: "BrandBioderma",     monogram: "BD",
+              opticalScale: 1.10),
         Brand(id: "avene",         name: "Avène",          logoAsset: "BrandAvene",        monogram: "AV"),
         Brand(id: "vichy",         name: "Vichy",          logoAsset: "BrandVichy",        monogram: "VI"),
         Brand(id: "paulaschoice",  name: "Paula's Choice", logoAsset: "BrandPaulasChoice", monogram: "PC"),
@@ -278,10 +299,15 @@ private struct RampBrandMark: View {
 
             #if canImport(UIKit)
             if let image = RampPhoto.load(brand.logoAsset) {
+                // Capped on BOTH axes, with height the tighter of the two.
+                // Fitting to the box alone would let a square mark stand 28pt
+                // tall beside a 9pt wordmark; holding height near the cap
+                // pulls every row onto the same optical line.
                 Image(uiImage: image)
                     .resizable()
                     .scaledToFit()
-                    .padding(6)
+                    .frame(maxWidth: 44 * brand.opticalScale,
+                           maxHeight: 22 * brand.opticalScale)
             } else {
                 monogram
             }
