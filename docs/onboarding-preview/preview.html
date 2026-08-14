@@ -88,14 +88,14 @@
   .scanScr img.portrait{position:absolute;width:402px;height:874px;object-fit:cover}
   .scanDim{position:absolute;inset:0;background:linear-gradient(rgba(0,0,0,.42),rgba(0,0,0,.10) 33%,
     rgba(0,0,0,.16) 66%,rgba(0,0,0,.58))}
-  .scanScr canvas{position:absolute;inset:0;width:402px;height:874px}
+  .swept{position:absolute;left:0;right:0;top:0;height:454px;pointer-events:none;
+    background:repeating-linear-gradient(180deg,rgba(255,255,255,.075) 0 1px,rgba(255,255,255,0) 1px 5px),
+      linear-gradient(180deg,rgba(255,255,255,0) 0,rgba(255,255,255,0) 71%,rgba(255,255,255,.20) 100%);
+    -webkit-mask-image:linear-gradient(180deg,transparent 0,#000 20%,#000 100%)}
+  .scanline{position:absolute;left:-6%;right:-6%;top:453px;height:2.5px;border-radius:2px;pointer-events:none;
+    background:linear-gradient(90deg,transparent 0,#fff 13%,#fff 87%,transparent 100%);
+    box-shadow:0 0 5px rgba(255,255,255,.85),0 0 17px 3px rgba(230,212,180,.55),0 0 35px 10px rgba(230,212,180,.30)}
   .scanUI{position:absolute;inset:0;display:flex;flex-direction:column;color:#fff}
-  .passes{width:250px;margin-top:6px;display:flex;flex-direction:column;gap:8px;align-self:center}
-  .pass{height:40px;border-radius:99px;background:rgba(0,0,0,.34);border:1px solid rgba(255,255,255,.22);
-    display:flex;align-items:center;padding:0 16px;font-size:14px;font-weight:500;gap:12px}
-  .pass span{flex:1}
-  .spinner{width:13px;height:13px;border-radius:50%;border:2px solid #fff;
-    border-right-color:transparent;border-bottom-color:transparent}
   .scanFoot{margin-top:auto;padding-bottom:44px;display:flex;flex-direction:column;
     align-items:center;gap:12px}
   .scanFoot .hint{font-size:13px;font-weight:500;color:rgba(255,255,255,.86)}
@@ -138,7 +138,7 @@
 <script>
 // ============================================================
 // A direct port of RampFaceMeshGeometry / RampFaceMesh, so the preview
-// renders the same mesh the Swift draws rather than an impression of it.
+// renders the same scan line the Swift draws rather than an impression of it.
 // ============================================================
 const PROFILE=[0.700,0.802,0.879,0.934,0.973,0.995,1.000,0.989,0.962,0.912,0.838,0.732,0.598,0.430,0.232];
 const place=(o,v)=>({x:0.5+o*0.5,y:v});
@@ -179,74 +179,6 @@ const CONTOURS=[[brow(false),0],[brow(true),0],[eye(false),1],[eye(true),1],
                 [NOSE_BRIDGE,0],[NOSE_BASE,0],[LIP_OUTER,1],[LIP_LINE,0]];
 
 // faceRect matches RampIntroScanScreen.faceRect
-function drawMesh(cv, faceRect, opts){
-  const o = Object.assign({columns:15, rows:19, sweep:0.34, tint:'255,255,255'}, opts||{});
-  const dpr = 3;
-  cv.width = 402*dpr; cv.height = 874*dpr;
-  const g = cv.getContext('2d');
-  g.scale(dpr,dpr);
-  const box = {x:faceRect.x*402, y:faceRect.y*874, w:faceRect.w*402, h:faceRect.h*874};
-  const placePt = p => ({x:box.x+p.x*box.w, y:box.y+p.y*box.h});
-  const reveal = () => 1;                              // written on, in the still
-  const lit = v => { const d=Math.abs(v-o.sweep); return d>0.14?0:Math.pow(1-d/0.14,2); };
-  const col = a => `rgba(${o.tint},${a})`;
-
-  g.lineCap='round'; g.lineJoin='round';
-
-  // rows
-  g.lineWidth=0.6;
-  for(let r=0;r<o.rows;r++){
-    const v=r/(o.rows-1); g.beginPath();
-    for(let c=0;c<o.columns;c++){
-      const u=c/(o.columns-1)*2-1, p=placePt(vertex(u,v));
-      c?g.lineTo(p.x,p.y):g.moveTo(p.x,p.y);
-    }
-    g.strokeStyle=col(reveal()*(0.26+0.42*lit(v))); g.stroke();
-  }
-  // columns
-  for(let c=0;c<o.columns;c++){
-    const u=c/(o.columns-1)*2-1; g.beginPath();
-    for(let r=0;r<o.rows;r++){
-      const v=r/(o.rows-1), p=placePt(vertex(u,v));
-      r?g.lineTo(p.x,p.y):g.moveTo(p.x,p.y);
-    }
-    g.strokeStyle=col(0.20); g.stroke();
-  }
-  // sweep bar
-  const y = box.y + o.sweep*box.h, bh = box.h*0.11;
-  const grad = g.createLinearGradient(0,y-bh/2,0,y+bh/2);
-  grad.addColorStop(0,col(0)); grad.addColorStop(.5,col(.26)); grad.addColorStop(1,col(0));
-  g.fillStyle=grad; g.fillRect(box.x-box.w*0.06, y-bh/2, box.w*1.12, bh);
-
-  // contours + landmark dots
-  g.lineWidth=1.0;
-  for(const [pts,closed] of CONTOURS){
-    const v = pts.reduce((s,p)=>s+p.y,0)/pts.length;
-    g.beginPath();
-    pts.forEach((p,i)=>{const q=placePt(p); i?g.lineTo(q.x,q.y):g.moveTo(q.x,q.y);});
-    if(closed) g.closePath();
-    g.strokeStyle=col(0.70+0.30*lit(v)); g.stroke();
-    g.fillStyle=col(0.95);
-    for(const p of pts){const q=placePt(p); g.beginPath(); g.arc(q.x,q.y,1.1,0,7); g.fill();}
-  }
-  // irises
-  g.lineWidth=0.8; g.strokeStyle=col(0.55);
-  for(const right of [true,false]){
-    const c0=place(right?EYE_OFF:-EYE_OFF, EYE_LINE+0.004);
-    const cP=placePt(c0);
-    const r=placePt({x:c0.x+0.075*0.5, y:c0.y}).x - cP.x;
-    g.beginPath(); g.arc(cP.x,cP.y,Math.abs(r),0,7); g.stroke();
-  }
-  // grid vertices
-  for(let r=0;r<o.rows;r++){
-    const v=r/(o.rows-1), glow=lit(v), rad=0.75+0.85*glow;
-    g.fillStyle=col(0.38+0.55*glow);
-    for(let c=0;c<o.columns;c++){
-      const u=c/(o.columns-1)*2-1, p=placePt(vertex(u,v));
-      g.beginPath(); g.arc(p.x,p.y,rad,0,7); g.fill();
-    }
-  }
-}
 
 // ============================================================
 // Icons (SF Symbols stand-ins)
@@ -334,18 +266,13 @@ function homeScreen(){
   </div>`;
 }
 
-const PASSES=[['Reading your skin',1],['Finding what drives it',1],['Building your plan',0]];
-function scanScreen(id){
+function scanScreen(){
   return `<div class="scanScr">
     <img class="portrait" src="../../Verite/Resources/Photos/SampleFace.jpg">
     <div class="scanDim"></div>
-    <canvas id="${id}"></canvas>
+    <div class="swept"></div><div class="scanline"></div>
     <div class="scanUI">
       ${statusBar('#fff')}
-      <div class="passes">
-        ${PASSES.map(([t,done])=>`<div class="pass"><span>${t}</span>
-          ${done?I.check(13):'<div class="spinner"></div>'}</div>`).join('')}
-      </div>
       <div class="scanFoot">
         <div class="hint">Hold still — reading seven metrics</div>
         <div class="scanChip">${I.sparkles}<div>SkinFix · Face scan</div></div>
@@ -507,9 +434,8 @@ const PAGES=[
    s:'Every scan updates the plan and shows you what actually moved.'},
 ];
 
-const scanIds=[];
 function art(i){
-  if(i===1){ const id='mesh'+(uid++); scanIds.push(id); return phone(171, scanScreen(id)); }
+  if(i===1){ return phone(171, scanScreen()); }
   const H=homeScreen(), R=routineScreen(), P=progressScreen();
   if(i===2) return trio(330,H,R,P);
   if(i===3) return trio(330,R,P,H);
@@ -525,15 +451,12 @@ document.getElementById('sheet').innerHTML = PAGES.map((p,i)=>`
     <div class="signin">Already have an account?</div>
   </div></div>`).join('');
 
-// Draw every mesh, with the faceRect from RampIntroScanScreen.
 const FACE_RECT = {x:0.115, y:0.203, w:0.716, h:0.467};
 window.__ready = false;
 addEventListener('load', ()=>{
-  scanIds.forEach(id=>drawMesh(document.getElementById(id), FACE_RECT));
   window.__ready = true;
 });
 // Hooks the render script uses to shoot the scan screen on its own.
-window.__scanSolo = () => scanScreen('solomesh');
-window.__drawSolo = () => drawMesh(document.getElementById('solomesh'), FACE_RECT);
+window.__scanSolo = () => scanScreen();
 </script>
 </body>

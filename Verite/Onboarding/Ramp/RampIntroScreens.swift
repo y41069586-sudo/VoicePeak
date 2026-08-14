@@ -275,24 +275,11 @@ struct RampIntroHomeScreen: View {
 // MARK: — 2 · The scan, mid-read
 // ============================================================
 
-/// The capture screen with the mesh live on the face and the three analysis
-/// passes ticking over. This is the screen the whole product rests on, so it
-/// is the one that gets the big phone in the middle of the trio.
+/// The capture screen mid-read: the scan line crossing the face. This is the
+/// screen the whole product rests on, so it is the one that gets the big phone
+/// in the middle of the trio — and it is kept clear of overlays for the same
+/// reason. Anything floating on top competes with the face it is reading.
 struct RampIntroScanScreen: View {
-    /// Where the face sits once the portrait has been cropped to fill 402 ×
-    /// 874. Measured off `SampleFace` rather than guessed: the box runs
-    /// hairline → chin and temple → temple, and it was solved from two
-    /// landmarks that are easy to read off any portrait — the pupil line (the
-    /// mesh puts it at v 0.39) and the bottom of the chin (v 1.0). Swap the
-    /// photo and re-solving those two is the whole job.
-    var faceRect: CGRect = CGRect(x: 0.115, y: 0.203, width: 0.716, height: 0.467)
-
-    private let passes: [(String, Bool)] = [
-        ("Reading your skin", true),
-        ("Finding what drives it", true),
-        ("Building your plan", false),
-    ]
-
     var body: some View {
         ZStack {
             portrait
@@ -302,11 +289,10 @@ struct RampIntroScanScreen: View {
                                     .black.opacity(0.16), .black.opacity(0.58)],
                            startPoint: .top, endPoint: .bottom)
 
-            RampFaceMesh(faceRect: faceRect)
+            RampScanLine()
 
             VStack(spacing: 0) {
                 IntroStatusBar(tint: .white)
-                passList
                 Spacer()
                 viewfinderHint
             }
@@ -344,36 +330,6 @@ struct RampIntroScanScreen: View {
                 .offset(y: -40)
                 .blur(radius: 22)
         }
-    }
-
-    /// The three passes, stacked top-left: two landed, one still spinning.
-    private var passList: some View {
-        VStack(spacing: 8) {
-            ForEach(passes.indices, id: \.self) { i in
-                HStack(spacing: 10) {
-                    Text(verbatim: passes[i].0)
-                        .font(.system(size: 14, weight: .medium))
-                        .foregroundStyle(.white)
-                    Spacer(minLength: 12)
-                    if passes[i].1 {
-                        Image(systemName: "checkmark")
-                            .font(.system(size: 12, weight: .bold))
-                            .foregroundStyle(.white)
-                    } else {
-                        Circle()
-                            .trim(from: 0, to: 0.7)
-                            .stroke(.white, style: StrokeStyle(lineWidth: 2, lineCap: .round))
-                            .frame(width: 13, height: 13)
-                    }
-                }
-                .padding(.horizontal, 16)
-                .frame(height: 40)
-                .background(.black.opacity(0.34), in: Capsule())
-                .overlay(Capsule().strokeBorder(.white.opacity(0.22), lineWidth: 1))
-            }
-        }
-        .frame(width: 250)
-        .padding(.top, 6)
     }
 
     private var viewfinderHint: some View {

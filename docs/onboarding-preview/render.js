@@ -40,14 +40,13 @@ const EXECUTABLE = process.env.CHROMIUM_PATH || undefined;
     });
   }
 
-  // The scan screen again, on its own, so the mesh can be checked against the
-  // face at full size — that is how the face box was measured in the first
-  // place, and how it should be re-measured if the portrait is ever swapped.
+  // The scan screen again, on its own, so the line can be checked against the
+  // face at full size — where it crosses decides whether the frame reads as a
+  // scan or as a photo with a stripe on it.
   await page.evaluate(() => {
     document.body.innerHTML = '<div id="solo"></div>';
     document.body.style.background = "#000";
     document.getElementById("solo").innerHTML = window.__scanSolo();
-    window.__drawSolo();
   });
   await page.waitForTimeout(300);
   await (await page.$(".scanScr")).screenshot({
