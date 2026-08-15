@@ -593,6 +593,42 @@ struct RampPlanPreviewScreen: View {
 // MARK: — Screen: The commitment (sign your 14 days)
 // ============================================================
 
+/// The ONE deliberate exception to "every primary CTA is solid ink black."
+/// Every other screen in the flow uses `RampPrimaryButton` on purpose —
+/// identical weight everywhere means the user never has to wonder which tap
+/// matters more. But that sameness has a cost across 26 screens: the single
+/// most invested moment in the whole flow (signing 14 days) reads exactly
+/// like tapping "Sun protection?". This button breaks the rule exactly
+/// once, in the sand accent instead of ink, so the signature moment is
+/// visually the peak it actually is. Do not reuse this elsewhere — a second
+/// "special" button anywhere else erases the point of having one.
+struct RampCommitButton: View {
+    let title: String
+    var isEnabled: Bool = true
+    let action: () -> Void
+
+    var body: some View {
+        Button {
+            Haptics.fire(.selection)
+            action()
+        } label: {
+            Text(LocalizedStringKey(title))
+                .font(.system(size: 17, weight: .bold, design: .rounded))
+                .foregroundStyle(RampStage.ink)
+                .frame(maxWidth: .infinity, minHeight: 58)
+                .background(
+                    LinearGradient(colors: [Color(hex: "F0DFB8"), RampStage.accentEdge],
+                                   startPoint: .topLeading, endPoint: .bottomTrailing),
+                    in: RoundedRectangle(cornerRadius: 26, style: .continuous)
+                )
+                .shadow(color: RampStage.accentEdge.opacity(isEnabled ? 0.38 : 0), radius: 22, y: 10)
+                .opacity(isEnabled ? 1 : 0.35)
+        }
+        .buttonStyle(PressableStyle())
+        .disabled(!isEnabled)
+    }
+}
+
 /// The strongest retention mechanic in consumer onboarding: a literal
 /// signature. The user signs their 14 days with a finger — a contract with
 /// themselves, not with us. Honesty guarantees: the drawing never leaves this
@@ -652,7 +688,7 @@ struct RampCommitmentScreen: View {
             Spacer()
 
             VStack(spacing: VSpace.sm) {
-                RampPrimaryButton(title: "I'm in for 14 days", isEnabled: signed && !sealed) {
+                RampCommitButton(title: "I'm in for 14 days", isEnabled: signed && !sealed) {
                     guard !sealed else { return }
                     sealed = true
                     Haptics.fire(.verdictReveal)
