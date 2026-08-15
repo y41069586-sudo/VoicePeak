@@ -21,31 +21,34 @@ enum RampStage {
     // sepia photograph before the eye even parses the layout. Warmth is real
     // and belongs in the brand, but it has to live in the ACCENT and in
     // photography, not in the canvas everything else sits on.
-    static let porcelain = Color(hex: "FBFAF8") // near-white background (name kept for call sites)
-    static let recess     = Color(hex: "F2F0EC") // recessed panel — neutral, not tinted
-    static let ink        = Color(hex: "15130F") // near-black, maximum contrast
-    static let inkSoft    = Color(hex: "6E6A63") // secondary text — neutral grey, not warm-brown
-    static let inkFaint   = Color(hex: "A6A199") // tertiary text
-    static let hair       = Color(hex: "ECE9E3") // neutral hairline (barely-there, not gold-tinted)
+    static let porcelain = Color(hex: "FBF7F3") // near-white background, warmed toward the icon's peach
+    static let recess     = Color(hex: "F3E9DE") // recessed panel — warm, not tinted gold
+    static let ink        = Color(hex: "1E1610") // near-black, maximum contrast
+    static let inkSoft    = Color(hex: "6D5F52") // secondary text — warm taupe, matches the peach ink
+    static let inkFaint   = Color(hex: "BDA894") // tertiary text
+    static let hair       = Color(hex: "F3E5D6") // warm hairline (barely-there, peach-tinted)
 
-    // The accent is a sand tone — kept ONLY for small, deliberate uses:
-    // selection rings, progress fill, chip backgrounds, the odd icon. It is
-    // never a canvas colour. `accentEdge` is the same hue pushed one step
-    // deeper for borders/rings; `accentDeep` deeper again for on-light TEXT.
-    static let accent     = Color(hex: "E9DEC7")
-    static let accentEdge = Color(hex: "C9B387")
-    static let accentDeep = Color(hex: "8B764A")
-    static let glow       = Color(hex: "E9DEC7")
+    // The accent is pulled straight from the app icon — the light peach of
+    // the bandage and skin, deepening into the coral of the acne blemish —
+    // instead of a generic beige/sand that read as "the same colour on every
+    // screen" and didn't tie back to the mark. Kept ONLY for small,
+    // deliberate uses: selection rings, progress fill, chip backgrounds, the
+    // odd icon. It is never a canvas colour. `accentEdge` is the icon's skin
+    // tone; `accentDeep` is the icon's blemish coral, for on-light TEXT.
+    static let accent     = Color(hex: "F5DCC0")
+    static let accentEdge = Color(hex: "E0995F")
+    static let accentDeep = Color(hex: "C15A3E")
+    static let glow       = Color(hex: "F5DCC0")
 
     // Ambient light pools behind full-bleed photo screens — kept very
-    // subtle and mostly neutral now; they read as soft light, not as a
-    // colour wash. (Names kept for call sites.)
-    static let dawnPeach  = Color(hex: "F4F1EA")
-    static let dawnLilac  = Color(hex: "F6F4EF")
-    static let dawnSky    = Color(hex: "FBFAF8")
+    // subtle, now carrying the icon's peach warmth instead of gold; they
+    // read as soft light, not as a colour wash. (Names kept for call sites.)
+    static let dawnPeach  = Color(hex: "F8DFC9")
+    static let dawnLilac  = Color(hex: "FAF1E7")
+    static let dawnSky    = Color(hex: "FBF7F3")
 
     /// Soft accent tint for icon chips, segmented backgrounds, soft buttons.
-    static let accentSoft = Color(hex: "E9DEC7")
+    static let accentSoft = Color(hex: "F5DCC0")
 
     // Named text roles.
     static let textPrimary   = ink
@@ -146,17 +149,17 @@ struct RampPhoto: View {
     }
     #endif
 
-    /// Soft neutral-sand gradient placeholder — a quiet stand-in, not a
+    /// Soft neutral-peach gradient placeholder — a quiet stand-in, not a
     /// colourful moment in its own right (the photo it precedes should be).
     private var placeholder: some View {
         ZStack {
-            LinearGradient(colors: [Color(hex: "F6F4EF"), Color(hex: "ECE5D5"),
-                                    Color(hex: "DDCFA9")],
+            LinearGradient(colors: [Color(hex: "F8F1E9"), Color(hex: "F3DCC4"),
+                                    Color(hex: "E0995F")],
                            startPoint: .topLeading, endPoint: .bottomTrailing)
             RadialGradient(colors: [.white.opacity(0.55), .clear],
                            center: UnitPoint(x: 0.25, y: 0.2),
                            startRadius: 0, endRadius: 220)
-            RadialGradient(colors: [Color(hex: "E9DEC7").opacity(0.8), .clear],
+            RadialGradient(colors: [Color(hex: "F5DCC0").opacity(0.8), .clear],
                            center: UnitPoint(x: 0.85, y: 0.85),
                            startRadius: 0, endRadius: 260)
         }

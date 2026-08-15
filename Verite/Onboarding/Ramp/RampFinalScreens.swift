@@ -617,7 +617,7 @@ struct RampCommitButton: View {
                 .foregroundStyle(RampStage.ink)
                 .frame(maxWidth: .infinity, minHeight: 58)
                 .background(
-                    LinearGradient(colors: [Color(hex: "F0DFB8"), RampStage.accentEdge],
+                    LinearGradient(colors: [Color(hex: "FAE6D2"), RampStage.accentEdge],
                                    startPoint: .topLeading, endPoint: .bottomTrailing),
                     in: RoundedRectangle(cornerRadius: 26, style: .continuous)
                 )
