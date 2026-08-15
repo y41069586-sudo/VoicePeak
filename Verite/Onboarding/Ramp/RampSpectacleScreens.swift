@@ -31,6 +31,7 @@ struct RampBootScreen: View {
     var onSignIn: () -> Void = {}
 
     @State private var page = 0
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     private struct IntroPage: Identifiable {
         let id: Int
@@ -87,6 +88,23 @@ struct RampBootScreen: View {
         }
         .padding(.bottom, VSpace.lg)
         .animation(VMotion.snappy, value: page)
+        .task { await autoAdvance() }
+    }
+
+    /// Plays the carousel by itself — a beat to look at each page, then a
+    /// snappy swipe to the next, wrapping back to the first. A user swipe
+    /// still works at any time; it just sets the same `page` this loop
+    /// drives. Off entirely under Reduce Motion, where an unrequested
+    /// slideshow is exactly the kind of movement that setting exists to stop.
+    private func autoAdvance() async {
+        guard !reduceMotion else { return }
+        while !Task.isCancelled {
+            try? await Task.sleep(for: .seconds(2.2))
+            guard !Task.isCancelled else { return }
+            withAnimation(VMotion.snappy) {
+                page = (page + 1) % pages.count
+            }
+        }
     }
 
     private var dots: some View {
@@ -102,13 +120,13 @@ struct RampBootScreen: View {
 
     private func introPage(_ item: IntroPage) -> some View {
         VStack(spacing: 0) {
-            Spacer(minLength: VSpace.md)
+            Spacer(minLength: VSpace.sm)
 
             RampIntroArt(index: item.id)
                 .frame(maxWidth: .infinity)
-                .padding(.horizontal, VSpace.lg)
+                .padding(.horizontal, VSpace.sm)
 
-            Spacer(minLength: VSpace.lg)
+            Spacer(minLength: VSpace.md)
 
             VStack(spacing: VSpace.sm) {
                 Text(LocalizedStringKey(item.title))
@@ -146,14 +164,19 @@ private struct RampIntroArt: View {
     let index: Int
 
     var body: some View {
-        RampFitted(designSize: CGSize(width: 340, height: 372)) {
+        // Sized up from the original 340×372 slot — small enough on a real
+        // phone that the screens inside were decoration, not something you
+        // could actually read. This is as large as the boot screen's layout
+        // has room for; `RampFitted` still scales it down further on a
+        // short canvas, it just no longer starts out needlessly small.
+        RampFitted(designSize: CGSize(width: 378, height: 420)) {
             switch index {
             case 1:
                 // The scan is the moment the product turns on. It gets the
                 // whole slot to itself, at the biggest size that fits.
-                RampPhoneFrame(width: 171) { RampIntroScanScreen() }
+                RampPhoneFrame(width: 190) { RampIntroScanScreen() }
             case 2:
-                RampPhoneTrio(width: 330) {
+                RampPhoneTrio(width: 368) {
                     RampIntroHomeScreen()
                 } center: {
                     RampIntroRoutineScreen()
@@ -161,7 +184,7 @@ private struct RampIntroArt: View {
                     RampIntroProgressScreen()
                 }
             case 3:
-                RampPhoneTrio(width: 330) {
+                RampPhoneTrio(width: 368) {
                     RampIntroRoutineScreen()
                 } center: {
                     RampIntroProgressScreen()
@@ -169,7 +192,7 @@ private struct RampIntroArt: View {
                     RampIntroHomeScreen()
                 }
             default:
-                RampPhoneTrio(width: 330) {
+                RampPhoneTrio(width: 368) {
                     RampIntroProgressScreen()
                 } center: {
                     RampIntroHomeScreen()
@@ -178,7 +201,7 @@ private struct RampIntroArt: View {
                 }
             }
         }
-        .frame(maxHeight: 372)
+        .frame(maxHeight: 420)
         .accessibilityHidden(true)
     }
 }
