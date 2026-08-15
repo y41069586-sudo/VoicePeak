@@ -112,7 +112,7 @@ struct OnboardingRampFlow: View {
                                        named: "%@, how does your skin feel lately?"),
                 options: RampQuizAnswers.SelfRating.allCases.map {
                     RampQuizOption(id: $0.rawValue, label: $0.label,
-                                    icon: selfRatingIcon($0), sub: selfRatingSub($0))
+                                    icon: selfRatingIcon($0))
                 },
                 selectedID: answers.selfRating?.rawValue
             ) { id in
@@ -327,14 +327,6 @@ struct OnboardingRampFlow: View {
         return String(format: String(localized: String.LocalizationValue(template)), name)
     }
 
-    private func selfRatingSub(_ rating: RampQuizAnswers.SelfRating) -> String {
-        switch rating {
-        case .rough:        return "Tight, uneven, needs care"
-        case .average:      return "Some good days, some off"
-        case .decent:       return "Mostly calm and clear"
-        case .honestlyGood: return "Honestly glowing"
-        }
-    }
 
     // MARK: Swipe-card icons + descriptors
 

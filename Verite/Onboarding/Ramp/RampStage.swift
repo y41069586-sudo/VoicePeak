@@ -386,9 +386,16 @@ struct RampGhostButton: View {
 /// than a border; selection is a sand-coloured ring plus a filled checkmark,
 /// not a tinted fill — the tint-on-select pattern is what made the earlier
 /// version look washed rather than chosen.
+///
+/// There is no descriptor slot. It existed for one screen — the self-rating
+/// question, where every tile carried a gloss ("Rough patch · Tight, uneven,
+/// needs care") — and it set the label and the gloss side by side, so the
+/// longest ones wrapped to two lines and the row of tiles stopped scanning
+/// as a row. The labels answer the question on their own; anything that
+/// genuinely needs explaining belongs in the question's `subtitle`, once,
+/// rather than repeated on every option.
 struct RampOptionCard: View {
     let label: String
-    var sub: String? = nil
     var icon: String? = nil
     let selected: Bool
     let action: () -> Void
@@ -405,11 +412,6 @@ struct RampOptionCard: View {
                 Text(LocalizedStringKey(label))
                     .font(VType.bodyLarge.weight(.semibold))
                     .foregroundStyle(RampStage.ink)
-                if let sub {
-                    Text(LocalizedStringKey(sub))
-                        .font(VType.caption)
-                        .foregroundStyle(RampStage.textSecondary)
-                }
                 Spacer(minLength: 0)
                 selectionMark
             }
