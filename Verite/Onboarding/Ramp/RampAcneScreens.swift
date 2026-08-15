@@ -507,3 +507,229 @@ struct RampGoalScreen: View {
         }
     }
 }
+
+// ============================================================
+// MARK: — What we heard (the acne chapter's closing beat)
+// ============================================================
+
+/// The interstitial that closes the acne chapter, and the emotional peak of
+/// the first third of the flow.
+///
+/// It exists because of a specific hole: the user named their acne on screen
+/// two, and screen three used to be a product demo. Four questions later
+/// they had been asked a lot and told nothing. This screen is the reply —
+/// their own answers held up as chips, then one sentence that is ABOUT them
+/// rather than about us.
+///
+/// Two rules for anything edited into this file:
+///
+///  1. No numbers. "87% of people with cystic acne…" is the easiest line to
+///     write here and the one that would make every honest claim elsewhere
+///     in the app worth less. The copy in `acneEmpathyHeadline` /
+///     `acneEmpathyBody` is derived purely from what the user just told us.
+///  2. No promise. This screen does not say the plan will work — the
+///     screens after it make the (measured, hedged) case. It says we heard
+///     them, and stops.
+struct RampAcneEmpathyScreen: View {
+    let headline: String
+    let message: String
+    /// The user's own answers, echoed back.
+    var chips: [String] = []
+    let onAdvance: () -> Void
+
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @State private var eyebrowIn = false
+    @State private var chipsShown = 0
+    @State private var headlineIn = false
+    @State private var messageIn = false
+    @State private var buttonIn = false
+
+    var body: some View {
+        GeometryReader { proxy in
+            ScrollView {
+                VStack(alignment: .leading, spacing: 0) {
+                    Spacer(minLength: VSpace.xxl)
+
+                    Text("WHAT WE HEARD")
+                        .font(VType.micro)
+                        .tracking(3)
+                        .foregroundStyle(RampStage.accentDeep)
+                        .opacity(eyebrowIn ? 1 : 0)
+                        .offset(y: eyebrowIn ? 0 : 6)
+                        .padding(.horizontal, VSpace.lg)
+                        .padding(.bottom, VSpace.md)
+
+                    // Their answers, landing one at a time — the visual proof
+                    // that the last four screens were listened to and not
+                    // just logged.
+                    if !chips.isEmpty {
+                        let row = HStack(spacing: 7) {
+                            ForEach(chips.indices, id: \.self) { i in
+                                Text(LocalizedStringKey(chips[i]))
+                                    .font(.system(size: 12.5, weight: .semibold, design: .rounded))
+                                    .foregroundStyle(RampStage.accentDeep)
+                                    .lineLimit(1)
+                                    .padding(.horizontal, 11).padding(.vertical, 6)
+                                    .background(RampStage.accentSoft, in: Capsule())
+                                    .opacity(i < chipsShown ? 1 : 0)
+                                    .scaleEffect(i < chipsShown ? 1 : 0.6)
+                            }
+                        }
+                        ViewThatFits(in: .horizontal) {
+                            row
+                            ScrollView(.horizontal) { row }
+                                .scrollIndicators(.hidden)
+                        }
+                        .padding(.horizontal, VSpace.lg)
+                        .padding(.bottom, VSpace.lg)
+                    }
+
+                    Text(LocalizedStringKey(headline))
+                        .font(RampStage.serif(28))
+                        .foregroundStyle(RampStage.ink)
+                        .lineSpacing(3)
+                        .fixedSize(horizontal: false, vertical: true)
+                        .opacity(headlineIn ? 1 : 0)
+                        .offset(y: headlineIn ? 0 : 10)
+                        .padding(.horizontal, VSpace.lg)
+
+                    Text(LocalizedStringKey(message))
+                        .font(VType.bodyLarge)
+                        .foregroundStyle(RampStage.textSecondary)
+                        .lineSpacing(3)
+                        .fixedSize(horizontal: false, vertical: true)
+                        .opacity(messageIn ? 1 : 0)
+                        .offset(y: messageIn ? 0 : 8)
+                        .padding(.horizontal, VSpace.lg)
+                        .padding(.top, VSpace.md)
+
+                    Spacer(minLength: VSpace.xl)
+
+                    RampPrimaryButton(title: "Continue") { onAdvance() }
+                        .padding(.horizontal, VSpace.lg)
+                        .opacity(buttonIn ? 1 : 0)
+
+                    Spacer().frame(height: VSpace.xxl)
+                }
+                .frame(minHeight: proxy.size.height, alignment: .leading)
+            }
+            .scrollBounceBehavior(.basedOnSize)
+        }
+        .task {
+            if reduceMotion {
+                eyebrowIn = true; chipsShown = chips.count
+                headlineIn = true; messageIn = true; buttonIn = true
+                return
+            }
+            withAnimation(VMotion.gentle) { eyebrowIn = true }
+            // `chips` can legitimately be empty (nothing recognised on the
+            // photo grid, nothing tried) — stepping 1...1 there would fire a
+            // haptic for a chip that never appears.
+            for i in chips.indices {
+                try? await Task.sleep(for: .milliseconds(110))
+                guard !Task.isCancelled else { return }
+                withAnimation(VMotion.snappy) { chipsShown = i + 1 }
+                Haptics.fire(.tick)
+            }
+            try? await Task.sleep(for: .milliseconds(180))
+            guard !Task.isCancelled else { return }
+            withAnimation(VMotion.gentle) { headlineIn = true }
+            try? await Task.sleep(for: .milliseconds(260))
+            guard !Task.isCancelled else { return }
+            withAnimation(VMotion.gentle) { messageIn = true }
+            try? await Task.sleep(for: .milliseconds(240))
+            guard !Task.isCancelled else { return }
+            withAnimation(VMotion.gentle) { buttonIn = true }
+        }
+    }
+}
+
+// ============================================================
+// MARK: — What you've already tried
+// ============================================================
+
+/// Multi-select over the things people actually reach for before an app.
+/// Continue is never disabled — picking nothing IS the answer for anyone at
+/// the very start, and "Nothing yet" says so explicitly rather than leaving
+/// them guessing whether an empty screen counts.
+///
+/// This is the question that buys the most goodwill in the whole flow, for a
+/// reason worth keeping in mind while editing it: everyone who has had acne
+/// for more than a year has been sold the same first thing repeatedly. Being
+/// asked what already failed — before anything is recommended — is the
+/// clearest possible signal that the recommendation to come is not going to
+/// be that same first thing again.
+struct RampAcneTriedScreen: View {
+    @Binding var selected: Set<String>
+    let onAdvance: () -> Void
+
+    private let options = RampQuizAnswers.AcneTried.allCases
+
+    var body: some View {
+        GeometryReader { proxy in
+            ScrollView {
+                VStack(alignment: .leading, spacing: 0) {
+                    Spacer(minLength: VSpace.xxl)
+
+                    Text("YOUR ACNE · TWO OF THREE")
+                        .font(VType.micro).tracking(3)
+                        .foregroundStyle(RampStage.accentDeep)
+                        .padding(.horizontal, VSpace.lg)
+                        .padding(.bottom, VSpace.sm)
+
+                    Text("What have you\nalready tried?")
+                        .font(RampStage.serif(25))
+                        .foregroundStyle(RampStage.ink)
+                        .lineSpacing(2)
+                        .fixedSize(horizontal: false, vertical: true)
+                        .padding(.horizontal, VSpace.lg)
+
+                    Text("Pick everything. Knowing what didn't hold is how we avoid handing you the same thing again.")
+                        .font(VType.body)
+                        .foregroundStyle(RampStage.textSecondary)
+                        .fixedSize(horizontal: false, vertical: true)
+                        .padding(.horizontal, VSpace.lg)
+                        .padding(.top, VSpace.xs)
+
+                    Spacer().frame(height: VSpace.xl)
+
+                    VStack(spacing: VSpace.sm) {
+                        ForEach(options) { option in
+                            RampOptionCard(
+                                label: option.label,
+                                icon: option.icon,
+                                selected: selected.contains(option.rawValue)
+                            ) {
+                                toggle(option.rawValue)
+                            }
+                        }
+                        // The opt-out, mirroring the sensitivity screen's
+                        // "Nothing I know of": clears every flag.
+                        RampOptionCard(
+                            label: "Nothing yet",
+                            icon: "circle.dashed",
+                            selected: selected.isEmpty
+                        ) {
+                            Haptics.fire(.selection)
+                            selected.removeAll()
+                        }
+                    }
+                    .padding(.horizontal, VSpace.lg)
+
+                    Spacer(minLength: VSpace.xl)
+
+                    RampPrimaryButton(title: "Continue") { onAdvance() }
+                        .padding(.horizontal, VSpace.lg)
+                    Spacer().frame(height: VSpace.xxl)
+                }
+                .frame(minHeight: proxy.size.height, alignment: .leading)
+            }
+            .scrollBounceBehavior(.basedOnSize)
+        }
+    }
+
+    private func toggle(_ raw: String) {
+        Haptics.fire(.selection)
+        if selected.contains(raw) { selected.remove(raw) } else { selected.insert(raw) }
+    }
+}

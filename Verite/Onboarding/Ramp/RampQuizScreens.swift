@@ -18,6 +18,10 @@ struct RampQuizScreen: View {
     /// Editorial chapter label, e.g. "YOUR SKIN · ONE OF THREE".
     var chapter: String? = nil
     let question: String
+    /// One optional line under the question. Reserved for questions that
+    /// need to say why they're being asked — the emotional ones, where the
+    /// user is owed an explanation before they answer honestly.
+    var subtitle: String? = nil
     let options: [RampQuizOption]
     let selectedID: String?
     let onSelect: (String) -> Void
@@ -48,6 +52,15 @@ struct RampQuizScreen: View {
                         .lineSpacing(2)
                         .fixedSize(horizontal: false, vertical: true)
                         .padding(.horizontal, VSpace.lg)
+
+                    if let subtitle {
+                        Text(LocalizedStringKey(subtitle))
+                            .font(VType.body)
+                            .foregroundStyle(RampStage.textSecondary)
+                            .fixedSize(horizontal: false, vertical: true)
+                            .padding(.horizontal, VSpace.lg)
+                            .padding(.top, VSpace.xs)
+                    }
 
                     Spacer().frame(height: VSpace.xl)
 

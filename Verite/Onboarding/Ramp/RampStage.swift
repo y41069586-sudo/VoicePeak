@@ -319,16 +319,25 @@ extension View {
     func rampCardShadow() -> some View { modifier(RampCardShadow()) }
 }
 
-/// Primary CTA: full-width, bold, a solid near-black fill. This replaced a
-/// gold-gradient fill — the accent doesn't need to be on the button to read
-/// as the primary action; dark-on-light contrast does that on its own, and
-/// it keeps gold as a colour the eye only meets at a handful of deliberate
-/// points (selection, progress) instead of on every screen's biggest shape.
+/// Primary CTA: full-width, bold, on the brand's own skin→blemish gradient —
+/// the exact fill `DQPrimaryButton` uses in the app proper, so the button the
+/// user taps twenty times during onboarding is the same button that greets
+/// them afterwards.
+///
+/// This replaced a solid near-black fill. On a warm peach ground, a black
+/// slab is the one shape on screen that belongs to no palette; repeated on
+/// 26 screens it made the whole flow read as monochrome-with-an-accent
+/// rather than as one warm thing. The coral end of the gradient is dark
+/// enough to carry white text, so nothing is lost on contrast.
 struct RampPrimaryButton: View {
     let title: String
     var systemImage: String? = nil
     var isEnabled: Bool = true
     let action: () -> Void
+
+    /// Skin → blemish, matching `DQColor.accentGradient` exactly.
+    static let fill = LinearGradient(colors: [RampStage.accentEdge, RampStage.accentDeep],
+                                     startPoint: .topLeading, endPoint: .bottomTrailing)
 
     var body: some View {
         Button {
@@ -342,9 +351,9 @@ struct RampPrimaryButton: View {
             .font(.system(size: 17, weight: .bold, design: .rounded))
             .foregroundStyle(Color.white)
             .frame(maxWidth: .infinity, minHeight: 58)
-            .background(RampStage.ink,
+            .background(Self.fill,
                         in: RoundedRectangle(cornerRadius: 26, style: .continuous))
-            .shadow(color: RampStage.ink.opacity(isEnabled ? 0.24 : 0), radius: 20, y: 10)
+            .shadow(color: RampStage.accentDeep.opacity(isEnabled ? 0.34 : 0), radius: 20, y: 10)
             .opacity(isEnabled ? 1 : 0.35)
         }
         .buttonStyle(PressableStyle())

@@ -193,6 +193,48 @@ struct OnboardingRampFlow: View {
                 // second call here.
                 advance()
             }
+        case .acneDuration:
+            RampQuizScreen(
+                chapter: "YOUR ACNE · ONE OF THREE",
+                question: "How long has your skin\nbeen like this?",
+                options: RampQuizAnswers.AcneDuration.allCases.map {
+                    RampQuizOption(id: $0.rawValue, label: $0.label, icon: $0.icon)
+                },
+                selectedID: answers.acneDuration?.rawValue
+            ) { id in
+                answers.acneDuration = RampQuizAnswers.AcneDuration(rawValue: id)
+                UserDefaults.standard.set(id, forKey: "dq.acneDuration")
+                recordAnswer(question: "acne_duration", answer: id)
+            }
+        case .acneTried:
+            RampAcneTriedScreen(selected: acneTriedBinding) {
+                answers.sawAcneTried = true
+                let picked = answers.acneTried.sorted()
+                RampAnalytics.quizAnswer(question: "acne_tried",
+                                         answer: picked.joined(separator: ","))
+                UserDefaults.standard.set(picked, forKey: "dq.acneTried")
+                advance()
+            }
+        case .acneImpact:
+            RampQuizScreen(
+                chapter: "YOUR ACNE · THREE OF THREE",
+                question: personalized("Be honest — how much\ndoes it get to you?",
+                                       named: "%@, how much does\nit get to you?"),
+                subtitle: "This changes nothing about your plan. It changes how we talk to you.",
+                options: RampQuizAnswers.AcneImpact.allCases.map {
+                    RampQuizOption(id: $0.rawValue, label: $0.label, icon: $0.icon)
+                },
+                selectedID: answers.acneImpact?.rawValue
+            ) { id in
+                answers.acneImpact = RampQuizAnswers.AcneImpact(rawValue: id)
+                recordAnswer(question: "acne_impact", answer: id)
+            }
+        case .acneEmpathy:
+            RampAcneEmpathyScreen(
+                headline: answers.acneEmpathyHeadline,
+                message: answers.acneEmpathyBody,
+                chips: answers.acneChips
+            ) { advance() }
         case .sensitivities:
             RampSensitivityScreen(selected: sensitivitiesBinding) {
                 answers.sawSensitivities = true
@@ -263,6 +305,10 @@ struct OnboardingRampFlow: View {
 
     private var acneTypesBinding: Binding<Set<String>> {
         Binding(get: { answers.acneTypes }, set: { answers.acneTypes = $0 })
+    }
+
+    private var acneTriedBinding: Binding<Set<String>> {
+        Binding(get: { answers.acneTried }, set: { answers.acneTried = $0 })
     }
 
     private var brandsBinding: Binding<Set<String>> {

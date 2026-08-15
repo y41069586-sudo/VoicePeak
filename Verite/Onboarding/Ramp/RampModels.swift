@@ -10,7 +10,8 @@ import os
 /// luminous Teint-Orb lives behind every screen and only re-stages between
 /// them.
 ///
-///   opening → acne type → demo → questions → insights
+///   opening → the acne chapter (kind → how long → what you've tried →
+///   what it costs → what we heard) → demo → questions → insights
 ///   → spend → the loop → goal → the reading → the curve → the plan
 ///   → commitment → daily ritual → handoff (the scan).
 ///
@@ -25,33 +26,49 @@ enum RampStep: Int, CaseIterable {
     // every screen after it can mirror it back. A demo shown before we know
     // what is wrong is a demo about somebody else.
     case acneType        // 1  — which kind, over photographs
-    case sampleReading   // 2  — the real results chart, previewed
-    case theSplit        // 3  — what 14 days moves (interactive bars)
-    case quizSelfRating  // 4  — Q · your skin
-    case quizAge         // 5  — Q · your skin
-    case insightSkin     // 6  — mirrored insight, chapter 1
+    // THE ACNE CHAPTER. `acneType` used to hand straight over to
+    // `sampleReading` — the user named the thing they came here about, and
+    // the very next screen was a product demo. It reads as being cut off
+    // mid-sentence: we asked the one question that matters and then changed
+    // the subject to ourselves.
+    //
+    // These three questions and the interstitial that follows are the answer.
+    // They ask how long it has been going on, what has already been tried,
+    // and what it actually costs them — and then say something true back
+    // before any product appears. Two of the three feed the plan (duration
+    // sets the ramp, history keeps us from re-selling what already failed);
+    // the third feeds nothing and is asked anyway, which is the point.
+    case acneDuration    // 2  — how long has this been going on
+    case acneTried       // 3  — what have you already tried
+    case acneImpact      // 4  — how much does it get to you
+    case acneEmpathy     // 5  — what we heard, said back
+    case sampleReading   // 6  — the real results chart, previewed
+    case theSplit        // 7  — what 14 days moves (interactive bars)
+    case quizSelfRating  // 8  — Q · your skin
+    case quizAge         // 9  — Q · your skin
+    case insightSkin     // 10 — mirrored insight, chapter 1
     // Asked once, immediately after the first insight — so the name is given
     // in exchange for something, not before anything.
-    case name            // 7  — "what should we call you?" (optional)
-    case quizRoutine     // 8  — Q · your life
-    case quizSleep       // 9  — Q · your life
-    case quizSPF         // 10 — Q · your life
-    case insightLife     // 11 — mirrored insight, chapter 2
-    case sensitivities   // 12 — allergies the routine must avoid
-    case brands          // 13 — what's already on the shelf (names, never logos)
+    case name            // 11 — "what should we call you?" (optional)
+    case quizRoutine     // 12 — Q · your life
+    case quizSleep       // 13 — Q · your life
+    case quizSPF         // 14 — Q · your life
+    case insightLife     // 15 — mirrored insight, chapter 2
+    case sensitivities   // 16 — allergies the routine must avoid
+    case brands          // 17 — what's already on the shelf (names, never logos)
     // Spend, then the loop it bought. Naming the monthly figure and THEN
     // naming the cycle it funded is the argument for a plan, made with the
     // user's own number rather than ours — and it is the anchor every later
     // price is read against.
-    case spend           // 14 — what you already spend each month
-    case theCycle        // 15 — the loop, named
+    case spend           // 18 — what you already spend each month
+    case theCycle        // 19 — the loop, named
     // The goal-setting act. Everything downstream — the curve, the plan, the
     // paywall headline — refers back to the sentence chosen here.
-    case goal            // 16 — "what does better look like for you?"
-    case theReading      // 17 — visible processing + prediction range
-    case theCurve        // 18 — where do you land?
-    case planPreview     // 19 — your first plan, previewed
-    case evidence        // 20 — the science behind the plan (tappable sources)
+    case goal            // 20 — "what does better look like for you?"
+    case theReading      // 21 — visible processing + prediction range
+    case theCurve        // 22 — where do you land?
+    case planPreview     // 23 — your first plan, previewed
+    case evidence        // 24 — the science behind the plan (tappable sources)
     // Attribution sits here, not at position 3 and not right after the
     // signature. It serves our reporting, not the user, so it used to sit at
     // position 3 — a screen that takes before anything has been given — and
@@ -62,11 +79,11 @@ enum RampStep: Int, CaseIterable {
     // behind it), so the ask is earned here too — and putting it BEFORE
     // commitment means nothing interrupts the signature → reminder-time →
     // sign-in → scan run that follows.
-    case attribution     // 21 — "where did you find us?" (marketing attribution)
-    case commitment      // 22 — sign your 14-day commitment
-    case dailyRitual     // 23 — time choice + notifications
-    case signIn          // 24 — register before the first scan
-    case handoff         // 25 — "now, the real you" → the scan
+    case attribution     // 25 — "where did you find us?" (marketing attribution)
+    case commitment      // 26 — sign your 14-day commitment
+    case dailyRitual     // 27 — time choice + notifications
+    case signIn          // 28 — register before the first scan
+    case handoff         // 29 — "now, the real you" → the scan
 
     var next: RampStep? { RampStep(rawValue: rawValue + 1) }
     var previous: RampStep? { RampStep(rawValue: rawValue - 1) }
@@ -89,6 +106,10 @@ enum RampStep: Int, CaseIterable {
         case .quizSPF:        return "quiz_spf"
         case .insightLife:    return "insight_life"
         case .acneType:       return "acne_type"
+        case .acneDuration:   return "acne_duration"
+        case .acneTried:      return "acne_tried"
+        case .acneImpact:     return "acne_impact"
+        case .acneEmpathy:    return "acne_empathy"
         case .sensitivities:  return "sensitivities"
         case .brands:         return "brands"
         case .spend:          return "spend"
@@ -178,6 +199,96 @@ struct RampQuizAnswers {
         }
     }
 
+    /// How long the user has been living with this. The single most bonding
+    /// question in the flow: everything before it asks what their skin looks
+    /// like, this is the first one that asks what it has COST them. It also
+    /// earns its place in the product — skin that has been breaking out for
+    /// six years and skin that started three months ago are not the same
+    /// starting point, and the plan's ramp reads this.
+    enum AcneDuration: String, CaseIterable, Identifiable {
+        case months, aboutAYear, fewYears, asLongAsIRemember
+        var id: String { rawValue }
+        var label: String {
+            switch self {
+            case .months:             return "A few months"
+            case .aboutAYear:         return "About a year"
+            case .fewYears:           return "A few years"
+            case .asLongAsIRemember:  return "As long as I can remember"
+            }
+        }
+        var icon: String {
+            switch self {
+            case .months:             return "calendar"
+            case .aboutAYear:         return "calendar.badge.clock"
+            case .fewYears:           return "clock.arrow.circlepath"
+            case .asLongAsIRemember:  return "infinity"
+            }
+        }
+        var chip: String {
+            switch self {
+            case .months:             return "A few months"
+            case .aboutAYear:         return "~1 year"
+            case .fewYears:           return "Years"
+            case .asLongAsIRemember:  return "Always"
+            }
+        }
+    }
+
+    /// What they have already thrown at it. Multi-select, and deliberately
+    /// specific: "drugstore products" and "a course of antibiotics" are
+    /// wildly different histories, and a user who has done both has been at
+    /// this long enough to be sick of being sold the first one again.
+    enum AcneTried: String, CaseIterable, Identifiable {
+        case drugstore, prescription, antibiotics, diet, dermatologist
+        var id: String { rawValue }
+        var label: String {
+            switch self {
+            case .drugstore:     return "Drugstore products"
+            case .prescription:  return "Prescription creams"
+            case .antibiotics:   return "Antibiotics or the pill"
+            case .diet:          return "Changing what I eat"
+            case .dermatologist: return "Seen a dermatologist"
+            }
+        }
+        var icon: String {
+            switch self {
+            case .drugstore:     return "cart"
+            case .prescription:  return "cross.case"
+            case .antibiotics:   return "pills"
+            case .diet:          return "fork.knife"
+            case .dermatologist: return "stethoscope"
+            }
+        }
+    }
+
+    /// The emotional weight, asked plainly. It changes no ingredient in the
+    /// plan and it is told as much on the screen — what it changes is the
+    /// voice everything downstream is written in, and whether the user feels
+    /// like a case or a person by the time they reach the scan.
+    enum AcneImpact: String, CaseIterable, Identifiable {
+        case notMuch, someDays, moreThanILetOn, everyMirror
+        var id: String { rawValue }
+        var label: String {
+            switch self {
+            case .notMuch:        return "Not much, honestly"
+            case .someDays:       return "Some days"
+            case .moreThanILetOn: return "More than I let on"
+            case .everyMirror:    return "Every time I pass a mirror"
+            }
+        }
+        var icon: String {
+            switch self {
+            case .notMuch:        return "cloud"
+            case .someDays:       return "cloud.sun"
+            case .moreThanILetOn: return "cloud.rain"
+            case .everyMirror:    return "cloud.bolt.rain"
+            }
+        }
+        /// True for the two answers that mean this genuinely weighs on them —
+        /// the empathy screen and the goal copy both branch on it.
+        var isHeavy: Bool { self == .moreThanILetOn || self == .everyMirror }
+    }
+
     enum AgeBand: String, CaseIterable, Identifiable {
         case under25, from25to34, from35to44, over45
         var id: String { rawValue }
@@ -228,6 +339,12 @@ struct RampQuizAnswers {
     var routine: RoutineLevel?
     var sleep: SleepBucket?
     var spf: SunProtection?
+    var acneDuration: AcneDuration?
+    /// Raw `AcneTried` values. Empty is a real answer ("Nothing yet"), so
+    /// `sawAcneTried` is what says whether the question was actually asked.
+    var acneTried: Set<String> = []
+    var acneImpact: AcneImpact?
+    var sawAcneTried = false
     /// Ingredients the user reacts to (raw `SkinSensitivity` values) — the
     /// routine builder swaps these for gentle alternatives.
     var sensitivities: Set<String> = []
@@ -245,10 +362,15 @@ struct RampQuizAnswers {
             .compactMap { $0 }
     }
 
-    /// How many of the six questions have been answered.
+    /// How many questions have actually been answered — read back verbatim
+    /// on the reading screen ("Built from your N answers"), so the acne
+    /// chapter has to count here or that line quietly under-reports.
+    /// `acneTried` counts on `sawAcneTried`, not on emptiness: "nothing yet"
+    /// is an answer.
     var answeredCount: Int {
         [selfRating != nil, !acneTypes.isEmpty, age != nil,
-         routine != nil, sleep != nil, spf != nil]
+         routine != nil, sleep != nil, spf != nil,
+         acneDuration != nil, sawAcneTried, acneImpact != nil]
             .filter { $0 }.count
     }
 
@@ -268,6 +390,54 @@ struct RampQuizAnswers {
         } else {
             return "The scan usually finds headroom you don't feel."
         }
+    }
+
+    // MARK: The acne chapter (bonding, not data collection)
+
+    /// Chips for the empathy screen — their three acne answers, in the order
+    /// they gave them.
+    var acneChips: [String] {
+        var chips: [String] = []
+        if let acneTypeChip { chips.append(acneTypeChip) }
+        if let acneDuration { chips.append(acneDuration.chip) }
+        if !acneTried.isEmpty { chips.append("Tried \(acneTried.count)") }
+        return chips
+    }
+
+    /// The headline of the empathy screen. Every branch is a statement about
+    /// what the user just told us — never a claim about what the app will
+    /// do, and never a number. The whole screen exists so the flow stops
+    /// feeling like a form the moment before it starts showing product.
+    var acneEmpathyHeadline: String {
+        if acneDuration == .asLongAsIRemember || acneDuration == .fewYears,
+           acneTried.count >= 2 {
+            return "Years of trying things\nthat didn't hold."
+        }
+        if acneTried.count >= 3 {
+            return "You've tried more\nthan most people ever do."
+        }
+        if acneImpact?.isHeavy == true {
+            return "It's not vanity.\nIt takes up room."
+        }
+        if acneTried.isEmpty && sawAcneTried {
+            return "Starting clean is\nan advantage."
+        }
+        return "That's more than\nmost scans ever ask."
+    }
+
+    /// The supporting paragraph. Same rule: honest framing of their own
+    /// answer, no promise attached.
+    var acneEmpathyBody: String {
+        if acneTried.isEmpty && sawAcneTried {
+            return "Nothing to undo, no half-finished routine to unpick. We can put the right things in the right order from day one — which is most of the battle."
+        }
+        if acneTried.count >= 2 {
+            return "When something works for a few weeks and then stops, it usually wasn't the wrong product. It was a routine that never adjusted. That's the part a plan is actually for."
+        }
+        if acneImpact?.isHeavy == true {
+            return "Skin you think about every morning costs you something real, and it's the part almost every skincare app skips straight past. We'd rather start there."
+        }
+        return "Most apps ask what your skin looks like and stop. What it's been like to live with is the part that decides whether a plan is worth following."
     }
 
     /// Chapter-2 insight: connects a lifestyle answer to the score — one line.
