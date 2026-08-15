@@ -386,11 +386,9 @@ struct RampOptionCard: View {
             HStack(spacing: 14) {
                 if let icon {
                     Image(systemName: icon)
-                        .font(.system(size: 16, weight: .regular))
-                        .foregroundStyle(RampStage.accentDeep)
-                        .frame(width: 34, height: 34)
-                        .background(RampStage.accentSoft.opacity(selected ? 1 : 0.5),
-                                    in: RoundedRectangle(cornerRadius: 10, style: .continuous))
+                        .font(.system(size: 19, weight: .regular))
+                        .foregroundStyle(selected ? RampStage.accentDeep : RampStage.inkFaint)
+                        .frame(width: 22, height: 22)
                 }
                 Text(LocalizedStringKey(label))
                     .font(VType.bodyLarge.weight(.semibold))
