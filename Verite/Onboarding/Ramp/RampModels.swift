@@ -130,42 +130,6 @@ struct RampQuizAnswers {
         var chip: String { label }
     }
 
-    enum MirrorConcern: String, CaseIterable, Identifiable {
-        case breakouts, redness, pores, texture, dullness, nothing
-        var id: String { rawValue }
-        var label: String {
-            switch self {
-            case .breakouts: return "Breakouts"
-            case .redness:   return "Redness"
-            case .pores:     return "Pores"
-            case .texture:   return "Texture"
-            case .dullness:  return "Dullness"
-            case .nothing:   return "Nothing specific"
-            }
-        }
-        var icon: String {
-            switch self {
-            case .breakouts: return "allergens"
-            case .redness:   return "flame"
-            case .pores:     return "circle.grid.3x3"
-            case .texture:   return "square.stack.3d.up"
-            case .dullness:  return "cloud"
-            case .nothing:   return "checkmark.seal"
-            }
-        }
-        var chip: String? { self == .nothing ? nil : label }
-        /// Maps onto the app-wide `SkinConcern` vocabulary the Match engine reads.
-        var skinConcern: SkinConcern? {
-            switch self {
-            case .breakouts: return .acne
-            case .redness:   return .redness
-            case .pores:     return .pores
-            case .texture:   return .texture
-            case .dullness:  return .dullness
-            case .nothing:   return nil
-            }
-        }
-    }
 
     enum RoutineLevel: String, CaseIterable, Identifiable {
         case nothing, cleanserOnly, threePlus, fullStack
@@ -260,7 +224,6 @@ struct RampQuizAnswers {
     var name: String?
     var acquisition: AcquisitionSource?
     var selfRating: SelfRating?
-    var concern: MirrorConcern?
     var age: AgeBand?
     var routine: RoutineLevel?
     var sleep: SleepBucket?
@@ -278,13 +241,13 @@ struct RampQuizAnswers {
 
     /// Labels absorbed into the head on the "Twin complete" screen.
     var chipLabels: [String] {
-        [selfRating?.chip, concern?.chip, routine?.chip, sleep?.chip, spf?.chip]
+        [selfRating?.chip, acneTypeChip, routine?.chip, sleep?.chip, spf?.chip]
             .compactMap { $0 }
     }
 
-    /// How many of the five questions have been answered.
+    /// How many of the six questions have been answered.
     var answeredCount: Int {
-        [selfRating != nil, concern != nil, age != nil,
+        [selfRating != nil, !acneTypes.isEmpty, age != nil,
          routine != nil, sleep != nil, spf != nil]
             .filter { $0 }.count
     }
@@ -294,13 +257,15 @@ struct RampQuizAnswers {
     /// Chapter-1 insight: reflects the skin answer back — one short line.
     /// Pure template logic over the user's OWN answers — nothing fabricated.
     var skinInsight: String {
-        switch concern {
-        case .redness?:   return "Redness is usually barrier-related — and recoverable."
-        case .breakouts?: return "Breakouts respond fastest of all seven metrics."
-        case .pores?:     return "Pores are texture and oil — both trainable."
-        case .texture?:   return "Texture moves slowest, but most reliably."
-        case .dullness?:  return "Dullness is buildup and hydration — a quick win."
-        case .nothing?, nil:
+        if acneTypes.contains("cysts") {
+            return "Deep breakouts take longer, but they respond to the right actives."
+        } else if acneTypes.contains("papules") {
+            return "Inflamed breakouts calm fastest of all the metrics we track."
+        } else if acneTypes.contains("blackheads") || acneTypes.contains("whiteheads") {
+            return "Breakouts respond fastest of all seven metrics."
+        } else if acneTypes.contains("scars") {
+            return "Marks fade slower than active breakouts, but they do fade."
+        } else {
             return "The scan usually finds headroom you don't feel."
         }
     }
@@ -354,11 +319,14 @@ struct RampQuizAnswers {
         case .whatsSPF?:     center -= 6
         case nil:            break
         }
-        switch concern {
-        case .breakouts?, .redness?, .texture?: center -= 3
-        case .pores?, .dullness?:               center -= 2
-        case .nothing?:                         center += 2
-        case nil:                               break
+        if acneTypes.contains("cysts") {
+            center -= 5
+        } else if acneTypes.contains("papules") {
+            center -= 3
+        } else if acneTypes.contains("blackheads") || acneTypes.contains("whiteheads") {
+            center -= 2
+        } else if acneTypes.contains("scars") {
+            center -= 1
         }
         switch age {
         case .under25?:    center += 2
@@ -434,9 +402,39 @@ struct RampQuizAnswers {
     /// most skin carries more than one, and the routine builder branches on it.
     var acneTypes: Set<String> = []
 
-    /// Brand names the user already owns. Names only — see RampBrandScreen
-    /// for why this app never ships third-party logos.
+    /// Brand IDs the user already owns (`RampBrandScreen.Brand.id`, e.g.
+    /// "cerave") — resolved back to display names in `apply(to:)`.
     var brands: Set<String> = []
+
+    /// `profile.concerns` — read by the real routine builder
+    /// (`DermiqModels.swift`'s canonical-routine `promote` logic) — used to
+    /// take its signal from the broad "what draws your eye" question. That
+    /// question is gone; this is what replaced it. More specific than that
+    /// question ever was: a papule and a cyst both said "breakouts" there,
+    /// but only one needs a stronger active than the other.
+    var impliedConcerns: [SkinConcern] {
+        var result: [SkinConcern] = []
+        if !acneTypes.isDisjoint(with: ["blackheads", "whiteheads", "papules", "cysts"]) {
+            result.append(.acne)
+        }
+        if acneTypes.contains("scars") {
+            result.append(.hyperpigmentation)
+        }
+        return result
+    }
+
+    /// Single source for the acne-type answer as a short display label —
+    /// used as the plan-preview focus chip, the reading-screen answer chip,
+    /// and `chipLabels` below. Priority follows severity, same as
+    /// `impliedConcerns`.
+    var acneTypeChip: String? {
+        if acneTypes.contains("cysts")      { return "Deep breakouts" }
+        if acneTypes.contains("papules")    { return "Red bumps" }
+        if acneTypes.contains("blackheads") { return "Blackheads" }
+        if acneTypes.contains("whiteheads") { return "Whiteheads" }
+        if acneTypes.contains("scars")      { return "Scarring" }
+        return nil
+    }
 
     /// Index into the spend screen's buckets, not an amount. Kept as a bucket
     /// because nobody knows this figure precisely, and a number implying they
@@ -449,7 +447,7 @@ struct RampQuizAnswers {
     var sawSensitivities = false
 
     func apply(to profile: UserProfile) {
-        if let mapped = concern?.skinConcern, !profile.concerns.contains(mapped) {
+        for mapped in impliedConcerns where !profile.concerns.contains(mapped) {
             profile.concerns.append(mapped)
         }
         // Write only what was actually answered. Onboarding can now be left
@@ -463,6 +461,15 @@ struct RampQuizAnswers {
         if let spf        { profile.sunProtection = spf.rawValue }
         if let age        { profile.ageBand = age.rawValue }
         if let displayName, !displayName.isEmpty { profile.displayName = displayName }
+        if let goal { profile.goal = goal.label }
+        // Resolve the picked brand IDs back to display names for the
+        // routine-conflict check — was collected and written to
+        // UserDefaults for analytics only, never to the profile that
+        // actually feeds the routine builder.
+        if !brands.isEmpty {
+            let names = RampBrandScreen.brands.filter { brands.contains($0.id) }.map(\.name)
+            if !names.isEmpty { profile.currentProducts = names }
+        }
         // Persist sensitivities for the routine builder (avoid flagged actives).
         if sawSensitivities {
             SkinSensitivities.save(Set(sensitivities.compactMap(SkinSensitivity.init(rawValue:))))

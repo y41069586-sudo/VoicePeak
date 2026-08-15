@@ -425,8 +425,8 @@ struct RampDailyReportScreen: View {
 /// Shows the shape of the deliverable BEFORE the commitment screens: a Day-1
 /// preview of the 14-day plan. Illustrative, clearly labeled — the real one
 /// is built from the scan. The user's own quiz answers surface INSIDE the
-/// card (their concern names the evening active; SPF answer shapes the AM
-/// line) so the preview reads as "already mine", not a template.
+/// card (their acne-type answer names the evening active; SPF answer shapes
+/// the AM line) so the preview reads as "already mine", not a template.
 struct RampPlanPreviewScreen: View {
     let answers: RampQuizAnswers
     let onAdvance: () -> Void
@@ -447,19 +447,27 @@ struct RampPlanPreviewScreen: View {
          Step(title: "Moisturizer", sub: "Barrier repair, overnight")]
     }
 
-    /// The middle evening step is THEIR concern's active.
+    /// The middle evening step is built from their acne-type answer — the
+    /// most specific signal onboarding collects, and the one `acneType`
+    /// replaced the old broad "concern" question with. Priority follows
+    /// severity: a user who picked more than one type gets the routine for
+    /// the more serious one.
     private var concernActive: Step {
-        switch answers.concern {
-        case .breakouts?: return Step(title: "Blemish active", sub: "Salicylic acid · BHA")
-        case .redness?:   return Step(title: "Calming active", sub: "Azelaic acid")
-        case .pores?:     return Step(title: "Pore active", sub: "Niacinamide + zinc")
-        case .texture?:   return Step(title: "Texture active", sub: "Retinal")
-        case .dullness?:  return Step(title: "Glow active", sub: "Vitamin C")
-        case .nothing?, nil: return Step(title: "Targeted active", sub: "Chosen from your scan")
+        let types = answers.acneTypes
+        if types.contains("cysts") {
+            return Step(title: "Deep-acne active", sub: "Adapalene 0.1%")
+        } else if types.contains("papules") {
+            return Step(title: "Blemish active", sub: "Benzoyl peroxide")
+        } else if types.contains("blackheads") || types.contains("whiteheads") {
+            return Step(title: "Pore-clearing active", sub: "Salicylic acid · BHA")
+        } else if types.contains("scars") {
+            return Step(title: "Scar-fading active", sub: "Vitamin C")
+        } else {
+            return Step(title: "Targeted active", sub: "Chosen from your scan")
         }
     }
 
-    private var focusChip: String? { answers.concern?.chip }
+    private var focusChip: String? { answers.acneTypeChip }
 
     var body: some View {
         VStack(spacing: 0) {

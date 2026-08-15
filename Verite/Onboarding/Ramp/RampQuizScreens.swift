@@ -380,7 +380,7 @@ struct RampRevealScreen: View {
 
     /// The answers shaping the estimate, as scannable chips.
     private var answerChips: [String] {
-        Array([answers.selfRating?.label, answers.concern?.label,
+        Array([answers.selfRating?.label, answers.acneTypeChip,
                answers.age?.label, answers.routine?.label]
             .compactMap { $0 }
             .prefix(4))

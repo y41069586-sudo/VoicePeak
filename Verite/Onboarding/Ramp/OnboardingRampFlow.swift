@@ -136,7 +136,7 @@ struct OnboardingRampFlow: View {
                 eyebrow: "WHAT WE HEAR SO FAR",
                 insight: answers.skinInsight,
                 photoName: "GlowTexture",
-                chips: [answers.selfRating?.chip, answers.concern.flatMap { $0.chip }, answers.age?.chip]
+                chips: [answers.selfRating?.chip, answers.acneTypeChip, answers.age?.chip]
                     .compactMap { $0 }
             ) { advance() }
         case .quizRoutine:
