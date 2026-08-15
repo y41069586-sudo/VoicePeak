@@ -59,12 +59,27 @@ struct RampBootScreen: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            TabView(selection: $page) {
-                ForEach(pages) { item in
-                    introPage(item).tag(item.id)
+            // Every page is pinned to the MEASURED viewport width. Without
+            // that, `TabView`'s first layout pass can hand its pages a width
+            // that isn't the screen's, and everything inside lays out to that
+            // instead: the CTA loses its 24pt gutters and runs edge to edge
+            // with square corners, and the centred standfirst overflows off
+            // both sides. A later pass corrects it, which is precisely why it
+            // only ever showed as a flash — this screen is built while
+            // `SplashScreen` still covers it, so the bad pass happens behind
+            // the splash and the correction happens in full view, right as
+            // the splash dissolves. Pinning the width means there is no bad
+            // pass to correct.
+            GeometryReader { proxy in
+                TabView(selection: $page) {
+                    ForEach(pages) { item in
+                        introPage(item)
+                            .frame(width: proxy.size.width)
+                            .tag(item.id)
+                    }
                 }
+                .tabViewStyle(.page(indexDisplayMode: .never))
             }
-            .tabViewStyle(.page(indexDisplayMode: .never))
             .frame(maxHeight: .infinity)
 
             dots

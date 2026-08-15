@@ -52,8 +52,10 @@ struct SplashScreen: View {
     @State private var haloIn = false
     /// The wordmark, rising in under the mark.
     @State private var wordmarkIn = false
-    /// Drives the exit: everything lifts and dissolves together.
-    @State private var leaving = false
+    /// Exit, beat one: the mark, wordmark and halo lift and dissolve.
+    @State private var contentGone = false
+    /// Exit, beat two: the white ground follows, revealing the app.
+    @State private var groundGone = false
 
     /// Duplicated in `LaunchScreen.storyboard` — keep them in step. There is
     /// no corner radius to match: `SplashMark` carries its squircle as alpha,
@@ -62,23 +64,29 @@ struct SplashScreen: View {
 
     var body: some View {
         ZStack {
-            RampStage.porcelain.ignoresSafeArea()
+            // Beat two — see `leave`. Held at full opacity while the mark
+            // leaves, so the mark always dissolves against white and never
+            // against the app's own content.
+            RampStage.porcelain
+                .ignoresSafeArea()
+                .opacity(groundGone ? 0 : 1)
 
-            halo
-
-            mark
-                .overlay(alignment: .top) {
-                    wordmark
-                        .fixedSize()
-                        .offset(y: markSize + 22)
-                }
+            // Beat one: the composition lifts and dissolves as one, so the
+            // app underneath reads as arriving rather than as the splash
+            // being switched off.
+            ZStack {
+                halo
+                mark
+                    .overlay(alignment: .top) {
+                        wordmark
+                            .fixedSize()
+                            .offset(y: markSize + 22)
+                    }
+            }
+            .opacity(contentGone ? 0 : 1)
+            .scaleEffect(contentGone ? 1.05 : 1)
+            .offset(y: contentGone ? -14 : 0)
         }
-        // The exit: the whole composition drifts up a hair and grows very
-        // slightly as it dissolves, so the app underneath reads as arriving
-        // rather than as the splash being switched off.
-        .opacity(leaving ? 0 : 1)
-        .scaleEffect(leaving ? 1.04 : 1)
-        .offset(y: leaving ? -10 : 0)
         .task { await run() }
         .accessibilityElement()
         .accessibilityLabel(Text(verbatim: Brand.name))
@@ -157,10 +165,23 @@ struct SplashScreen: View {
         await leave(duration: 0.28)
     }
 
-    /// Fades out and hands back, sleeping for exactly as long as the fade so
-    /// the view is removed as it finishes rather than a frame either side.
+    /// Fades out in two beats and hands back.
+    ///
+    /// The mark, wordmark and halo go first; the white ground follows a
+    /// moment later. Fading all of it together — which is what this did —
+    /// meant the ground thinned at the same rate as the mark, so for the
+    /// length of the fade a ghosted "SkinFix" sat on top of the app's own
+    /// headline and read as a rendering fault rather than as a transition.
+    /// Staggered, the mark always leaves against white, and the app is
+    /// revealed by the ground alone.
+    ///
+    /// The final sleep matches the ground's own fade so the view is removed
+    /// exactly as it finishes rather than a frame either side.
     private func leave(duration: Double) async {
-        withAnimation(.easeInOut(duration: duration)) { leaving = true }
+        withAnimation(.easeIn(duration: duration * 0.6)) { contentGone = true }
+        try? await Task.sleep(for: .seconds(duration * 0.45))
+        guard !Task.isCancelled else { return }
+        withAnimation(.easeOut(duration: duration)) { groundGone = true }
         try? await Task.sleep(for: .seconds(duration))
         onFinished()
     }
