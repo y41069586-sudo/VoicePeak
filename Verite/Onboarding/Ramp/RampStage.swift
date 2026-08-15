@@ -200,6 +200,74 @@ struct RampBackdrop: View {
     }
 }
 
+// ============================================================
+// MARK: — Screen-to-screen motion (a drift, not a shove)
+// ============================================================
+
+/// Timing for the between-screens transition. A spring, however heavily
+/// damped, still resolves a POSITION by simulating a force — it starts at
+/// full velocity and decelerates by fighting itself to a stop, which is
+/// exactly the "pushed" feeling this replaced. A long, front-loaded ease-out
+/// has no such force in it: the screen is already moving as fast as it will
+/// ever move on the very first frame and spends the rest of the curve
+/// settling, the way something let go drifts rather than something thrown.
+///
+/// That is also why the duration is longer than the spring it replaced
+/// (0.56s vs. ~0.48s) — a drift this gentle needs the extra beat to read as
+/// deliberate rather than as slow.
+enum RampMotion {
+    static let drift = Animation.timingCurve(0.16, 1, 0.3, 1, duration: 0.56)
+}
+
+/// The advance/back transition: a screen drifting sideways off its own
+/// weight, not being slid on rails. Three things do the work together —
+///
+///  · ROTATION, a couple of degrees, so the motion has a single consistent
+///    axis of "lean" instead of gliding perfectly flat. A leaf caught by
+///    wind tilts as it moves; a card pushed on rails does not.
+///  · A slight DOWNWARD settle on exit and rise on entry, so the path isn't
+///    a dead-straight horizontal line — real drift is never perfectly axial.
+///  · SCALE, just enough (3.5%) to read as depth rather than as shrinking.
+///
+/// Insertion and removal lean opposite ways so the two screens never rotate
+/// in parallel — that would read as one card sliding behind another rather
+/// than as two independent, opposite drifts.
+private struct RampLeafDrift: ViewModifier {
+    var offsetX: CGFloat
+    var offsetY: CGFloat
+    var rotation: Double
+    var scale: CGFloat
+    var opacity: Double
+
+    func body(content: Content) -> some View {
+        content
+            .scaleEffect(scale)
+            .rotationEffect(.degrees(rotation))
+            .offset(x: offsetX, y: offsetY)
+            .opacity(opacity)
+    }
+}
+
+extension AnyTransition {
+    /// The new screen — drifts in from the right, tilted a touch clockwise,
+    /// settling flat as it arrives.
+    static var rampLeafIn: AnyTransition {
+        .modifier(
+            active: RampLeafDrift(offsetX: 64, offsetY: -10, rotation: 2.6, scale: 0.965, opacity: 0),
+            identity: RampLeafDrift(offsetX: 0, offsetY: 0, rotation: 0, scale: 1, opacity: 1)
+        )
+    }
+
+    /// The old screen — drifts out to the left, tilted the other way, sinking
+    /// a little as it goes.
+    static var rampLeafOut: AnyTransition {
+        .modifier(
+            active: RampLeafDrift(offsetX: -64, offsetY: 12, rotation: -2.6, scale: 0.965, opacity: 0),
+            identity: RampLeafDrift(offsetX: 0, offsetY: 0, rotation: 0, scale: 1, opacity: 1)
+        )
+    }
+}
+
 /// Static, deterministic film grain — stamped once (no per-frame work).
 struct RampGrain: View {
     var body: some View {

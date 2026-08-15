@@ -18,18 +18,15 @@ struct OnboardingRampFlow: View {
         ZStack {
             RampBackdrop()
 
-            // A single horizontal push, like a pager: the old screen glides out
-            // to the left while the new one glides in from the right — one
-            // spring, one direction, nothing pops or re-animates on top.
+            // Each screen drifts across rather than getting shoved off — see
+            // `RampLeafDrift` in RampStage.swift for why a spring was the
+            // wrong tool for this and what replaced it.
             currentScreen
                 .id(step)
                 .transition(
                     reduceMotion
                         ? AnyTransition.opacity
-                        : AnyTransition.asymmetric(
-                            insertion: .move(edge: .trailing).combined(with: .opacity),
-                            removal: .move(edge: .leading).combined(with: .opacity)
-                        )
+                        : AnyTransition.asymmetric(insertion: .rampLeafIn, removal: .rampLeafOut)
                 )
 
             // The thin filling progress hairline sits ABOVE the back chevron.
@@ -58,10 +55,8 @@ struct OnboardingRampFlow: View {
             }
             .padding(.top, VSpace.sm)
         }
-        // One smooth spring for every step change. Damping ~1 → no overshoot,
-        // so the push reads as a glide, never a bounce.
-        .animation(reduceMotion ? VMotion.crossfade : .spring(response: 0.48, dampingFraction: 0.98),
-                   value: step)
+        // `RampMotion.drift`, not a spring — see `RampLeafDrift` for why.
+        .animation(reduceMotion ? VMotion.crossfade : RampMotion.drift, value: step)
         .onAppear { RampAnalytics.screen(step) }
         .onChange(of: step) { _, newStep in
             // No haptic here: the tapped button/tile already fired .selection —
