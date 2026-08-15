@@ -4,41 +4,23 @@ import SwiftUI
 // MARK: — SkinFix v2 design system (MASTER PROMPT §6)
 // ============================================================
 //
-// Warm light-linen world — a pale, warm neutral ground with white surfaces,
-// warm-black ink, and ONE cool accent set against the warm ground. This file
-// remains the ONLY place the v2 tokens are defined.
+// Warm linen ground (cream) with white surfaces, warm-black ink, and a modern
+// coral accent. This file remains the ONLY place the v2 tokens are defined.
 // (The v1 white-blue `VColor` system remains for legacy screens only.)
 //
-// Why warm neutral rather than the old lavender: the screen is mostly
-// photographs of skin. Lavender tints skin, blue makes it sallow, grey drains
-// it — a warm neutral is the one ground every skin tone sits correctly on. It
-// also drops the "beauty product" read that lavender carries, which fought the
-// product's own name.
+// Why warm neutral ground: the screen is mostly photographs of skin. Lavender
+// tints skin, blue makes it sallow, grey drains it — a warm neutral is the
+// one ground every skin tone sits correctly on. It also drops the "beauty
+// product" read that lavender carries, which fought the product's own name.
 //
-// The accent is a DEEPER SHADE OF THE GROUND, not a second hue: the app is
-// tonal beige throughout, and the only high-contrast element on screen is the
-// warm near-black type. An earlier version used a teal accent for temperature
-// contrast; on full-width CTAs that read as a green app sitting on beige,
-// which is not what this is. Contrast now comes from value, not hue — so the
-// one saturated thing on screen is the skin photograph itself.
+// The accent is modern coral (hue 14°, saturation 72%, lightness 61%) —
+// saturated enough to read as primary and contemporary, not desaturated like
+// older skincare apps. CTAs use this accent as a gradient (135°) with white
+// text for maximum legibility and a forward-looking aesthetic.
 //
-// Tonal does NOT mean desaturated, and it does not mean dark. Two earlier
-// passes got this wrong in opposite directions: one held the accent at 27%
-// saturation, which on a full-width CTA reads as khaki, and the correction
-// pushed saturation up while keeping the value mid-range, which reads as
-// brown. The accent is now a genuinely LIGHT beige — 80% lightness at 50%
-// saturation, hue 38°. The neutrals carry a little of that warmth too (13%
-// saturation rather than 6%), because a truly neutral grey next to sand is
-// what made the screen look grey.
-//
-// The cost of a pale fill is that it barely separates from the ground (1.4:1),
-// so a fill alone no longer says "button". Every filled accent surface takes
-// `accentEdge` as a hairline — that plus the drop shadow is what identifies
-// the control; the fill is decoration.
-//
-// Consequence to keep in mind when adding UI: a beige CTA cannot carry white
-// text. Labels on `accent` are `textPrimary`. Accent TEXT uses `accentBright`,
-// which is deliberately far darker than `accent` for exactly this reason.
+// The color palette balances warmth (skin tones in the ground and accent) with
+// modern saturation (the coral has energy that feels current, not vintage).
+// Contrast comes from saturation and the white text on the CTA, not just value.
 //
 // Haptics are part of the design system:
 //   .rigid  → captures / commits        (Haptics.fire(.capture))
@@ -46,29 +28,30 @@ import SwiftUI
 //   .light  → count-up ticks            (Haptics.fire(.tick))
 
 enum DQColor {
-    static let background      = Color(hex: "FAF7F1")
+    static let background      = Color(hex: "FBF7F2")
     static let surface         = Color(hex: "FFFFFF")
-    static let surfaceElevated = Color(hex: "F6F0E3")
-    /// Light beige — CTAs, the portal ring, the scan line. Carries ink, not
-    /// white: warm near-black reads at 11.9:1 here, white at 1.7:1.
-    static let accent          = Color(hex: "E6D4B4")
-    /// Hairline on every filled accent surface. The fill itself is only 1.4:1
-    /// against the ground, which is not enough to bound a control on its own.
-    static let accentEdge      = Color(hex: "BCA070")
-    /// The "bright" accent role is accent TEXT on the pale ground, so it needs
-    /// to be far DARKER than `accent` — this passes AA at 5.5:1, where
-    /// `accent` itself would only reach 1.4:1 and be invisible.
-    static let accentBright    = Color(hex: "7D5F33")
+    static let surfaceElevated = Color(hex: "F5EFE8")
+    /// Warm coral accent — CTAs, the portal ring, the scan line. Saturated
+    /// enough to read as primary and modern, not the desaturated beige of v1.
+    /// Carries white text on CTAs for maximum readability and contemporary feel.
+    static let accent          = Color(hex: "E0785A")
+    /// Hairline on accent surfaces and deeper form elements.
+    static let accentEdge      = Color(hex: "C85E3F")
+    /// The "bright" accent role for text-only elements on the ground.
+    static let accentBright    = Color(hex: "B04A2C")
     /// Soft accent tint for icon chips, segmented backgrounds, soft fills.
-    static let accentSoft      = Color(hex: "F5EBD8")
-    static let textPrimary     = Color(hex: "1C1A17")
-    static let textSecondary   = Color(hex: "6B6053")
+    static let accentSoft      = Color(hex: "FBEBE3")
+    static let textPrimary     = Color(hex: "1A1613")
+    static let textSecondary   = Color(hex: "6E625A")
     static let deltaUp         = Color(hex: "1F9D6B")
     static let deltaDown       = Color(hex: "DE5B4E")
 
-    /// Portal ring, scan line — a subtle same-hue sweep (CTAs are flat now).
+    /// Portal ring, scan line — a subtle same-hue sweep with the coral palette.
     static let accentGradient = LinearGradient(
-        colors: [accent, accentBright],
+        colors: [
+            Color(hex: "E8886A"),
+            Color(hex: "D2694A")
+        ],
         startPoint: .topLeading, endPoint: .bottomTrailing
     )
 
@@ -105,9 +88,8 @@ enum DQRadius {
 // MARK: — Core reusable pieces
 // ============================================================
 
-/// Primary CTA: modern UMax-style button — full-width, bold white label on a
-/// flat solid blue 20pt rounded rectangle with one tight shadow. No gradient,
-/// no wide glow.
+/// Primary CTA: full-width bold label on a coral gradient with white text.
+/// The gradient (135°) adds depth and the white text ensures legibility.
 struct DQPrimaryButton: View {
     let title: String
     var systemImage: String? = nil
@@ -124,15 +106,20 @@ struct DQPrimaryButton: View {
                 Text(LocalizedStringKey(title))
             }
             .font(Font.system(size: 17, weight: .bold))
-            // Ink, not white — white on the beige CTA is 1.7:1 and unreadable.
-            .foregroundStyle(DQColor.textPrimary)
-            .frame(maxWidth: .infinity, minHeight: 58)
-            .background(DQColor.accent,
-                        in: RoundedRectangle(cornerRadius: 20, style: .continuous))
-            // The pale fill needs the edge to read as a control at all.
-            .overlay(RoundedRectangle(cornerRadius: 20, style: .continuous)
-                .strokeBorder(DQColor.accentEdge, lineWidth: 1.5))
-            .shadow(color: Color(hex: "1C1A17").opacity(isEnabled ? 0.16 : 0), radius: 12, y: 6)
+            .foregroundStyle(.white)
+            .frame(maxWidth: .infinity, minHeight: 60)
+            .background(
+                LinearGradient(
+                    gradient: Gradient(colors: [
+                        Color(hex: "E8886A"),
+                        Color(hex: "D2694A")
+                    ]),
+                    startPoint: .topLeading,
+                    endPoint: .bottomTrailing
+                ),
+                in: RoundedRectangle(cornerRadius: 26, style: .continuous)
+            )
+            .shadow(color: Color(hex: "C85E3F").opacity(isEnabled ? 0.32 : 0), radius: 22, y: 10)
             .opacity(isEnabled ? 1 : 0.35)
         }
         .buttonStyle(PressableStyle(brightenOnPress: true))
