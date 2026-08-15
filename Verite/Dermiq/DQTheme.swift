@@ -4,37 +4,27 @@ import SwiftUI
 // MARK: — SkinFix v2 design system (MASTER PROMPT §6)
 // ============================================================
 //
-// ONE palette, used app-wide. This file is the ONLY place the v2 tokens are
-// defined, and `RampStage` (onboarding) mirrors the same values — so
-// onboarding and the app proper are the same product to the eye. (The v1
-// white-blue `VColor` system remains for legacy screens.)
+// ONE palette, pulled from the app icon, used app-wide. This file is the
+// ONLY place the v2 tokens are defined, and `RampStage` (onboarding) mirrors
+// the same values — so onboarding and the app proper are the same product to
+// the eye. (The v1 white-blue `VColor` system remains for legacy screens.)
 //
-// Every value here traces back to a reference set of marketing screens —
-// lavender ground, near-white cards, one purple accent in two strengths,
-// dark violet-black ink — rather than to a guess at "purple". This replaced
-// a palette pulled from the app icon; the two are unrelated on purpose now.
-// The icon is a separate asset, not a colour source, so a brand-direction
-// change doesn't mean re-deriving the palette from it again.
+// TWO COLOURS, and everything else is a tone of them:
 //
-// ONE ACCENT, in two strengths, and everything else is a tone of it or of
-// the ink:
+//   1. SKIN — the icon's peach, from the pale bandage (`accent`) down
+//      through the skin tone (`accentEdge`). Grounds, chips, fills, rings.
+//   2. BLEMISH — the icon's coral (`accentBright`). Primary actions,
+//      emphasis text, anything that has to be looked at first.
 //
-//   `accentEdge`   — the brighter lift. Rings, progress fill, bar fills,
-//                    the top of the CTA gradient.
-//   `accentBright` — the deeper tone. Accent TEXT and icons on light
-//                    surfaces, the primary CTA fill, the bottom of the
-//                    gradient.
+// The ink is NOT black. It is the same peach hue driven almost to black
+// (`textPrimary`), so text sits inside the family instead of next to it.
+// Pure black + a warm accent is exactly the mix this palette exists to
+// remove: two unrelated temperatures on one screen, neither committed to.
 //
-// The ink is NOT black. It is a dark violet, close to black but carrying the
-// same hue as the ground and the accent, so text sits inside the family
-// instead of next to it. Pure black + a coloured accent is exactly the mix
-// this palette exists to avoid: two unrelated temperatures on one screen,
-// neither committed to.
-//
-// The only colours outside that family are `deltaUp` / `deltaDown`, and they
-// are not decoration — they are the one semantic pair that has to survive
-// being a different hue from everything else ("this improved" / "this got
-// worse"). Nothing else may introduce a hue.
+// The only colours outside the two are `deltaUp` / `deltaDown`, and they are
+// not decoration — they are the one semantic pair that has to survive being
+// the same hue as everything else ("this improved" / "this got worse").
+// Nothing else may introduce a hue.
 //
 // Headings stay on SF Rounded.
 //
@@ -44,32 +34,30 @@ import SwiftUI
 //   .light  → count-up ticks            (Haptics.fire(.tick))
 
 enum DQColor {
-    /// Lavender — the ground everywhere. A visible colour, not a near-white
-    /// tint, so cards read as sitting ON it rather than blending into it.
-    static let background      = Color(hex: "E6E6F0")
-    /// Near-white, not pure white — the reference cards land a hair warmer
-    /// than #FFFFFF.
-    static let surface         = Color(hex: "FAFAFA")
-    static let surfaceElevated = Color(hex: "EFECF7")
-    /// The brighter accent lift. Selection rings, progress fills, bar fills,
-    /// the top of the CTA gradient — anywhere the deeper tone would feel
-    /// heavy.
-    static let accent          = Color(hex: "EAE0F8")
-    static let accentEdge      = Color(hex: "9A66D6")
-    /// The deeper accent tone. Accent TEXT and icons on light surfaces
-    /// (clears AA against both the lavender ground and white cards), and the
-    /// primary CTA fill.
-    static let accentBright    = Color(hex: "7B56C4")
+    /// Peach-white — the ground everywhere. Warm enough to belong to the
+    /// icon, pale enough that white cards still lift off it.
+    static let background      = Color.white
+    static let surface         = Color(hex: "FFFFFF")
+    static let surfaceElevated = Color(hex: "F3E9DE")
+    /// COLOUR 1 · skin — the icon's pale bandage peach. Chips, soft fills,
+    /// segmented backgrounds.
+    static let accent          = Color(hex: "F5DCC0")
+    /// COLOUR 1, deeper — the icon's skin tone. Selection rings, progress
+    /// fills, bar fills: anywhere the pale peach would vanish on white.
+    static let accentEdge      = Color(hex: "E0995F")
+    /// COLOUR 2 · blemish — the icon's coral. Accent TEXT and icons on light
+    /// surfaces (clears AA), and the primary CTA fill.
+    static let accentBright    = Color(hex: "C15A3E")
     /// Soft accent tint for icon chips, segmented backgrounds, soft fills.
-    static let accentSoft      = Color(hex: "EAE0F8")
+    static let accentSoft      = Color(hex: "F5DCC0")
     /// Not black — the palette's own hue at its darkest. Text and icons only.
-    static let textPrimary     = Color(hex: "1B1330")
-    static let textSecondary   = Color(hex: "6E6480")
+    static let textPrimary     = Color(hex: "1E1610")
+    static let textSecondary   = Color(hex: "6D5F52")
     static let deltaUp         = Color(hex: "1F9D6B")
     static let deltaDown       = Color(hex: "DE5B4E")
 
-    /// Bright → deep purple. The primary CTA fill, the scan line, and
-    /// anywhere the brand needs to be a surface rather than a detail.
+    /// Skin → blemish. The primary CTA fill, the scan line, and anywhere the
+    /// brand needs to be a surface rather than a detail.
     static let accentGradient = LinearGradient(
         colors: [accentEdge, accentBright],
         startPoint: .topLeading, endPoint: .bottomTrailing
@@ -78,7 +66,7 @@ enum DQColor {
     /// Hairline stroke — now reserved for the rare case a border is still
     /// wanted (e.g. a text field); ordinary cards use `DQCard`'s shadow
     /// instead, not this.
-    static let stroke = Color(hex: "1B1330").opacity(0.08)
+    static let stroke = Color(hex: "1E1610").opacity(0.08)
 }
 
 enum DQFont {
@@ -114,12 +102,12 @@ enum DQRadius {
 // MARK: — Core reusable pieces
 // ============================================================
 
-/// Primary CTA: full-width bold white label on the brand's own purple
+/// Primary CTA: full-width bold white label on the brand's own skin→blemish
 /// gradient. This replaced a solid near-black fill. Black won on contrast
 /// and lost on everything else: the biggest shape on almost every screen was
-/// the one element that belonged to no palette, so the app read as "accent
-/// applied to a black-and-white app" rather than as one consistent thing.
-/// The gradient is dark enough at its deep end to carry white text, so the
+/// the one element that belonged to no palette, so the app read as "warm
+/// accent applied to a black-and-white app" rather than as one warm thing.
+/// The gradient is dark enough at its coral end to carry white text, so the
 /// contrast argument survives the swap.
 struct DQPrimaryButton: View {
     let title: String

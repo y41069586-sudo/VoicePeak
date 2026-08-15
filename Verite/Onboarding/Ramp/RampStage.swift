@@ -4,67 +4,59 @@ import UIKit
 #endif
 
 // ============================================================
-// MARK: — "Glow" — the purple, image-led onboarding stage
+// MARK: — "Glow" — the warm, image-led onboarding stage
 // ============================================================
 //
-// A lavender ground with near-white cards lifted off it by shadow, dark
-// violet-black ink, and one purple accent — pulled from a set of reference
-// marketing screens rather than picked freehand, so every value below traces
-// back to a pixel someone actually chose, not a guess at "purple". This
-// replaced the peach/coral palette pulled from the app icon; the two are
-// unrelated on purpose now — the icon is a separate asset, not a colour
-// source, and re-deriving the palette from it every time the brand direction
-// changes was the wrong coupling.
-//
-// Friendly rounded type, big soft cards — and PHOTOS carry the hero moments.
+// GlamUp-style: warm cream/blush ground, cocoa ink, one coral-peach accent,
+// friendly rounded type, big soft cards — and PHOTOS carry the hero moments.
 // Imagery loads from the asset catalog by name (see `RampPhoto`); until real
-// photos are dropped in, an aesthetic gradient placeholder stands in, so the
-// flow always ships whole.
+// photos are dropped in, an aesthetic warm-gradient placeholder stands in, so
+// the flow always ships whole.
 
 enum RampStage {
-    // Ground & ink. The ground is a visible lavender, not a near-white tint
-    // — cards read as sitting ON it precisely because it isn't trying to
-    // pass for white. Ink is a dark violet-black rather than true black, so
-    // text and the ground share one hue family instead of pure neutral text
-    // sitting on a coloured page.
-    static let porcelain = Color(hex: "E6E6F0") // lavender background (name kept for call sites)
-    static let recess     = Color(hex: "EFECF7") // recessed panel — a shade off the ground, not the cards
-    static let ink        = Color(hex: "1B1330") // dark violet-black, maximum contrast
-    static let inkSoft    = Color(hex: "6E6480") // secondary text — muted violet-grey
-    static let inkFaint   = Color(hex: "A79CC0") // tertiary text
-    static let hair       = Color(hex: "E4DEF2") // hairline (barely-there, lavender-tinted)
+    // Ground & ink — a NEUTRAL ground (near-white, not tinted) with warm-black
+    // ink. This replaced an all-over warm-beige wash. The reason: no matter
+    // how modern the components are, a screen where the ENTIRE surface —
+    // background, cards, fills — sits in one warm gold/cream hue reads as a
+    // sepia photograph before the eye even parses the layout. Warmth is real
+    // and belongs in the brand, but it has to live in the ACCENT and in
+    // photography, not in the canvas everything else sits on.
+    static let porcelain = Color.white // flat white background (name kept for call sites)
+    static let recess     = Color(hex: "F3E9DE") // recessed panel — warm, not tinted gold
+    static let ink        = Color(hex: "1E1610") // near-black, maximum contrast
+    static let inkSoft    = Color(hex: "6D5F52") // secondary text — warm taupe, matches the peach ink
+    static let inkFaint   = Color(hex: "BDA894") // tertiary text
+    static let hair       = Color(hex: "F3E5D6") // warm hairline (barely-there, peach-tinted)
 
-    // The accent is a single purple, in two strengths: `accentEdge` is the
-    // brighter lift used for rings, progress fill and the top of the CTA
-    // gradient; `accentDeep` is the deeper tone reference screens use for
-    // solid fills and on-light TEXT (it clears AA against the lavender
-    // ground and against white cards both). Kept ONLY for small, deliberate
-    // uses — selection rings, progress fill, chip backgrounds, the odd icon,
-    // the primary CTA. It is never the canvas colour.
-    static let accent     = Color(hex: "EAE0F8")
-    static let accentEdge = Color(hex: "9A66D6")
-    static let accentDeep = Color(hex: "7B56C4")
-    static let glow       = Color(hex: "EAE0F8")
+    // The accent is pulled straight from the app icon — the light peach of
+    // the bandage and skin, deepening into the coral of the acne blemish —
+    // instead of a generic beige/sand that read as "the same colour on every
+    // screen" and didn't tie back to the mark. Kept ONLY for small,
+    // deliberate uses: selection rings, progress fill, chip backgrounds, the
+    // odd icon. It is never a canvas colour. `accentEdge` is the icon's skin
+    // tone; `accentDeep` is the icon's blemish coral, for on-light TEXT.
+    static let accent     = Color(hex: "F5DCC0")
+    static let accentEdge = Color(hex: "E0995F")
+    static let accentDeep = Color(hex: "C15A3E")
+    static let glow       = Color(hex: "F5DCC0")
 
-    /// A soft lift of the accent. Named for the three-pool "dawn light"
-    /// backdrop it was originally built for; that backdrop is gone (see
-    /// `RampBackdrop`) and this is what outlived it — the photo-placeholder
-    /// wash and the sign-in screen's halo. `dawnLilac` and `dawnSky` went
-    /// with the pools.
-    static let dawnPeach  = Color(hex: "EEE6FA")
+    /// A warm peach glow. Named for the three-pool "dawn light" backdrop it
+    /// was built for; that backdrop is gone (see `RampBackdrop`) and this is
+    /// what outlived it — the photo-placeholder wash and the sign-in screen's
+    /// halo. `dawnLilac` and `dawnSky` went with the pools.
+    static let dawnPeach  = Color(hex: "F8DFC9")
 
     /// Soft accent tint for icon chips, segmented backgrounds, soft buttons.
-    static let accentSoft = Color(hex: "EAE0F8")
+    static let accentSoft = Color(hex: "F5DCC0")
 
     // Named text roles.
     static let textPrimary   = ink
     static let textSecondary = inkSoft
     static let textTertiary  = inkFaint
 
-    // Surfaces — near-white cards (not pure white; the reference screens
-    // land a hair warmer than #FFFFFF), separated from the lavender ground
-    // by elevation (shadow) rather than by an outline. See `RampCardShadow`.
-    static let card = Color(hex: "FAFAFA")
+    // Surfaces — crisp solid white cards, separated from the ground by
+    // elevation (shadow) rather than by an outline. See `RampCardShadow`.
+    static let card = Color.white
     static let hairline = hair
 
     /// Total conceptual screens (for the progress hairline). Derived from the
@@ -156,17 +148,17 @@ struct RampPhoto: View {
     }
     #endif
 
-    /// Soft lavender gradient placeholder — a quiet stand-in, not a
+    /// Soft neutral-peach gradient placeholder — a quiet stand-in, not a
     /// colourful moment in its own right (the photo it precedes should be).
     private var placeholder: some View {
         ZStack {
-            LinearGradient(colors: [Color(hex: "F6F3FB"), Color(hex: "E9DFF8"),
-                                    Color(hex: "9A66D6")],
+            LinearGradient(colors: [Color(hex: "F8F1E9"), Color(hex: "F3DCC4"),
+                                    Color(hex: "E0995F")],
                            startPoint: .topLeading, endPoint: .bottomTrailing)
             RadialGradient(colors: [.white.opacity(0.55), .clear],
                            center: UnitPoint(x: 0.25, y: 0.2),
                            startRadius: 0, endRadius: 220)
-            RadialGradient(colors: [Color(hex: "EAE0F8").opacity(0.8), .clear],
+            RadialGradient(colors: [Color(hex: "F5DCC0").opacity(0.8), .clear],
                            center: UnitPoint(x: 0.85, y: 0.85),
                            startRadius: 0, endRadius: 260)
         }
@@ -397,23 +389,23 @@ extension View {
     func rampCardShadow() -> some View { modifier(RampCardShadow()) }
 }
 
-/// Primary CTA: full-width, bold, on the brand's own purple gradient — the
-/// exact fill `DQPrimaryButton` uses in the app proper, so the button the
+/// Primary CTA: full-width, bold, on the brand's own skin→blemish gradient —
+/// the exact fill `DQPrimaryButton` uses in the app proper, so the button the
 /// user taps twenty times during onboarding is the same button that greets
 /// them afterwards.
 ///
-/// This replaced a solid near-black fill. On a coloured ground, a black slab
-/// is the one shape on screen that belongs to no palette; repeated on 26
-/// screens it made the whole flow read as monochrome-with-an-accent rather
-/// than as one consistent thing. The deep end of the gradient is dark enough
-/// to carry white text, so nothing is lost on contrast.
+/// This replaced a solid near-black fill. On a warm peach ground, a black
+/// slab is the one shape on screen that belongs to no palette; repeated on
+/// 26 screens it made the whole flow read as monochrome-with-an-accent
+/// rather than as one warm thing. The coral end of the gradient is dark
+/// enough to carry white text, so nothing is lost on contrast.
 struct RampPrimaryButton: View {
     let title: String
     var systemImage: String? = nil
     var isEnabled: Bool = true
     let action: () -> Void
 
-    /// Bright → deep purple, matching `DQColor.accentGradient` exactly.
+    /// Skin → blemish, matching `DQColor.accentGradient` exactly.
     static let fill = LinearGradient(colors: [RampStage.accentEdge, RampStage.accentDeep],
                                      startPoint: .topLeading, endPoint: .bottomTrailing)
 

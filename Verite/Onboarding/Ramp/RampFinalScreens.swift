@@ -830,7 +830,7 @@ struct RampSignInScreen: View {
         VStack(spacing: 0) {
             Spacer()
 
-            // Soft emblem — a lavender disc with a single purple mark.
+            // Soft emblem — a blush disc with a single coral mark.
             ZStack {
                 Circle()
                     .fill(RampStage.dawnPeach)

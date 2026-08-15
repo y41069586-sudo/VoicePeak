@@ -94,7 +94,7 @@ struct SplashScreen: View {
 
     // MARK: Pieces
 
-    /// A soft purple pool behind the mark — the one thing that moves during
+    /// A soft peach pool behind the mark — the one thing that moves during
     /// the hold, and deliberately almost too subtle. A visible pulse on a
     /// screen this short reads as a glitch rather than as warmth.
     private var halo: some View {
