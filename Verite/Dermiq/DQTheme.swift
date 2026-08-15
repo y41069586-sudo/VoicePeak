@@ -36,7 +36,7 @@ import SwiftUI
 enum DQColor {
     /// Peach-white — the ground everywhere. Warm enough to belong to the
     /// icon, pale enough that white cards still lift off it.
-    static let background      = Color(hex: "FBF7F3")
+    static let background      = Color.white
     static let surface         = Color(hex: "FFFFFF")
     static let surfaceElevated = Color(hex: "F3E9DE")
     /// COLOUR 1 · skin — the icon's pale bandage peach. Chips, soft fills,

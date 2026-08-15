@@ -10,7 +10,8 @@ import SwiftUI
 /// HOW THE HANDOFF WORKS. A cold launch shows three things in a row, and the
 /// user has to read them as one:
 ///
-///   1. `LaunchScreen.storyboard` — peach ground, the mark centred at 116pt.
+///   1. `LaunchScreen.storyboard` — flat white ground, the mark centred at
+///      116pt.
 ///      iOS puts this up before our process is ready; it cannot animate.
 ///   2. This view — starts as an exact copy of that frame, then the halo
 ///      breathes out, the mark takes one breath, and the wordmark rises in

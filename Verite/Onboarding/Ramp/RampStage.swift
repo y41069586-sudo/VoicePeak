@@ -21,7 +21,7 @@ enum RampStage {
     // sepia photograph before the eye even parses the layout. Warmth is real
     // and belongs in the brand, but it has to live in the ACCENT and in
     // photography, not in the canvas everything else sits on.
-    static let porcelain = Color(hex: "FBF7F3") // near-white background, warmed toward the icon's peach
+    static let porcelain = Color.white // flat white background (name kept for call sites)
     static let recess     = Color(hex: "F3E9DE") // recessed panel — warm, not tinted gold
     static let ink        = Color(hex: "1E1610") // near-black, maximum contrast
     static let inkSoft    = Color(hex: "6D5F52") // secondary text — warm taupe, matches the peach ink
