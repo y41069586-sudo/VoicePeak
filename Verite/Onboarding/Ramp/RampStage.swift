@@ -212,11 +212,13 @@ struct RampBackdrop: View {
 /// ever move on the very first frame and spends the rest of the curve
 /// settling, the way something let go drifts rather than something thrown.
 ///
-/// That is also why the duration is longer than the spring it replaced
-/// (0.56s vs. ~0.48s) — a drift this gentle needs the extra beat to read as
-/// deliberate rather than as slow.
+/// That is also why the duration is longer than the spring it replaced, and
+/// longer again after tuning: 0.48s (the old spring) → 0.56s → 0.74s. A
+/// drift this gentle needs the extra beat to read as deliberate rather than
+/// as slow — at 0.56s it still read as quick, closer to the old push than
+/// intended.
 enum RampMotion {
-    static let drift = Animation.timingCurve(0.16, 1, 0.3, 1, duration: 0.56)
+    static let drift = Animation.timingCurve(0.16, 1, 0.3, 1, duration: 0.74)
 }
 
 /// The advance/back transition: a screen drifting sideways off its own
@@ -457,28 +459,25 @@ struct RampGhostButton: View {
 /// not a tinted fill — the tint-on-select pattern is what made the earlier
 /// version look washed rather than chosen.
 ///
-/// There is no descriptor slot. It existed for one screen — the self-rating
-/// question, where every tile carried a gloss ("Rough patch · Tight, uneven,
-/// needs care") — and it set the label and the gloss side by side, so the
-/// longest ones wrapped to two lines and the row of tiles stopped scanning
-/// as a row. The labels answer the question on their own; anything that
-/// genuinely needs explaining belongs in the question's `subtitle`, once,
-/// rather than repeated on every option.
+/// There is no descriptor slot, and no icon slot. The descriptor existed for
+/// one screen — the self-rating question, where every tile carried a gloss
+/// ("Rough patch · Tight, uneven, needs care") — and it set the label and
+/// the gloss side by side, so the longest ones wrapped to two lines and the
+/// row of tiles stopped scanning as a row. The icon went for the same
+/// reason at flow scale: two dozen tiles across ten-odd quiz screens each
+/// carrying its own small glyph (a cloud, a moon, a numbered circle) reads
+/// as decoration repeated until it stops meaning anything, and it did
+/// nothing the label didn't already say. The label answers the question on
+/// its own; anything that genuinely needs explaining belongs in the
+/// question's `subtitle`, once, rather than repeated on every option.
 struct RampOptionCard: View {
     let label: String
-    var icon: String? = nil
     let selected: Bool
     let action: () -> Void
 
     var body: some View {
         Button(action: action) {
             HStack(spacing: 14) {
-                if let icon {
-                    Image(systemName: icon)
-                        .font(.system(size: 19, weight: .regular))
-                        .foregroundStyle(selected ? RampStage.accentDeep : RampStage.inkFaint)
-                        .frame(width: 22, height: 22)
-                }
                 Text(LocalizedStringKey(label))
                     .font(VType.bodyLarge.weight(.semibold))
                     .foregroundStyle(RampStage.ink)

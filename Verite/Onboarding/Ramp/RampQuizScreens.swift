@@ -7,7 +7,6 @@ import SwiftUI
 struct RampQuizOption: Identifiable {
     let id: String
     let label: String
-    var icon: String? = nil
 }
 
 /// Calm question layout: a chapter eyebrow, a serif question, and a stack of
@@ -70,7 +69,6 @@ struct RampQuizScreen: View {
                         ForEach(options) { option in
                             RampOptionCard(
                                 label: option.label,
-                                icon: option.icon,
                                 selected: selectedID == option.id
                             ) {
                                 onSelect(option.id)
@@ -131,7 +129,6 @@ struct RampSensitivityScreen: View {
                         ForEach(options, id: \.rawValue) { option in
                             RampOptionCard(
                                 label: option.label,
-                                icon: option.icon,
                                 selected: selected.contains(option.rawValue)
                             ) {
                                 toggle(option.rawValue)
@@ -140,7 +137,6 @@ struct RampSensitivityScreen: View {
                         // "None" — clears every flag.
                         RampOptionCard(
                             label: "Nothing I know of",
-                            icon: "checkmark.seal",
                             selected: selected.isEmpty
                         ) {
                             Haptics.fire(.selection)

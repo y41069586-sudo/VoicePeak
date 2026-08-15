@@ -98,12 +98,24 @@ struct RampBootScreen: View {
     /// slideshow is exactly the kind of movement that setting exists to stop.
     private func autoAdvance() async {
         guard !reduceMotion else { return }
+
+        // This screen is already mounted, and this `.task` already running,
+        // while `SplashScreen` still covers it — `RootView` builds the whole
+        // flow behind the splash on purpose, so it can dissolve straight
+        // onto a finished layout instead of a blank one. The cost is that a
+        // timer started here is running before the user can see anything.
+        // The splash's own sequence lands at ~1.2s; a page flip landing in
+        // that same moment reads as the reveal glitching rather than as a
+        // clean handoff. The FIRST wait is longer than the loop's own
+        // interval for exactly that reason — enough room that the two can
+        // never land together, on a slow cold-launch device or a fast one.
+        try? await Task.sleep(for: .seconds(3.4))
         while !Task.isCancelled {
-            try? await Task.sleep(for: .seconds(2.2))
-            guard !Task.isCancelled else { return }
             withAnimation(VMotion.snappy) {
                 page = (page + 1) % pages.count
             }
+            try? await Task.sleep(for: .seconds(2.2))
+            guard !Task.isCancelled else { return }
         }
     }
 

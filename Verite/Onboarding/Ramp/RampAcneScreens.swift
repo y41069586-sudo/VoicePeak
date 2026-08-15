@@ -491,7 +491,6 @@ struct RampGoalScreen: View {
                     VStack(spacing: VSpace.sm) {
                         ForEach(RampQuizAnswers.Goal.allCases) { goal in
                             RampOptionCard(label: goal.label,
-                                           icon: goal.icon,
                                            selected: selected == goal) {
                                 onSelect(goal)
                             }
@@ -697,7 +696,6 @@ struct RampAcneTriedScreen: View {
                         ForEach(options) { option in
                             RampOptionCard(
                                 label: option.label,
-                                icon: option.icon,
                                 selected: selected.contains(option.rawValue)
                             ) {
                                 toggle(option.rawValue)
@@ -707,7 +705,6 @@ struct RampAcneTriedScreen: View {
                         // "Nothing I know of": clears every flag.
                         RampOptionCard(
                             label: "Nothing yet",
-                            icon: "circle.dashed",
                             selected: selected.isEmpty
                         ) {
                             Haptics.fire(.selection)
