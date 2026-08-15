@@ -119,19 +119,6 @@ struct OnboardingRampFlow: View {
                 answers.selfRating = RampQuizAnswers.SelfRating(rawValue: id)
                 recordAnswer(question: "self_rating", answer: id)
             }
-        case .quizConcern:
-            RampQuizScreen(
-                chapter: "WHERE WE START",
-                question: "What draws your eye in the mirror?",
-                options: RampQuizAnswers.MirrorConcern.allCases.map {
-                    RampQuizOption(id: $0.rawValue, label: $0.label,
-                                    icon: $0.icon, sub: concernSub($0))
-                },
-                selectedID: answers.concern?.rawValue
-            ) { id in
-                answers.concern = RampQuizAnswers.MirrorConcern(rawValue: id)
-                recordAnswer(question: "mirror_concern", answer: id)
-            }
         case .quizAge:
             RampQuizScreen(
                 chapter: "YOUR SKIN · TWO OF TWO",
@@ -349,17 +336,6 @@ struct OnboardingRampFlow: View {
         }
     }
 
-    private func concernSub(_ c: RampQuizAnswers.MirrorConcern) -> String {
-        switch c {
-        case .breakouts: return "Spots and congestion"
-        case .redness:   return "Flushing and irritation"
-        case .pores:     return "Visible pores and oil"
-        case .texture:   return "Rough, uneven surface"
-        case .dullness:  return "Tired, lacking glow"
-        case .nothing:   return "Nothing jumps out"
-        }
-    }
-
     // MARK: Navigation
 
     /// Selection is the advance — but never a jump: the tile gets a beat to
@@ -386,7 +362,7 @@ struct OnboardingRampFlow: View {
 
     /// Step back one screen (chevron top-left). Never leaves onboarding — the
     /// opening `.boot` screen has no back, so the earliest reachable step is
-    /// `sampleReading`.
+    /// `acneType`.
     private func back() {
         if let prev = step.previous { step = prev }
     }

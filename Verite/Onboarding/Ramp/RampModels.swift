@@ -10,7 +10,7 @@ import os
 /// luminous Teint-Orb lives behind every screen and only re-stages between
 /// them.
 ///
-///   opening → concern → acne type → demo → questions → insights
+///   opening → acne type → demo → questions → insights
 ///   → spend → the loop → goal → the reading → the curve → the plan
 ///   → commitment → daily ritual → handoff (the scan).
 ///
@@ -18,39 +18,40 @@ import os
 /// the routing stay compatible with earlier builds.)
 enum RampStep: Int, CaseIterable {
     case boot            // 0  — opening carousel
-    // The concern comes FIRST, before anything is demonstrated. It is the
-    // question the user actually came to answer, it is about them rather than
-    // about us, and every screen after it can mirror it back. A demo shown
-    // before we know what is wrong is a demo about somebody else.
-    case quizConcern     // 1  — the one question they came to answer
-    case acneType        // 2  — which kind, over photographs
-    case sampleReading   // 3  — the real results chart, previewed
-    case theSplit        // 4  — what 14 days moves (interactive bars)
-    case quizSelfRating  // 5  — Q · your skin
-    case quizAge         // 6  — Q · your skin
-    case insightSkin     // 7  — mirrored insight, chapter 1
+    // Acne type comes FIRST, before anything is demonstrated — no broad
+    // "what draws your eye" question ahead of it asking about concerns
+    // (redness, pores, texture...) this screen can't actually use. It is
+    // the one question the user actually came to answer, specifically, and
+    // every screen after it can mirror it back. A demo shown before we know
+    // what is wrong is a demo about somebody else.
+    case acneType        // 1  — which kind, over photographs
+    case sampleReading   // 2  — the real results chart, previewed
+    case theSplit        // 3  — what 14 days moves (interactive bars)
+    case quizSelfRating  // 4  — Q · your skin
+    case quizAge         // 5  — Q · your skin
+    case insightSkin     // 6  — mirrored insight, chapter 1
     // Asked once, immediately after the first insight — so the name is given
     // in exchange for something, not before anything.
-    case name            // 8  — "what should we call you?" (optional)
-    case quizRoutine     // 9  — Q · your life
-    case quizSleep       // 10 — Q · your life
-    case quizSPF         // 11 — Q · your life
-    case insightLife     // 12 — mirrored insight, chapter 2
-    case sensitivities   // 13 — allergies the routine must avoid
-    case brands          // 14 — what's already on the shelf (names, never logos)
+    case name            // 7  — "what should we call you?" (optional)
+    case quizRoutine     // 8  — Q · your life
+    case quizSleep       // 9  — Q · your life
+    case quizSPF         // 10 — Q · your life
+    case insightLife     // 11 — mirrored insight, chapter 2
+    case sensitivities   // 12 — allergies the routine must avoid
+    case brands          // 13 — what's already on the shelf (names, never logos)
     // Spend, then the loop it bought. Naming the monthly figure and THEN
     // naming the cycle it funded is the argument for a plan, made with the
     // user's own number rather than ours — and it is the anchor every later
     // price is read against.
-    case spend           // 15 — what you already spend each month
-    case theCycle        // 16 — the loop, named
+    case spend           // 14 — what you already spend each month
+    case theCycle        // 15 — the loop, named
     // The goal-setting act. Everything downstream — the curve, the plan, the
     // paywall headline — refers back to the sentence chosen here.
-    case goal            // 17 — "what does better look like for you?"
-    case theReading      // 18 — visible processing + prediction range
-    case theCurve        // 19 — where do you land?
-    case planPreview     // 20 — your first plan, previewed
-    case evidence        // 21 — the science behind the plan (tappable sources)
+    case goal            // 16 — "what does better look like for you?"
+    case theReading      // 17 — visible processing + prediction range
+    case theCurve        // 18 — where do you land?
+    case planPreview     // 19 — your first plan, previewed
+    case evidence        // 20 — the science behind the plan (tappable sources)
     // Attribution sits here, not at position 3 and not right after the
     // signature. It serves our reporting, not the user, so it used to sit at
     // position 3 — a screen that takes before anything has been given — and
@@ -61,11 +62,11 @@ enum RampStep: Int, CaseIterable {
     // behind it), so the ask is earned here too — and putting it BEFORE
     // commitment means nothing interrupts the signature → reminder-time →
     // sign-in → scan run that follows.
-    case attribution     // 22 — "where did you find us?" (marketing attribution)
-    case commitment      // 23 — sign your 14-day commitment
-    case dailyRitual     // 24 — time choice + notifications
-    case signIn          // 25 — register before the first scan
-    case handoff         // 26 — "now, the real you" → the scan
+    case attribution     // 21 — "where did you find us?" (marketing attribution)
+    case commitment      // 22 — sign your 14-day commitment
+    case dailyRitual     // 23 — time choice + notifications
+    case signIn          // 24 — register before the first scan
+    case handoff         // 25 — "now, the real you" → the scan
 
     var next: RampStep? { RampStep(rawValue: rawValue + 1) }
     var previous: RampStep? { RampStep(rawValue: rawValue - 1) }
@@ -81,7 +82,6 @@ enum RampStep: Int, CaseIterable {
         case .attribution:    return "attribution"
         case .name:           return "name"
         case .quizSelfRating: return "quiz_self_rating"
-        case .quizConcern:    return "quiz_concern"
         case .quizAge:        return "quiz_age"
         case .insightSkin:    return "insight_skin"
         case .quizRoutine:    return "quiz_routine"
