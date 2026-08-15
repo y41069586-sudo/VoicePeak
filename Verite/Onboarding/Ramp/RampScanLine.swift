@@ -22,7 +22,7 @@ struct RampScanLine: View {
     var progress: CGFloat = 0.52
     /// Height of the lit trail behind the line, in points.
     var trail: CGFloat = 132
-    var tint: Color = Color(hex: "E0995F")
+    var tint: Color = Color(hex: "9A66D6")
 
     var body: some View {
         GeometryReader { geo in

@@ -5,7 +5,7 @@
   It exists to be INVISIBLE, not to be a design: the moment the process is
   ready, `SplashScreen` (SwiftUI) draws over it and takes the animation from
   here. So this file has exactly one job — match that view's first frame, to
-  the pixel and to the colour. Flat white ground, the mark centred at 116pt,
+  the pixel and to the colour. Lavender ground, the mark centred at 116pt,
   nothing else. The wordmark is deliberately absent: it rises in under the
   mark once SwiftUI is live, which is the one moment that would give the
   handoff away if it were already sitting here.
@@ -31,7 +31,7 @@
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <scenes>
-        <!--Launch: flat white ground, the app mark centred.-->
+        <!--Launch: lavender ground, the app mark centred.-->
         <scene sceneID="EHf-IW-A2E">
             <objects>
                 <viewController id="01J-lp-oVM" sceneMemberID="viewController">
@@ -63,7 +63,7 @@
     <resources>
         <image name="SplashMark" width="512" height="512"/>
         <namedColor name="LaunchBackground">
-            <color red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+            <color red="0.90196078431372551" green="0.90196078431372551" blue="0.94117647058823528" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </namedColor>
     </resources>
 </document>
