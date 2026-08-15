@@ -9,6 +9,11 @@ struct RootView: View {
     @Environment(\.modelContext) private var modelContext
     @Query private var profiles: [UserProfile]
 
+    /// Up until the splash has finished leaving. Not persisted on purpose —
+    /// it belongs to this launch, and a cold start is exactly when it should
+    /// play.
+    @State private var showSplash = true
+
     /// ANY completed profile counts — `.first` on an unsorted query is
     /// nondeterministic, and a stray second profile row must never bounce a
     /// finished user back into onboarding (e.g. on a widget cold launch).
@@ -26,6 +31,17 @@ struct RootView: View {
             } else {
                 OnboardingRampFlow()
                     .transition(.opacity)
+            }
+
+            // Above everything, and owning its own exit — `SplashScreen`
+            // animates itself out and then calls back, so there is no second
+            // transition fighting the one inside it. It is built while the
+            // app underneath is already laid out, which is what lets it
+            // dissolve straight onto a finished screen.
+            if showSplash {
+                SplashScreen { showSplash = false }
+                    .transition(.identity)
+                    .zIndex(1)
             }
         }
         .veriteAnimation(value: onboardingComplete)
