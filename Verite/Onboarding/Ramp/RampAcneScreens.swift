@@ -258,7 +258,7 @@ struct RampSpendScreen: View {
         VStack(alignment: .leading, spacing: 0) {
             Spacer(minLength: VSpace.xxl)
 
-            Text("YOUR LIFE")
+            Text("YOUR LIFE · SIX OF SIX")
                 .font(VType.micro).tracking(3)
                 .foregroundStyle(RampStage.accentDeep)
                 .padding(.horizontal, VSpace.lg)

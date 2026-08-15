@@ -154,7 +154,7 @@ struct OnboardingRampFlow: View {
             ) { advance() }
         case .quizRoutine:
             RampQuizScreen(
-                chapter: "YOUR LIFE · ONE OF FOUR",
+                chapter: "YOUR LIFE · ONE OF SIX",
                 question: "Your routine, honestly?",
                 options: RampQuizAnswers.RoutineLevel.allCases.map {
                     RampQuizOption(id: $0.rawValue, label: $0.label, icon: routineIcon($0))
@@ -166,7 +166,7 @@ struct OnboardingRampFlow: View {
             }
         case .quizSleep:
             RampQuizScreen(
-                chapter: "YOUR LIFE · TWO OF FOUR",
+                chapter: "YOUR LIFE · TWO OF SIX",
                 question: "Sleep, on an average night?",
                 options: RampQuizAnswers.SleepBucket.allCases.map {
                     RampQuizOption(id: $0.rawValue, label: $0.label, icon: sleepIcon($0))
@@ -178,7 +178,7 @@ struct OnboardingRampFlow: View {
             }
         case .quizSPF:
             RampQuizScreen(
-                chapter: "YOUR LIFE · THREE OF FOUR",
+                chapter: "YOUR LIFE · THREE OF SIX",
                 question: "Sun protection?",
                 options: RampQuizAnswers.SunProtection.allCases.map {
                     RampQuizOption(id: $0.rawValue, label: $0.label, icon: spfIcon($0))
@@ -222,8 +222,7 @@ struct OnboardingRampFlow: View {
                                                          answer: picked.joined(separator: ","))
                                 UserDefaults.standard.set(picked, forKey: "dq.brands")
                                 advance()
-                            },
-                            onSkip: { advance() })
+                            })
         case .spend:
             RampSpendScreen(bucket: spendBinding) {
                 RampAnalytics.quizAnswer(question: "monthly_spend_bucket",

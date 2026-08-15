@@ -51,13 +51,19 @@ enum RampStep: Int, CaseIterable {
     case theCurve        // 19 — where do you land?
     case planPreview     // 20 — your first plan, previewed
     case evidence        // 21 — the science behind the plan (tappable sources)
-    case commitment      // 22 — sign your 14-day commitment
-    case dailyRitual     // 23 — time choice + notifications
-    // Attribution sits here, not at position 3. It serves our reporting, not
-    // the user, and it used to be the fourth thing the app did — a screen that
-    // takes before anything has been given. Asked once they're committed, it
-    // costs nothing and the answer is just as usable.
-    case attribution     // 24 — "where did you find us?" (marketing attribution)
+    // Attribution sits here, not at position 3 and not right after the
+    // signature. It serves our reporting, not the user, so it used to sit at
+    // position 3 — a screen that takes before anything has been given — and
+    // then moved to right after `commitment`, which wedged an unrelated
+    // marketing question between the moment the user signs their 14 days and
+    // the moment they act on it (dailyRitual → signIn → handoff). By
+    // `evidence`, real value has already been shown (a plan, the science
+    // behind it), so the ask is earned here too — and putting it BEFORE
+    // commitment means nothing interrupts the signature → reminder-time →
+    // sign-in → scan run that follows.
+    case attribution     // 22 — "where did you find us?" (marketing attribution)
+    case commitment      // 23 — sign your 14-day commitment
+    case dailyRitual     // 24 — time choice + notifications
     case signIn          // 25 — register before the first scan
     case handoff         // 26 — "now, the real you" → the scan
 

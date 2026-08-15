@@ -96,7 +96,7 @@ struct RampSensitivityScreen: View {
                 VStack(alignment: .leading, spacing: 0) {
                     Spacer(minLength: VSpace.xxl)
 
-                    Text("ONE LAST THING")
+                    Text("YOUR LIFE · FOUR OF SIX")
                         .font(VType.micro).tracking(3)
                         .foregroundStyle(RampStage.accentDeep)
                         .padding(.horizontal, VSpace.lg)

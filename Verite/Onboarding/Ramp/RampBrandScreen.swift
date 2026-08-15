@@ -58,7 +58,6 @@ import SwiftUI
 struct RampBrandScreen: View {
     @Binding var selected: Set<String>
     let onAdvance: () -> Void
-    let onSkip: () -> Void
 
     @State private var query = ""
 
@@ -119,7 +118,7 @@ struct RampBrandScreen: View {
                 VStack(alignment: .leading, spacing: 0) {
                     Spacer(minLength: VSpace.xxl)
 
-                    Text("YOUR LIFE · FOUR OF FOUR")
+                    Text("YOUR LIFE · FIVE OF SIX")
                         .font(VType.micro).tracking(3)
                         .foregroundStyle(RampStage.accentDeep)
                         .padding(.horizontal, VSpace.lg)
@@ -172,20 +171,13 @@ struct RampBrandScreen: View {
                         .padding(.horizontal, VSpace.lg)
                         .padding(.bottom, VSpace.md)
 
+                    // Continue is never disabled here — picking nothing IS a
+                    // valid answer ("none of these are on my shelf"), so a
+                    // separate "I'm not sure" button used to sit below this
+                    // one doing the exact same thing Continue already does
+                    // with an empty selection. One control, one meaning.
                     RampPrimaryButton(title: "Continue") { onAdvance() }
                         .padding(.horizontal, VSpace.lg)
-
-                    Button {
-                        Haptics.fire(.selection)
-                        onSkip()
-                    } label: {
-                        Text("I'm not sure")
-                            .font(VType.body)
-                            .foregroundStyle(RampStage.textSecondary)
-                            .frame(maxWidth: .infinity, minHeight: 44)
-                            .contentShape(Rectangle())
-                    }
-                    .padding(.top, VSpace.xs)
 
                     Spacer().frame(height: VSpace.xl)
                 }
