@@ -174,10 +174,27 @@ private struct RampIntroArt: View {
         // the devices that had the space all along.
         RampFitted(designSize: CGSize(width: 420, height: 470)) {
             switch index {
-            case 1:
-                // The scan is the moment the product turns on. It gets the
-                // whole slot to itself, at the biggest size that fits.
+            case 0:
+                // The scan, alone and centred, is the opener. It swapped
+                // places with the reading trio that used to sit here, and the
+                // headlines are why: page one says "One scan, one real score"
+                // and page two says "Seven metrics read from a single photo".
+                // The scan belongs under the first sentence and the metric
+                // grid under the second — the old order had each of them
+                // illustrating the other one's line.
+                //
+                // It is also the moment the product turns on, so it gets the
+                // whole slot to itself at the biggest size that fits, rather
+                // than being one of three phones.
                 RampPhoneFrame(width: 214) { RampIntroScanScreen() }
+            case 1:
+                RampPhoneTrio(width: 412) {
+                    RampIntroProgressScreen()
+                } center: {
+                    RampIntroReadingScreen()
+                } right: {
+                    RampIntroRoutineScreen()
+                }
             case 2:
                 RampPhoneTrio(width: 412) {
                     RampIntroReadingScreen()
@@ -186,21 +203,13 @@ private struct RampIntroArt: View {
                 } right: {
                     RampIntroProgressScreen()
                 }
-            case 3:
-                RampPhoneTrio(width: 412) {
-                    RampIntroRoutineScreen()
-                } center: {
-                    RampIntroProgressScreen()
-                } right: {
-                    RampIntroReadingScreen()
-                }
             default:
                 RampPhoneTrio(width: 412) {
-                    RampIntroProgressScreen()
-                } center: {
-                    RampIntroReadingScreen()
-                } right: {
                     RampIntroRoutineScreen()
+                } center: {
+                    RampIntroProgressScreen()
+                } right: {
+                    RampIntroReadingScreen()
                 }
             }
         }
