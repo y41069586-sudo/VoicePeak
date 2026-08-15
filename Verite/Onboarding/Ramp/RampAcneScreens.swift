@@ -160,13 +160,13 @@ struct RampAcneTypeScreen: View {
                     .frame(height: 116)
                     .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
                     .overlay(alignment: .topTrailing) {
-                        check(isOn).padding(8)
+                        if isOn { addedBadge.padding(8) }
                     }
                     .padding(8)
 
                 VStack(spacing: 1) {
                     Text(LocalizedStringKey(type.label))
-                        .font(VType.bodyLarge.weight(.medium))
+                        .font(VType.bodyLarge.weight(.semibold))
                         .foregroundStyle(RampStage.ink)
                     Text(LocalizedStringKey(type.hint))
                         .font(VType.caption)
@@ -175,29 +175,24 @@ struct RampAcneTypeScreen: View {
                 .padding(.bottom, 12)
             }
             .frame(maxWidth: .infinity)
-            .background(isOn ? RampStage.accentSoft : RampStage.card,
-                        in: RoundedRectangle(cornerRadius: 18, style: .continuous))
+            // White always — separation is shadow, selection is the ring
+            // plus the ADDED badge, not a tinted card.
+            .background(RampStage.card, in: RoundedRectangle(cornerRadius: 18, style: .continuous))
+            .rampCardShadow()
             .overlay(RoundedRectangle(cornerRadius: 18, style: .continuous)
-                .strokeBorder(isOn ? RampStage.accentEdge : RampStage.hairline,
-                              lineWidth: isOn ? 1.5 : 1))
+                .strokeBorder(isOn ? RampStage.accentEdge : Color.clear, lineWidth: 2))
         }
         .buttonStyle(PressableStyle())
     }
 
-    private func check(_ isOn: Bool) -> some View {
-        ZStack {
-            Circle()
-                .fill(isOn ? RampStage.accentEdge : Color.white.opacity(0.9))
-                .frame(width: 24, height: 24)
-            Circle()
-                .strokeBorder(isOn ? RampStage.accentEdge : RampStage.hair, lineWidth: 1)
-                .frame(width: 24, height: 24)
-            if isOn {
-                Image(systemName: "checkmark")
-                    .font(.system(size: 11, weight: .bold))
-                    .foregroundStyle(Color.white)
-            }
-        }
+    private var addedBadge: some View {
+        Text("ADDED")
+            .font(.system(size: 10, weight: .bold, design: .rounded))
+            .tracking(0.3)
+            .foregroundStyle(RampStage.accentDeep)
+            .padding(.horizontal, 8)
+            .padding(.vertical, 4)
+            .background(RampStage.accentSoft, in: RoundedRectangle(cornerRadius: 8, style: .continuous))
     }
 }
 

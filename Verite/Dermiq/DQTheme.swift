@@ -4,28 +4,28 @@ import SwiftUI
 // MARK: — SkinFix v2 design system (MASTER PROMPT §6)
 // ============================================================
 //
-// Warm linen ground (cream) with white surfaces, warm-black ink, and a bright
-// honey-gold accent. This file remains the ONLY place the v2 tokens are
-// defined. (The v1 white-blue `VColor` system remains for legacy screens
-// only.)
+// A neutral, near-white ground with white surfaces, near-black ink, and one
+// sand accent used sparingly. This file remains the ONLY place the v2
+// tokens are defined. (The v1 white-blue `VColor` system remains for legacy
+// screens only.)
 //
-// Why warm neutral ground: the screen is mostly photographs of skin. Lavender
-// tints skin, blue makes it sallow, grey drains it — a warm neutral is the
-// one ground every skin tone sits correctly on. It also drops the "beauty
-// product" read that lavender carries, which fought the product's own name.
+// This replaced an all-over warm-beige/gold wash. The reason: no matter how
+// modern the components get — borderless cards, bold type, real shadows —
+// a screen where the ENTIRE canvas sits in one warm gold/cream hue reads as
+// a sepia photograph before the eye even parses the layout. Warmth is real
+// and belongs in the brand, but it has to live in a small set of deliberate
+// places (a selection ring, a progress fill, a chip) and in the skin
+// photography itself — never in the background, the card fills, or the CTA.
 //
-// The accent stays in the beige/gold family the brand asked for, but pushed
-// to real saturation and lightness rather than the sepia-grey the earlier
-// pass landed on: hue 38, saturation 68%, lightness 62% reads as honey or
-// marigold — warm and cheerful — where the old E6D4B4 (hue 38, sat 50%,
-// light 80%) was pale enough to disappear into the ground and read as
-// disabled. CTAs use a two-stop gradient of this hue with warm near-black
-// text: gold under white text fails contrast, gold under dark text reads
-// clean at 8:1+.
+// The accent stays sand/gold in hue so the brand still reads warm at a
+// glance, but it now only ever appears in small doses. CTAs are solid near-
+// black with white text — contrast, not colour, is what says "primary
+// action" now, which is also what keeps the accent legible as a SIGNAL
+// (this is selected / this is progress) rather than as decoration repeated
+// on every surface.
 //
-// Typography leans into the same "cheerful" brief: headings use the rounded
-// SF design (already used for the score numerals) rather than the standard
-// grotesque, which softens the whole app's voice without touching layout.
+// Headings stay on SF Rounded — that choice was never the problem; the wash
+// was.
 //
 // Haptics are part of the design system:
 //   .rigid  → captures / commits        (Haptics.fire(.capture))
@@ -33,38 +33,35 @@ import SwiftUI
 //   .light  → count-up ticks            (Haptics.fire(.tick))
 
 enum DQColor {
-    static let background      = Color(hex: "FFFBF3")
+    static let background      = Color(hex: "FBFAF8")
     static let surface         = Color(hex: "FFFFFF")
-    static let surfaceElevated = Color(hex: "FBF2DE")
-    /// Honey-gold accent — CTAs, the portal ring, the scan line. Bright and
-    /// saturated so it reads as primary and cheerful, not the sepia-pale
-    /// beige of v1 that read as disabled.
-    static let accent          = Color(hex: "E3A855")
-    /// Hairline on every filled accent surface — one step darker than the
-    /// fill so a control still reads as bounded on a light gold field.
-    static let accentEdge      = Color(hex: "C48A3A")
-    /// Accent TEXT on the pale ground — deliberately far darker than
-    /// `accent` so it clears AA at roughly 6.5:1, where the fill itself
-    /// would be close to invisible as text.
-    static let accentBright    = Color(hex: "8A5A1D")
+    static let surfaceElevated = Color(hex: "F2F0EC")
+    /// Sand accent — selection rings, progress fill, chip backgrounds. Used
+    /// in small doses only; never a background or CTA fill.
+    static let accent          = Color(hex: "E9DEC7")
+    /// One step deeper than `accent` — selection rings/borders need this to
+    /// read against a white card.
+    static let accentEdge      = Color(hex: "C9B387")
+    /// Accent TEXT / icons on light surfaces — dark enough to clear AA.
+    static let accentBright    = Color(hex: "8B764A")
     /// Soft accent tint for icon chips, segmented backgrounds, soft fills.
-    static let accentSoft      = Color(hex: "FBEDD4")
-    static let textPrimary     = Color(hex: "211A12")
-    static let textSecondary   = Color(hex: "6E6053")
+    static let accentSoft      = Color(hex: "E9DEC7")
+    static let textPrimary     = Color(hex: "15130F")
+    static let textSecondary   = Color(hex: "6E6A63")
     static let deltaUp         = Color(hex: "1F9D6B")
     static let deltaDown       = Color(hex: "DE5B4E")
 
-    /// Portal ring, scan line — a same-hue sweep across the honey gradient.
+    /// Kept for call sites that still reference a gradient (e.g. a scan
+    /// line); a restrained same-hue sweep rather than a bright CTA gradient.
     static let accentGradient = LinearGradient(
-        colors: [
-            Color(hex: "F0C170"),
-            Color(hex: "DCA047")
-        ],
+        colors: [accent, accentEdge],
         startPoint: .topLeading, endPoint: .bottomTrailing
     )
 
-    /// Hairline stroke on cards (derived, not a new hue).
-    static let stroke = Color(hex: "211A12").opacity(0.09)
+    /// Hairline stroke — now reserved for the rare case a border is still
+    /// wanted (e.g. a text field); ordinary cards use `DQCard`'s shadow
+    /// instead, not this.
+    static let stroke = Color(hex: "15130F").opacity(0.08)
 }
 
 enum DQFont {
@@ -92,7 +89,6 @@ enum DQFont {
 }
 
 enum DQRadius {
-    /// 22 rather than 20 — a touch softer, matched to the friendlier type.
     static let card: CGFloat = 22
     static let sheet: CGFloat = 28
 }
@@ -101,9 +97,10 @@ enum DQRadius {
 // MARK: — Core reusable pieces
 // ============================================================
 
-/// Primary CTA: full-width bold label on a honey-gold gradient with warm
-/// near-black text. The gradient (135°) adds depth; dark text (not white)
-/// is what keeps a gold fill legible.
+/// Primary CTA: full-width bold white label on a solid near-black fill.
+/// Contrast (dark on light), not the accent colour, is what reads as
+/// "primary action" — this is what keeps the sand accent rare enough to
+/// still mean something everywhere else it appears.
 struct DQPrimaryButton: View {
     let title: String
     var systemImage: String? = nil
@@ -120,20 +117,11 @@ struct DQPrimaryButton: View {
                 Text(LocalizedStringKey(title))
             }
             .font(Font.system(size: 17, weight: .bold, design: .rounded))
-            .foregroundStyle(DQColor.textPrimary)
-            .frame(maxWidth: .infinity, minHeight: 60)
-            .background(
-                LinearGradient(
-                    gradient: Gradient(colors: [
-                        Color(hex: "F0C170"),
-                        Color(hex: "DCA047")
-                    ]),
-                    startPoint: .topLeading,
-                    endPoint: .bottomTrailing
-                ),
-                in: RoundedRectangle(cornerRadius: 26, style: .continuous)
-            )
-            .shadow(color: Color(hex: "C48A3A").opacity(isEnabled ? 0.34 : 0), radius: 22, y: 10)
+            .foregroundStyle(Color.white)
+            .frame(maxWidth: .infinity, minHeight: 58)
+            .background(DQColor.textPrimary,
+                        in: RoundedRectangle(cornerRadius: 26, style: .continuous))
+            .shadow(color: DQColor.textPrimary.opacity(isEnabled ? 0.24 : 0), radius: 20, y: 10)
             .opacity(isEnabled ? 1 : 0.35)
         }
         .buttonStyle(PressableStyle(brightenOnPress: true))
@@ -173,9 +161,9 @@ extension View {
     func dqShimmer() -> some View { modifier(DQShimmer()) }
 }
 
-/// Standard v2 card container. A soft warm-tinted shadow replaces a flat
-/// stroke-only card — it is what makes cards read as "lifted" rather than
-/// just outlined, which is part of the same cheerful, less flat brief.
+/// Standard v2 card container. White, no border — separated from the ground
+/// by a soft neutral shadow only, so nothing on screen reads as a bordered
+/// form field.
 struct DQCard<Content: View>: View {
     var elevated = false
     @ViewBuilder var content: () -> Content
@@ -188,10 +176,7 @@ struct DQCard<Content: View>: View {
                 elevated ? DQColor.surfaceElevated : DQColor.surface,
                 in: RoundedRectangle(cornerRadius: DQRadius.card, style: .continuous)
             )
-            .overlay(
-                RoundedRectangle(cornerRadius: DQRadius.card, style: .continuous)
-                    .strokeBorder(DQColor.stroke, lineWidth: 1)
-            )
-            .shadow(color: Color(hex: "211A12").opacity(0.05), radius: 14, y: 6)
+            .shadow(color: DQColor.textPrimary.opacity(0.03), radius: 2, y: 1)
+            .shadow(color: DQColor.textPrimary.opacity(0.05), radius: 16, y: 8)
     }
 }

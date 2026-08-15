@@ -211,43 +211,39 @@ struct RampBrandScreen: View {
 
                 // Verbatim: proper names are never localised or restyled.
                 Text(verbatim: brand.name)
-                    .font(VType.bodyLarge.weight(.medium))
+                    .font(VType.bodyLarge.weight(.semibold))
                     .foregroundStyle(RampStage.ink)
                     .lineLimit(1)
                     .minimumScaleFactor(0.85)
 
                 Spacer(minLength: 8)
 
-                check(isOn)
+                addTag(isOn)
             }
             .padding(.horizontal, 14)
             .frame(maxWidth: .infinity, minHeight: 66)
-            // The card stays white in BOTH states. Selection is carried by the
-            // border and the check instead of a fill, because eleven of the
-            // twelve logo files are opaque white plates: tint the card and
-            // every one of them frames itself in a white rectangle.
-            .background(RampStage.card,
-                        in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+            // The card stays white in BOTH states — eleven of the twelve logo
+            // files are opaque white plates, so a tinted card would frame
+            // every one of them in a visible white rectangle. Separation
+            // from the ground is a shadow now, not a border; selection is
+            // the ring plus the "Added" tag, not a fill.
+            .background(RampStage.card, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+            .rampCardShadow()
             .overlay(RoundedRectangle(cornerRadius: 16, style: .continuous)
-                .strokeBorder(isOn ? RampStage.accentEdge : RampStage.hairline,
-                              lineWidth: isOn ? 2 : 1))
+                .strokeBorder(isOn ? RampStage.accentEdge : Color.clear, lineWidth: 2))
         }
         .buttonStyle(PressableStyle())
         .accessibilityAddTraits(isOn ? [.isButton, .isSelected] : .isButton)
     }
 
-    private func check(_ isOn: Bool) -> some View {
-        ZStack {
-            Circle()
-                .strokeBorder(isOn ? RampStage.accentEdge : RampStage.hair, lineWidth: 1.5)
-                .frame(width: 22, height: 22)
-            if isOn {
-                Circle().fill(RampStage.accentEdge).frame(width: 22, height: 22)
-                Image(systemName: "checkmark")
-                    .font(.system(size: 11, weight: .bold))
-                    .foregroundStyle(Color.white)
-            }
-        }
+    private func addTag(_ isOn: Bool) -> some View {
+        Text(isOn ? "Added" : "Add")
+            .font(.system(size: 13, weight: .bold, design: .rounded))
+            .foregroundStyle(isOn ? RampStage.accentDeep : RampStage.textTertiary)
+            .padding(.horizontal, isOn ? 10 : 0)
+            .padding(.vertical, isOn ? 5 : 0)
+            .background(isOn ? RampStage.accentSoft : Color.clear,
+                        in: RoundedRectangle(cornerRadius: 8, style: .continuous))
     }
 
     private var disclaimer: some View {

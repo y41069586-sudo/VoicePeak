@@ -14,41 +14,46 @@ import UIKit
 // the flow always ships whole.
 
 enum RampStage {
-    // Ground & ink — pale warm linen with a warm-black ink. Matches DQColor;
-    // see the rationale there for why the ground is a warm neutral (skin sits
-    // correctly on it) and why the accent is a deeper shade of that same
-    // ground rather than a second hue — the app is tonal beige, and contrast
-    // comes from value, not colour.
-    static let porcelain = Color(hex: "FFFBF3") // light linen background (name kept for call sites)
-    static let recess     = Color(hex: "FBF2DE") // recessed panel
-    static let ink        = Color(hex: "211A12") // warm near-black, maximum contrast
-    static let inkSoft    = Color(hex: "6E6053") // secondary text
-    static let inkFaint   = Color(hex: "998C7E") // tertiary text
-    static let hair       = Color(hex: "F0E1C4") // warm hairline
+    // Ground & ink — a NEUTRAL ground (near-white, not tinted) with warm-black
+    // ink. This replaced an all-over warm-beige wash. The reason: no matter
+    // how modern the components are, a screen where the ENTIRE surface —
+    // background, cards, fills — sits in one warm gold/cream hue reads as a
+    // sepia photograph before the eye even parses the layout. Warmth is real
+    // and belongs in the brand, but it has to live in the ACCENT and in
+    // photography, not in the canvas everything else sits on.
+    static let porcelain = Color(hex: "FBFAF8") // near-white background (name kept for call sites)
+    static let recess     = Color(hex: "F2F0EC") // recessed panel — neutral, not tinted
+    static let ink        = Color(hex: "15130F") // near-black, maximum contrast
+    static let inkSoft    = Color(hex: "6E6A63") // secondary text — neutral grey, not warm-brown
+    static let inkFaint   = Color(hex: "A6A199") // tertiary text
+    static let hair       = Color(hex: "ECE9E3") // neutral hairline (barely-there, not gold-tinted)
 
-    // The single accent, now genuine honey-gold rather than sepia beige, + a
-    // deeper shade for on-light TEXT + a soft tint used as fills/pools.
-    // `accentEdge` bounds every filled accent surface so a control still
-    // reads as a control on the lightest fills.
-    static let accent     = Color(hex: "E3A855")
-    static let accentEdge = Color(hex: "C48A3A")
-    static let accentDeep = Color(hex: "8A5A1D")
-    static let glow       = Color(hex: "FBEDD4")
+    // The accent is a sand tone — kept ONLY for small, deliberate uses:
+    // selection rings, progress fill, chip backgrounds, the odd icon. It is
+    // never a canvas colour. `accentEdge` is the same hue pushed one step
+    // deeper for borders/rings; `accentDeep` deeper again for on-light TEXT.
+    static let accent     = Color(hex: "E9DEC7")
+    static let accentEdge = Color(hex: "C9B387")
+    static let accentDeep = Color(hex: "8B764A")
+    static let glow       = Color(hex: "E9DEC7")
 
-    // Warm light pools layered behind the content (names kept for call sites).
-    static let dawnPeach  = Color(hex: "FBEEDC")
-    static let dawnLilac  = Color(hex: "FDF6EB") // (name kept for call sites)
-    static let dawnSky    = Color(hex: "FFFBF3") // (name kept for call sites)
+    // Ambient light pools behind full-bleed photo screens — kept very
+    // subtle and mostly neutral now; they read as soft light, not as a
+    // colour wash. (Names kept for call sites.)
+    static let dawnPeach  = Color(hex: "F4F1EA")
+    static let dawnLilac  = Color(hex: "F6F4EF")
+    static let dawnSky    = Color(hex: "FBFAF8")
 
     /// Soft accent tint for icon chips, segmented backgrounds, soft buttons.
-    static let accentSoft = Color(hex: "FBEDD4")
+    static let accentSoft = Color(hex: "E9DEC7")
 
     // Named text roles.
     static let textPrimary   = ink
     static let textSecondary = inkSoft
     static let textTertiary  = inkFaint
 
-    // Surfaces — crisp solid white cards (modern, flat).
+    // Surfaces — crisp solid white cards, separated from the ground by
+    // elevation (shadow) rather than by an outline. See `RampCardShadow`.
     static let card = Color.white
     static let hairline = hair
 
@@ -141,16 +146,17 @@ struct RampPhoto: View {
     }
     #endif
 
-    /// Soft warm gradient placeholder — deliberately pretty on its own.
+    /// Soft neutral-sand gradient placeholder — a quiet stand-in, not a
+    /// colourful moment in its own right (the photo it precedes should be).
     private var placeholder: some View {
         ZStack {
-            LinearGradient(colors: [Color(hex: "FCF3E4"), Color(hex: "F0D9AE"),
-                                    Color(hex: "E3B876")],
+            LinearGradient(colors: [Color(hex: "F6F4EF"), Color(hex: "ECE5D5"),
+                                    Color(hex: "DDCFA9")],
                            startPoint: .topLeading, endPoint: .bottomTrailing)
             RadialGradient(colors: [.white.opacity(0.55), .clear],
                            center: UnitPoint(x: 0.25, y: 0.2),
                            startRadius: 0, endRadius: 220)
-            RadialGradient(colors: [Color(hex: "FBEDD4").opacity(0.8), .clear],
+            RadialGradient(colors: [Color(hex: "E9DEC7").opacity(0.8), .clear],
                            center: UnitPoint(x: 0.85, y: 0.85),
                            startRadius: 0, endRadius: 260)
         }
@@ -295,10 +301,26 @@ struct TypewriterText: View {
 // MARK: — Buttons
 // ============================================================
 
-/// Primary CTA: full-width, bold, a honey-gold gradient fill on a generously
-/// rounded 26pt rectangle. The gradient (rather than a flat fill) plus a
-/// warm-tinted shadow is what makes this read as a real, pressable control
-/// instead of a pale disabled-looking chip.
+/// A soft, neutral drop shadow used in place of a hairline border. This is
+/// the one change that made the whole flow stop reading as a stack of
+/// outlined form fields: separation now comes from light and elevation, not
+/// from a stroke around every rectangle.
+struct RampCardShadow: ViewModifier {
+    func body(content: Content) -> some View {
+        content.shadow(color: RampStage.ink.opacity(0.03), radius: 2, y: 1)
+            .shadow(color: RampStage.ink.opacity(0.05), radius: 16, y: 8)
+    }
+}
+
+extension View {
+    func rampCardShadow() -> some View { modifier(RampCardShadow()) }
+}
+
+/// Primary CTA: full-width, bold, a solid near-black fill. This replaced a
+/// gold-gradient fill — the accent doesn't need to be on the button to read
+/// as the primary action; dark-on-light contrast does that on its own, and
+/// it keeps gold as a colour the eye only meets at a handful of deliberate
+/// points (selection, progress) instead of on every screen's biggest shape.
 struct RampPrimaryButton: View {
     let title: String
     var systemImage: String? = nil
@@ -315,17 +337,12 @@ struct RampPrimaryButton: View {
                 Text(LocalizedStringKey(title))
             }
             .font(.system(size: 17, weight: .bold, design: .rounded))
-            // Ink, not white — gold under white type fails contrast; under
-            // warm near-black it clears AA comfortably.
-            .foregroundStyle(RampStage.ink)
-            .frame(maxWidth: .infinity, minHeight: 60)
-            .background(
-                LinearGradient(colors: [Color(hex: "F0C170"), Color(hex: "DCA047")],
-                               startPoint: .topLeading, endPoint: .bottomTrailing),
-                in: RoundedRectangle(cornerRadius: 26, style: .continuous)
-            )
-            .shadow(color: RampStage.accentEdge.opacity(isEnabled ? 0.34 : 0), radius: 22, y: 10)
-            .opacity(isEnabled ? 1 : 0.4)
+            .foregroundStyle(Color.white)
+            .frame(maxWidth: .infinity, minHeight: 58)
+            .background(RampStage.ink,
+                        in: RoundedRectangle(cornerRadius: 26, style: .continuous))
+            .shadow(color: RampStage.ink.opacity(isEnabled ? 0.24 : 0), radius: 20, y: 10)
+            .opacity(isEnabled ? 1 : 0.35)
         }
         .buttonStyle(PressableStyle())
         .disabled(!isEnabled)
@@ -353,9 +370,10 @@ struct RampGhostButton: View {
 // MARK: — Answer tile (the heart of the redesign)
 // ============================================================
 
-/// A calm, editorial answer tile. A serif title (optionally a soft descriptor),
-/// a quiet selection dot, a whisper of rose when chosen. No fill-slam, no 3D
-/// tilt, no shockwave — selection is a gentle settling, not an explosion.
+/// A calm, editorial answer tile. White always, separated by shadow rather
+/// than a border; selection is a sand-coloured ring plus a filled checkmark,
+/// not a tinted fill — the tint-on-select pattern is what made the earlier
+/// version look washed rather than chosen.
 struct RampOptionCard: View {
     let label: String
     var sub: String? = nil
@@ -371,47 +389,42 @@ struct RampOptionCard: View {
                         .font(.system(size: 16, weight: .regular))
                         .foregroundStyle(RampStage.accentDeep)
                         .frame(width: 34, height: 34)
-                        .background(RampStage.accent.opacity(selected ? 0.20 : 0.12),
+                        .background(RampStage.accentSoft.opacity(selected ? 1 : 0.5),
                                     in: RoundedRectangle(cornerRadius: 10, style: .continuous))
                 }
-                VStack(alignment: .leading, spacing: 2) {
-                    Text(LocalizedStringKey(label))
-                        .font(VType.bodyLarge.weight(.medium))
-                        .foregroundStyle(selected ? RampStage.accentDeep : RampStage.ink)
-                    if let sub {
-                        Text(LocalizedStringKey(sub))
-                            .font(VType.caption)
-                            .foregroundStyle(RampStage.textSecondary)
-                    }
+                Text(LocalizedStringKey(label))
+                    .font(VType.bodyLarge.weight(.semibold))
+                    .foregroundStyle(RampStage.ink)
+                if let sub {
+                    Text(LocalizedStringKey(sub))
+                        .font(VType.caption)
+                        .foregroundStyle(RampStage.textSecondary)
                 }
                 Spacer(minLength: 0)
-                selectionDot
+                selectionMark
             }
             .padding(.horizontal, 18)
             .frame(maxWidth: .infinity, minHeight: 62, alignment: .leading)
-            .background(
-                selected
-                    ? AnyShapeStyle(RampStage.accent.opacity(0.12))
-                    : AnyShapeStyle(RampStage.card),
-                in: RoundedRectangle(cornerRadius: 18, style: .continuous)
-            )
+            .background(RampStage.card, in: RoundedRectangle(cornerRadius: 18, style: .continuous))
+            .rampCardShadow()
             .overlay(
                 RoundedRectangle(cornerRadius: 18, style: .continuous)
-                    .strokeBorder(selected ? RampStage.accentEdge : RampStage.hairline, lineWidth: 1)
+                    .strokeBorder(selected ? RampStage.accentEdge : Color.clear, lineWidth: 2)
             )
         }
         .buttonStyle(PressableStyle())
         .animation(VMotion.gentle, value: selected)
     }
 
-    private var selectionDot: some View {
-        ZStack {
-            Circle()
-                .strokeBorder(selected ? RampStage.accentEdge : RampStage.hair, lineWidth: 1.5)
-                .frame(width: 20, height: 20)
+    private var selectionMark: some View {
+        Group {
             if selected {
-                Circle().fill(RampStage.accentEdge).frame(width: 20, height: 20)
-                Circle().fill(Color.white).frame(width: 7, height: 7)
+                ZStack {
+                    Circle().fill(RampStage.accentEdge).frame(width: 22, height: 22)
+                    Image(systemName: "checkmark")
+                        .font(.system(size: 11, weight: .bold))
+                        .foregroundStyle(Color.white)
+                }
             }
         }
     }
