@@ -14,6 +14,18 @@ struct OnboardingRampFlow: View {
     @State private var step: RampStep = .boot
     @State private var answers = RampQuizAnswers()
 
+    /// Where the back chevron sends `.signIn`. `.signIn` is reachable two
+    /// ways — the funnel's own order (from `.dailyRitual`) and the boot
+    /// screen's "Already have an account?" shortcut, which jumps straight
+    /// there from `.boot`, skipping everything between. `step.previous`
+    /// alone can't tell those apart: it only knows the enum's fixed order,
+    /// so a chevron tap after the shortcut landed on `.dailyRitual` — a
+    /// screen near the END of a funnel the user never walked, which reads
+    /// exactly like onboarding secretly happened. This tracks the real
+    /// entry point instead. Defaults to the funnel's own order and is
+    /// overridden only by the shortcut, so a normal run needs no upkeep.
+    @State private var signInBackTarget: RampStep = .dailyRitual
+
     var body: some View {
         ZStack {
             RampBackdrop()
@@ -78,6 +90,7 @@ struct OnboardingRampFlow: View {
             RampBootScreen(onAdvance: { advance() },
                            onSignIn: {
                                RampAnalytics.track("intro_sign_in_tapped")
+                               signInBackTarget = .boot
                                step = .signIn
                            })
         case .sampleReading:
@@ -343,13 +356,20 @@ struct OnboardingRampFlow: View {
     }
 
     private func advance() {
-        if let next = step.next { step = next } else { complete() }
+        guard let next = step.next else { complete(); return }
+        // Reaching `.signIn` the normal way — re-arms the shortcut's
+        // override in case this is a second pass through the funnel after
+        // an earlier "Already have an account?" tap (see `signInBackTarget`).
+        if next == .signIn { signInBackTarget = step }
+        step = next
     }
 
     /// Step back one screen (chevron top-left). Never leaves onboarding — the
     /// opening `.boot` screen has no back, so the earliest reachable step is
-    /// `acneType`.
+    /// `acneType`. `.signIn` is the one step whose back target isn't just
+    /// "the previous case" — see `signInBackTarget`.
     private func back() {
+        if step == .signIn { step = signInBackTarget; return }
         if let prev = step.previous { step = prev }
     }
 

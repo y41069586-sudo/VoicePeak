@@ -184,22 +184,20 @@ private struct RampIntroArt: View {
         // asking for more here buys detail on a big screen and costs nothing
         // on a small one — it just stops the mockups being needlessly tiny on
         // the devices that had the space all along.
+        // Only page two shows a screen alone — the reading, because it's the
+        // one page that needs one: "seven metrics" only reads as seven
+        // metrics at a size where you can count them. Pages one, three and
+        // four each put the screen their own headline is about in the
+        // trio's centre instead (reading, routine, progress in turn) and
+        // fill the other two slots with the rest of the app, so every page
+        // both answers its own headline and keeps the whole product in view.
         RampFitted(designSize: CGSize(width: 420, height: 470)) {
             switch index {
             case 0:
-                // The scan, alone and centred, is the opener. It swapped
-                // places with the reading trio that used to sit here, and the
-                // headlines are why: page one says "One scan, one real score"
-                // and page two says "Seven metrics read from a single photo".
-                // The scan belongs under the first sentence and the metric
-                // grid under the second — the old order had each of them
-                // illustrating the other one's line.
-                //
-                // It is also the moment the product turns on, so it gets the
-                // whole slot to itself at the biggest size that fits, rather
-                // than being one of three phones.
-                RampPhoneFrame(width: 214) { RampIntroScanScreen() }
-            case 1:
+                // The overview trio, reading in the middle — page one's line
+                // is "One scan, one real score", and the reading is that
+                // score, so it leads even here, flanked by the two screens
+                // the rest of the app is built from.
                 RampPhoneTrio(width: 412) {
                     RampIntroProgressScreen()
                 } center: {
@@ -207,6 +205,14 @@ private struct RampIntroArt: View {
                 } right: {
                     RampIntroRoutineScreen()
                 }
+            case 1:
+                // The reading, alone and at full size — page two's line is
+                // "Seven metrics read from a single photo", and the reading
+                // is where all seven actually live (Blemishes, Redness,
+                // Texture, Pores, Evenness, Hydration, Glow). Cramped into a
+                // third of a trio, none of those seven are legible; alone,
+                // every one of them is.
+                RampPhoneFrame(width: 214) { RampIntroReadingScreen() }
             case 2:
                 RampPhoneTrio(width: 412) {
                     RampIntroReadingScreen()
