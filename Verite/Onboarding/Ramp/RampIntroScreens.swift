@@ -8,11 +8,26 @@ import UIKit
 // ============================================================
 //
 // Four screens, authored at the iPhone's real 402 × 874pt and rendered live
-// inside `RampPhoneFrame`. They are miniatures of the app's own screens, built
-// from the same tokens and carrying the same illustrative reading the rest of
-// onboarding uses (Overall 66, and the five sub-scores behind it) — so the
-// first thing a new user sees agrees with the reveal they get four screens
-// later, instead of quietly promising a better one.
+// inside `RampPhoneFrame`. They are miniatures of the app's own screens, and
+// the word that matters is MIRROR: each one is laid out against its real
+// counterpart —
+//
+//   RampIntroReadingScreen  ← DermiqResultsView
+//   RampIntroScanScreen     ← DermiqCaptureView
+//   RampIntroRoutineScreen  ← DermiqRoutineTab
+//   RampIntroProgressScreen ← DermiqProgressTab
+//
+// — same titles, same section eyebrows, same card shapes, same tokens. They
+// drifted once already, into plausible-looking screens that existed nowhere
+// in the product, which is the failure mode to watch for: a carousel whose
+// entire argument is "this is what you get" cannot show something the user
+// will never reach. When one of the real screens above is restructured, the
+// mirror here is part of that change, not a follow-up.
+//
+// They also carry the same illustrative reading the rest of onboarding uses
+// (Overall 66, and the sub-scores that average to it) — so the first thing a
+// new user sees agrees with the reveal they get a few screens later, instead
+// of quietly promising a better one.
 
 // ============================================================
 // MARK: — Shared furniture
@@ -85,115 +100,172 @@ private struct IntroEyebrow: View {
 }
 
 // ============================================================
-// MARK: — 1 · Home, with the score
+// MARK: — 1 · Your reading
 // ============================================================
 
-/// The results screen: the captured avatar, the honest 0–100 overall, and the
-/// five sub-scores it is the average of.
-struct RampIntroHomeScreen: View {
-    /// Four in a 2 × 2, then the fifth across the full width. A five-item
-    /// two-column grid leaves the last tile stranded beside a hole, and at
-    /// mockup scale that hole is the first thing the eye finds.
-    private let paired: [(String, Int)] = [
-        ("Glow", 69), ("Hydration", 63), ("Texture", 65), ("Redness", 61),
+/// The reading screen, rebuilt to mirror `DermiqResultsView` — the actual
+/// screen this carousel is selling. Same title and standfirst, same Now ⇄
+/// In 14 days segmented control, the same captured avatar straddling the
+/// top of a two-column metric card, the same standing card and the same
+/// "Glow me up" CTA underneath.
+///
+/// It used to be a different screen entirely: a "SkinFix" app-bar, a tick
+/// gauge, a 2×2 of tiles and a plan strip — a plausible dashboard that
+/// existed nowhere in the app. A carousel whose whole argument is "this is
+/// what you get" cannot show a screen the user will never reach.
+///
+/// TWO NUMBERS ARE NOT FREE HERE, and both are derived rather than picked:
+///
+///  · The seven sub-scores average to exactly 66, because Overall IS their
+///    average in the real engine and `RampSampleReadingScreen` shows 66 four
+///    screens later. A mockup that quietly showed a prettier reading than
+///    the one the flow goes on to promise is the one lie this file can tell
+///    without anybody noticing.
+///  · "Top 42%" is `DermiqPercentile.topPercent(overall: 66)` evaluated by
+///    hand — the app's own documented distribution (mean 63, sd 14). Recompute
+///    it if the reading above ever changes; do not round it for looks.
+struct RampIntroReadingScreen: View {
+    /// Overall leads, then every sub-score — the real grid order.
+    private let overall = 66
+    private let subScores: [(String, Int)] = [
+        ("Blemishes", 66), ("Redness", 61), ("Texture", 65),
+        ("Pores", 70), ("Evenness", 68), ("Hydration", 63), ("Glow", 69),
     ]
-    private let wide: (String, Int) = ("Evenness", 68)
+
+    private let columns = [GridItem(.flexible(), spacing: 18),
+                           GridItem(.flexible(), spacing: 18)]
 
     var body: some View {
         VStack(spacing: 0) {
             IntroStatusBar()
 
-            HStack {
-                Text(verbatim: "SkinFix")
-                    .font(.system(size: 22, weight: .bold, design: .rounded))
+            VStack(spacing: 5) {
+                Text(verbatim: "Your reading")
+                    .font(.system(size: 26, weight: .heavy, design: .rounded))
                     .foregroundStyle(RampStage.ink)
-                Spacer()
-                Image(systemName: "gearshape")
-                    .font(.system(size: 18, weight: .medium))
+                Text(verbatim: "A reading of you — with your 14-day potential.")
+                    .font(.system(size: 15, weight: .regular))
                     .foregroundStyle(RampStage.inkSoft)
+                    .multilineTextAlignment(.center)
             }
             .padding(.horizontal, 24)
-            .padding(.bottom, 18)
 
-            scoreCard.padding(.horizontal, 20)
-
-            VStack(spacing: 14) {
-                HStack(spacing: 14) {
-                    metricTile(paired[0].0, paired[0].1)
-                    metricTile(paired[1].0, paired[1].1)
-                }
-                HStack(spacing: 14) {
-                    metricTile(paired[2].0, paired[2].1)
-                    metricTile(paired[3].0, paired[3].1)
-                }
-                metricTile(wide.0, wide.1)
-            }
-            .padding(.horizontal, 20)
-            .padding(.top, 14)
-
-            planCard
-                .padding(.horizontal, 20)
+            modeSwitch
                 .padding(.top, 14)
+
+            gridCard
+                .padding(.horizontal, 20)
+
+            standingCard
+                .padding(.horizontal, 20)
+                .padding(.top, 12)
 
             Spacer(minLength: 0)
 
-            HStack(spacing: 10) {
-                Image(systemName: "clock").font(.system(size: 14, weight: .semibold))
-                Text(verbatim: "Next scan in 6d 4h")
-                    .font(.system(size: 14, weight: .medium))
-                Spacer()
-                Image(systemName: "chevron.right").font(.system(size: 12, weight: .bold))
+            HStack(spacing: 8) {
+                Image(systemName: "sparkles").font(.system(size: 15, weight: .bold))
+                Text(verbatim: "Glow me up")
+                    .font(.system(size: 17, weight: .bold, design: .rounded))
             }
-            .foregroundStyle(RampStage.accentDeep)
-            .padding(.horizontal, 18)
-            .frame(height: 52)
-            .background(RampStage.accentSoft, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+            .foregroundStyle(Color.white)
+            .frame(maxWidth: .infinity, minHeight: 56)
+            .background(RampPrimaryButton.fill,
+                        in: RoundedRectangle(cornerRadius: 26, style: .continuous))
+            .shadow(color: RampStage.accentDeep.opacity(0.34), radius: 18, y: 8)
             .padding(.horizontal, 20)
-            .padding(.bottom, 18)
 
-            IntroTabBar(active: 0)
+            Text(verbatim: "Done")
+                .font(.system(size: 16, weight: .semibold, design: .rounded))
+                .foregroundStyle(RampStage.inkSoft)
+                .padding(.top, 12)
+                .padding(.bottom, 26)
         }
         .background(RampStage.porcelain)
     }
 
-    private var scoreCard: some View {
-        VStack(spacing: 16) {
-            HStack(spacing: 18) {
-                avatar
-                VStack(alignment: .leading, spacing: 2) {
-                    IntroEyebrow(text: "OVERALL")
-                    HStack(alignment: .firstTextBaseline, spacing: 2) {
-                        Text(verbatim: "66")
-                            .font(.system(size: 46, weight: .heavy, design: .rounded))
-                            .foregroundStyle(RampStage.ink)
-                        Text(verbatim: "/100")
-                            .font(.system(size: 17, weight: .semibold, design: .rounded))
-                            .foregroundStyle(RampStage.inkFaint)
-                    }
-                    Text(verbatim: "Up 4 since your last scan")
-                        .font(.system(size: 12, weight: .medium))
-                        .foregroundStyle(RampStage.accentDeep)
-                }
-                Spacer(minLength: 0)
-            }
-
-            // The gauge: 100 slim ticks, filled to the score. Reads as a
-            // measurement rather than a progress bar, which is the difference
-            // between "here is your reading" and "here is your loading".
-            HStack(spacing: 2) {
-                ForEach(0..<40, id: \.self) { i in
-                    Capsule()
-                        .fill(i < 26 ? RampStage.accentEdge : RampStage.hair)
-                        .frame(height: i < 26 ? 14 : 9)
-                }
-            }
-            .frame(height: 14)
+    /// The iOS-style segmented toggle, with the white pill parked on "Now".
+    private var modeSwitch: some View {
+        HStack(spacing: 4) {
+            segment("Now", active: true)
+            segment("In 14 days", active: false)
         }
-        .padding(20)
-        .background(Color.white, in: RoundedRectangle(cornerRadius: 24, style: .continuous))
-        .rampCardShadow()
+        .padding(4)
+        .background(RampStage.accentSoft, in: Capsule())
+        .frame(maxWidth: 300)
     }
 
+    private func segment(_ title: String, active: Bool) -> some View {
+        Text(verbatim: title)
+            .font(.system(size: 15, weight: .bold, design: .rounded))
+            .foregroundStyle(active ? RampStage.accentDeep : RampStage.inkSoft)
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, 9)
+            .background {
+                if active {
+                    Capsule()
+                        .fill(Color.white)
+                        .shadow(color: RampStage.accentEdge.opacity(0.18), radius: 6, y: 2)
+                }
+            }
+    }
+
+    private var gridCard: some View {
+        ZStack(alignment: .top) {
+            VStack(spacing: 12) {
+                LazyVGrid(columns: columns, alignment: .leading, spacing: 14) {
+                    metricCell("Overall", overall, lead: true)
+                    ForEach(subScores.indices, id: \.self) { i in
+                        metricCell(subScores[i].0, subScores[i].1, lead: false)
+                    }
+                }
+                // The reading key. Without it "Blemishes 66" reads as a count
+                // of blemishes rather than a score — the real card carries the
+                // same line for the same reason.
+                HStack(spacing: 5) {
+                    Image(systemName: "arrow.up.circle.fill")
+                        .font(.system(size: 10, weight: .semibold))
+                        .foregroundStyle(RampStage.accentDeep)
+                    Text(verbatim: "Every score runs 0–100 — higher is always better.")
+                        .font(.system(size: 11, weight: .medium))
+                        .foregroundStyle(RampStage.inkSoft)
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+            }
+            .padding(.horizontal, 18)
+            .padding(.top, 70)
+            .padding(.bottom, 18)
+            .frame(maxWidth: .infinity)
+            .background(Color.white, in: RoundedRectangle(cornerRadius: 26, style: .continuous))
+            .overlay(RoundedRectangle(cornerRadius: 26, style: .continuous)
+                .strokeBorder(RampStage.ink.opacity(0.08), lineWidth: 1))
+
+            avatar.offset(y: -54)
+        }
+        .padding(.top, 54)
+    }
+
+    private func metricCell(_ label: String, _ value: Int, lead: Bool) -> some View {
+        VStack(alignment: .leading, spacing: 6) {
+            Text(verbatim: label)
+                .font(.system(size: 13, weight: .semibold, design: .rounded))
+                .foregroundStyle(RampStage.inkSoft)
+                .lineLimit(1)
+                .minimumScaleFactor(0.8)
+            Text(verbatim: "\(value)")
+                .font(.system(size: 24, weight: .heavy, design: .rounded).monospacedDigit())
+                .foregroundStyle(lead ? RampStage.accentDeep : RampStage.ink)
+            GeometryReader { proxy in
+                ZStack(alignment: .leading) {
+                    Capsule().fill(RampStage.ink.opacity(0.08))
+                    Capsule().fill(RampStage.accentEdge)
+                        .frame(width: proxy.size.width * CGFloat(value) / 100)
+                }
+            }
+            .frame(height: 6)
+        }
+    }
+
+    /// The user's own capture, ringed — the proof the reading is about them.
     private var avatar: some View {
         Group {
             #if canImport(UIKit)
@@ -206,63 +278,44 @@ struct RampIntroHomeScreen: View {
             RampStage.accentSoft
             #endif
         }
-        .frame(width: 84, height: 84)
+        .frame(width: 108, height: 108)
         .clipShape(Circle())
-        .overlay(Circle().strokeBorder(Color.white, lineWidth: 3))
-        .overlay(Circle().strokeBorder(RampStage.accentSoft, lineWidth: 3).padding(-3))
+        .overlay(Circle().strokeBorder(Color.white, lineWidth: 4))
+        .overlay(Circle().strokeBorder(RampStage.accentSoft, lineWidth: 4).padding(-4))
+        .shadow(color: RampStage.accentEdge.opacity(0.28), radius: 14, y: 8)
     }
 
-    /// The 14-day plan, which the rest of onboarding keeps promising — so the
-    /// home screen has to show it, and it fills the hole the metric grid used
-    /// to leave above the tab bar.
-    private var planCard: some View {
-        VStack(alignment: .leading, spacing: 12) {
+    private var standingCard: some View {
+        VStack(alignment: .leading, spacing: 4) {
             HStack {
-                IntroEyebrow(text: "YOUR 14-DAY PLAN")
+                Text(verbatim: "YOUR STANDING")
+                    .font(.system(size: 11, weight: .semibold, design: .monospaced))
+                    .tracking(2)
+                    .foregroundStyle(RampStage.accentDeep)
                 Spacer()
-                Text(verbatim: "Day 6")
-                    .font(.system(size: 12, weight: .semibold))
+                // The estimate label is not decoration: this number is mapped
+                // from a documented distribution, not a live ranking, and the
+                // real card is required to say so wherever it appears.
+                Text(verbatim: "est.")
+                    .font(.system(size: 9, weight: .semibold, design: .monospaced))
+                    .foregroundStyle(RampStage.inkSoft)
+            }
+            HStack(alignment: .firstTextBaseline, spacing: 6) {
+                Text(verbatim: "Top 42%")
+                    .font(.system(size: 34, weight: .heavy, design: .rounded).monospacedDigit())
+                    .foregroundStyle(RampStage.accentDeep)
+                Spacer()
+                Image(systemName: "flame.fill")
+                    .font(.system(size: 17))
                     .foregroundStyle(RampStage.accentDeep)
             }
-            HStack(spacing: 4) {
-                ForEach(0..<14, id: \.self) { i in
-                    Capsule()
-                        .fill(i < 6 ? RampStage.accentEdge : RampStage.hair)
-                        .frame(height: 6)
-                }
-            }
-            Text(verbatim: "Tonight: adapalene, then ceramides")
-                .font(.system(size: 13, weight: .medium))
-                .foregroundStyle(RampStage.inkSoft)
-        }
-        .padding(18)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .background(Color.white, in: RoundedRectangle(cornerRadius: 20, style: .continuous))
-        .rampCardShadow()
-    }
-
-    private func metricTile(_ label: String, _ value: Int) -> some View {
-        VStack(alignment: .leading, spacing: 7) {
-            Text(verbatim: label)
+            Text(verbatim: "Your strongest: Pores · Top 31%")
                 .font(.system(size: 12, weight: .semibold))
                 .foregroundStyle(RampStage.inkSoft)
-            Text(verbatim: "\(value)")
-                .font(.system(size: 24, weight: .heavy, design: .rounded))
-                .foregroundStyle(RampStage.ink)
-            GeometryReader { proxy in
-                ZStack(alignment: .leading) {
-                    Capsule().fill(RampStage.hair.opacity(0.8))
-                    Capsule()
-                        .fill(RampStage.accent)
-                        .overlay(Capsule().strokeBorder(RampStage.accentEdge, lineWidth: 1))
-                        .frame(width: proxy.size.width * CGFloat(value) / 100)
-                }
-            }
-            .frame(height: 5)
         }
-        .padding(14)
+        .padding(16)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(Color.white, in: RoundedRectangle(cornerRadius: 18, style: .continuous))
+        .background(Color.white, in: RoundedRectangle(cornerRadius: 22, style: .continuous))
         .rampCardShadow()
     }
 }
@@ -271,10 +324,16 @@ struct RampIntroHomeScreen: View {
 // MARK: — 2 · The scan, mid-read
 // ============================================================
 
-/// The capture screen mid-read: the scan line crossing the face. This is the
-/// screen the whole product rests on, so it is the one that gets the big phone
-/// in the middle of the trio — and it is kept clear of overlays for the same
-/// reason. Anything floating on top competes with the face it is reading.
+/// The capture screen mid-read: the scan line crossing the face, with the
+/// real shutter and gallery-import control from `DermiqCaptureView` under it.
+/// This is the screen the whole product rests on, so it gets the big phone in
+/// the middle of the trio.
+///
+/// The controls earn their place despite the "keep it clear of overlays"
+/// instinct: without a shutter this reads as a photo with a line drawn over
+/// it rather than as a camera about to fire. Everything else stays off — the
+/// live quality checklist in particular, which is five rows tall and would
+/// bury the face this screen exists to show.
 struct RampIntroScanScreen: View {
     var body: some View {
         ZStack {
@@ -291,10 +350,41 @@ struct RampIntroScanScreen: View {
                 IntroStatusBar(tint: .white)
                 Spacer()
                 viewfinderHint
+                captureControls
             }
         }
         .frame(width: 402, height: 874)
         .background(Color(hex: "2A2622"))
+    }
+
+    /// Shutter centred, gallery import bottom-right — the real capture
+    /// screen's layout, drawn in its all-conditions-pass state.
+    private var captureControls: some View {
+        ZStack {
+            ZStack {
+                Circle()
+                    .stroke(RampStage.accentEdge, lineWidth: 3)
+                    .frame(width: 76, height: 76)
+                Circle()
+                    .fill(RampPrimaryButton.fill)
+                    .frame(width: 62, height: 62)
+            }
+            .shadow(color: RampStage.accentEdge.opacity(0.45), radius: 18)
+
+            HStack {
+                Spacer()
+                ZStack {
+                    Circle()
+                        .fill(Color.white.opacity(0.7))
+                        .frame(width: 52, height: 52)
+                    Image(systemName: "photo.on.rectangle")
+                        .font(.system(size: 19, weight: .semibold))
+                        .foregroundStyle(RampStage.ink)
+                }
+            }
+            .padding(.trailing, 34)
+        }
+        .padding(.bottom, 34)
     }
 
     private var portrait: some View {
@@ -344,7 +434,7 @@ struct RampIntroScanScreen: View {
             .background(.white.opacity(0.16), in: Capsule())
             .overlay(Capsule().strokeBorder(.white.opacity(0.30), lineWidth: 1))
         }
-        .padding(.bottom, 44)
+        .padding(.bottom, 26)
     }
 }
 
@@ -688,7 +778,7 @@ private struct RampIntroSparkline: View {
     }
 }
 
-#Preview("Home") { RampPhoneFrame(width: 260) { RampIntroHomeScreen() } }
+#Preview("Reading") { RampPhoneFrame(width: 260) { RampIntroReadingScreen() } }
 #Preview("Scan") { RampPhoneFrame(width: 260) { RampIntroScanScreen() } }
 #Preview("Routine") { RampPhoneFrame(width: 260) { RampIntroRoutineScreen() } }
 #Preview("Progress") { RampPhoneFrame(width: 260) { RampIntroProgressScreen() } }

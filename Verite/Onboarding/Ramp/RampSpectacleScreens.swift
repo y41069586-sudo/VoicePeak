@@ -156,7 +156,7 @@ struct RampBootScreen: View {
 /// This replaced three pieces of line-art — a mirror, a smiling circle and a
 /// calendar. They were honest about being drawings, which was the problem: the
 /// first four screens a new user sees were illustrations OF the product rather
-/// than the product. What is here now is the actual code — `RampIntroHomeScreen`
+/// than the product. What is here now is the actual code — `RampIntroReadingScreen`
 /// and friends, laid out at the iPhone's true 402 × 874pt and scaled into a
 /// drawn device — so the carousel shows what you get, and it cannot go stale
 /// the way the screenshots this slot used to wait on would have.
@@ -164,44 +164,47 @@ private struct RampIntroArt: View {
     let index: Int
 
     var body: some View {
-        // Sized up from the original 340×372 slot — small enough on a real
-        // phone that the screens inside were decoration, not something you
-        // could actually read. This is as large as the boot screen's layout
-        // has room for; `RampFitted` still scales it down further on a
-        // short canvas, it just no longer starts out needlessly small.
-        RampFitted(designSize: CGSize(width: 378, height: 420)) {
+        // Sized up twice from the original 340×372 slot, which was small
+        // enough on a real phone that the screens inside were decoration
+        // rather than something you could read. The design size is now wider
+        // than any iPhone's content width on purpose: `RampFitted` scales the
+        // whole composition down to whatever room the page actually has, so
+        // asking for more here buys detail on a big screen and costs nothing
+        // on a small one — it just stops the mockups being needlessly tiny on
+        // the devices that had the space all along.
+        RampFitted(designSize: CGSize(width: 420, height: 470)) {
             switch index {
             case 1:
                 // The scan is the moment the product turns on. It gets the
                 // whole slot to itself, at the biggest size that fits.
-                RampPhoneFrame(width: 190) { RampIntroScanScreen() }
+                RampPhoneFrame(width: 214) { RampIntroScanScreen() }
             case 2:
-                RampPhoneTrio(width: 368) {
-                    RampIntroHomeScreen()
+                RampPhoneTrio(width: 412) {
+                    RampIntroReadingScreen()
                 } center: {
                     RampIntroRoutineScreen()
                 } right: {
                     RampIntroProgressScreen()
                 }
             case 3:
-                RampPhoneTrio(width: 368) {
+                RampPhoneTrio(width: 412) {
                     RampIntroRoutineScreen()
                 } center: {
                     RampIntroProgressScreen()
                 } right: {
-                    RampIntroHomeScreen()
+                    RampIntroReadingScreen()
                 }
             default:
-                RampPhoneTrio(width: 368) {
+                RampPhoneTrio(width: 412) {
                     RampIntroProgressScreen()
                 } center: {
-                    RampIntroHomeScreen()
+                    RampIntroReadingScreen()
                 } right: {
                     RampIntroRoutineScreen()
                 }
             }
         }
-        .frame(maxHeight: 420)
+        .frame(maxHeight: 470)
         .accessibilityHidden(true)
     }
 }
