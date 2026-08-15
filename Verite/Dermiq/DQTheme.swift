@@ -129,7 +129,9 @@ struct DQPrimaryButton: View {
             .frame(maxWidth: .infinity, minHeight: 58)
             .background(DQColor.accentGradient,
                         in: RoundedRectangle(cornerRadius: 26, style: .continuous))
-            .shadow(color: DQColor.accentBright.opacity(isEnabled ? 0.34 : 0), radius: 20, y: 10)
+            // Matches RampPrimaryButton — see the note there on why the
+            // coloured shadow is this restrained.
+            .shadow(color: DQColor.accentBright.opacity(isEnabled ? 0.22 : 0), radius: 14, y: 7)
             .opacity(isEnabled ? 1 : 0.35)
         }
         .buttonStyle(PressableStyle(brightenOnPress: true))

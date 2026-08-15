@@ -423,7 +423,11 @@ struct RampPrimaryButton: View {
             .frame(maxWidth: .infinity, minHeight: 58)
             .background(Self.fill,
                         in: RoundedRectangle(cornerRadius: 26, style: .continuous))
-            .shadow(color: RampStage.accentDeep.opacity(isEnabled ? 0.34 : 0), radius: 20, y: 10)
+            // Tightened from 0.34/r20 — a coloured shadow that wide reads as
+            // a glow around the button rather than as the button sitting on
+            // the page, and on a white ground it haloed visibly into the
+            // margins. Same colour, less of it, dropped closer.
+            .shadow(color: RampStage.accentDeep.opacity(isEnabled ? 0.22 : 0), radius: 14, y: 7)
             .opacity(isEnabled ? 1 : 0.35)
         }
         .buttonStyle(PressableStyle())

@@ -538,7 +538,7 @@ struct RampAcneEmpathyScreen: View {
     let onAdvance: () -> Void
 
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
-    @State private var eyebrowIn = false
+    @State private var recapIn = false
     @State private var chipsShown = 0
     @State private var headlineIn = false
     @State private var messageIn = false
@@ -548,61 +548,44 @@ struct RampAcneEmpathyScreen: View {
         GeometryReader { proxy in
             ScrollView {
                 VStack(alignment: .leading, spacing: 0) {
-                    Spacer(minLength: VSpace.xxl)
+                    Spacer(minLength: VSpace.xl)
 
-                    // The recap — eyebrow and chips read as ONE unit, not two:
-                    // 6pt between them (barely more than the eyebrow's own
-                    // line height) versus the 40pt that follows before the
-                    // headline. Before, all three pieces sat at roughly the
-                    // same distance apart and read as three equal, unrelated
-                    // things stacked in a row; now there are two groups — the
-                    // recap of what was chosen, then a clear break, then the
-                    // one sentence that's actually new.
-                    VStack(alignment: .leading, spacing: 6) {
-                        Text("WHAT WE HEARD")
-                            .font(VType.micro)
-                            .tracking(3)
-                            .foregroundStyle(RampStage.accentDeep)
+                    recap
+                        .padding(.horizontal, VSpace.lg)
 
-                        if !chips.isEmpty {
-                            let row = HStack(spacing: 7) {
-                                ForEach(chips.indices, id: \.self) { i in
-                                    Text(LocalizedStringKey(chips[i]))
-                                        .font(.system(size: 12.5, weight: .semibold, design: .rounded))
-                                        .foregroundStyle(RampStage.accentDeep)
-                                        .lineLimit(1)
-                                        .padding(.horizontal, 11).padding(.vertical, 6)
-                                        .background(RampStage.accentSoft, in: Capsule())
-                                        .opacity(i < chipsShown ? 1 : 0)
-                                        .scaleEffect(i < chipsShown ? 1 : 0.6)
-                                }
-                            }
-                            ViewThatFits(in: .horizontal) {
-                                row
-                                ScrollView(.horizontal) { row }
-                                    .scrollIndicators(.hidden)
-                            }
-                        }
-                    }
-                    .opacity(eyebrowIn ? 1 : 0)
-                    .offset(y: eyebrowIn ? 0 : 6)
-                    .padding(.horizontal, VSpace.lg)
-                    .padding(.bottom, VSpace.xxl - VSpace.sm)
+                    // The one big break on the screen. Everything above it is
+                    // a restatement of what the user already chose; everything
+                    // below is the only thing here they haven't seen. Two
+                    // groups, one gap — not four evenly-spaced blocks.
+                    Spacer().frame(height: 30)
 
+                    // The sentence IS the screen, so it is set like one — 36pt
+                    // against the old 28. That size is not decoration: this
+                    // page carries one short line and a paragraph, and at 28
+                    // the composition didn't fill the canvas, it floated in
+                    // the middle of it with dead space above and below. Type
+                    // that occupies the space it's given is the difference
+                    // between "sparse on purpose" and "unfinished".
                     Text(LocalizedStringKey(headline))
-                        .font(RampStage.serif(28))
+                        .font(.system(size: 36, weight: .heavy, design: .rounded))
                         .foregroundStyle(RampStage.ink)
-                        .lineSpacing(3)
+                        .lineSpacing(1)
                         .fixedSize(horizontal: false, vertical: true)
                         .opacity(headlineIn ? 1 : 0)
-                        .offset(y: headlineIn ? 0 : 10)
+                        .offset(y: headlineIn ? 0 : 12)
                         .padding(.horizontal, VSpace.lg)
 
                     Text(LocalizedStringKey(message))
-                        .font(VType.bodyLarge)
+                        .font(.system(size: 17, weight: .regular))
                         .foregroundStyle(RampStage.textSecondary)
-                        .lineSpacing(3)
+                        .lineSpacing(6)
                         .fixedSize(horizontal: false, vertical: true)
+                        // Held to a readable measure rather than the full
+                        // gutter width. Body this size running the whole way
+                        // across a large phone is a ~60-character line, which
+                        // is where the eye starts losing its place between
+                        // rows.
+                        .frame(maxWidth: 330, alignment: .leading)
                         .opacity(messageIn ? 1 : 0)
                         .offset(y: messageIn ? 0 : 8)
                         .padding(.horizontal, VSpace.lg)
@@ -620,32 +603,87 @@ struct RampAcneEmpathyScreen: View {
             }
             .scrollBounceBehavior(.basedOnSize)
         }
-        .task {
-            if reduceMotion {
-                eyebrowIn = true; chipsShown = chips.count
-                headlineIn = true; messageIn = true; buttonIn = true
-                return
-            }
-            withAnimation(VMotion.gentle) { eyebrowIn = true }
-            // `chips` can legitimately be empty (nothing recognised on the
-            // photo grid, nothing tried) — stepping 1...1 there would fire a
-            // haptic for a chip that never appears.
-            for i in chips.indices {
-                try? await Task.sleep(for: .milliseconds(110))
-                guard !Task.isCancelled else { return }
-                withAnimation(VMotion.snappy) { chipsShown = i + 1 }
-                Haptics.fire(.tick)
-            }
-            try? await Task.sleep(for: .milliseconds(180))
-            guard !Task.isCancelled else { return }
-            withAnimation(VMotion.gentle) { headlineIn = true }
-            try? await Task.sleep(for: .milliseconds(260))
-            guard !Task.isCancelled else { return }
-            withAnimation(VMotion.gentle) { messageIn = true }
-            try? await Task.sleep(for: .milliseconds(240))
-            guard !Task.isCancelled else { return }
-            withAnimation(VMotion.gentle) { buttonIn = true }
+        // One soft pool of warmth behind the headline. The flow's ground is
+        // flat white, which is right for the screens made of white cards —
+        // but this screen has no cards, just type, and on bare white that
+        // reads as a blank page someone forgot to finish. The glow is scoped
+        // to this screen for exactly that reason: it gives the type something
+        // to sit on without putting an uneven ground back under the tiles
+        // everywhere else. Kept low enough to read as light, never as a
+        // coloured shape.
+        .background(alignment: .topLeading) {
+            RadialGradient(colors: [RampStage.accent.opacity(0.45), .clear],
+                           center: .center, startRadius: 0, endRadius: 300)
+                .frame(width: 600, height: 600)
+                .offset(x: -150, y: 60)
+                .allowsHitTesting(false)
+                .ignoresSafeArea()
         }
+        .task { await run() }
+    }
+
+    /// Eyebrow and chips, one unit. Six points apart — barely more than the
+    /// eyebrow's own line height — so they read as a single caption rather
+    /// than as two separate things that happen to be stacked.
+    private var recap: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text("WHAT WE HEARD")
+                .font(VType.micro)
+                .tracking(3)
+                .foregroundStyle(RampStage.accentDeep)
+
+            if !chips.isEmpty {
+                let row = HStack(spacing: 6) {
+                    ForEach(chips.indices, id: \.self) { i in
+                        Text(LocalizedStringKey(chips[i]))
+                            .font(.system(size: 12, weight: .semibold, design: .rounded))
+                            .foregroundStyle(RampStage.accentDeep)
+                            .lineLimit(1)
+                            .padding(.horizontal, 10).padding(.vertical, 5.5)
+                            // Lighter than the old solid fill: these are a
+                            // footnote under a 36pt headline, and at full
+                            // strength three of them out-shouted it.
+                            .background(RampStage.accent.opacity(0.55), in: Capsule())
+                            .opacity(i < chipsShown ? 1 : 0)
+                            .scaleEffect(i < chipsShown ? 1 : 0.6)
+                    }
+                }
+                ViewThatFits(in: .horizontal) {
+                    row
+                    ScrollView(.horizontal) { row }
+                        .scrollIndicators(.hidden)
+                }
+            }
+        }
+        .opacity(recapIn ? 1 : 0)
+        .offset(y: recapIn ? 0 : 6)
+    }
+
+    private func run() async {
+        if reduceMotion {
+            recapIn = true; chipsShown = chips.count
+            headlineIn = true; messageIn = true; buttonIn = true
+            return
+        }
+        withAnimation(VMotion.gentle) { recapIn = true }
+        // `chips` can legitimately be empty (nothing recognised on the photo
+        // grid, nothing tried) — stepping 1...1 there would fire a haptic for
+        // a chip that never appears.
+        for i in chips.indices {
+            try? await Task.sleep(for: .milliseconds(110))
+            guard !Task.isCancelled else { return }
+            withAnimation(VMotion.snappy) { chipsShown = i + 1 }
+            Haptics.fire(.tick)
+        }
+        try? await Task.sleep(for: .milliseconds(180))
+        guard !Task.isCancelled else { return }
+        withAnimation(VMotion.gentle) { headlineIn = true }
+        try? await Task.sleep(for: .milliseconds(260))
+        guard !Task.isCancelled else { return }
+        withAnimation(VMotion.gentle) { messageIn = true }
+        try? await Task.sleep(for: .milliseconds(240))
+        guard !Task.isCancelled else { return }
+        withAnimation(VMotion.gentle) { buttonIn = true }
     }
 }
 

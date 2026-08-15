@@ -259,6 +259,17 @@ struct RampQuizAnswers {
             case .dermatologist: return "stethoscope"
             }
         }
+        /// Two or three words for the empathy screen's recap row, where the
+        /// full label ("Antibiotics or the pill") would wrap a chip.
+        var chip: String {
+            switch self {
+            case .drugstore:     return "Drugstore"
+            case .prescription:  return "Prescriptions"
+            case .antibiotics:   return "Antibiotics"
+            case .diet:          return "Diet"
+            case .dermatologist: return "Dermatologist"
+            }
+        }
     }
 
     /// The emotional weight, asked plainly. It changes no ingredient in the
@@ -400,7 +411,17 @@ struct RampQuizAnswers {
         var chips: [String] = []
         if let acneTypeChip { chips.append(acneTypeChip) }
         if let acneDuration { chips.append(acneDuration.chip) }
-        if !acneTried.isEmpty { chips.append("Tried \(acneTried.count)") }
+        // Name the thing when there is one thing to name. "Tried 1" read as
+        // a tally on a screen whose entire job is to prove we were listening
+        // — the other two chips say what the user chose, and this one said
+        // how many boxes they ticked. "Drugstore" is the same width and
+        // actually repeats them back.
+        let tried = acneTried.compactMap(AcneTried.init(rawValue:))
+        if tried.count == 1, let only = tried.first {
+            chips.append(only.chip)
+        } else if tried.count > 1 {
+            chips.append("\(tried.count) things tried")
+        }
         return chips
     }
 
