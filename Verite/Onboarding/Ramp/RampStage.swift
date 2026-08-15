@@ -40,12 +40,11 @@ enum RampStage {
     static let accentDeep = Color(hex: "C15A3E")
     static let glow       = Color(hex: "F5DCC0")
 
-    // Ambient light pools behind full-bleed photo screens — kept very
-    // subtle, now carrying the icon's peach warmth instead of gold; they
-    // read as soft light, not as a colour wash. (Names kept for call sites.)
+    /// A warm peach glow. Named for the three-pool "dawn light" backdrop it
+    /// was built for; that backdrop is gone (see `RampBackdrop`) and this is
+    /// what outlived it — the photo-placeholder wash and the sign-in screen's
+    /// halo. `dawnLilac` and `dawnSky` went with the pools.
     static let dawnPeach  = Color(hex: "F8DFC9")
-    static let dawnLilac  = Color(hex: "FAF1E7")
-    static let dawnSky    = Color(hex: "FBF7F3")
 
     /// Soft accent tint for icon chips, segmented backgrounds, soft buttons.
     static let accentSoft = Color(hex: "F5DCC0")
@@ -167,41 +166,37 @@ struct RampPhoto: View {
 }
 
 // ============================================================
-// MARK: — Backdrop (dawn light + film grain)
+// MARK: — Backdrop
 // ============================================================
 
-/// Full-bleed warm porcelain with three soft dawn-light pools and a fine film
-/// grain — the editorial texture that makes it read as photographed, not
-/// rendered. The light pools drift almost imperceptibly.
+/// Flat white, full bleed, with a whisper of film grain over it.
+///
+/// This replaced three drifting "dawn light" pools — peach, lilac and sky
+/// radial gradients over warm porcelain, breathing on a 24-second loop. The
+/// problem was not that they were ugly: it was that onboarding is a stack of
+/// WHITE CARDS, and a tinted, unevenly-lit ground gave every one of them a
+/// different amount of contrast depending on where it happened to sit. The
+/// peach pool at the top meant the first tile on a screen always had more
+/// separation than the last. White is the same everywhere, so the cards are
+/// the only thing that varies.
+///
+/// The grain stays, at a fraction of its old strength. It is luminance noise
+/// rather than a tint — the ground still reads as white — and it is what
+/// keeps the surface from looking like an untextured fill. Take it to zero
+/// if even that is too much; nothing else depends on it.
+///
+/// Removing the pools also ends a `repeatForever` animation that ran for the
+/// entire length of onboarding to move something almost nobody could see.
 struct RampBackdrop: View {
-    @Environment(\.accessibilityReduceMotion) private var reduceMotion
-    @State private var drift = false
-
     var body: some View {
         ZStack {
-            RampStage.porcelain
-
-            dawnPool(RampStage.dawnPeach, at: UnitPoint(x: 0.20, y: 0.06), radius: 440)
-            dawnPool(RampStage.dawnLilac, at: UnitPoint(x: 0.90, y: 0.20), radius: 460)
-            dawnPool(RampStage.dawnSky,   at: UnitPoint(x: 0.50, y: 1.02), radius: 560)
+            Color.white
 
             RampGrain()
-                .opacity(0.14)
+                .opacity(0.05)
                 .blendMode(.multiply)
         }
         .ignoresSafeArea()
-        .scaleEffect(drift && !reduceMotion ? 1.05 : 1.0)
-        .onAppear {
-            guard !reduceMotion else { return }
-            withAnimation(.easeInOut(duration: 24).repeatForever(autoreverses: true)) {
-                drift = true
-            }
-        }
-    }
-
-    private func dawnPool(_ color: Color, at point: UnitPoint, radius: CGFloat) -> some View {
-        RadialGradient(colors: [color.opacity(0.9), .clear],
-                       center: point, startRadius: 0, endRadius: radius)
     }
 }
 
@@ -308,10 +303,17 @@ struct TypewriterText: View {
 /// the one change that made the whole flow stop reading as a stack of
 /// outlined form fields: separation now comes from light and elevation, not
 /// from a stroke around every rectangle.
+///
+/// Nudged up when `RampBackdrop` went white. The cards are white too, so the
+/// ground used to be doing part of the work — porcelain against white is a
+/// small difference, but it was a real one, and on a white ground it is
+/// gone. The shadow is now the ONLY thing holding a tile off the page, so it
+/// carries a little more weight. Still nowhere near a visible drop shadow:
+/// the target is a tile that has an edge, not one that hovers.
 struct RampCardShadow: ViewModifier {
     func body(content: Content) -> some View {
-        content.shadow(color: RampStage.ink.opacity(0.03), radius: 2, y: 1)
-            .shadow(color: RampStage.ink.opacity(0.05), radius: 16, y: 8)
+        content.shadow(color: RampStage.ink.opacity(0.045), radius: 2, y: 1)
+            .shadow(color: RampStage.ink.opacity(0.08), radius: 18, y: 8)
     }
 }
 
