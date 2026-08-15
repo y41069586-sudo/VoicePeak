@@ -352,58 +352,55 @@ struct RampIntroScanScreen: View {
 // MARK: — 3 · The routine
 // ============================================================
 
-/// Morning and evening, as the app builds them: named steps, the ones already
-/// done ticked off.
+/// "Today", laid out exactly like `DermiqRoutineTab`'s real block cards: a
+/// day/steps header, then Morning and Evening as their own cards — an icon
+/// square, a done-count, and numbered rows that turn into a filled green
+/// check as they're completed. Matches the real screen closely enough that
+/// this mockup and the tab a new user lands on later read as the same app.
 struct RampIntroRoutineScreen: View {
-    private let morning: [(String, String, Bool)] = [
-        ("Gentle gel cleanser", "Lukewarm water, 30 seconds", true),
-        ("Niacinamide 10%", "Three drops, press in", true),
-        ("SPF 50 fluid", "Two fingers, every morning", false),
+    private struct Step {
+        let name: String
+        let time: String
+        let active: String
+        var freq: String? = nil
+        let done: Bool
+    }
+
+    private let morning: [Step] = [
+        Step(name: "Gentle cleanser", time: "8:00", active: "Ceramides", done: true),
+        Step(name: "Niacinamide 5%", time: "8:02", active: "Niacinamide", done: true),
+        Step(name: "Moisturiser", time: "8:05", active: "Squalane", done: false),
+        Step(name: "SPF 50", time: "8:08", active: "Mineral filter", done: false),
     ]
-    private let evening: [(String, String, Bool)] = [
-        ("Double cleanse", "Oil first, then the gel", true),
-        ("Adapalene 0.1%", "Pea-sized, alternate nights", false),
-        ("Ceramide moisturiser", "Seal everything in", false),
+    private let evening: [Step] = [
+        Step(name: "Gentle cleanser", time: "21:00", active: "Ceramides", done: false),
+        Step(name: "Adapalene 0.1%", time: "21:05", active: "Retinoid", freq: "3× / week", done: false),
+        Step(name: "Moisturiser", time: "21:15", active: "Squalane", done: false),
     ]
-    /// A third section, because a routine is not only twice a day — and
-    /// because two sections left a third of this screen empty.
-    private let weekly: [(String, String, Bool)] = [
-        ("Gentle exfoliant", "Sundays, after cleansing", false),
-    ]
+
+    private var doneCount: Int { morning.filter(\.done).count + evening.filter(\.done).count }
+    private var totalCount: Int { morning.count + evening.count }
 
     var body: some View {
-        VStack(spacing: 0) {
+        VStack(alignment: .leading, spacing: 0) {
             IntroStatusBar()
 
-            HStack {
-                VStack(alignment: .leading, spacing: 2) {
-                    Text(verbatim: "Your routine")
-                        .font(.system(size: 24, weight: .bold, design: .rounded))
-                        .foregroundStyle(RampStage.ink)
-                    Text(verbatim: "3 of 6 done today")
-                        .font(.system(size: 13, weight: .medium))
-                        .foregroundStyle(RampStage.inkSoft)
-                }
-                Spacer()
-                ZStack {
-                    Circle().stroke(RampStage.hair, lineWidth: 5)
-                    Circle().trim(from: 0, to: 0.5)
-                        .stroke(RampStage.accentEdge,
-                                style: StrokeStyle(lineWidth: 5, lineCap: .round))
-                        .rotationEffect(.degrees(-90))
-                    Text(verbatim: "50%")
-                        .font(.system(size: 12, weight: .bold, design: .rounded))
-                        .foregroundStyle(RampStage.accentDeep)
-                }
-                .frame(width: 52, height: 52)
+            VStack(alignment: .leading, spacing: 4) {
+                Text(verbatim: "Today")
+                    .font(.system(size: 28, weight: .heavy, design: .rounded))
+                    .foregroundStyle(RampStage.ink)
+                Text(verbatim: "Day 6 of 14 · \(doneCount) of \(totalCount) steps done")
+                    .font(.system(size: 13, weight: .medium))
+                    .foregroundStyle(RampStage.inkSoft)
             }
             .padding(.horizontal, 24)
-            .padding(.bottom, 20)
+            .padding(.bottom, 18)
 
-            VStack(alignment: .leading, spacing: 18) {
-                section("MORNING", icon: "sun.max.fill", steps: morning)
-                section("EVENING", icon: "moon.stars.fill", steps: evening)
-                section("WEEKLY", icon: "calendar", steps: weekly)
+            VStack(spacing: 16) {
+                block("Morning", icon: "sun.max.fill",
+                      when: "After you wake up", time: "8:00", steps: morning)
+                block("Evening", icon: "moon.stars.fill",
+                      when: "Before bed", time: "21:00", steps: evening)
             }
             .padding(.horizontal, 20)
 
@@ -413,92 +410,126 @@ struct RampIntroRoutineScreen: View {
         .background(RampStage.porcelain)
     }
 
-    private func section(_ title: String, icon: String,
-                         steps: [(String, String, Bool)]) -> some View {
-        VStack(alignment: .leading, spacing: 10) {
-            HStack(spacing: 7) {
+    private func block(_ title: String, icon: String, when: String, time: String,
+                       steps: [Step]) -> some View {
+        let done = steps.filter(\.done).count
+        return VStack(alignment: .leading, spacing: 12) {
+            HStack(spacing: 10) {
                 Image(systemName: icon)
-                    .font(.system(size: 12, weight: .bold))
-                    .foregroundStyle(RampStage.accentDeep)
-                IntroEyebrow(text: title)
-            }
-            VStack(spacing: 0) {
-                ForEach(steps.indices, id: \.self) { i in
-                    if i > 0 {
-                        Rectangle().fill(RampStage.hair).frame(height: 1).padding(.leading, 56)
-                    }
-                    stepRow(steps[i])
+                    .font(.system(size: 14, weight: .semibold))
+                    .foregroundStyle(RampStage.inkSoft)
+                    .frame(width: 44, height: 44)
+                    .background(RampStage.recess, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
+                VStack(alignment: .leading, spacing: 1) {
+                    Text(verbatim: title)
+                        .font(.system(size: 17, weight: .bold, design: .rounded))
+                        .foregroundStyle(RampStage.ink)
+                    Text(verbatim: "\(when) · \(time)")
+                        .font(.system(size: 12, weight: .regular))
+                        .foregroundStyle(RampStage.inkSoft)
                 }
+                Spacer(minLength: 0)
+                Text(verbatim: "\(done)/\(steps.count)")
+                    .font(.system(size: 13, weight: .bold, design: .rounded).monospacedDigit())
+                    .foregroundStyle(RampStage.inkSoft)
             }
-            .background(Color.white, in: RoundedRectangle(cornerRadius: 20, style: .continuous))
-            .rampCardShadow()
+
+            VStack(spacing: 14) {
+                ForEach(steps.indices, id: \.self) { i in stepRow(steps[i], order: i + 1) }
+            }
         }
+        .padding(18)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(Color.white, in: RoundedRectangle(cornerRadius: 22, style: .continuous))
+        .rampCardShadow()
     }
 
-    private func stepRow(_ step: (String, String, Bool)) -> some View {
-        HStack(spacing: 14) {
+    /// Done is the ONE place this mockup steps outside the accent — a filled
+    /// green check, exactly like `DermiqStepRow`. Reusing the brand accent
+    /// for "done" would blur it with "selected"/"in progress" elsewhere in
+    /// the flow; green is unambiguous.
+    private func stepRow(_ step: Step, order: Int) -> some View {
+        HStack(spacing: 12) {
             ZStack {
-                Circle()
-                    .fill(step.2 ? RampStage.accentEdge : Color.clear)
-                    .overlay(Circle().strokeBorder(step.2 ? RampStage.accentEdge : RampStage.hair,
-                                                   lineWidth: 1.5))
-                if step.2 {
+                if step.done {
+                    Circle().fill(Self.positive)
                     Image(systemName: "checkmark")
-                        .font(.system(size: 12, weight: .heavy))
+                        .font(.system(size: 11, weight: .heavy))
                         .foregroundStyle(.white)
+                } else {
+                    Circle().fill(RampStage.accentSoft)
+                    Text(verbatim: "\(order)")
+                        .font(.system(size: 12, weight: .bold, design: .rounded))
+                        .foregroundStyle(RampStage.accentDeep)
                 }
             }
             .frame(width: 26, height: 26)
 
             VStack(alignment: .leading, spacing: 2) {
-                Text(verbatim: step.0)
-                    .font(.system(size: 15, weight: .semibold))
-                    .foregroundStyle(step.2 ? RampStage.inkFaint : RampStage.ink)
-                    .strikethrough(step.2, color: RampStage.inkFaint)
-                Text(verbatim: step.1)
+                HStack(spacing: 6) {
+                    Text(verbatim: step.name)
+                        .font(.system(size: 15, weight: .semibold))
+                        .foregroundStyle(step.done ? RampStage.inkFaint : RampStage.ink)
+                        .strikethrough(step.done, color: RampStage.inkFaint)
+                    if let freq = step.freq {
+                        Text(verbatim: freq)
+                            .font(.system(size: 9.5, weight: .bold, design: .rounded))
+                            .foregroundStyle(RampStage.accentDeep)
+                            .padding(.horizontal, 6)
+                            .padding(.vertical, 2)
+                            .background(RampStage.accentSoft, in: Capsule())
+                    }
+                }
+                Text(verbatim: "\(step.time) · \(step.active)")
                     .font(.system(size: 12, weight: .regular))
                     .foregroundStyle(RampStage.inkFaint)
             }
             Spacer(minLength: 0)
         }
-        .padding(.horizontal, 16)
-        .frame(height: 62)
     }
+
+    /// Success green — the same role `DQColor.deltaUp` plays in the real app:
+    /// never the brand accent, always this one semantic colour.
+    static let positive = Color(hex: "1F9D6B")
 }
 
 // ============================================================
-// MARK: — 4 · The evolution
+// MARK: — 4 · Progress
 // ============================================================
 
-/// Fourteen days of readings, and the photos behind them.
+/// Laid out like the real `DermiqProgressTab`: a plain "Progress" title (no
+/// decoration competing with it), the score-over-time chart with its green
+/// delta line, the scan timeline, then per-metric detail bars. Same section
+/// eyebrows, same green-for-"this improved" semantic the real tab uses.
 struct RampIntroProgressScreen: View {
     /// The overall score, day 1 → day 14. Deliberately not a clean ramp: it
     /// dips on days 4 and 5, because purging is what actually happens and a
     /// chart that never dips is the one nobody believes afterwards.
     private let series: [CGFloat] = [52, 54, 53, 49, 47, 51, 55, 57, 56, 59, 62, 61, 64, 66]
 
+    private let timeline: [(score: Int, label: String)] = [
+        (72, "Today"), (67, "5 days ago"), (58, "13 days ago"),
+    ]
+    private let metrics: [(String, Int, Int)] = [
+        ("Blemishes", 74, 9), ("Redness", 68, 6), ("Texture", 71, 3), ("Pores", 65, 2),
+    ]
+
     var body: some View {
-        VStack(spacing: 0) {
+        VStack(alignment: .leading, spacing: 0) {
             IntroStatusBar()
 
-            HStack {
-                Text(verbatim: "Your evolution")
-                    .font(.system(size: 24, weight: .bold, design: .rounded))
-                    .foregroundStyle(RampStage.ink)
-                Spacer()
-                Text(verbatim: "14 days")
-                    .font(.system(size: 12, weight: .semibold))
-                    .foregroundStyle(RampStage.accentDeep)
-                    .padding(.horizontal, 12)
-                    .frame(height: 30)
-                    .background(RampStage.accentSoft, in: Capsule())
-            }
-            .padding(.horizontal, 24)
-            .padding(.bottom, 18)
+            Text(verbatim: "Progress")
+                .font(.system(size: 28, weight: .heavy, design: .rounded))
+                .foregroundStyle(RampStage.ink)
+                .padding(.horizontal, 24)
+                .padding(.bottom, 18)
 
-            chartCard.padding(.horizontal, 20)
-            movedCard.padding(.horizontal, 20).padding(.top, 14)
-            calendarCard.padding(.horizontal, 20).padding(.top, 14)
+            VStack(spacing: 16) {
+                chartCard
+                timelineCard
+                metricCard
+            }
+            .padding(.horizontal, 20)
 
             Spacer(minLength: 0)
             IntroTabBar(active: 2)
@@ -508,106 +539,103 @@ struct RampIntroProgressScreen: View {
 
     private var chartCard: some View {
         VStack(alignment: .leading, spacing: 14) {
-            HStack(alignment: .firstTextBaseline, spacing: 6) {
-                Text(verbatim: "66")
-                    .font(.system(size: 32, weight: .heavy, design: .rounded))
-                    .foregroundStyle(RampStage.ink)
-                Text(verbatim: "overall")
-                    .font(.system(size: 13, weight: .medium))
-                    .foregroundStyle(RampStage.inkSoft)
-                Spacer()
-                HStack(spacing: 3) {
-                    Image(systemName: "arrow.up.right").font(.system(size: 11, weight: .bold))
-                    Text(verbatim: "+14")
-                        .font(.system(size: 13, weight: .bold, design: .rounded))
-                }
-                .foregroundStyle(RampStage.accentDeep)
-            }
+            IntroEyebrow(text: "SCORE OVER TIME")
 
             RampIntroSparkline(values: series)
-                .frame(height: 96)
+                .frame(height: 108)
 
-            HStack {
-                Text(verbatim: "DAY 1").font(.system(size: 10, weight: .semibold))
-                Spacer()
-                Text(verbatim: "DAY 14").font(.system(size: 10, weight: .semibold))
+            HStack(spacing: 5) {
+                Image(systemName: "arrow.up.right").font(.system(size: 11, weight: .bold))
+                Text(verbatim: "+14 since your first scan")
+                    .font(.system(size: 13, weight: .semibold))
             }
-            .tracking(1.2)
-            .foregroundStyle(RampStage.inkFaint)
+            .foregroundStyle(RampIntroRoutineScreen.positive)
         }
         .padding(20)
-        .background(Color.white, in: RoundedRectangle(cornerRadius: 24, style: .continuous))
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(Color.white, in: RoundedRectangle(cornerRadius: 22, style: .continuous))
         .rampCardShadow()
     }
 
-    /// The page's headline promises this screen "shows you what actually
-    /// moved", so it has to be on it. The deltas are uneven on purpose:
-    /// hydration answers fast, texture barely budges in two weeks.
-    private var movedCard: some View {
-        let moved: [(String, Int)] = [("Hydration", 9), ("Glow", 7),
-                                      ("Redness", 5), ("Texture", 3)]
-        return VStack(alignment: .leading, spacing: 12) {
-            IntroEyebrow(text: "WHAT MOVED")
-            ForEach(moved.indices, id: \.self) { i in
-                HStack(spacing: 12) {
-                    Text(verbatim: moved[i].0)
-                        .font(.system(size: 13, weight: .medium))
-                        .foregroundStyle(RampStage.inkSoft)
-                        .frame(width: 78, alignment: .leading)
+    /// The real tab's timeline is a bare photo strip; this mockup carries the
+    /// score on the card, so the one photo bundled with onboarding still
+    /// reads as three distinct readings rather than one picture repeated.
+    private var timelineCard: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            IntroEyebrow(text: "SCAN TIMELINE")
+            HStack(spacing: 10) {
+                ForEach(timeline.indices, id: \.self) { i in timelineTile(timeline[i]) }
+            }
+            Text(verbatim: "Tap any two scans to compare them side by side.")
+                .font(.system(size: 11.5, weight: .regular))
+                .foregroundStyle(RampStage.inkSoft)
+        }
+    }
+
+    private func timelineTile(_ entry: (score: Int, label: String)) -> some View {
+        VStack(alignment: .leading, spacing: 0) {
+            avatarPhoto.frame(height: 78).clipped()
+            VStack(alignment: .leading, spacing: 1) {
+                Text(verbatim: "\(entry.score)")
+                    .font(.system(size: 17, weight: .heavy, design: .rounded))
+                    .foregroundStyle(RampStage.ink)
+                Text(verbatim: entry.label)
+                    .font(.system(size: 10.5, weight: .medium))
+                    .foregroundStyle(RampStage.inkSoft)
+            }
+            .padding(.horizontal, 10)
+            .padding(.vertical, 8)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(Color.white, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+        .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+        .rampCardShadow()
+    }
+
+    private var avatarPhoto: some View {
+        Group {
+            #if canImport(UIKit)
+            if let ui = RampPhoto.load("SampleFace") {
+                Image(uiImage: ui).resizable().scaledToFill()
+            } else {
+                RampStage.accentSoft
+            }
+            #else
+            RampStage.accentSoft
+            #endif
+        }
+    }
+
+    private var metricCard: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            IntroEyebrow(text: "METRIC DETAIL")
+            ForEach(metrics.indices, id: \.self) { i in
+                let (label, value, delta) = metrics[i]
+                VStack(alignment: .leading, spacing: 7) {
+                    HStack {
+                        Text(verbatim: label)
+                            .font(.system(size: 14, weight: .semibold))
+                            .foregroundStyle(RampStage.ink)
+                        Spacer()
+                        Text(verbatim: "+\(delta)")
+                            .font(.system(size: 13, weight: .bold, design: .rounded))
+                            .foregroundStyle(RampIntroRoutineScreen.positive)
+                    }
                     GeometryReader { proxy in
                         ZStack(alignment: .leading) {
-                            Capsule().fill(RampStage.hair.opacity(0.8))
+                            Capsule().fill(RampStage.hair)
                             Capsule()
-                                .fill(RampStage.accent)
-                                .overlay(Capsule().strokeBorder(RampStage.accentEdge, lineWidth: 1))
-                                .frame(width: proxy.size.width * CGFloat(moved[i].1) / 12)
+                                .fill(RampStage.accentEdge)
+                                .frame(width: proxy.size.width * CGFloat(value) / 100)
                         }
                     }
                     .frame(height: 6)
-                    Text(verbatim: "+\(moved[i].1)")
-                        .font(.system(size: 13, weight: .bold, design: .rounded))
-                        .foregroundStyle(RampStage.accentDeep)
-                        .frame(width: 28, alignment: .trailing)
-                }
-            }
-        }
-        .padding(18)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .background(Color.white, in: RoundedRectangle(cornerRadius: 20, style: .continuous))
-        .rampCardShadow()
-    }
-
-    private var calendarCard: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            HStack {
-                IntroEyebrow(text: "PHOTO CALENDAR")
-                Spacer()
-                Text(verbatim: "March")
-                    .font(.system(size: 12, weight: .semibold))
-                    .foregroundStyle(RampStage.inkSoft)
-            }
-            // Fourteen scanned days, then the rest of the month still open.
-            LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 7), count: 7),
-                      spacing: 7) {
-                ForEach(0..<21, id: \.self) { i in
-                    RoundedRectangle(cornerRadius: 8, style: .continuous)
-                        .fill(i < 14 ? RampStage.accent : RampStage.recess)
-                        .overlay(RoundedRectangle(cornerRadius: 8, style: .continuous)
-                            .strokeBorder(i < 14 ? RampStage.accentEdge : RampStage.hair,
-                                          lineWidth: 1))
-                        .overlay {
-                            if i == 13 {
-                                Image(systemName: "camera.fill")
-                                    .font(.system(size: 11, weight: .bold))
-                                    .foregroundStyle(RampStage.accentDeep)
-                            }
-                        }
-                        .aspectRatio(1, contentMode: .fit)
                 }
             }
         }
         .padding(20)
-        .background(Color.white, in: RoundedRectangle(cornerRadius: 24, style: .continuous))
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(Color.white, in: RoundedRectangle(cornerRadius: 22, style: .continuous))
         .rampCardShadow()
     }
 }
@@ -644,12 +672,15 @@ private struct RampIntroSparkline: View {
                 .stroke(RampStage.accentEdge,
                         style: StrokeStyle(lineWidth: 2.5, lineCap: .round, lineJoin: .round))
 
+                // Every reading gets the same open ring — white centre, coloured
+                // edge — the last one just bigger, so the eye lands on "now"
+                // without the line looking like it stops at a solid dot.
                 ForEach(points.indices, id: \.self) { i in
+                    let isLast = i == points.count - 1
                     Circle()
-                        .fill(i == points.count - 1 ? RampStage.accentDeep : Color.white)
-                        .overlay(Circle().strokeBorder(RampStage.accentEdge, lineWidth: 1.5))
-                        .frame(width: i == points.count - 1 ? 11 : 6,
-                               height: i == points.count - 1 ? 11 : 6)
+                        .fill(Color.white)
+                        .overlay(Circle().strokeBorder(RampStage.accentEdge, lineWidth: isLast ? 2.5 : 1.5))
+                        .frame(width: isLast ? 13 : 6, height: isLast ? 13 : 6)
                         .position(points[i])
                 }
             }
