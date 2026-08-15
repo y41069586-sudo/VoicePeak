@@ -216,6 +216,14 @@ struct RampQuizAnswers {
             case .asLongAsIRemember:  return "As long as I can remember"
             }
         }
+        var icon: String {
+            switch self {
+            case .months:             return "calendar"
+            case .aboutAYear:         return "calendar.badge.clock"
+            case .fewYears:           return "clock.arrow.circlepath"
+            case .asLongAsIRemember:  return "infinity"
+            }
+        }
         var chip: String {
             switch self {
             case .months:             return "A few months"
@@ -242,6 +250,15 @@ struct RampQuizAnswers {
             case .dermatologist: return "Seen a dermatologist"
             }
         }
+        var icon: String {
+            switch self {
+            case .drugstore:     return "cart"
+            case .prescription:  return "cross.case"
+            case .antibiotics:   return "pills"
+            case .diet:          return "fork.knife"
+            case .dermatologist: return "stethoscope"
+            }
+        }
     }
 
     /// The emotional weight, asked plainly. It changes no ingredient in the
@@ -257,6 +274,14 @@ struct RampQuizAnswers {
             case .someDays:       return "Some days"
             case .moreThanILetOn: return "More than I let on"
             case .everyMirror:    return "Every time I pass a mirror"
+            }
+        }
+        var icon: String {
+            switch self {
+            case .notMuch:        return "cloud"
+            case .someDays:       return "cloud.sun"
+            case .moreThanILetOn: return "cloud.rain"
+            case .everyMirror:    return "cloud.bolt.rain"
             }
         }
         /// True for the two answers that mean this genuinely weighs on them —
@@ -292,6 +317,16 @@ struct RampQuizAnswers {
             case .friend:    return "A friend told me"
             case .appstore:  return "App Store search"
             case .other:     return "Somewhere else"
+            }
+        }
+        var icon: String {
+            switch self {
+            case .tiktok:    return "music.note"
+            case .instagram: return "camera"
+            case .youtube:   return "play.rectangle"
+            case .friend:    return "person.2"
+            case .appstore:  return "magnifyingglass"
+            case .other:     return "ellipsis.circle"
             }
         }
     }
@@ -506,6 +541,16 @@ struct RampQuizAnswers {
             case .evenTone:         return "fading marks"
             case .smootherTexture:  return "smoother skin"
             case .notThinkAboutIt:  return "skin you don't think about"
+            }
+        }
+
+        var icon: String {
+            switch self {
+            case .fewerBreakouts:   return "allergens"
+            case .calmerSkin:       return "flame"
+            case .evenTone:         return "circle.lefthalf.filled"
+            case .smootherTexture:  return "square.stack.3d.up"
+            case .notThinkAboutIt:  return "checkmark.seal"
             }
         }
 

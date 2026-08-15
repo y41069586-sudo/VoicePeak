@@ -278,7 +278,12 @@ struct RampIntroReadingScreen: View {
             RampStage.accentSoft
             #endif
         }
-        .frame(width: 108, height: 108)
+        // `alignment: .top` — a tall portrait photo, filled into a small
+        // square, has to lose most of its height; centring the crop put the
+        // vertical MIDPOINT of the source photo in the circle, which for a
+        // head-and-shoulders portrait is roughly the collarbone, not the
+        // face. Biasing the crop to the top keeps the face in frame instead.
+        .frame(width: 108, height: 108, alignment: .top)
         .clipShape(Circle())
         .overlay(Circle().strokeBorder(Color.white, lineWidth: 4))
         .overlay(Circle().strokeBorder(RampStage.accentSoft, lineWidth: 4).padding(-4))
@@ -664,7 +669,10 @@ struct RampIntroProgressScreen: View {
 
     private func timelineTile(_ entry: (score: Int, label: String)) -> some View {
         VStack(alignment: .leading, spacing: 0) {
-            avatarPhoto.frame(height: 78).clipped()
+            // `.top` — see the note on `RampIntroReadingScreen.avatar`: a
+            // tall portrait cropped to a short wide strip needs the crop
+            // biased upward or it shows collar, not face.
+            avatarPhoto.frame(height: 78, alignment: .top).clipped()
             VStack(alignment: .leading, spacing: 1) {
                 Text(verbatim: "\(entry.score)")
                     .font(.system(size: 17, weight: .heavy, design: .rounded))

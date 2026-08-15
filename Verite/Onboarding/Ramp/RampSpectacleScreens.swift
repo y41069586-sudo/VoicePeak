@@ -410,7 +410,11 @@ struct RampSampleReadingScreen: View {
             Circle().fill(RampStage.accentSoft)
             #endif
         }
-        .frame(width: 108, height: 108)
+        // `.top` — a tall portrait filled into a small circle otherwise
+        // crops to its vertical midpoint, which lands around the collar on
+        // a head-and-shoulders photo, not the face. See the same note on
+        // `RampIntroReadingScreen.avatar`.
+        .frame(width: 108, height: 108, alignment: .top)
         .clipShape(Circle())
         .overlay(Circle().strokeBorder(Color.white, lineWidth: 4))
         .overlay(Circle().strokeBorder(RampStage.accentSoft, lineWidth: 4).padding(-4))

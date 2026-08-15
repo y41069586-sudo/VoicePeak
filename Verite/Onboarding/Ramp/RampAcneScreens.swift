@@ -491,6 +491,7 @@ struct RampGoalScreen: View {
                     VStack(spacing: VSpace.sm) {
                         ForEach(RampQuizAnswers.Goal.allCases) { goal in
                             RampOptionCard(label: goal.label,
+                                           icon: goal.icon,
                                            selected: selected == goal) {
                                 onSelect(goal)
                             }
@@ -549,39 +550,44 @@ struct RampAcneEmpathyScreen: View {
                 VStack(alignment: .leading, spacing: 0) {
                     Spacer(minLength: VSpace.xxl)
 
-                    Text("WHAT WE HEARD")
-                        .font(VType.micro)
-                        .tracking(3)
-                        .foregroundStyle(RampStage.accentDeep)
-                        .opacity(eyebrowIn ? 1 : 0)
-                        .offset(y: eyebrowIn ? 0 : 6)
-                        .padding(.horizontal, VSpace.lg)
-                        .padding(.bottom, VSpace.md)
+                    // The recap — eyebrow and chips read as ONE unit, not two:
+                    // 6pt between them (barely more than the eyebrow's own
+                    // line height) versus the 40pt that follows before the
+                    // headline. Before, all three pieces sat at roughly the
+                    // same distance apart and read as three equal, unrelated
+                    // things stacked in a row; now there are two groups — the
+                    // recap of what was chosen, then a clear break, then the
+                    // one sentence that's actually new.
+                    VStack(alignment: .leading, spacing: 6) {
+                        Text("WHAT WE HEARD")
+                            .font(VType.micro)
+                            .tracking(3)
+                            .foregroundStyle(RampStage.accentDeep)
 
-                    // Their answers, landing one at a time — the visual proof
-                    // that the last four screens were listened to and not
-                    // just logged.
-                    if !chips.isEmpty {
-                        let row = HStack(spacing: 7) {
-                            ForEach(chips.indices, id: \.self) { i in
-                                Text(LocalizedStringKey(chips[i]))
-                                    .font(.system(size: 12.5, weight: .semibold, design: .rounded))
-                                    .foregroundStyle(RampStage.accentDeep)
-                                    .lineLimit(1)
-                                    .padding(.horizontal, 11).padding(.vertical, 6)
-                                    .background(RampStage.accentSoft, in: Capsule())
-                                    .opacity(i < chipsShown ? 1 : 0)
-                                    .scaleEffect(i < chipsShown ? 1 : 0.6)
+                        if !chips.isEmpty {
+                            let row = HStack(spacing: 7) {
+                                ForEach(chips.indices, id: \.self) { i in
+                                    Text(LocalizedStringKey(chips[i]))
+                                        .font(.system(size: 12.5, weight: .semibold, design: .rounded))
+                                        .foregroundStyle(RampStage.accentDeep)
+                                        .lineLimit(1)
+                                        .padding(.horizontal, 11).padding(.vertical, 6)
+                                        .background(RampStage.accentSoft, in: Capsule())
+                                        .opacity(i < chipsShown ? 1 : 0)
+                                        .scaleEffect(i < chipsShown ? 1 : 0.6)
+                                }
+                            }
+                            ViewThatFits(in: .horizontal) {
+                                row
+                                ScrollView(.horizontal) { row }
+                                    .scrollIndicators(.hidden)
                             }
                         }
-                        ViewThatFits(in: .horizontal) {
-                            row
-                            ScrollView(.horizontal) { row }
-                                .scrollIndicators(.hidden)
-                        }
-                        .padding(.horizontal, VSpace.lg)
-                        .padding(.bottom, VSpace.lg)
                     }
+                    .opacity(eyebrowIn ? 1 : 0)
+                    .offset(y: eyebrowIn ? 0 : 6)
+                    .padding(.horizontal, VSpace.lg)
+                    .padding(.bottom, VSpace.xxl - VSpace.sm)
 
                     Text(LocalizedStringKey(headline))
                         .font(RampStage.serif(28))
@@ -696,6 +702,7 @@ struct RampAcneTriedScreen: View {
                         ForEach(options) { option in
                             RampOptionCard(
                                 label: option.label,
+                                icon: option.icon,
                                 selected: selected.contains(option.rawValue)
                             ) {
                                 toggle(option.rawValue)
@@ -705,6 +712,7 @@ struct RampAcneTriedScreen: View {
                         // "Nothing I know of": clears every flag.
                         RampOptionCard(
                             label: "Nothing yet",
+                            icon: "circle.dashed",
                             selected: selected.isEmpty
                         ) {
                             Haptics.fire(.selection)

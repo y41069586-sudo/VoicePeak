@@ -101,7 +101,7 @@ struct OnboardingRampFlow: View {
             RampQuizScreen(
                 question: "Where did you find SkinFix?",
                 options: RampQuizAnswers.AcquisitionSource.allCases.map {
-                    RampQuizOption(id: $0.rawValue, label: $0.label)
+                    RampQuizOption(id: $0.rawValue, label: $0.label, icon: $0.icon)
                 },
                 selectedID: answers.acquisition?.rawValue
             ) { id in
@@ -119,7 +119,8 @@ struct OnboardingRampFlow: View {
                 question: personalized("How does your skin feel lately?",
                                        named: "%@, how does your skin feel lately?"),
                 options: RampQuizAnswers.SelfRating.allCases.map {
-                    RampQuizOption(id: $0.rawValue, label: $0.label)
+                    RampQuizOption(id: $0.rawValue, label: $0.label,
+                                    icon: selfRatingIcon($0))
                 },
                 selectedID: answers.selfRating?.rawValue
             ) { id in
@@ -131,7 +132,7 @@ struct OnboardingRampFlow: View {
                 chapter: "YOUR SKIN · TWO OF TWO",
                 question: "Your age group?",
                 options: RampQuizAnswers.AgeBand.allCases.map {
-                    RampQuizOption(id: $0.rawValue, label: $0.label)
+                    RampQuizOption(id: $0.rawValue, label: $0.label, icon: ageIcon($0))
                 },
                 selectedID: answers.age?.rawValue
             ) { id in
@@ -151,7 +152,7 @@ struct OnboardingRampFlow: View {
                 chapter: "YOUR LIFE · ONE OF SIX",
                 question: "Your routine, honestly?",
                 options: RampQuizAnswers.RoutineLevel.allCases.map {
-                    RampQuizOption(id: $0.rawValue, label: $0.label)
+                    RampQuizOption(id: $0.rawValue, label: $0.label, icon: routineIcon($0))
                 },
                 selectedID: answers.routine?.rawValue
             ) { id in
@@ -163,7 +164,7 @@ struct OnboardingRampFlow: View {
                 chapter: "YOUR LIFE · TWO OF SIX",
                 question: "Sleep, on an average night?",
                 options: RampQuizAnswers.SleepBucket.allCases.map {
-                    RampQuizOption(id: $0.rawValue, label: $0.label)
+                    RampQuizOption(id: $0.rawValue, label: $0.label, icon: sleepIcon($0))
                 },
                 selectedID: answers.sleep?.rawValue
             ) { id in
@@ -175,7 +176,7 @@ struct OnboardingRampFlow: View {
                 chapter: "YOUR LIFE · THREE OF SIX",
                 question: "Sun protection?",
                 options: RampQuizAnswers.SunProtection.allCases.map {
-                    RampQuizOption(id: $0.rawValue, label: $0.label)
+                    RampQuizOption(id: $0.rawValue, label: $0.label, icon: spfIcon($0))
                 },
                 selectedID: answers.spf?.rawValue
             ) { id in
@@ -205,7 +206,7 @@ struct OnboardingRampFlow: View {
                 chapter: "YOUR ACNE · ONE OF THREE",
                 question: "How long has your skin\nbeen like this?",
                 options: RampQuizAnswers.AcneDuration.allCases.map {
-                    RampQuizOption(id: $0.rawValue, label: $0.label)
+                    RampQuizOption(id: $0.rawValue, label: $0.label, icon: $0.icon)
                 },
                 selectedID: answers.acneDuration?.rawValue
             ) { id in
@@ -229,7 +230,7 @@ struct OnboardingRampFlow: View {
                                        named: "%@, how much does\nit get to you?"),
                 subtitle: "This changes nothing about your plan. It changes how we talk to you.",
                 options: RampQuizAnswers.AcneImpact.allCases.map {
-                    RampQuizOption(id: $0.rawValue, label: $0.label)
+                    RampQuizOption(id: $0.rawValue, label: $0.label, icon: $0.icon)
                 },
                 selectedID: answers.acneImpact?.rawValue
             ) { id in
@@ -334,6 +335,52 @@ struct OnboardingRampFlow: View {
         return String(format: String(localized: String.LocalizationValue(template)), name)
     }
 
+
+    // MARK: Swipe-card icons + descriptors
+
+    private func selfRatingIcon(_ r: RampQuizAnswers.SelfRating) -> String {
+        switch r {
+        case .rough:        return "cloud.rain"
+        case .average:      return "cloud.sun"
+        case .decent:       return "sun.min"
+        case .honestlyGood: return "sun.max.fill"
+        }
+    }
+
+    private func ageIcon(_ a: RampQuizAnswers.AgeBand) -> String {
+        switch a {
+        case .under25:    return "1.circle.fill"
+        case .from25to34: return "2.circle.fill"
+        case .from35to44: return "3.circle.fill"
+        case .over45:     return "4.circle.fill"
+        }
+    }
+
+    private func routineIcon(_ r: RampQuizAnswers.RoutineLevel) -> String {
+        switch r {
+        case .nothing:      return "xmark.circle"
+        case .cleanserOnly: return "drop"
+        case .threePlus:    return "square.stack"
+        case .fullStack:    return "square.stack.3d.up.fill"
+        }
+    }
+
+    private func sleepIcon(_ s: RampQuizAnswers.SleepBucket) -> String {
+        switch s {
+        case .under6:       return "moon"
+        case .sixToSeven:   return "moon.stars"
+        case .sevenToEight: return "bed.double"
+        case .eightPlus:    return "bed.double.fill"
+        }
+    }
+
+    private func spfIcon(_ s: RampQuizAnswers.SunProtection) -> String {
+        switch s {
+        case .daily:     return "sun.max.fill"
+        case .sometimes: return "sun.min"
+        case .whatsSPF:  return "questionmark.circle"
+        }
+    }
 
     // MARK: Navigation
 
