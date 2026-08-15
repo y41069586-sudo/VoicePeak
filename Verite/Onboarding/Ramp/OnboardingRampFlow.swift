@@ -202,12 +202,16 @@ struct OnboardingRampFlow: View {
                 RampAnalytics.quizAnswer(question: "acne_types",
                                          answer: picked.joined(separator: ","))
                 UserDefaults.standard.set(picked, forKey: "dq.acneTypes")
-                Haptics.fire(.selection)
+                // RampPrimaryButton already fires .selection on tap — no
+                // second call here.
                 advance()
             }
         case .sensitivities:
             RampSensitivityScreen(selected: sensitivitiesBinding) {
                 answers.sawSensitivities = true
+                let picked = answers.sensitivities.sorted()
+                RampAnalytics.quizAnswer(question: "sensitivities",
+                                         answer: picked.joined(separator: ","))
                 advance()
             }
         case .brands:
@@ -217,7 +221,6 @@ struct OnboardingRampFlow: View {
                                 RampAnalytics.quizAnswer(question: "brands",
                                                          answer: picked.joined(separator: ","))
                                 UserDefaults.standard.set(picked, forKey: "dq.brands")
-                                Haptics.fire(.selection)
                                 advance()
                             },
                             onSkip: { advance() })
@@ -226,7 +229,6 @@ struct OnboardingRampFlow: View {
                 RampAnalytics.quizAnswer(question: "monthly_spend_bucket",
                                          answer: "\(answers.spendBucket)")
                 UserDefaults.standard.set(answers.spendBucket, forKey: "dq.spendBucket")
-                Haptics.fire(.selection)
                 advance()
             }
         case .theCycle:

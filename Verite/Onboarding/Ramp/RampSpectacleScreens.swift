@@ -301,8 +301,6 @@ struct RampSampleReadingScreen: View {
             .padding(.bottom, 22)
             .frame(maxWidth: .infinity)
             .background(Color.white, in: RoundedRectangle(cornerRadius: 26, style: .continuous))
-            .overlay(RoundedRectangle(cornerRadius: 26, style: .continuous)
-                .strokeBorder(RampStage.hairline, lineWidth: 1))
             .shadow(color: RampStage.ink.opacity(0.16), radius: 26, y: 14)
 
             avatar
@@ -413,7 +411,7 @@ struct RampSplitScreen: View {
                                                  ? RampStage.textTertiary : RampStage.accentDeep)
                                 .padding(.horizontal, 6).padding(.vertical, 1)
                                 .background((metric.tag == "Slower"
-                                             ? RampStage.hair : RampStage.accent.opacity(0.14)),
+                                             ? RampStage.hair : RampStage.accentSoft),
                                             in: Capsule())
                             Spacer()
                             Text(verbatim: "\(Int(metric.value(at: t) * 100))")
@@ -455,7 +453,7 @@ struct RampSplitScreen: View {
             .foregroundStyle(RampStage.accentDeep)
             .padding(.horizontal, VSpace.md)
             .padding(.vertical, 6)
-            .background(RampStage.accent.opacity(0.12), in: Capsule())
+            .background(RampStage.accentSoft, in: Capsule())
             .opacity(showHint ? 1 : 0)
             .padding(.top, VSpace.xs)
 

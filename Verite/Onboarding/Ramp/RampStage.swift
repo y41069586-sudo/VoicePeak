@@ -414,6 +414,7 @@ struct RampOptionCard: View {
         }
         .buttonStyle(PressableStyle())
         .animation(VMotion.gentle, value: selected)
+        .accessibilityAddTraits(selected ? [.isButton, .isSelected] : .isButton)
     }
 
     private var selectionMark: some View {

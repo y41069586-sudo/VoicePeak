@@ -120,10 +120,7 @@ private struct RampMiniClaim: View {
         .frame(maxWidth: .infinity)
         .padding(.vertical, VSpace.sm)
         .background(RampStage.card, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
-        .overlay(
-            RoundedRectangle(cornerRadius: 14, style: .continuous)
-                .strokeBorder(RampStage.hairline, lineWidth: 1)
-        )
+        .rampCardShadow()
     }
 }
 
@@ -256,8 +253,7 @@ struct RampEvidenceScreen: View {
         .padding(13)
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(RampStage.card, in: RoundedRectangle(cornerRadius: 18, style: .continuous))
-        .overlay(RoundedRectangle(cornerRadius: 18, style: .continuous)
-            .strokeBorder(RampStage.hairline, lineWidth: 1))
+        .rampCardShadow()
     }
 }
 
@@ -385,12 +381,8 @@ struct RampDailyReportScreen: View {
         }
         .padding(.horizontal, 12)
         .padding(.vertical, 10)
-        .background(Color.white.opacity(0.9), in: RoundedRectangle(cornerRadius: 16, style: .continuous))
-        .overlay(
-            RoundedRectangle(cornerRadius: 16, style: .continuous)
-                .strokeBorder(RampStage.hairline, lineWidth: 1)
-        )
-        .shadow(color: RampStage.ink.opacity(0.06), radius: 10, y: 5)
+        .background(RampStage.card, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+        .rampCardShadow()
         .animation(VMotion.gentle, value: time)
         .accessibilityLabel("Preview of your daily reminder")
     }
@@ -414,15 +406,11 @@ struct RampDailyReportScreen: View {
             }
             .frame(maxWidth: .infinity)
             .padding(.vertical, VSpace.md)
-            .background(
-                selected
-                    ? AnyShapeStyle(RampStage.accent.opacity(0.12))
-                    : AnyShapeStyle(RampStage.card),
-                in: RoundedRectangle(cornerRadius: 18, style: .continuous)
-            )
+            .background(RampStage.card, in: RoundedRectangle(cornerRadius: 18, style: .continuous))
+            .rampCardShadow()
             .overlay(
                 RoundedRectangle(cornerRadius: 18, style: .continuous)
-                    .strokeBorder(selected ? RampStage.accentEdge : RampStage.hairline, lineWidth: 1)
+                    .strokeBorder(selected ? RampStage.accentEdge : Color.clear, lineWidth: 2)
             )
         }
         .buttonStyle(PressableStyle())
@@ -589,8 +577,6 @@ struct RampPlanPreviewScreen: View {
         .padding(VSpace.lg)
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(Color.white, in: RoundedRectangle(cornerRadius: 20, style: .continuous))
-        .overlay(RoundedRectangle(cornerRadius: 20, style: .continuous)
-            .strokeBorder(RampStage.hairline, lineWidth: 1))
         .shadow(color: RampStage.ink.opacity(0.12), radius: 16, y: 8)
     }
 }

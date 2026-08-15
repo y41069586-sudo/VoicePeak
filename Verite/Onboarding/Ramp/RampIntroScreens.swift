@@ -147,8 +147,7 @@ struct RampIntroHomeScreen: View {
             .foregroundStyle(RampStage.accentDeep)
             .padding(.horizontal, 18)
             .frame(height: 52)
-            .background(RampStage.accent.opacity(0.16),
-                        in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+            .background(RampStage.accentSoft, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
             .padding(.horizontal, 20)
             .padding(.bottom, 18)
 
@@ -192,8 +191,7 @@ struct RampIntroHomeScreen: View {
         }
         .padding(20)
         .background(Color.white, in: RoundedRectangle(cornerRadius: 24, style: .continuous))
-        .overlay(RoundedRectangle(cornerRadius: 24, style: .continuous)
-            .strokeBorder(RampStage.hairline, lineWidth: 1))
+        .rampCardShadow()
     }
 
     private var avatar: some View {
@@ -240,8 +238,7 @@ struct RampIntroHomeScreen: View {
         .padding(18)
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(Color.white, in: RoundedRectangle(cornerRadius: 20, style: .continuous))
-        .overlay(RoundedRectangle(cornerRadius: 20, style: .continuous)
-            .strokeBorder(RampStage.hairline, lineWidth: 1))
+        .rampCardShadow()
     }
 
     private func metricTile(_ label: String, _ value: Int) -> some View {
@@ -266,8 +263,7 @@ struct RampIntroHomeScreen: View {
         .padding(14)
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(Color.white, in: RoundedRectangle(cornerRadius: 18, style: .continuous))
-        .overlay(RoundedRectangle(cornerRadius: 18, style: .continuous)
-            .strokeBorder(RampStage.hairline, lineWidth: 1))
+        .rampCardShadow()
     }
 }
 
@@ -435,8 +431,7 @@ struct RampIntroRoutineScreen: View {
                 }
             }
             .background(Color.white, in: RoundedRectangle(cornerRadius: 20, style: .continuous))
-            .overlay(RoundedRectangle(cornerRadius: 20, style: .continuous)
-                .strokeBorder(RampStage.hairline, lineWidth: 1))
+            .rampCardShadow()
         }
     }
 
@@ -496,7 +491,7 @@ struct RampIntroProgressScreen: View {
                     .foregroundStyle(RampStage.accentDeep)
                     .padding(.horizontal, 12)
                     .frame(height: 30)
-                    .background(RampStage.accent.opacity(0.18), in: Capsule())
+                    .background(RampStage.accentSoft, in: Capsule())
             }
             .padding(.horizontal, 24)
             .padding(.bottom, 18)
@@ -542,8 +537,7 @@ struct RampIntroProgressScreen: View {
         }
         .padding(20)
         .background(Color.white, in: RoundedRectangle(cornerRadius: 24, style: .continuous))
-        .overlay(RoundedRectangle(cornerRadius: 24, style: .continuous)
-            .strokeBorder(RampStage.hairline, lineWidth: 1))
+        .rampCardShadow()
     }
 
     /// The page's headline promises this screen "shows you what actually
@@ -580,8 +574,7 @@ struct RampIntroProgressScreen: View {
         .padding(18)
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(Color.white, in: RoundedRectangle(cornerRadius: 20, style: .continuous))
-        .overlay(RoundedRectangle(cornerRadius: 20, style: .continuous)
-            .strokeBorder(RampStage.hairline, lineWidth: 1))
+        .rampCardShadow()
     }
 
     private var calendarCard: some View {
@@ -615,8 +608,7 @@ struct RampIntroProgressScreen: View {
         }
         .padding(20)
         .background(Color.white, in: RoundedRectangle(cornerRadius: 24, style: .continuous))
-        .overlay(RoundedRectangle(cornerRadius: 24, style: .continuous)
-            .strokeBorder(RampStage.hairline, lineWidth: 1))
+        .rampCardShadow()
     }
 }
 
