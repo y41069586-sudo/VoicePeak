@@ -19,29 +19,29 @@ enum RampStage {
     // correctly on it) and why the accent is a deeper shade of that same
     // ground rather than a second hue — the app is tonal beige, and contrast
     // comes from value, not colour.
-    static let porcelain = Color(hex: "FAF7F1") // light linen background (name kept for call sites)
-    static let recess     = Color(hex: "F4EDDF") // recessed panel
-    static let ink        = Color(hex: "1C1A17") // warm near-black, maximum contrast
-    static let inkSoft    = Color(hex: "6B6053") // secondary text
-    static let inkFaint   = Color(hex: "96897B") // tertiary text
-    static let hair       = Color(hex: "EBE0CE") // warm hairline
+    static let porcelain = Color(hex: "FFFBF3") // light linen background (name kept for call sites)
+    static let recess     = Color(hex: "FBF2DE") // recessed panel
+    static let ink        = Color(hex: "211A12") // warm near-black, maximum contrast
+    static let inkSoft    = Color(hex: "6E6053") // secondary text
+    static let inkFaint   = Color(hex: "998C7E") // tertiary text
+    static let hair       = Color(hex: "F0E1C4") // warm hairline
 
-    // The single accent (light beige) + a much deeper shade for on-light TEXT
-    // (the beige itself only reaches 1.4:1 on the ground) + a soft tint used
-    // as fills/pools. `accentEdge` bounds every filled accent surface: at this
-    // lightness the fill alone does not separate from the ground.
-    static let accent     = Color(hex: "E6D4B4")
-    static let accentEdge = Color(hex: "BCA070")
-    static let accentDeep = Color(hex: "7D5F33")
-    static let glow       = Color(hex: "F4EBD8")
+    // The single accent, now genuine honey-gold rather than sepia beige, + a
+    // deeper shade for on-light TEXT + a soft tint used as fills/pools.
+    // `accentEdge` bounds every filled accent surface so a control still
+    // reads as a control on the lightest fills.
+    static let accent     = Color(hex: "E3A855")
+    static let accentEdge = Color(hex: "C48A3A")
+    static let accentDeep = Color(hex: "8A5A1D")
+    static let glow       = Color(hex: "FBEDD4")
 
     // Warm light pools layered behind the content (names kept for call sites).
-    static let dawnPeach  = Color(hex: "F6E9D4")
-    static let dawnLilac  = Color(hex: "F8F0E2") // (name kept for call sites)
-    static let dawnSky    = Color(hex: "FBF6EA") // (name kept for call sites)
+    static let dawnPeach  = Color(hex: "FBEEDC")
+    static let dawnLilac  = Color(hex: "FDF6EB") // (name kept for call sites)
+    static let dawnSky    = Color(hex: "FFFBF3") // (name kept for call sites)
 
     /// Soft accent tint for icon chips, segmented backgrounds, soft buttons.
-    static let accentSoft = Color(hex: "F5EBD8")
+    static let accentSoft = Color(hex: "FBEDD4")
 
     // Named text roles.
     static let textPrimary   = ink
@@ -144,13 +144,13 @@ struct RampPhoto: View {
     /// Soft warm gradient placeholder — deliberately pretty on its own.
     private var placeholder: some View {
         ZStack {
-            LinearGradient(colors: [Color(hex: "F6EFE3"), Color(hex: "E8DCC8"),
-                                    Color(hex: "D3C3A8")],
+            LinearGradient(colors: [Color(hex: "FCF3E4"), Color(hex: "F0D9AE"),
+                                    Color(hex: "E3B876")],
                            startPoint: .topLeading, endPoint: .bottomTrailing)
             RadialGradient(colors: [.white.opacity(0.55), .clear],
                            center: UnitPoint(x: 0.25, y: 0.2),
                            startRadius: 0, endRadius: 220)
-            RadialGradient(colors: [Color(hex: "F4EBD8").opacity(0.8), .clear],
+            RadialGradient(colors: [Color(hex: "FBEDD4").opacity(0.8), .clear],
                            center: UnitPoint(x: 0.85, y: 0.85),
                            startRadius: 0, endRadius: 260)
         }
@@ -295,9 +295,10 @@ struct TypewriterText: View {
 // MARK: — Buttons
 // ============================================================
 
-/// Primary CTA: a modern, UMax-style button — full-width, bold, a flat solid
-/// blue fill on a generously rounded 20pt rectangle with one tight shadow (no
-/// glossy gradient, no wide glow — those read dated).
+/// Primary CTA: full-width, bold, a honey-gold gradient fill on a generously
+/// rounded 26pt rectangle. The gradient (rather than a flat fill) plus a
+/// warm-tinted shadow is what makes this read as a real, pressable control
+/// instead of a pale disabled-looking chip.
 struct RampPrimaryButton: View {
     let title: String
     var systemImage: String? = nil
@@ -314,15 +315,16 @@ struct RampPrimaryButton: View {
                 Text(LocalizedStringKey(title))
             }
             .font(.system(size: 17, weight: .bold, design: .rounded))
-            // Ink, not white — the beige CTA can't carry white type (1.7:1).
+            // Ink, not white — gold under white type fails contrast; under
+            // warm near-black it clears AA comfortably.
             .foregroundStyle(RampStage.ink)
-            .frame(maxWidth: .infinity, minHeight: 58)
-            .background(RampStage.accent,
-                        in: RoundedRectangle(cornerRadius: 20, style: .continuous))
-            // The pale fill needs the edge to read as a control at all.
-            .overlay(RoundedRectangle(cornerRadius: 20, style: .continuous)
-                .strokeBorder(RampStage.accentEdge, lineWidth: 1.5))
-            .shadow(color: RampStage.ink.opacity(isEnabled ? 0.16 : 0), radius: 12, y: 6)
+            .frame(maxWidth: .infinity, minHeight: 60)
+            .background(
+                LinearGradient(colors: [Color(hex: "F0C170"), Color(hex: "DCA047")],
+                               startPoint: .topLeading, endPoint: .bottomTrailing),
+                in: RoundedRectangle(cornerRadius: 26, style: .continuous)
+            )
+            .shadow(color: RampStage.accentEdge.opacity(isEnabled ? 0.34 : 0), radius: 22, y: 10)
             .opacity(isEnabled ? 1 : 0.4)
         }
         .buttonStyle(PressableStyle())
