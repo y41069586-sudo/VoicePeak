@@ -188,20 +188,21 @@ private struct RampIntroArt: View {
         // one page that needs one: "seven metrics" only reads as seven
         // metrics at a size where you can count them. Pages one, three and
         // four each put the screen their own headline is about in the
-        // trio's centre instead (reading, routine, progress in turn) and
-        // fill the other two slots with the rest of the app, so every page
-        // both answers its own headline and keeps the whole product in view.
+        // trio's centre instead (scan, routine, progress in turn) and fill
+        // the other two slots with the rest of the app, so every page both
+        // answers its own headline and keeps the whole product in view.
         RampFitted(designSize: CGSize(width: 420, height: 470)) {
             switch index {
             case 0:
-                // The overview trio, reading in the middle — page one's line
-                // is "One scan, one real score", and the reading is that
-                // score, so it leads even here, flanked by the two screens
-                // the rest of the app is built from.
+                // The overview trio, the scan in the middle — page one's
+                // line is "One scan, one real score", and the scan is the
+                // "one scan" half of that sentence, so it leads, flanked by
+                // the reading (the "one real score" half) and the rest of
+                // the app.
                 RampPhoneTrio(width: 412) {
-                    RampIntroProgressScreen()
-                } center: {
                     RampIntroReadingScreen()
+                } center: {
+                    RampIntroScanScreen()
                 } right: {
                     RampIntroRoutineScreen()
                 }
