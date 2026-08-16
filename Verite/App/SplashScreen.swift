@@ -167,19 +167,24 @@ struct SplashScreen: View {
 
     /// Fades out in two beats and hands back.
     ///
-    /// The mark, wordmark and halo go first; the white ground follows a
-    /// moment later. Fading all of it together — which is what this did —
-    /// meant the ground thinned at the same rate as the mark, so for the
-    /// length of the fade a ghosted "SkinFix" sat on top of the app's own
-    /// headline and read as a rendering fault rather than as a transition.
-    /// Staggered, the mark always leaves against white, and the app is
-    /// revealed by the ground alone.
+    /// The mark, wordmark and halo go first; the white ground follows only
+    /// once they are ENTIRELY gone. Fading all of it together — which is
+    /// what this did originally — meant the ground thinned at the same rate
+    /// as the mark, so a ghosted "SkinFix" sat on top of the app's own
+    /// headline. An earlier fix staggered the two fades but still started
+    /// the ground's fade before the content's had finished (a ~60ms
+    /// overlap) — enough for the ghost to still show. The wait below now
+    /// matches the content fade's own duration exactly, so there is no
+    /// window where both are translucent at once: the mark always leaves
+    /// against fully opaque white, and the app is revealed by the ground
+    /// alone.
     ///
     /// The final sleep matches the ground's own fade so the view is removed
     /// exactly as it finishes rather than a frame either side.
     private func leave(duration: Double) async {
-        withAnimation(.easeIn(duration: duration * 0.6)) { contentGone = true }
-        try? await Task.sleep(for: .seconds(duration * 0.45))
+        let contentFade = duration * 0.6
+        withAnimation(.easeIn(duration: contentFade)) { contentGone = true }
+        try? await Task.sleep(for: .seconds(contentFade))
         guard !Task.isCancelled else { return }
         withAnimation(.easeOut(duration: duration)) { groundGone = true }
         try? await Task.sleep(for: .seconds(duration))

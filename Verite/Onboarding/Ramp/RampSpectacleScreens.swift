@@ -33,6 +33,19 @@ struct RampBootScreen: View {
     @State private var page = 0
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
+    /// Stays `false` until this view has been through one real SwiftUI
+    /// layout pass. `TabView(.page)` is bridged to a `UIPageViewController`
+    /// underneath, and on its very first pass it has been observed to hand
+    /// its pages a stale width — the CTA loses its gutters and runs edge to
+    /// edge, and the centred copy overflows both sides — before correcting
+    /// itself a frame later. Pinning each page to `GeometryReader`'s
+    /// measured width (below) narrows that window but does not close it,
+    /// because the reader's own first read can race the same bridge. Hiding
+    /// the screen until `.onAppear` has had a runloop turn to let that
+    /// settle closes it outright — and costs nothing, since this view is
+    /// built and mounted while `SplashScreen` still fully covers it.
+    @State private var laidOut = false
+
     private struct IntroPage: Identifiable {
         let id: Int
         let title: String
@@ -102,8 +115,12 @@ struct RampBootScreen: View {
             .padding(.top, VSpace.xs)
         }
         .padding(.bottom, VSpace.lg)
+        .opacity(laidOut ? 1 : 0)
         .animation(VMotion.snappy, value: page)
         .task { await autoAdvance() }
+        .onAppear {
+            DispatchQueue.main.async { laidOut = true }
+        }
     }
 
     /// Plays the carousel by itself — a beat to look at each page, then a
