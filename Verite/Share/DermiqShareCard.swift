@@ -69,7 +69,7 @@ struct DermiqShareCard: View {
                 Image(uiImage: photo).resizable().scaledToFill()
             } else {
                 ZStack {
-                    Circle().fill(DQColor.accentSoft)
+                    Circle().fill(DQColor.accent)
                     Image(systemName: "faceid")
                         .font(.system(size: 30, weight: .light))
                         .foregroundStyle(DQColor.accentBright)
@@ -79,7 +79,7 @@ struct DermiqShareCard: View {
         .frame(width: 108, height: 108)
         .clipShape(Circle())
         .overlay(Circle().strokeBorder(DQColor.surface, lineWidth: 4))
-        .overlay(Circle().strokeBorder(DQColor.accentSoft, lineWidth: 4).padding(-4))
+        .overlay(Circle().strokeBorder(DQColor.accent, lineWidth: 4).padding(-4))
         .shadow(color: DQColor.accentEdge.opacity(0.28), radius: 12, y: 6)
     }
 

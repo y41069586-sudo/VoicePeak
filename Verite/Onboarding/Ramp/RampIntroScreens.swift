@@ -272,10 +272,10 @@ struct RampIntroReadingScreen: View {
             if let ui = RampPhoto.load("SampleFace") {
                 Image(uiImage: ui).resizable().scaledToFill()
             } else {
-                RampStage.accentSoft
+                RampStage.accent
             }
             #else
-            RampStage.accentSoft
+            RampStage.accent
             #endif
         }
         // `alignment: .top` — a tall portrait photo, filled into a small
@@ -286,7 +286,7 @@ struct RampIntroReadingScreen: View {
         .frame(width: 108, height: 108, alignment: .top)
         .clipShape(Circle())
         .overlay(Circle().strokeBorder(Color.white, lineWidth: 4))
-        .overlay(Circle().strokeBorder(RampStage.accentSoft, lineWidth: 4).padding(-4))
+        .overlay(Circle().strokeBorder(RampStage.accent, lineWidth: 4).padding(-4))
         .shadow(color: RampStage.accentEdge.opacity(0.28), radius: 14, y: 8)
     }
 
@@ -552,7 +552,7 @@ struct RampIntroRoutineScreen: View {
                         .font(.system(size: 11, weight: .heavy))
                         .foregroundStyle(.white)
                 } else {
-                    Circle().fill(RampStage.accentSoft)
+                    Circle().fill(RampStage.accent)
                     Text(verbatim: "\(order)")
                         .font(.system(size: 12, weight: .bold, design: .rounded))
                         .foregroundStyle(RampStage.accentDeep)
@@ -696,10 +696,10 @@ struct RampIntroProgressScreen: View {
             if let ui = RampPhoto.load("SampleFace") {
                 Image(uiImage: ui).resizable().scaledToFill()
             } else {
-                RampStage.accentSoft
+                RampStage.accent
             }
             #else
-            RampStage.accentSoft
+            RampStage.accent
             #endif
         }
     }

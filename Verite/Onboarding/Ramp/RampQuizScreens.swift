@@ -34,7 +34,7 @@ struct RampQuizScreen: View {
         GeometryReader { proxy in
             ScrollView {
                 VStack(alignment: .leading, spacing: 0) {
-                    Spacer(minLength: VSpace.xxl)
+                    Spacer(minLength: RampStage.headerClearance)
 
                     if let chapter {
                         Text(LocalizedStringKey(chapter))
@@ -46,7 +46,7 @@ struct RampQuizScreen: View {
                     }
 
                     Text(LocalizedStringKey(question))
-                        .font(RampStage.serif(25))
+                        .font(RampStage.serif(28))
                         .foregroundStyle(RampStage.ink)
                         .lineSpacing(2)
                         .fixedSize(horizontal: false, vertical: true)
@@ -105,7 +105,7 @@ struct RampSensitivityScreen: View {
         GeometryReader { proxy in
             ScrollView {
                 VStack(alignment: .leading, spacing: 0) {
-                    Spacer(minLength: VSpace.xxl)
+                    Spacer(minLength: RampStage.headerClearance)
 
                     Text("YOUR LIFE · FOUR OF SIX")
                         .font(VType.micro).tracking(3)
@@ -113,7 +113,7 @@ struct RampSensitivityScreen: View {
                         .padding(.horizontal, VSpace.lg)
                         .padding(.bottom, VSpace.sm)
                     Text("Anything your skin\nreacts to?")
-                        .font(RampStage.serif(25))
+                        .font(RampStage.serif(28))
                         .foregroundStyle(RampStage.ink)
                         .lineSpacing(2)
                         .fixedSize(horizontal: false, vertical: true)
@@ -182,10 +182,10 @@ struct RampNameScreen: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
-            Spacer(minLength: VSpace.xxl)
+            Spacer(minLength: RampStage.headerClearance)
 
             Text("What should\nwe call you?")
-                .font(RampStage.serif(25))
+                .font(RampStage.serif(28))
                 .foregroundStyle(RampStage.ink)
                 .lineSpacing(2)
                 .padding(.horizontal, VSpace.lg)

@@ -41,26 +41,35 @@ struct OnboardingRampFlow: View {
                         : AnyTransition.asymmetric(insertion: .rampLeafIn, removal: .rampLeafOut)
                 )
 
-            // The thin filling progress hairline sits ABOVE the back chevron.
-            VStack(spacing: VSpace.xs) {
+            // Header: the back button and the progress pill share ONE row.
+            //
+            // They used to be stacked — a full-width 2pt hairline, then a
+            // bare chevron on the row beneath it. That spent two bands of
+            // vertical space on chrome and left the chevron floating with
+            // nothing to sit against. Side by side, the button anchors the
+            // left edge and the pill runs to the right margin, so the header
+            // is one object instead of two loose ones, and the screen below
+            // gets the height back.
+            VStack(spacing: 0) {
                 if step != .boot {
-                    RampProgressLine(fraction: progressFraction)
-                        .padding(.horizontal, VSpace.lg)
-                    HStack {
+                    HStack(spacing: 14) {
                         Button {
                             Haptics.fire(.selection)
                             back()
                         } label: {
-                            Image(systemName: "chevron.left")
+                            Image(systemName: "arrow.left")
                                 .font(.system(size: 17, weight: .semibold))
-                                .foregroundStyle(RampStage.textSecondary)
+                                .foregroundStyle(RampStage.ink)
                                 .frame(width: 44, height: 44)
-                                .contentShape(Rectangle())
+                                .background(Circle().fill(RampStage.card))
+                                .shadow(color: RampStage.ink.opacity(0.10), radius: 10, y: 3)
+                                .contentShape(Circle())
                         }
                         .accessibilityLabel("Back")
-                        Spacer()
+
+                        RampProgressLine(fraction: progressFraction)
                     }
-                    .padding(.leading, VSpace.xs)
+                    .padding(.horizontal, VSpace.lg)
                     .transition(.opacity)
                 }
                 Spacer()

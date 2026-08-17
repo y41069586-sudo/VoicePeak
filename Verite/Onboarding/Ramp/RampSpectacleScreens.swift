@@ -436,10 +436,10 @@ struct RampSampleReadingScreen: View {
             if let ui = RampPhoto.load("SampleFace") {
                 Image(uiImage: ui).resizable().scaledToFill()
             } else {
-                Circle().fill(RampStage.accentSoft)
+                Circle().fill(RampStage.accent)
             }
             #else
-            Circle().fill(RampStage.accentSoft)
+            Circle().fill(RampStage.accent)
             #endif
         }
         // `.top` — a tall portrait filled into a small circle otherwise
@@ -449,7 +449,7 @@ struct RampSampleReadingScreen: View {
         .frame(width: 108, height: 108, alignment: .top)
         .clipShape(Circle())
         .overlay(Circle().strokeBorder(Color.white, lineWidth: 4))
-        .overlay(Circle().strokeBorder(RampStage.accentSoft, lineWidth: 4).padding(-4))
+        .overlay(Circle().strokeBorder(RampStage.accent, lineWidth: 4).padding(-4))
         .shadow(color: RampStage.ink.opacity(0.20), radius: 14, y: 8)
     }
 }

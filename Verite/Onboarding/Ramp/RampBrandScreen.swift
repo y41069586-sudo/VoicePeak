@@ -116,7 +116,7 @@ struct RampBrandScreen: View {
         GeometryReader { proxy in
             ScrollView {
                 VStack(alignment: .leading, spacing: 0) {
-                    Spacer(minLength: VSpace.xxl)
+                    Spacer(minLength: RampStage.headerClearance)
 
                     Text("YOUR LIFE · FIVE OF SIX")
                         .font(VType.micro).tracking(3)
@@ -125,7 +125,7 @@ struct RampBrandScreen: View {
                         .padding(.bottom, VSpace.sm)
 
                     Text("What's already\non your shelf?")
-                        .font(RampStage.serif(25))
+                        .font(RampStage.serif(28))
                         .foregroundStyle(RampStage.ink)
                         .lineSpacing(2)
                         .fixedSize(horizontal: false, vertical: true)
@@ -216,13 +216,14 @@ struct RampBrandScreen: View {
             .frame(maxWidth: .infinity, minHeight: 66)
             // The card stays white in BOTH states — eleven of the twelve logo
             // files are opaque white plates, so a tinted card would frame
-            // every one of them in a visible white rectangle. Separation
-            // from the ground is a shadow now, not a border; selection is
-            // the ring plus the "Added" tag, not a fill.
-            .background(RampStage.card, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
-            .rampCardShadow()
-            .overlay(RoundedRectangle(cornerRadius: 16, style: .continuous)
-                .strokeBorder(isOn ? RampStage.accentEdge : Color.clear, lineWidth: 2))
+            // every one of them in a visible white rectangle. Selection is
+            // the ring plus the "Added" tag, not a fill. (The unselected edge
+            // is a hairline rather than a shadow, matching every other
+            // answer tile in the flow — see `RampOptionCard`.)
+            .background(RampStage.card, in: RoundedRectangle(cornerRadius: 20, style: .continuous))
+            .overlay(RoundedRectangle(cornerRadius: 20, style: .continuous)
+                .strokeBorder(isOn ? RampStage.accentEdge : RampStage.hair,
+                              lineWidth: isOn ? 2 : 1))
         }
         .buttonStyle(PressableStyle())
         .accessibilityAddTraits(isOn ? [.isButton, .isSelected] : .isButton)

@@ -84,7 +84,7 @@ struct RampAcneTypeScreen: View {
         GeometryReader { proxy in
             ScrollView {
                 VStack(alignment: .leading, spacing: 0) {
-                    Spacer(minLength: VSpace.xxl)
+                    Spacer(minLength: RampStage.headerClearance)
 
                     Text("WHERE WE START")
                         .font(VType.micro).tracking(3)
@@ -93,7 +93,7 @@ struct RampAcneTypeScreen: View {
                         .padding(.bottom, VSpace.sm)
 
                     Text("What does yours\nlook like?")
-                        .font(RampStage.serif(25))
+                        .font(RampStage.serif(28))
                         .foregroundStyle(RampStage.ink)
                         .lineSpacing(2)
                         .fixedSize(horizontal: false, vertical: true)
@@ -150,7 +150,10 @@ struct RampAcneTypeScreen: View {
                         RampAcnePhoto(name: photo)
                     } else {
                         ZStack {
-                            RampStage.accentSoft
+                            // `accent`, not `accentSoft`: the tile's own
+                            // background turns accentSoft when picked, and
+                            // this stand-in would dissolve into it.
+                            RampStage.accent
                             Image(systemName: "questionmark")
                                 .font(.system(size: 28, weight: .light))
                                 .foregroundStyle(RampStage.accentDeep)
@@ -158,11 +161,11 @@ struct RampAcneTypeScreen: View {
                     }
                 }
                     .frame(height: 116)
-                    .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+                    .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
                     .overlay(alignment: .topTrailing) {
-                        if isOn { addedBadge.padding(8) }
+                        pickMark(isOn).padding(9)
                     }
-                    .padding(8)
+                    .padding(9)
 
                 VStack(spacing: 1) {
                     Text(LocalizedStringKey(type.label))
@@ -172,27 +175,37 @@ struct RampAcneTypeScreen: View {
                         .font(VType.caption)
                         .foregroundStyle(RampStage.textSecondary)
                 }
-                .padding(.bottom, 12)
+                .padding(.bottom, 13)
             }
             .frame(maxWidth: .infinity)
-            // White always — separation is shadow, selection is the ring
-            // plus the ADDED badge, not a tinted card.
-            .background(RampStage.card, in: RoundedRectangle(cornerRadius: 18, style: .continuous))
-            .rampCardShadow()
-            .overlay(RoundedRectangle(cornerRadius: 18, style: .continuous)
-                .strokeBorder(isOn ? RampStage.accentEdge : Color.clear, lineWidth: 2))
+            // Hairline, not shadow — same language as `RampOptionCard`. A
+            // grid of shadowed tiles reads as six floating objects; a grid of
+            // outlined ones reads as one set of choices.
+            .background(isOn ? RampStage.accentSoft : RampStage.card,
+                        in: RoundedRectangle(cornerRadius: 20, style: .continuous))
+            .overlay(RoundedRectangle(cornerRadius: 20, style: .continuous)
+                .strokeBorder(isOn ? RampStage.accentEdge : RampStage.hair,
+                              lineWidth: isOn ? 2 : 1))
         }
         .buttonStyle(PressableStyle())
     }
 
-    private var addedBadge: some View {
-        Text("ADDED")
-            .font(.system(size: 10, weight: .bold, design: .rounded))
-            .tracking(0.3)
-            .foregroundStyle(RampStage.accentDeep)
-            .padding(.horizontal, 8)
-            .padding(.vertical, 4)
-            .background(RampStage.accentSoft, in: RoundedRectangle(cornerRadius: 8, style: .continuous))
+    /// The pick marker, sitting on the photo's top-right corner. Present
+    /// whether or not the tile is chosen — an empty white disc reads as
+    /// "tappable", and the tick then lands IN it instead of appearing out of
+    /// nowhere. (This replaced an "ADDED" text badge, which said the same
+    /// thing in five times the ink and only after the fact.)
+    private func pickMark(_ isOn: Bool) -> some View {
+        ZStack {
+            Circle()
+                .fill(isOn ? RampStage.accentEdge : Color.white.opacity(0.92))
+                .frame(width: 24, height: 24)
+                .shadow(color: RampStage.ink.opacity(0.12), radius: 4, y: 1)
+            Image(systemName: "checkmark")
+                .font(.system(size: 12, weight: .bold))
+                .foregroundStyle(Color.white)
+                .opacity(isOn ? 1 : 0)
+        }
     }
 }
 
@@ -256,7 +269,7 @@ struct RampSpendScreen: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
-            Spacer(minLength: VSpace.xxl)
+            Spacer(minLength: RampStage.headerClearance)
 
             Text("YOUR LIFE · SIX OF SIX")
                 .font(VType.micro).tracking(3)
@@ -265,7 +278,7 @@ struct RampSpendScreen: View {
                 .padding(.bottom, VSpace.sm)
 
             Text("What do you spend\non your skin a month?")
-                .font(RampStage.serif(25))
+                .font(RampStage.serif(28))
                 .foregroundStyle(RampStage.ink)
                 .lineSpacing(2)
                 .fixedSize(horizontal: false, vertical: true)
@@ -372,7 +385,7 @@ struct RampCycleScreen: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
-            Spacer(minLength: VSpace.xxl)
+            Spacer(minLength: RampStage.headerClearance)
 
             Text("WHY IT KEEPS COMING BACK")
                 .font(VType.micro).tracking(3)
@@ -381,7 +394,7 @@ struct RampCycleScreen: View {
                 .padding(.bottom, VSpace.sm)
 
             Text("Products aren't\nthe problem.")
-                .font(RampStage.serif(25))
+                .font(RampStage.serif(28))
                 .foregroundStyle(RampStage.ink)
                 .lineSpacing(2)
                 .fixedSize(horizontal: false, vertical: true)
@@ -401,7 +414,7 @@ struct RampCycleScreen: View {
                     HStack(spacing: 14) {
                         ZStack {
                             Circle()
-                                .fill(RampStage.accentSoft)
+                                .fill(RampStage.accent)
                                 .frame(width: 38, height: 38)
                             Image(systemName: item.icon)
                                 .font(.system(size: 15, weight: .semibold))
@@ -464,7 +477,7 @@ struct RampGoalScreen: View {
         GeometryReader { proxy in
             ScrollView {
                 VStack(alignment: .leading, spacing: 0) {
-                    Spacer(minLength: VSpace.xxl)
+                    Spacer(minLength: RampStage.headerClearance)
 
                     Text("WHAT BETTER LOOKS LIKE")
                         .font(VType.micro).tracking(3)
@@ -473,7 +486,7 @@ struct RampGoalScreen: View {
                         .padding(.bottom, VSpace.sm)
 
                     Text("In 14 days,\nwhat would you notice?")
-                        .font(RampStage.serif(25))
+                        .font(RampStage.serif(28))
                         .foregroundStyle(RampStage.ink)
                         .lineSpacing(2)
                         .fixedSize(horizontal: false, vertical: true)
@@ -712,7 +725,7 @@ struct RampAcneTriedScreen: View {
         GeometryReader { proxy in
             ScrollView {
                 VStack(alignment: .leading, spacing: 0) {
-                    Spacer(minLength: VSpace.xxl)
+                    Spacer(minLength: RampStage.headerClearance)
 
                     Text("YOUR ACNE · TWO OF THREE")
                         .font(VType.micro).tracking(3)
@@ -721,7 +734,7 @@ struct RampAcneTriedScreen: View {
                         .padding(.bottom, VSpace.sm)
 
                     Text("What have you\nalready tried?")
-                        .font(RampStage.serif(25))
+                        .font(RampStage.serif(28))
                         .foregroundStyle(RampStage.ink)
                         .lineSpacing(2)
                         .fixedSize(horizontal: false, vertical: true)

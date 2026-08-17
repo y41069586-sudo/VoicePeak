@@ -177,7 +177,7 @@ struct RampEvidenceScreen: View {
                     .tracking(3)
                     .foregroundStyle(RampStage.accentDeep)
                 Text("Real actives,\nreal research.")
-                    .font(RampStage.serif(25))
+                    .font(RampStage.serif(28))
                     .foregroundStyle(RampStage.ink)
                     .multilineTextAlignment(.center)
                     .lineSpacing(2)
@@ -406,11 +406,12 @@ struct RampDailyReportScreen: View {
             }
             .frame(maxWidth: .infinity)
             .padding(.vertical, VSpace.md)
-            .background(RampStage.card, in: RoundedRectangle(cornerRadius: 18, style: .continuous))
-            .rampCardShadow()
+            .background(selected ? RampStage.accentSoft : RampStage.card,
+                        in: RoundedRectangle(cornerRadius: 20, style: .continuous))
             .overlay(
-                RoundedRectangle(cornerRadius: 18, style: .continuous)
-                    .strokeBorder(selected ? RampStage.accentEdge : Color.clear, lineWidth: 2)
+                RoundedRectangle(cornerRadius: 20, style: .continuous)
+                    .strokeBorder(selected ? RampStage.accentEdge : RampStage.hair,
+                                  lineWidth: selected ? 2 : 1)
             )
         }
         .buttonStyle(PressableStyle())
@@ -486,7 +487,7 @@ struct RampPlanPreviewScreen: View {
                                 .tracking(3)
                                 .foregroundStyle(RampStage.accentDeep)
                             Text("Your first plan,\nready in seconds.")
-                                .font(RampStage.serif(25))
+                                .font(RampStage.serif(28))
                                 .foregroundStyle(RampStage.ink)
                                 .multilineTextAlignment(.center)
                                 .lineSpacing(2)

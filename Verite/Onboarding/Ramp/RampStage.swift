@@ -22,32 +22,55 @@ enum RampStage {
     // and belongs in the brand, but it has to live in the ACCENT and in
     // photography, not in the canvas everything else sits on.
     static let porcelain = Color.white // flat white background (name kept for call sites)
-    static let recess     = Color(hex: "F3E9DE") // recessed panel — warm, not tinted gold
+    static let recess     = Color(hex: "F8F2EC") // recessed panel — warm, not tinted gold
     static let ink        = Color(hex: "1E1610") // near-black, maximum contrast
     static let inkSoft    = Color(hex: "6D5F52") // secondary text — warm taupe, matches the peach ink
     static let inkFaint   = Color(hex: "BDA894") // tertiary text
-    static let hair       = Color(hex: "F3E5D6") // warm hairline (barely-there, peach-tinted)
+    /// Hairline. Nearly neutral on purpose: it now OUTLINES every answer tile
+    /// (they lost their shadows — see `RampOptionCard`), and a border that
+    /// carries visible hue reads as a coloured box rather than as an edge.
+    static let hair       = Color(hex: "EDE7E1")
 
-    // The accent is pulled straight from the app icon — the light peach of
-    // the bandage and skin, deepening into the coral of the acne blemish —
-    // instead of a generic beige/sand that read as "the same colour on every
-    // screen" and didn't tie back to the mark. Kept ONLY for small,
-    // deliberate uses: selection rings, progress fill, chip backgrounds, the
-    // odd icon. It is never a canvas colour. `accentEdge` is the icon's skin
-    // tone; `accentDeep` is the icon's blemish coral, for on-light TEXT.
-    static let accent     = Color(hex: "F5DCC0")
-    static let accentEdge = Color(hex: "E0995F")
-    static let accentDeep = Color(hex: "C15A3E")
-    static let glow       = Color(hex: "F5DCC0")
+    // The accent is pulled straight from the app icon — the peach of the
+    // bandage and skin — but pushed to a LUMINOUS orange rather than the
+    // burnt terracotta it used to be. The old pair (E0995F → C15A3E) was
+    // muted enough that the CTA read as brown-red on white; the whole flow
+    // inherited that heaviness because the button repeats on 26 screens.
+    // This is the same hue family, saturated and lifted, which is what makes
+    // it read as one bright brand colour instead of a wash.
+    //
+    //   accentEdge — THE brand orange. Rings, progress fill, indicators:
+    //                anywhere a pale peach would vanish on white.
+    //   accentDeep — the same orange taken dark enough to clear AA as TEXT
+    //                on white (4.6:1). Eyebrows, chip labels, small icons.
+    //                Never a fill behind white text at this size.
+    //   accent     — soft peach tint. Chip and band fills, halos.
+    static let accent     = Color(hex: "FBE0CB")
+    static let accentEdge = Color(hex: "F5883F")
+    static let accentDeep = Color(hex: "B45718")
+    static let glow       = Color(hex: "FBE0CB")
 
     /// A warm peach glow. Named for the three-pool "dawn light" backdrop it
     /// was built for; that backdrop is gone (see `RampBackdrop`) and this is
     /// what outlived it — the photo-placeholder wash and the sign-in screen's
     /// halo. `dawnLilac` and `dawnSky` went with the pools.
-    static let dawnPeach  = Color(hex: "F8DFC9")
+    static let dawnPeach  = Color(hex: "FCE7D6")
 
     /// Soft accent tint for icon chips, segmented backgrounds, soft buttons.
-    static let accentSoft = Color(hex: "F5DCC0")
+    /// Lighter than `accent` — this one sits UNDER text and under the
+    /// disabled CTA, where the fuller tint would fight the label.
+    static let accentSoft = Color(hex: "FDF1E8")
+
+    /// The brand's one gradient, swept horizontally (not on the diagonal).
+    /// A diagonal sweep across a 58pt-tall pill puts its darkest point in a
+    /// corner, so the button's own top edge is a different colour from its
+    /// bottom edge and the shape stops reading as flat. Left-to-right keeps
+    /// the whole top edge one tone, which is what makes the CTA look pressed
+    /// out of a single sheet.
+    static let accentGradient = LinearGradient(
+        colors: [Color(hex: "EE7B32"), Color(hex: "F9A55C")],
+        startPoint: .leading, endPoint: .trailing
+    )
 
     // Named text roles.
     static let textPrimary   = ink
@@ -62,6 +85,18 @@ enum RampStage {
     /// Total conceptual screens (for the progress hairline). Derived from the
     /// step enum so removing/adding a step keeps the progress bar exact.
     static var screenCount: Int { RampStep.allCases.count }
+
+    /// How far down a screen's own content starts, so it clears the header
+    /// (`OnboardingRampFlow` draws that on top, in the same ZStack — nothing
+    /// pushes the content down for us).
+    ///
+    /// The header is 8pt of top padding plus a 44pt round button, so it ends
+    /// at 52. Every screen used to open on `VSpace.xxl` (48) and therefore
+    /// began UNDER the chrome by a few points; it only looked fine because
+    /// the first thing down there was a short eyebrow line. With the
+    /// headlines a size larger, that margin is gone. One named constant, so
+    /// the next person to change the header height has one number to move.
+    static let headerClearance: CGFloat = 64
 
     /// Friendly rounded display face — the GlamUp voice. (Name kept from the
     /// serif era so every call site keeps working; the look is SF Rounded.)
@@ -296,6 +331,15 @@ struct RampGrain: View {
 // MARK: — Progress (one thin filling hairline)
 // ============================================================
 
+/// The filling progress pill.
+///
+/// This was a 2pt hairline spanning the full width above the back chevron.
+/// Two problems: at that weight the fill was a thread rather than a colour,
+/// so the one element whose whole job is "you are getting somewhere" was the
+/// faintest thing on the screen; and stacking it on its own row above the
+/// chevron spent two bands of vertical space on chrome. It is now a 7pt pill
+/// sitting INLINE with the back button (see `OnboardingRampFlow`), which is
+/// both the clearer signal and the shorter header.
 struct RampProgressLine: View {
     /// 0…1.
     let fraction: Double
@@ -303,15 +347,13 @@ struct RampProgressLine: View {
     var body: some View {
         GeometryReader { geo in
             ZStack(alignment: .leading) {
-                Capsule().fill(RampStage.hair)
-                // Edge, not accent: this hairline is 2pt tall, too thin to
-                // carry an outline, so it takes the darker tone outright.
+                Capsule().fill(RampStage.accentSoft)
                 Capsule()
-                    .fill(RampStage.accentEdge)
-                    .frame(width: geo.size.width * max(0, min(1, fraction)))
+                    .fill(RampStage.accentGradient)
+                    .frame(width: max(7, geo.size.width * max(0, min(1, fraction))))
             }
         }
-        .frame(height: 2)
+        .frame(height: 7)
         .animation(VMotion.gentle, value: fraction)
         .accessibilityElement()
         .accessibilityLabel("onboarding.progress")
@@ -389,25 +431,30 @@ extension View {
     func rampCardShadow() -> some View { modifier(RampCardShadow()) }
 }
 
-/// Primary CTA: full-width, bold, on the brand's own skin→blemish gradient —
-/// the exact fill `DQPrimaryButton` uses in the app proper, so the button the
-/// user taps twenty times during onboarding is the same button that greets
-/// them afterwards.
+/// Primary CTA: a full-width pill on the brand's orange sweep — the exact
+/// fill `DQPrimaryButton` uses in the app proper, so the button the user taps
+/// twenty times during onboarding is the same button that greets them
+/// afterwards.
 ///
-/// This replaced a solid near-black fill. On a warm peach ground, a black
-/// slab is the one shape on screen that belongs to no palette; repeated on
-/// 26 screens it made the whole flow read as monochrome-with-an-accent
-/// rather than as one warm thing. The coral end of the gradient is dark
-/// enough to carry white text, so nothing is lost on contrast.
+/// DISABLED IS A COLOUR, NOT A DIMMER. It used to be the enabled button at
+/// 35% opacity, which produced a washed-out ghost of the gradient — visibly
+/// the same object, just faint, so it read as "loading" rather than as "not
+/// yet". It is now a flat pale-peach pill with muted text: a different,
+/// finished-looking control that plainly is not the CTA.
+///
+/// CONTRAST NOTE. White on the light end of this gradient is around 2.5:1 —
+/// short of AA, and a deliberate call: this is the brand orange the product
+/// is being built around, at 17pt bold on a 58pt pill. Do not "fix" it by
+/// darkening the sweep into the old burnt terracotta; if it ever has to
+/// clear AA, the honest fix is a solid `accentDeep` fill.
 struct RampPrimaryButton: View {
     let title: String
     var systemImage: String? = nil
     var isEnabled: Bool = true
     let action: () -> Void
 
-    /// Skin → blemish, matching `DQColor.accentGradient` exactly.
-    static let fill = LinearGradient(colors: [RampStage.accentEdge, RampStage.accentDeep],
-                                     startPoint: .topLeading, endPoint: .bottomTrailing)
+    /// The brand sweep, matching `DQColor.accentGradient` exactly.
+    static let fill = RampStage.accentGradient
 
     var body: some View {
         Button {
@@ -419,19 +466,25 @@ struct RampPrimaryButton: View {
                 Text(LocalizedStringKey(title))
             }
             .font(.system(size: 17, weight: .bold, design: .rounded))
-            .foregroundStyle(Color.white)
+            .foregroundStyle(isEnabled ? Color.white : RampStage.inkFaint)
             .frame(maxWidth: .infinity, minHeight: 58)
-            .background(Self.fill,
-                        in: RoundedRectangle(cornerRadius: 26, style: .continuous))
+            .background {
+                // A capsule, not a 26pt rounded rect. At 58pt tall those two
+                // are only 3pt apart, and that 3pt is the whole difference
+                // between a pill and a slightly-soft box — the shape reads as
+                // resolved rather than as "rounded a bit".
+                Capsule().fill(isEnabled ? AnyShapeStyle(Self.fill)
+                                         : AnyShapeStyle(RampStage.accentSoft))
+            }
             // Tightened from 0.34/r20 — a coloured shadow that wide reads as
             // a glow around the button rather than as the button sitting on
             // the page, and on a white ground it haloed visibly into the
             // margins. Same colour, less of it, dropped closer.
-            .shadow(color: RampStage.accentDeep.opacity(isEnabled ? 0.22 : 0), radius: 14, y: 7)
-            .opacity(isEnabled ? 1 : 0.35)
+            .shadow(color: RampStage.accentEdge.opacity(isEnabled ? 0.34 : 0), radius: 16, y: 8)
         }
         .buttonStyle(PressableStyle())
         .disabled(!isEnabled)
+        .animation(VMotion.gentle, value: isEnabled)
     }
 }
 
@@ -479,23 +532,26 @@ struct RampOptionCard: View {
             HStack(spacing: 14) {
                 if let icon {
                     Image(systemName: icon)
-                        .font(.system(size: 19, weight: .regular))
+                        .font(.system(size: 18, weight: .regular))
                         .foregroundStyle(selected ? RampStage.accentDeep : RampStage.inkFaint)
                         .frame(width: 22, height: 22)
                 }
                 Text(LocalizedStringKey(label))
                     .font(VType.bodyLarge.weight(.semibold))
                     .foregroundStyle(RampStage.ink)
-                Spacer(minLength: 0)
+                    .fixedSize(horizontal: false, vertical: true)
+                Spacer(minLength: 8)
                 selectionMark
             }
             .padding(.horizontal, 18)
-            .frame(maxWidth: .infinity, minHeight: 62, alignment: .leading)
-            .background(RampStage.card, in: RoundedRectangle(cornerRadius: 18, style: .continuous))
-            .rampCardShadow()
+            .padding(.vertical, 14)
+            .frame(maxWidth: .infinity, minHeight: 68, alignment: .leading)
+            .background(selected ? RampStage.accentSoft : RampStage.card,
+                        in: RoundedRectangle(cornerRadius: 20, style: .continuous))
             .overlay(
-                RoundedRectangle(cornerRadius: 18, style: .continuous)
-                    .strokeBorder(selected ? RampStage.accentEdge : Color.clear, lineWidth: 2)
+                RoundedRectangle(cornerRadius: 20, style: .continuous)
+                    .strokeBorder(selected ? RampStage.accentEdge : RampStage.hair,
+                                  lineWidth: selected ? 2 : 1)
             )
         }
         .buttonStyle(PressableStyle())
@@ -503,16 +559,28 @@ struct RampOptionCard: View {
         .accessibilityAddTraits(selected ? [.isButton, .isSelected] : .isButton)
     }
 
+    /// Always present, empty or filled — never appearing out of nowhere.
+    ///
+    /// The old version drew nothing at all until a tile was chosen, so an
+    /// untouched screen was a stack of rows with a ragged right edge and no
+    /// visible affordance, and choosing one POPPED a mark into space that had
+    /// been empty. A hollow ring costs nothing, lines the rows up on the
+    /// right, and says "pick one" before anything is picked.
     private var selectionMark: some View {
-        Group {
-            if selected {
-                ZStack {
-                    Circle().fill(RampStage.accentEdge).frame(width: 22, height: 22)
-                    Image(systemName: "checkmark")
-                        .font(.system(size: 11, weight: .bold))
-                        .foregroundStyle(Color.white)
-                }
-            }
+        ZStack {
+            Circle()
+                .strokeBorder(RampStage.hair, lineWidth: 1.5)
+                .frame(width: 24, height: 24)
+                .opacity(selected ? 0 : 1)
+            Circle()
+                .fill(RampStage.accentEdge)
+                .frame(width: 24, height: 24)
+                .opacity(selected ? 1 : 0)
+                .scaleEffect(selected ? 1 : 0.6)
+            Image(systemName: "checkmark")
+                .font(.system(size: 12, weight: .bold))
+                .foregroundStyle(Color.white)
+                .opacity(selected ? 1 : 0)
         }
     }
 }

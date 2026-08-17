@@ -38,29 +38,36 @@ enum DQColor {
     /// icon, pale enough that white cards still lift off it.
     static let background      = Color.white
     static let surface         = Color(hex: "FFFFFF")
-    static let surfaceElevated = Color(hex: "F3E9DE")
-    /// COLOUR 1 · skin — the icon's pale bandage peach. Chips, soft fills,
+    static let surfaceElevated = Color(hex: "F8F2EC")
+    /// COLOUR 1 · skin — the pale bandage peach. Chips, soft fills,
     /// segmented backgrounds.
-    static let accent          = Color(hex: "F5DCC0")
-    /// COLOUR 1, deeper — the icon's skin tone. Selection rings, progress
-    /// fills, bar fills: anywhere the pale peach would vanish on white.
-    static let accentEdge      = Color(hex: "E0995F")
-    /// COLOUR 2 · blemish — the icon's coral. Accent TEXT and icons on light
-    /// surfaces (clears AA), and the primary CTA fill.
-    static let accentBright    = Color(hex: "C15A3E")
+    static let accent          = Color(hex: "FBE0CB")
+    /// THE brand orange. Selection rings, progress fills, bar fills:
+    /// anywhere the pale peach would vanish on white. Kept identical to
+    /// `RampStage.accentEdge` — the app and its onboarding are one product,
+    /// and the user meets this colour on a button 26 times before they ever
+    /// reach the app proper.
+    static let accentEdge      = Color(hex: "F5883F")
+    /// The same orange taken dark enough to clear AA as TEXT on white.
+    /// Accent text and small icons on light surfaces — never a fill behind
+    /// white text.
+    static let accentBright    = Color(hex: "B45718")
     /// Soft accent tint for icon chips, segmented backgrounds, soft fills.
-    static let accentSoft      = Color(hex: "F5DCC0")
+    static let accentSoft      = Color(hex: "FDF1E8")
     /// Not black — the palette's own hue at its darkest. Text and icons only.
     static let textPrimary     = Color(hex: "1E1610")
     static let textSecondary   = Color(hex: "6D5F52")
     static let deltaUp         = Color(hex: "1F9D6B")
     static let deltaDown       = Color(hex: "DE5B4E")
 
-    /// Skin → blemish. The primary CTA fill, the scan line, and anywhere the
-    /// brand needs to be a surface rather than a detail.
+    /// The brand sweep — the primary CTA fill, the scan line, and anywhere
+    /// the brand needs to be a surface rather than a detail. Horizontal, not
+    /// diagonal: on a wide pill a diagonal puts the darkest point in one
+    /// corner, so the top edge and the bottom edge are different colours and
+    /// the shape stops reading as flat.
     static let accentGradient = LinearGradient(
-        colors: [accentEdge, accentBright],
-        startPoint: .topLeading, endPoint: .bottomTrailing
+        colors: [Color(hex: "EE7B32"), Color(hex: "F9A55C")],
+        startPoint: .leading, endPoint: .trailing
     )
 
     /// Hairline stroke — now reserved for the rare case a border is still
@@ -102,13 +109,11 @@ enum DQRadius {
 // MARK: — Core reusable pieces
 // ============================================================
 
-/// Primary CTA: full-width bold white label on the brand's own skin→blemish
-/// gradient. This replaced a solid near-black fill. Black won on contrast
-/// and lost on everything else: the biggest shape on almost every screen was
-/// the one element that belonged to no palette, so the app read as "warm
-/// accent applied to a black-and-white app" rather than as one warm thing.
-/// The gradient is dark enough at its coral end to carry white text, so the
-/// contrast argument survives the swap.
+/// Primary CTA: a full-width pill, bold white label, on the brand's orange
+/// sweep. Kept in lockstep with `RampPrimaryButton` — shape, height, shadow
+/// and disabled treatment — so the button that carried the user through
+/// onboarding is the same object once they are inside the app. See the notes
+/// there on the disabled colour and on the contrast trade-off.
 struct DQPrimaryButton: View {
     let title: String
     var systemImage: String? = nil
@@ -125,17 +130,19 @@ struct DQPrimaryButton: View {
                 Text(LocalizedStringKey(title))
             }
             .font(Font.system(size: 17, weight: .bold, design: .rounded))
-            .foregroundStyle(Color.white)
+            .foregroundStyle(isEnabled ? Color.white : DQColor.textSecondary.opacity(0.55))
             .frame(maxWidth: .infinity, minHeight: 58)
-            .background(DQColor.accentGradient,
-                        in: RoundedRectangle(cornerRadius: 26, style: .continuous))
+            .background {
+                Capsule().fill(isEnabled ? AnyShapeStyle(DQColor.accentGradient)
+                                         : AnyShapeStyle(DQColor.accentSoft))
+            }
             // Matches RampPrimaryButton — see the note there on why the
             // coloured shadow is this restrained.
-            .shadow(color: DQColor.accentBright.opacity(isEnabled ? 0.22 : 0), radius: 14, y: 7)
-            .opacity(isEnabled ? 1 : 0.35)
+            .shadow(color: DQColor.accentEdge.opacity(isEnabled ? 0.34 : 0), radius: 16, y: 8)
         }
         .buttonStyle(PressableStyle(brightenOnPress: true))
         .disabled(!isEnabled)
+        .animation(VMotion.gentle, value: isEnabled)
     }
 }
 
