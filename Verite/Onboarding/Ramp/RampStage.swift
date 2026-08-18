@@ -86,6 +86,17 @@ enum RampStage {
     /// step enum so removing/adding a step keeps the progress bar exact.
     static var screenCount: Int { RampStep.allCases.count }
 
+    /// The air between answer tiles — rows in a list, and both axes of the
+    /// photo grid.
+    ///
+    /// It was 8pt (`VSpace.sm`) in the lists and 12pt in the grid. At 8, a
+    /// stack of five 68pt tiles reads as one ruled block rather than as five
+    /// separate things to choose between: the gap is smaller than the tiles'
+    /// own 20pt corner radius, so the eye never gets a clean break between
+    /// them. The gap has to beat the radius to register as a gap at all,
+    /// which is the floor this is set against.
+    static let tileGap: CGFloat = 14
+
     /// How far down a screen's own content starts, so it clears the header
     /// (`OnboardingRampFlow` draws that on top, in the same ZStack — nothing
     /// pushes the content down for us).

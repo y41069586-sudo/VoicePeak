@@ -136,7 +136,7 @@ struct RampBrandScreen: View {
                         .padding(.horizontal, VSpace.lg)
                         .padding(.top, VSpace.lg)
 
-                    LazyVStack(spacing: 10) {
+                    LazyVStack(spacing: RampStage.tileGap) {
                         ForEach(matches) { brand in
                             row(brand)
                         }

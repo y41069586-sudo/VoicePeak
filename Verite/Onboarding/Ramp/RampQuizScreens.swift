@@ -61,7 +61,7 @@ struct RampQuizScreen: View {
                     // No per-tile stagger: the tiles ride in with the screen's
                     // own push. A second entrance animation on top of the
                     // transition is exactly what made the advance feel glitchy.
-                    VStack(spacing: VSpace.sm) {
+                    VStack(spacing: RampStage.tileGap) {
                         ForEach(options) { option in
                             RampOptionCard(
                                 label: option.label,
@@ -117,7 +117,7 @@ struct RampSensitivityScreen: View {
 
                     Spacer().frame(height: VSpace.xl)
 
-                    VStack(spacing: VSpace.sm) {
+                    VStack(spacing: RampStage.tileGap) {
                         ForEach(options, id: \.rawValue) { option in
                             RampOptionCard(
                                 label: option.label,

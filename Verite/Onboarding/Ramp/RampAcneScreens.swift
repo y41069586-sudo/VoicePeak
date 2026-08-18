@@ -42,8 +42,12 @@ import SwiftUI
 /// rights, and the stock libraries put exactly that case behind a separate
 /// "sensitive use" licence that a standard purchase does NOT include — so a
 /// face here would breach the licence we bought, quite apart from any claim
-/// the person could bring. Cropped to skin, none of that attaches. It also
-/// happens to be the better tile: these frames are wider than they are tall.
+/// the person could bring. Cropped to skin, none of that attaches.
+///
+/// The tile crops each frame to a SQUARE sized off the column. The supplied
+/// files are landscape, but they are pure texture — there is no subject to
+/// lose — and a square is what stops the grid reading as six letterboxed
+/// bands with their labels crushed underneath.
 struct RampAcneTypeScreen: View {
     @Binding var selected: Set<String>
     let onAdvance: () -> Void
@@ -77,8 +81,8 @@ struct RampAcneTypeScreen: View {
                  photo: nil, hint: "The scan will tell us"),
     ]
 
-    private let columns = [GridItem(.flexible(), spacing: 12),
-                           GridItem(.flexible(), spacing: 12)]
+    private let columns = [GridItem(.flexible(), spacing: RampStage.tileGap),
+                           GridItem(.flexible(), spacing: RampStage.tileGap)]
 
     var body: some View {
         GeometryReader { proxy in
@@ -102,7 +106,7 @@ struct RampAcneTypeScreen: View {
 
                     Spacer().frame(height: VSpace.lg)
 
-                    LazyVGrid(columns: columns, spacing: 12) {
+                    LazyVGrid(columns: columns, spacing: RampStage.tileGap) {
                         ForEach(Self.types) { type in
                             tile(type)
                         }
@@ -154,14 +158,21 @@ struct RampAcneTypeScreen: View {
                         }
                     }
                 }
-                    .frame(height: 116)
-                    .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+                    // Square, sized off the column — not a fixed 116pt
+                    // strip. At that height the photo was a letterbox band
+                    // with the label crammed under it, and a grid of six
+                    // read as squashed however much gap sat between the
+                    // tiles. A square is also the crop these macro frames
+                    // want: they are pure texture, so nothing is lost.
+                    .frame(maxWidth: .infinity)
+                    .aspectRatio(1, contentMode: .fit)
+                    .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
                     .overlay(alignment: .topTrailing) {
-                        pickMark(isOn).padding(9)
+                        pickMark(isOn).padding(10)
                     }
-                    .padding(9)
+                    .padding(10)
 
-                VStack(spacing: 1) {
+                VStack(spacing: 3) {
                     Text(LocalizedStringKey(type.label))
                         .font(VType.bodyLarge.weight(.semibold))
                         .foregroundStyle(RampStage.ink)
@@ -169,7 +180,9 @@ struct RampAcneTypeScreen: View {
                         .font(VType.caption)
                         .foregroundStyle(RampStage.textSecondary)
                 }
-                .padding(.bottom, 13)
+                .padding(.horizontal, 10)
+                .padding(.top, 2)
+                .padding(.bottom, 16)
             }
             .frame(maxWidth: .infinity)
             // Hairline, not shadow — same language as `RampOptionCard`. A
@@ -477,7 +490,7 @@ struct RampGoalScreen: View {
 
                     Spacer().frame(height: VSpace.xl)
 
-                    VStack(spacing: VSpace.sm) {
+                    VStack(spacing: RampStage.tileGap) {
                         ForEach(RampQuizAnswers.Goal.allCases) { goal in
                             RampOptionCard(label: goal.label,
                                            icon: goal.icon,
@@ -719,7 +732,7 @@ struct RampAcneTriedScreen: View {
 
                     Spacer().frame(height: VSpace.xl)
 
-                    VStack(spacing: VSpace.sm) {
+                    VStack(spacing: RampStage.tileGap) {
                         ForEach(options) { option in
                             RampOptionCard(
                                 label: option.label,
