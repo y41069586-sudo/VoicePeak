@@ -827,6 +827,20 @@ struct RampSignInScreen: View {
     @State private var currentNonce: String?
     @State private var authError = false
 
+    /// Both provider buttons are measured from ONE height, because Apple's
+    /// button sizes its own label from that height and exposes no way to set
+    /// it: `SignInWithAppleButton` draws its title at roughly 43% of the
+    /// button, which at 58pt is a ~25pt SF Pro label. The Google button beside
+    /// it was hard-coded to 17pt rounded — visibly smaller, and in a different
+    /// typeface — so the pair never looked like one control. Deriving Google's
+    /// label from the same height and ratio keeps them matched if the height
+    /// ever moves; hard-coding a size here would just re-create the drift.
+    private static let providerButtonHeight: CGFloat = 58
+    private static var providerLabelSize: CGFloat { providerButtonHeight * 0.43 }
+    /// Apple's glyph sits at about a third of the button's height; the G is
+    /// matched to it so neither mark looks like the bigger brand.
+    private static var providerGlyphSize: CGFloat { providerButtonHeight * 0.34 }
+
     var body: some View {
         VStack(spacing: 0) {
             Spacer()
@@ -883,7 +897,7 @@ struct RampSignInScreen: View {
                     handleApple(result)
                 }
                 .signInWithAppleButtonStyle(.black)
-                .frame(height: 58)
+                .frame(height: Self.providerButtonHeight)
                 .clipShape(Capsule())
 
                 // Google — only when configured (GoogleSignIn SDK + client IDs).
@@ -894,12 +908,16 @@ struct RampSignInScreen: View {
                     } label: {
                         HStack(spacing: 10) {
                             GoogleGLogo()
-                                .frame(width: 20, height: 20)
+                                .frame(width: Self.providerGlyphSize,
+                                       height: Self.providerGlyphSize)
                             Text("Continue with Google")
                         }
-                        .font(.system(size: 17, weight: .semibold, design: .rounded))
+                        // `.default`, not `.rounded`: Apple's button draws its
+                        // title in plain SF Pro, and a rounded face next to it
+                        // reads as a different button even at the same size.
+                        .font(.system(size: Self.providerLabelSize, weight: .medium))
                         .foregroundStyle(Color(red: 0.23, green: 0.23, blue: 0.24))
-                        .frame(maxWidth: .infinity, minHeight: 58)
+                        .frame(maxWidth: .infinity, minHeight: Self.providerButtonHeight)
                         .background(Color.white, in: Capsule())
                         .overlay(Capsule().strokeBorder(RampStage.hairline, lineWidth: 1))
                     }
@@ -1000,11 +1018,20 @@ struct RampSignInScreen: View {
 // MARK: — Google "G" mark (authentic four colors)
 // ============================================================
 
-/// The recognizable Google "G" drawn as four arc segments in the brand palette
-/// (blue #4285F4, green #34A853, yellow #FBBC05, red #EA4335) plus the blue
-/// crossbar. This is a hand-built approximation for the mock button — if real
-/// Google Sign-In is wired up, replace it with Google's official asset to stay
-/// within their branding guidelines.
+/// The Google "G", drawn from the official mark's own geometry.
+///
+/// It used to be four stroked arcs and a rectangle, guessed by eye. That
+/// cannot come out right: the real mark is not a ring with a bar through it.
+/// Its four segments have different sweeps, the terminals are cut square on
+/// specific angles, and the crossbar meets the blue arc at a precise height —
+/// a stroked circle gets all three wrong at once, which is why the logo read
+/// as "a coloured ring" rather than as Google's.
+///
+/// These are the published paths of the four-colour mark, transcribed into a
+/// 48 × 48 space and scaled to whatever frame the caller gives it. Google's
+/// brand terms require the mark to be used as supplied and never redrawn, so
+/// this must stay a faithful transcription: adjust the FRAME if it needs to be
+/// bigger or smaller, never the coordinates.
 struct GoogleGLogo: View {
     private let blue   = Color(red: 0.259, green: 0.522, blue: 0.957) // #4285F4
     private let green  = Color(red: 0.204, green: 0.659, blue: 0.325) // #34A853
@@ -1013,41 +1040,111 @@ struct GoogleGLogo: View {
 
     var body: some View {
         GeometryReader { geo in
+            // Uniform, and centred — the mark is square, so fitting it into a
+            // non-square frame must letterbox rather than stretch.
             let side = min(geo.size.width, geo.size.height)
-            let lw = side * 0.22
-            let center = CGPoint(x: geo.size.width / 2, y: geo.size.height / 2)
-            let radius = (side - lw) / 2
+            let s = side / 48
+            let dx = (geo.size.width - side) / 2
+            let dy = (geo.size.height - side) / 2
 
-            ZStack {
-                // Blue: right side, sweeping down into the crossbar area.
-                arc(from: -20, to: 90, radius: radius, lineWidth: lw, center: center)
-                    .foregroundStyle(blue)
-                // Green: bottom-left.
-                arc(from: 90, to: 160, radius: radius, lineWidth: lw, center: center)
-                    .foregroundStyle(green)
-                // Yellow: left.
-                arc(from: 160, to: 230, radius: radius, lineWidth: lw, center: center)
-                    .foregroundStyle(yellow)
-                // Red: top.
-                arc(from: 230, to: 340, radius: radius, lineWidth: lw, center: center)
-                    .foregroundStyle(red)
-                // The crossbar: blue bar from the center out to the right edge.
-                Rectangle()
-                    .fill(blue)
-                    .frame(width: radius + lw / 2, height: lw)
-                    .position(x: center.x + (radius + lw / 2) / 2, y: center.y)
+            ZStack(alignment: .topLeading) {
+                shape(bluePath).fill(blue)
+                shape(greenPath).fill(green)
+                shape(yellowPath).fill(yellow)
+                shape(redPath).fill(red)
             }
+            .frame(width: side, height: side)
+            .scaleEffect(s, anchor: .topLeading)
+            .frame(width: side, height: side, alignment: .topLeading)
+            .offset(x: dx, y: dy)
         }
+        .accessibilityHidden(true)
     }
 
-    private func arc(from start: Double, to end: Double, radius: CGFloat,
-                     lineWidth: CGFloat, center: CGPoint) -> some View {
-        Path { path in
-            path.addArc(center: center, radius: radius,
-                        startAngle: .degrees(start), endAngle: .degrees(end),
-                        clockwise: false)
-        }
-        .stroke(style: StrokeStyle(lineWidth: lineWidth, lineCap: .butt))
+    private func shape(_ build: @escaping (inout Path) -> Void) -> Path {
+        var path = Path()
+        build(&path)
+        return path
+    }
+
+    // The four segments, clockwise from the right. Coordinates are the
+    // published mark's, in its own 48 × 48 box.
+
+    private func bluePath(_ p: inout Path) {
+        p.move(to: CGPoint(x: 46.98, y: 24.55))
+        p.addCurve(to: CGPoint(x: 46.60, y: 20.00),
+                   control1: CGPoint(x: 46.98, y: 22.98),
+                   control2: CGPoint(x: 46.83, y: 21.46))
+        p.addLine(to: CGPoint(x: 24.00, y: 20.00))
+        p.addLine(to: CGPoint(x: 24.00, y: 29.02))
+        p.addLine(to: CGPoint(x: 36.94, y: 29.02))
+        p.addCurve(to: CGPoint(x: 32.16, y: 36.20),
+                   control1: CGPoint(x: 36.36, y: 31.98),
+                   control2: CGPoint(x: 34.68, y: 34.50))
+        p.addLine(to: CGPoint(x: 39.89, y: 42.20))
+        p.addCurve(to: CGPoint(x: 46.98, y: 24.55),
+                   control1: CGPoint(x: 44.40, y: 38.02),
+                   control2: CGPoint(x: 46.98, y: 31.84))
+        p.closeSubpath()
+    }
+
+    private func greenPath(_ p: inout Path) {
+        p.move(to: CGPoint(x: 24.00, y: 48.00))
+        p.addCurve(to: CGPoint(x: 39.89, y: 42.19),
+                   control1: CGPoint(x: 30.48, y: 48.00),
+                   control2: CGPoint(x: 35.93, y: 45.87))
+        p.addLine(to: CGPoint(x: 32.16, y: 36.19))
+        p.addCurve(to: CGPoint(x: 24.00, y: 38.49),
+                   control1: CGPoint(x: 30.01, y: 37.64),
+                   control2: CGPoint(x: 27.24, y: 38.49))
+        p.addCurve(to: CGPoint(x: 10.53, y: 28.58),
+                   control1: CGPoint(x: 17.74, y: 38.49),
+                   control2: CGPoint(x: 12.43, y: 34.27))
+        p.addLine(to: CGPoint(x: 2.55, y: 34.77))
+        p.addCurve(to: CGPoint(x: 24.00, y: 48.00),
+                   control1: CGPoint(x: 6.51, y: 42.62),
+                   control2: CGPoint(x: 14.62, y: 48.00))
+        p.closeSubpath()
+    }
+
+    private func yellowPath(_ p: inout Path) {
+        p.move(to: CGPoint(x: 10.53, y: 28.59))
+        p.addCurve(to: CGPoint(x: 9.77, y: 24.00),
+                   control1: CGPoint(x: 10.05, y: 27.14),
+                   control2: CGPoint(x: 9.77, y: 25.60))
+        // The SVG's smooth curve: control1 is control2 of the segment above,
+        // reflected through the shared point.
+        p.addCurve(to: CGPoint(x: 10.53, y: 19.41),
+                   control1: CGPoint(x: 9.77, y: 22.40),
+                   control2: CGPoint(x: 10.04, y: 20.86))
+        p.addLine(to: CGPoint(x: 2.55, y: 13.22))
+        p.addCurve(to: CGPoint(x: 0.00, y: 24.00),
+                   control1: CGPoint(x: 0.92, y: 16.46),
+                   control2: CGPoint(x: 0.00, y: 20.12))
+        p.addCurve(to: CGPoint(x: 2.56, y: 34.78),
+                   control1: CGPoint(x: 0.00, y: 27.88),
+                   control2: CGPoint(x: 0.92, y: 31.54))
+        p.addLine(to: CGPoint(x: 10.53, y: 28.59))
+        p.closeSubpath()
+    }
+
+    private func redPath(_ p: inout Path) {
+        p.move(to: CGPoint(x: 24.00, y: 9.50))
+        p.addCurve(to: CGPoint(x: 33.21, y: 13.10),
+                   control1: CGPoint(x: 27.54, y: 9.50),
+                   control2: CGPoint(x: 30.71, y: 10.72))
+        p.addLine(to: CGPoint(x: 40.06, y: 6.25))
+        p.addCurve(to: CGPoint(x: 24.00, y: 0.00),
+                   control1: CGPoint(x: 35.90, y: 2.38),
+                   control2: CGPoint(x: 30.47, y: 0.00))
+        p.addCurve(to: CGPoint(x: 2.56, y: 13.22),
+                   control1: CGPoint(x: 14.62, y: 0.00),
+                   control2: CGPoint(x: 6.51, y: 5.38))
+        p.addLine(to: CGPoint(x: 10.54, y: 19.41))
+        p.addCurve(to: CGPoint(x: 24.00, y: 9.50),
+                   control1: CGPoint(x: 12.43, y: 13.72),
+                   control2: CGPoint(x: 17.74, y: 9.50))
+        p.closeSubpath()
     }
 }
 
