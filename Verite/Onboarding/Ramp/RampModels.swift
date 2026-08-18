@@ -62,9 +62,10 @@ enum RampStep: Int, CaseIterable {
     // price is read against.
     case spend           // 18 — what you already spend each month
     case theCycle        // 19 — the loop, named
-    // Outcome visualization: what 14 days with SkinFix actually looks like,
-    // before any product or price enters the conversation.
-    case skinProgress    // 20 — 14-day transformation preview with metrics
+    // The fortnight, as a schedule rather than a claim: what happens on
+    // which days, ending on the second scan rather than on a promise about
+    // their face. No product and no price enters the conversation here.
+    case skinProgress    // 20 — the fourteen days, staged day by day
     // The goal-setting act. Everything downstream — the curve, the plan, the
     // paywall headline — refers back to the sentence chosen here.
     case goal            // 21 — "what does better look like for you?"
