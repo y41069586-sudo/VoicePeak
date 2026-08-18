@@ -12,8 +12,8 @@ import os
 ///
 ///   opening → the acne chapter (kind → how long → what you've tried →
 ///   what it costs → what we heard) → demo → questions → insights
-///   → spend → the loop → skin progress → tiers → goal → the reading
-///   → the curve → the plan → commitment → daily ritual → handoff (the scan).
+///   → spend → the loop → skin progress → goal → the reading → the curve
+///   → the plan → commitment → daily ritual → handoff (the scan).
 ///
 /// Quiz selection IS the advance. (Case names are kept stable so analytics and
 /// the routing stay compatible with earlier builds.)
@@ -62,18 +62,16 @@ enum RampStep: Int, CaseIterable {
     // price is read against.
     case spend           // 18 — what you already spend each month
     case theCycle        // 19 — the loop, named
-    // The new progressive disclosure: skin transformation → product tiers →
-    // goal setting. This moves from outcome visualization (what you'll see)
-    // to product choice (what you'll use) to personal commitment.
+    // Outcome visualization: what 14 days with SkinFix actually looks like,
+    // before any product or price enters the conversation.
     case skinProgress    // 20 — 14-day transformation preview with metrics
-    case productTiers    // 21 — choose your plan tier
     // The goal-setting act. Everything downstream — the curve, the plan, the
     // paywall headline — refers back to the sentence chosen here.
-    case goal            // 22 — "what does better look like for you?"
-    case theReading      // 23 — visible processing + prediction range
-    case theCurve        // 24 — where do you land?
-    case planPreview     // 25 — your first plan, previewed
-    case evidence        // 26 — the science behind the plan (tappable sources)
+    case goal            // 21 — "what does better look like for you?"
+    case theReading      // 22 — visible processing + prediction range
+    case theCurve        // 23 — where do you land?
+    case planPreview     // 24 — your first plan, previewed
+    case evidence        // 25 — the science behind the plan (tappable sources)
     // Attribution sits here, not at position 3 and not right after the
     // signature. It serves our reporting, not the user, so it used to sit at
     // position 3 — a screen that takes before anything has been given — and
@@ -84,11 +82,11 @@ enum RampStep: Int, CaseIterable {
     // behind it), so the ask is earned here too — and putting it BEFORE
     // commitment means nothing interrupts the signature → reminder-time →
     // sign-in → scan run that follows.
-    case attribution     // 27 — "where did you find us?" (marketing attribution)
-    case commitment      // 28 — sign your 14-day commitment
-    case dailyRitual     // 29 — time choice + notifications
-    case signIn          // 30 — register before the first scan
-    case handoff         // 31 — "now, the real you" → the scan
+    case attribution     // 26 — "where did you find us?" (marketing attribution)
+    case commitment      // 27 — sign your 14-day commitment
+    case dailyRitual     // 28 — time choice + notifications
+    case signIn          // 29 — register before the first scan
+    case handoff         // 30 — "now, the real you" → the scan
 
     var next: RampStep? { RampStep(rawValue: rawValue + 1) }
     var previous: RampStep? { RampStep(rawValue: rawValue - 1) }
@@ -120,7 +118,6 @@ enum RampStep: Int, CaseIterable {
         case .spend:          return "spend"
         case .theCycle:       return "the_cycle"
         case .skinProgress:   return "skin_progress"
-        case .productTiers:   return "product_tiers"
         case .goal:           return "goal"
         case .theReading:     return "the_reading"
         case .theCurve:       return "the_curve"

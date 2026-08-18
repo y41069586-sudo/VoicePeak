@@ -288,8 +288,6 @@ struct OnboardingRampFlow: View {
             RampCycleScreen { advance() }
         case .skinProgress:
             RampSkinProgressScreen(answers: answers) { advance() }
-        case .productTiers:
-            RampProductTiersScreen(answers: answers) { advance() }
         case .goal:
             RampGoalScreen(selected: answers.goal) { goal in
                 answers.goal = goal
