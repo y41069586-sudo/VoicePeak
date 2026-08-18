@@ -70,6 +70,21 @@ struct OnboardingRampFlow: View {
                         RampProgressLine(fraction: progressFraction)
                     }
                     .padding(.horizontal, VSpace.lg)
+                    .padding(.bottom, 12)
+                    // The header floats over a ScrollView, so on the long
+                    // screens (the photo grid, the brand shelf) the content
+                    // scrolled straight under the button and the pill and
+                    // collided with them. A white ground that fades out
+                    // below dissolves whatever passes beneath it instead —
+                    // opaque where the chrome is, gone by the time it would
+                    // clip the first row.
+                    .background {
+                        LinearGradient(colors: [.white, .white,
+                                                Color.white.opacity(0)],
+                                       startPoint: .top, endPoint: .bottom)
+                            .ignoresSafeArea(edges: .top)
+                            .allowsHitTesting(false)
+                    }
                     .transition(.opacity)
                 }
                 Spacer()
@@ -124,7 +139,6 @@ struct OnboardingRampFlow: View {
             RampNameScreen(name: nameBinding) { advance() }
         case .quizSelfRating:
             RampQuizScreen(
-                chapter: "YOUR SKIN · ONE OF TWO",
                 question: personalized("How does your skin feel lately?",
                                        named: "%@, how does your skin feel lately?"),
                 options: RampQuizAnswers.SelfRating.allCases.map {
@@ -138,7 +152,6 @@ struct OnboardingRampFlow: View {
             }
         case .quizAge:
             RampQuizScreen(
-                chapter: "YOUR SKIN · TWO OF TWO",
                 question: "Your age group?",
                 options: RampQuizAnswers.AgeBand.allCases.map {
                     RampQuizOption(id: $0.rawValue, label: $0.label, icon: ageIcon($0))
@@ -158,7 +171,6 @@ struct OnboardingRampFlow: View {
             ) { advance() }
         case .quizRoutine:
             RampQuizScreen(
-                chapter: "YOUR LIFE · ONE OF SIX",
                 question: "Your routine, honestly?",
                 options: RampQuizAnswers.RoutineLevel.allCases.map {
                     RampQuizOption(id: $0.rawValue, label: $0.label, icon: routineIcon($0))
@@ -170,7 +182,6 @@ struct OnboardingRampFlow: View {
             }
         case .quizSleep:
             RampQuizScreen(
-                chapter: "YOUR LIFE · TWO OF SIX",
                 question: "Sleep, on an average night?",
                 options: RampQuizAnswers.SleepBucket.allCases.map {
                     RampQuizOption(id: $0.rawValue, label: $0.label, icon: sleepIcon($0))
@@ -182,7 +193,6 @@ struct OnboardingRampFlow: View {
             }
         case .quizSPF:
             RampQuizScreen(
-                chapter: "YOUR LIFE · THREE OF SIX",
                 question: "Sun protection?",
                 options: RampQuizAnswers.SunProtection.allCases.map {
                     RampQuizOption(id: $0.rawValue, label: $0.label, icon: spfIcon($0))
@@ -212,7 +222,6 @@ struct OnboardingRampFlow: View {
             }
         case .acneDuration:
             RampQuizScreen(
-                chapter: "YOUR ACNE · ONE OF THREE",
                 question: "How long has your skin\nbeen like this?",
                 options: RampQuizAnswers.AcneDuration.allCases.map {
                     RampQuizOption(id: $0.rawValue, label: $0.label, icon: $0.icon)
@@ -234,10 +243,9 @@ struct OnboardingRampFlow: View {
             }
         case .acneImpact:
             RampQuizScreen(
-                chapter: "YOUR ACNE · THREE OF THREE",
                 question: personalized("Be honest — how much\ndoes it get to you?",
                                        named: "%@, how much does\nit get to you?"),
-                subtitle: "This changes nothing about your plan. It changes how we talk to you.",
+                subtitle: "Changes how we talk to you, not your plan.",
                 options: RampQuizAnswers.AcneImpact.allCases.map {
                     RampQuizOption(id: $0.rawValue, label: $0.label, icon: $0.icon)
                 },

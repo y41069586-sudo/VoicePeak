@@ -10,12 +10,16 @@ struct RampQuizOption: Identifiable {
     var icon: String? = nil
 }
 
-/// Calm question layout: a chapter eyebrow, a serif question, and a stack of
-/// airy answer tiles. Selection is the advance — a gentle settle, a soft
-/// haptic, and the flow moves on. No "Next", no energy.
+/// Calm question layout: a question and a stack of airy answer tiles.
+/// Selection is the advance — a gentle settle, a soft haptic, and the flow
+/// moves on. No "Next", no energy.
+///
+/// There is no chapter eyebrow. Every question used to open with one
+/// ("YOUR LIFE · ONE OF SIX") in the accent colour, directly above the
+/// headline. It said what the progress pill in the header already says, in
+/// the loudest ink on the screen, and it cost the question its first line of
+/// space — so the screen led with bookkeeping instead of with the question.
 struct RampQuizScreen: View {
-    /// Editorial chapter label, e.g. "YOUR SKIN · ONE OF THREE".
-    var chapter: String? = nil
     let question: String
     /// One optional line under the question. Reserved for questions that
     /// need to say why they're being asked — the emotional ones, where the
@@ -36,17 +40,8 @@ struct RampQuizScreen: View {
                 VStack(alignment: .leading, spacing: 0) {
                     Spacer(minLength: RampStage.headerClearance)
 
-                    if let chapter {
-                        Text(LocalizedStringKey(chapter))
-                            .font(VType.micro)
-                            .tracking(3)
-                            .foregroundStyle(RampStage.accentDeep)
-                            .padding(.horizontal, VSpace.lg)
-                            .padding(.bottom, VSpace.sm)
-                    }
-
                     Text(LocalizedStringKey(question))
-                        .font(RampStage.serif(28))
+                        .font(RampStage.serif(26, weight: .semibold))
                         .foregroundStyle(RampStage.ink)
                         .lineSpacing(2)
                         .fixedSize(horizontal: false, vertical: true)
@@ -107,18 +102,13 @@ struct RampSensitivityScreen: View {
                 VStack(alignment: .leading, spacing: 0) {
                     Spacer(minLength: RampStage.headerClearance)
 
-                    Text("YOUR LIFE · FOUR OF SIX")
-                        .font(VType.micro).tracking(3)
-                        .foregroundStyle(RampStage.accentDeep)
-                        .padding(.horizontal, VSpace.lg)
-                        .padding(.bottom, VSpace.sm)
                     Text("Anything your skin\nreacts to?")
-                        .font(RampStage.serif(28))
+                        .font(RampStage.serif(26, weight: .semibold))
                         .foregroundStyle(RampStage.ink)
                         .lineSpacing(2)
                         .fixedSize(horizontal: false, vertical: true)
                         .padding(.horizontal, VSpace.lg)
-                    Text("We'll build your plan around it — no ingredient you flagged.")
+                    Text("Your plan will avoid it.")
                         .font(VType.body)
                         .foregroundStyle(RampStage.textSecondary)
                         .fixedSize(horizontal: false, vertical: true)
@@ -185,7 +175,7 @@ struct RampNameScreen: View {
             Spacer(minLength: RampStage.headerClearance)
 
             Text("What should\nwe call you?")
-                .font(RampStage.serif(28))
+                .font(RampStage.serif(26, weight: .semibold))
                 .foregroundStyle(RampStage.ink)
                 .lineSpacing(2)
                 .padding(.horizontal, VSpace.lg)

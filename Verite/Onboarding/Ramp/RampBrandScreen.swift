@@ -118,20 +118,14 @@ struct RampBrandScreen: View {
                 VStack(alignment: .leading, spacing: 0) {
                     Spacer(minLength: RampStage.headerClearance)
 
-                    Text("YOUR LIFE · FIVE OF SIX")
-                        .font(VType.micro).tracking(3)
-                        .foregroundStyle(RampStage.accentDeep)
-                        .padding(.horizontal, VSpace.lg)
-                        .padding(.bottom, VSpace.sm)
-
                     Text("What's already\non your shelf?")
-                        .font(RampStage.serif(28))
+                        .font(RampStage.serif(26, weight: .semibold))
                         .foregroundStyle(RampStage.ink)
                         .lineSpacing(2)
                         .fixedSize(horizontal: false, vertical: true)
                         .padding(.horizontal, VSpace.lg)
 
-                    Text("Pick everything you use. Your plan is built around what you already own instead of asking you to rebuy it.")
+                    Text("Pick everything you already use.")
                         .font(VType.body)
                         .foregroundStyle(RampStage.textSecondary)
                         .fixedSize(horizontal: false, vertical: true)

@@ -86,20 +86,14 @@ struct RampAcneTypeScreen: View {
                 VStack(alignment: .leading, spacing: 0) {
                     Spacer(minLength: RampStage.headerClearance)
 
-                    Text("WHERE WE START")
-                        .font(VType.micro).tracking(3)
-                        .foregroundStyle(RampStage.accentDeep)
-                        .padding(.horizontal, VSpace.lg)
-                        .padding(.bottom, VSpace.sm)
-
                     Text("What does yours\nlook like?")
-                        .font(RampStage.serif(28))
+                        .font(RampStage.serif(26, weight: .semibold))
                         .foregroundStyle(RampStage.ink)
                         .lineSpacing(2)
                         .fixedSize(horizontal: false, vertical: true)
                         .padding(.horizontal, VSpace.lg)
 
-                    Text("Pick everything you recognise — most skin has more than one kind. Not sure is a fine answer.")
+                    Text("Pick everything you recognise.")
                         .font(VType.body)
                         .foregroundStyle(RampStage.textSecondary)
                         .fixedSize(horizontal: false, vertical: true)
@@ -271,20 +265,14 @@ struct RampSpendScreen: View {
         VStack(alignment: .leading, spacing: 0) {
             Spacer(minLength: RampStage.headerClearance)
 
-            Text("YOUR LIFE · SIX OF SIX")
-                .font(VType.micro).tracking(3)
-                .foregroundStyle(RampStage.accentDeep)
-                .padding(.horizontal, VSpace.lg)
-                .padding(.bottom, VSpace.sm)
-
             Text("What do you spend\non your skin a month?")
-                .font(RampStage.serif(28))
+                .font(RampStage.serif(26, weight: .semibold))
                 .foregroundStyle(RampStage.ink)
                 .lineSpacing(2)
                 .fixedSize(horizontal: false, vertical: true)
                 .padding(.horizontal, VSpace.lg)
 
-            Text("Roughly is fine. Cleansers, creams, treatments — everything you've been trying.")
+            Text("Roughly is fine.")
                 .font(VType.body)
                 .foregroundStyle(RampStage.textSecondary)
                 .fixedSize(horizontal: false, vertical: true)
@@ -387,14 +375,8 @@ struct RampCycleScreen: View {
         VStack(alignment: .leading, spacing: 0) {
             Spacer(minLength: RampStage.headerClearance)
 
-            Text("WHY IT KEEPS COMING BACK")
-                .font(VType.micro).tracking(3)
-                .foregroundStyle(RampStage.accentDeep)
-                .padding(.horizontal, VSpace.lg)
-                .padding(.bottom, VSpace.sm)
-
             Text("Products aren't\nthe problem.")
-                .font(RampStage.serif(28))
+                .font(RampStage.serif(26, weight: .semibold))
                 .foregroundStyle(RampStage.ink)
                 .lineSpacing(2)
                 .fixedSize(horizontal: false, vertical: true)
@@ -479,20 +461,14 @@ struct RampGoalScreen: View {
                 VStack(alignment: .leading, spacing: 0) {
                     Spacer(minLength: RampStage.headerClearance)
 
-                    Text("WHAT BETTER LOOKS LIKE")
-                        .font(VType.micro).tracking(3)
-                        .foregroundStyle(RampStage.accentDeep)
-                        .padding(.horizontal, VSpace.lg)
-                        .padding(.bottom, VSpace.sm)
-
                     Text("In 14 days,\nwhat would you notice?")
-                        .font(RampStage.serif(28))
+                        .font(RampStage.serif(26, weight: .semibold))
                         .foregroundStyle(RampStage.ink)
                         .lineSpacing(2)
                         .fixedSize(horizontal: false, vertical: true)
                         .padding(.horizontal, VSpace.lg)
 
-                    Text("Pick the one that would actually matter to you. Your plan is built toward it.")
+                    Text("Your plan is built toward it.")
                         .font(VType.body)
                         .foregroundStyle(RampStage.textSecondary)
                         .fixedSize(horizontal: false, vertical: true)
@@ -727,20 +703,14 @@ struct RampAcneTriedScreen: View {
                 VStack(alignment: .leading, spacing: 0) {
                     Spacer(minLength: RampStage.headerClearance)
 
-                    Text("YOUR ACNE · TWO OF THREE")
-                        .font(VType.micro).tracking(3)
-                        .foregroundStyle(RampStage.accentDeep)
-                        .padding(.horizontal, VSpace.lg)
-                        .padding(.bottom, VSpace.sm)
-
                     Text("What have you\nalready tried?")
-                        .font(RampStage.serif(28))
+                        .font(RampStage.serif(26, weight: .semibold))
                         .foregroundStyle(RampStage.ink)
                         .lineSpacing(2)
                         .fixedSize(horizontal: false, vertical: true)
                         .padding(.horizontal, VSpace.lg)
 
-                    Text("Pick everything. Knowing what didn't hold is how we avoid handing you the same thing again.")
+                    Text("So we don't hand you the same thing again.")
                         .font(VType.body)
                         .foregroundStyle(RampStage.textSecondary)
                         .fixedSize(horizontal: false, vertical: true)

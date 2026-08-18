@@ -36,7 +36,7 @@ struct RampCurveScreen: View {
 
             VStack(spacing: VSpace.md) {
                 headline
-                    .font(RampStage.serif(28))
+                    .font(RampStage.serif(26, weight: .semibold))
                     .foregroundStyle(RampStage.ink)
                     .multilineTextAlignment(.center)
                     .lineSpacing(2)
@@ -177,7 +177,7 @@ struct RampEvidenceScreen: View {
                     .tracking(3)
                     .foregroundStyle(RampStage.accentDeep)
                 Text("Real actives,\nreal research.")
-                    .font(RampStage.serif(28))
+                    .font(RampStage.serif(26, weight: .semibold))
                     .foregroundStyle(RampStage.ink)
                     .multilineTextAlignment(.center)
                     .lineSpacing(2)
@@ -287,7 +287,7 @@ struct RampDailyReportScreen: View {
 
             VStack(spacing: VSpace.md) {
                 Text("A gentle note,\nonce a day.")
-                    .font(RampStage.serif(28))
+                    .font(RampStage.serif(26, weight: .semibold))
                     .foregroundStyle(RampStage.ink)
                     .multilineTextAlignment(.center)
                     .lineSpacing(2)
@@ -487,7 +487,7 @@ struct RampPlanPreviewScreen: View {
                                 .tracking(3)
                                 .foregroundStyle(RampStage.accentDeep)
                             Text("Your first plan,\nready in seconds.")
-                                .font(RampStage.serif(28))
+                                .font(RampStage.serif(26, weight: .semibold))
                                 .foregroundStyle(RampStage.ink)
                                 .multilineTextAlignment(.center)
                                 .lineSpacing(2)
@@ -662,7 +662,7 @@ struct RampCommitmentScreen: View {
                     .tracking(3)
                     .foregroundStyle(RampStage.accentDeep)
                 headline
-                    .font(RampStage.serif(28))
+                    .font(RampStage.serif(26, weight: .semibold))
                     .foregroundStyle(RampStage.ink)
                     .multilineTextAlignment(.center)
                     .lineSpacing(2)
