@@ -252,12 +252,6 @@ struct OnboardingRampFlow: View {
                 answers.acneImpact = RampQuizAnswers.AcneImpact(rawValue: id)
                 recordAnswer(question: "acne_impact", answer: id)
             }
-        case .acneEmpathy:
-            RampAcneEmpathyScreen(
-                headline: answers.acneEmpathyHeadline,
-                message: answers.acneEmpathyBody,
-                chips: answers.acneChips
-            ) { advance() }
         case .sensitivities:
             RampSensitivityScreen(selected: sensitivitiesBinding) {
                 answers.sawSensitivities = true

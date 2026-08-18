@@ -11,8 +11,8 @@ import os
 /// them.
 ///
 ///   opening → the offer (the fortnight, then the loop it replaces)
-///   → the acne chapter (kind → how long → what you've tried → what it costs
-///   → what we heard) → demo → questions → insights → goal → the reading
+///   → the acne chapter (kind → how long → what you've tried → what it costs)
+///   → demo → questions → insights → goal → the reading
 ///   → the curve → the plan → commitment → daily ritual → handoff (the scan).
 ///
 /// Quiz selection IS the advance. (Case names are kept stable so analytics and
@@ -47,17 +47,21 @@ enum RampStep: Int, CaseIterable {
     // mid-sentence: we asked the one question that matters and then changed
     // the subject to ourselves.
     //
-    // These three questions and the interstitial that follows are the answer.
-    // They ask how long it has been going on, what has already been tried,
-    // and what it actually costs them — and then say something true back
+    // These three questions are the answer. They ask how long it has been
+    // going on, what has already been tried, and what it actually costs them,
     // before any product appears. Two of the three feed the plan (duration
     // sets the ramp, history keeps us from re-selling what already failed);
     // the third feeds nothing and is asked anyway, which is the point.
+    //
+    // `acneEmpathy` used to close the chapter here — an interstitial that
+    // echoed these answers back before the demo. It was cut along with the
+    // copy that fed it (`acneChips`, `acneEmpathyHeadline`, `acneEmpathyBody`)
+    // and `acneTypePhoto`, none of which had another reader. All recoverable
+    // from git.
     case acneDuration    // 4  — how long has this been going on
     case acneTried       // 5  — what have you already tried
     case acneImpact      // 6  — how much does it get to you
-    case acneEmpathy     // 7  — what we heard, said back
-    case sampleReading   // 8  — the real results chart, previewed
+    case sampleReading   // 7  — the real results chart, previewed
     // `theSplit` — "What fourteen days can move", four metric bars driven by
     // a DAY 1 / DAY 14 slider — used to sit here. It was cut as a duplicate:
     // `skinProgress` now opens the funnel at step 1 saying the same thing,
@@ -66,18 +70,18 @@ enum RampStep: Int, CaseIterable {
     // twice, once before the questions and once in the middle of them, spends
     // a screen to tell the reader something they were told first.
     // `RampSplitScreen`, `RampSplitMetric` and `RampMorphSlider` went with it.
-    case quizSelfRating  // 9  — Q · your skin
-    case quizAge         // 10 — Q · your skin
-    case insightSkin     // 11 — mirrored insight, chapter 1
+    case quizSelfRating  // 8  — Q · your skin
+    case quizAge         // 9  — Q · your skin
+    case insightSkin     // 10 — mirrored insight, chapter 1
     // Asked once, immediately after the first insight — so the name is given
     // in exchange for something, not before anything.
-    case name            // 12 — "what should we call you?" (optional)
-    case quizRoutine     // 13 — Q · your life
-    case quizSleep       // 14 — Q · your life
-    case quizSPF         // 15 — Q · your life
-    case insightLife     // 16 — mirrored insight, chapter 2
-    case sensitivities   // 17 — allergies the routine must avoid
-    case brands          // 18 — what's already on the shelf (names, never logos)
+    case name            // 11 — "what should we call you?" (optional)
+    case quizRoutine     // 12 — Q · your life
+    case quizSleep       // 13 — Q · your life
+    case quizSPF         // 14 — Q · your life
+    case insightLife     // 15 — mirrored insight, chapter 2
+    case sensitivities   // 16 — allergies the routine must avoid
+    case brands          // 17 — what's already on the shelf (names, never logos)
     // `spend` — "what do you spend on your skin a month?", a slider over six
     // buckets — used to sit here, ahead of `theCycle`, as the anchor every
     // later price was read against. It was cut because it earns that anchor
@@ -89,11 +93,11 @@ enum RampStep: Int, CaseIterable {
     //
     // The goal-setting act. Everything downstream — the curve, the plan, the
     // paywall headline — refers back to the sentence chosen here.
-    case goal            // 19 — "what does better look like for you?"
-    case theReading      // 20 — visible processing + prediction range
-    case theCurve        // 21 — where do you land?
-    case planPreview     // 22 — your first plan, previewed
-    case evidence        // 23 — the science behind the plan (tappable sources)
+    case goal            // 18 — "what does better look like for you?"
+    case theReading      // 19 — visible processing + prediction range
+    case theCurve        // 20 — where do you land?
+    case planPreview     // 21 — your first plan, previewed
+    case evidence        // 22 — the science behind the plan (tappable sources)
     // Attribution sits here, not at position 3 and not right after the
     // signature. It serves our reporting, not the user, so it used to sit at
     // position 3 — a screen that takes before anything has been given — and
@@ -104,11 +108,11 @@ enum RampStep: Int, CaseIterable {
     // behind it), so the ask is earned here too — and putting it BEFORE
     // commitment means nothing interrupts the signature → reminder-time →
     // sign-in → scan run that follows.
-    case attribution     // 24 — "where did you find us?" (marketing attribution)
-    case commitment      // 25 — sign your 14-day commitment
-    case dailyRitual     // 26 — time choice + notifications
-    case signIn          // 27 — register before the first scan
-    case handoff         // 28 — "now, the real you" → the scan
+    case attribution     // 23 — "where did you find us?" (marketing attribution)
+    case commitment      // 24 — sign your 14-day commitment
+    case dailyRitual     // 25 — time choice + notifications
+    case signIn          // 26 — register before the first scan
+    case handoff         // 27 — "now, the real you" → the scan
 
     var next: RampStep? { RampStep(rawValue: rawValue + 1) }
     var previous: RampStep? { RampStep(rawValue: rawValue - 1) }
@@ -133,7 +137,6 @@ enum RampStep: Int, CaseIterable {
         case .acneDuration:   return "acne_duration"
         case .acneTried:      return "acne_tried"
         case .acneImpact:     return "acne_impact"
-        case .acneEmpathy:    return "acne_empathy"
         case .sensitivities:  return "sensitivities"
         case .brands:         return "brands"
         case .theCycle:       return "the_cycle"
@@ -248,14 +251,6 @@ struct RampQuizAnswers {
             case .asLongAsIRemember:  return "infinity"
             }
         }
-        var chip: String {
-            switch self {
-            case .months:             return "A few months"
-            case .aboutAYear:         return "~1 year"
-            case .fewYears:           return "Years"
-            case .asLongAsIRemember:  return "Always"
-            }
-        }
     }
 
     /// What they have already thrown at it. Multi-select, and deliberately
@@ -285,15 +280,6 @@ struct RampQuizAnswers {
         }
         /// Two or three words for the empathy screen's recap row, where the
         /// full label ("Antibiotics or the pill") would wrap a chip.
-        var chip: String {
-            switch self {
-            case .drugstore:     return "Drugstore"
-            case .prescription:  return "Prescriptions"
-            case .antibiotics:   return "Antibiotics"
-            case .diet:          return "Diet"
-            case .dermatologist: return "Dermatologist"
-            }
-        }
     }
 
     /// The emotional weight, asked plainly. It changes no ingredient in the
@@ -428,62 +414,6 @@ struct RampQuizAnswers {
     }
 
     // MARK: The acne chapter (bonding, not data collection)
-
-    /// Chips for the empathy screen — their three acne answers, in the order
-    /// they gave them.
-    var acneChips: [String] {
-        var chips: [String] = []
-        if let acneTypeChip { chips.append(acneTypeChip) }
-        if let acneDuration { chips.append(acneDuration.chip) }
-        // Name the thing when there is one thing to name. "Tried 1" read as
-        // a tally on a screen whose entire job is to prove we were listening
-        // — the other two chips say what the user chose, and this one said
-        // how many boxes they ticked. "Drugstore" is the same width and
-        // actually repeats them back.
-        let tried = acneTried.compactMap(AcneTried.init(rawValue:))
-        if tried.count == 1, let only = tried.first {
-            chips.append(only.chip)
-        } else if tried.count > 1 {
-            chips.append("\(tried.count) things tried")
-        }
-        return chips
-    }
-
-    /// The headline of the empathy screen. Every branch is a statement about
-    /// what the user just told us — never a claim about what the app will
-    /// do, and never a number. The whole screen exists so the flow stops
-    /// feeling like a form the moment before it starts showing product.
-    var acneEmpathyHeadline: String {
-        if acneDuration == .asLongAsIRemember || acneDuration == .fewYears,
-           acneTried.count >= 2 {
-            return "Years of trying things\nthat didn't hold."
-        }
-        if acneTried.count >= 3 {
-            return "You've tried more\nthan most people ever do."
-        }
-        if acneImpact?.isHeavy == true {
-            return "It's not vanity.\nIt takes up room."
-        }
-        if acneTried.isEmpty && sawAcneTried {
-            return "Starting clean is\nan advantage."
-        }
-        return "That's more than\nmost scans ever ask."
-    }
-
-    /// The supporting paragraph. Same rule: honest framing of their own
-    /// answer, no promise attached.
-    var acneEmpathyBody: String {
-        if acneTried.isEmpty && sawAcneTried {
-            return "Nothing to undo, no half-finished routine to unpick. We can put the right things in the right order from day one — which is most of the battle."
-        }
-        if acneTried.count >= 2 {
-            return "When something works for a few weeks and then stops, it usually wasn't the wrong product. It was a routine that never adjusted. That's the part a plan is actually for."
-        }
-        if acneImpact?.isHeavy == true {
-            return "Skin you think about every morning costs you something real, and it's the part almost every skincare app skips straight past. We'd rather start there."
-        }
-        return "Most apps ask what your skin looks like and stop. What it's been like to live with is the part that decides whether a plan is worth following."
-    }
 
     /// Chapter-2 insight: connects a lifestyle answer to the score — one line.
     var lifeInsight: String {
