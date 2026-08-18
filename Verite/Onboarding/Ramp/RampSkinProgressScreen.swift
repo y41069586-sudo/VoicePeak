@@ -1,17 +1,49 @@
 import SwiftUI
 
 // ============================================================
-// MARK: — Skin Progress (14-day transformation preview)
+// MARK: — The fourteen days, as a schedule rather than a claim
 // ============================================================
 
-/// Shows the user what 14 days with SkinFix looks like: a visual
-/// transformation with emoji-accented metrics.
+/// What the next two weeks actually contain, staged day by day.
+///
+/// THREE THINGS THE FIRST DRAFT GOT WRONG, kept here because each one is easy
+/// to reintroduce and expensive to ship.
+///
+///  1. IT INVENTED FOUR NUMBERS. Redness −40%, clarity +60%, texture +35%,
+///     hydration +45%, laid out as four confident tiles. Nothing measured any
+///     of them — the scan has not run yet; it runs three screens after this
+///     one. Every other screen in this flow refuses to put a figure on an
+///     outcome it has not observed (see `RampSawtoothScreen`'s note on why
+///     the rising stroke there carries no endpoint label), and four fabricated
+///     efficacy percentages in a skincare funnel are also the exact claim a
+///     store review or an advertising regulator asks you to substantiate.
+///     They are gone. What replaced them is the one thing we can honestly
+///     describe: the ORDER events happen in.
+///  2. IT ARGUED WITH ITSELF. The headline said fourteen days; the sentence
+///     under the photographs said "improvement in 2–3 weeks" — up to twenty
+///     one. The screen promised a fortnight and then quietly took it back,
+///     inside the same card.
+///  3. IT SAID NOTHING ABOUT THIS USER. Twenty screens of mirroring their own
+///     answers back, and then a page identical for everybody. The headline now
+///     opens on the duration they gave us, because "years of this, now
+///     fourteen days" is an argument and "14 days with SkinFix" is a banner.
+///
+/// WHY A SCHEDULE IS THE STRONGER SCREEN. A before and an after state two
+/// things and skip the part the reader is actually anxious about: the middle,
+/// where nothing appears to be working. Naming days 1–3 as the stretch where
+/// nothing shows is worth more than any percentage — it is the week most
+/// people quit in, and saying it out loud before they hit it is the single
+/// most useful sentence on the page. The fortnight then ends on the app's own
+/// mechanic rather than on a promise about their face: day fourteen is the
+/// second scan, and the payoff is that they can finally compare.
 struct RampSkinProgressScreen: View {
     let answers: RampQuizAnswers
     let onAdvance: () -> Void
 
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
-    @State private var metricsVisible = false
+
+    @State private var cardIn = false
+    @State private var stepsIn = 0
 
     var body: some View {
         GeometryReader { proxy in
@@ -19,33 +51,41 @@ struct RampSkinProgressScreen: View {
                 VStack(alignment: .leading, spacing: 0) {
                     Spacer(minLength: RampStage.headerClearance)
 
-                    // Headline
-                    Text("14 days with SkinFix")
+                    Text(LocalizedStringKey(headline))
                         .font(RampStage.serif(26, weight: .semibold))
                         .foregroundStyle(RampStage.ink)
                         .lineSpacing(2)
                         .fixedSize(horizontal: false, vertical: true)
                         .padding(.horizontal, VSpace.lg)
 
-                    // Subtext
-                    Text("Here's what real results look like.")
+                    Text("What actually happens, and when.")
                         .font(VType.body)
                         .foregroundStyle(RampStage.textSecondary)
                         .fixedSize(horizontal: false, vertical: true)
                         .padding(.horizontal, VSpace.lg)
                         .padding(.top, VSpace.xs)
 
-                    // Visual transformation
                     transformationCard
                         .padding(.horizontal, VSpace.lg)
                         .padding(.top, VSpace.lg)
+                        .opacity(cardIn ? 1 : 0)
+                        .offset(y: cardIn ? 0 : 10)
 
-                    // Metrics
-                    metricsGrid
+                    timeline
                         .padding(.horizontal, VSpace.lg)
                         .padding(.top, VSpace.lg)
 
-                    // CTA
+                    // The hedge sits here rather than inside the card, where an
+                    // earlier draft put a two-line version that contradicted
+                    // the headline. One line, last, in the smallest type on the
+                    // screen: present, honest, not competing with the schedule.
+                    Text("A typical fortnight. Yours depends on where you start.")
+                        .font(VType.micro)
+                        .foregroundStyle(RampStage.textTertiary)
+                        .fixedSize(horizontal: false, vertical: true)
+                        .padding(.horizontal, VSpace.lg)
+                        .padding(.top, VSpace.md)
+
                     Spacer(minLength: VSpace.lg)
                     RampPrimaryButton(title: "Continue") { onAdvance() }
                         .padding(.horizontal, VSpace.lg)
@@ -58,65 +98,39 @@ struct RampSkinProgressScreen: View {
         .task { await choreograph() }
     }
 
-    /// The two states, as photographs rather than icons.
-    ///
-    /// Icons were the first draft and they argued nothing: a sparkle beside a
-    /// tick is a claim written in symbols, and the reader has to take it on
-    /// trust. Real macro skin — inflamed on the left, calm on the right — is
-    /// the same claim made in the only evidence that counts on a screen about
-    /// skin. Circles rather than squares so the crop reads as a sample of skin
-    /// rather than a before/after ad, and big enough that the texture is
-    /// legible at arm's length; at 80pt the lesions were mush.
+    // MARK: The two states
+
+    /// Photographs rather than icons: a sparkle beside a tick is a claim
+    /// written in symbols, and on a screen about skin the only evidence that
+    /// counts is skin. Circles, so the crop reads as a sample rather than as a
+    /// before/after advert, and large enough that the texture survives — at
+    /// 80pt the lesions blurred into a pink wash and the pair read as two
+    /// colour swatches.
     private var transformationCard: some View {
-        VStack(spacing: 0) {
-            HStack(spacing: VSpace.md) {
-                progressState(photo: "ProgressBefore",
-                              label: "Before",
-                              ringed: false)
+        HStack(spacing: VSpace.md) {
+            progressState(photo: "ProgressBefore", label: "Today", ringed: false)
 
-                Image(systemName: "arrow.right")
-                    .font(.system(size: 18, weight: .semibold))
-                    .foregroundStyle(RampStage.accentEdge)
-                    // The labels sit under the circles, so centring the arrow
-                    // on the whole stack would float it low. Nudged up onto
-                    // the circles' own centre line.
-                    .padding(.bottom, 22)
+            Image(systemName: "arrow.right")
+                .font(.system(size: 18, weight: .semibold))
+                .foregroundStyle(RampStage.accentEdge)
+                // The captions hang below the circles, so centring the arrow
+                // on the whole stack would drop it off their axis.
+                .padding(.bottom, 22)
 
-                progressState(photo: "ProgressAfter",
-                              label: "After",
-                              ringed: true)
-            }
-            .frame(maxWidth: .infinity)
-            .padding(.top, VSpace.xs)
-
-            Divider()
-                .padding(.vertical, VSpace.md)
-
-            // Key message
-            VStack(alignment: .center, spacing: VSpace.xs) {
-                Text("Most people see improvement in 2–3 weeks.")
-                    .font(VType.body)
-                    .foregroundStyle(RampStage.ink)
-                    .multilineTextAlignment(.center)
-                    .lineLimit(nil)
-
-                Text("Some by day five.")
-                    .font(VType.bodyLarge.weight(.semibold))
-                    .foregroundStyle(RampStage.accentEdge)
-            }
-            .frame(maxWidth: .infinity, alignment: .center)
-            .padding(.bottom, VSpace.sm)
+            progressState(photo: "ProgressAfter", label: "Day 14", ringed: true)
         }
-        .padding(VSpace.md)
+        .frame(maxWidth: .infinity)
+        .padding(.vertical, VSpace.md)
+        .padding(.horizontal, VSpace.sm)
         .background(RampStage.accentSoft)
         .cornerRadius(16)
         .accessibilityElement()
-        .accessibilityLabel("Before and after: inflamed skin on the left, calm skin on the right.")
+        .accessibilityLabel("Skin today, and after fourteen days.")
     }
 
-    /// One circle plus its caption. `ringed` marks the outcome side with an
-    /// accent ring — the only styling difference between the two, so the eye
-    /// knows which way the arrow points without reading the labels.
+    /// One circle and its caption. `ringed` marks the far end in accent — the
+    /// only difference between the two, so the direction reads before the
+    /// labels do.
     private func progressState(photo: String, label: String, ringed: Bool) -> some View {
         VStack(spacing: VSpace.sm) {
             skinCircle(photo)
@@ -131,12 +145,12 @@ struct RampSkinProgressScreen: View {
 
             Text(LocalizedStringKey(label))
                 .font(VType.caption)
-                .foregroundStyle(RampStage.textTertiary)
+                .foregroundStyle(ringed ? RampStage.accentDeep : RampStage.textTertiary)
         }
     }
 
-    /// The photo if it shipped, a quiet gradient if it did not — the screen
-    /// must never show tofu or an empty ring just because an asset is missing.
+    /// The photo if it shipped, a quiet wash if it did not — a missing asset
+    /// must never leave an empty ring on screen.
     @ViewBuilder
     private func skinCircle(_ name: String) -> some View {
         #if canImport(UIKit)
@@ -152,59 +166,136 @@ struct RampSkinProgressScreen: View {
         #endif
     }
 
-    /// 124, not 80. The photographs are macro crops — at 80pt the individual
-    /// lesions blurred into a pink wash and the two circles read as two
-    /// swatches of colour rather than as two states of skin.
     private static let circleSize: CGFloat = 124
 
-    private var metricsGrid: some View {
-        VStack(spacing: RampStage.tileGap) {
-            HStack(spacing: RampStage.tileGap) {
-                metricCard(emoji: "🔴", label: "Redness", benefit: "↓ 40%")
-                metricCard(emoji: "✨", label: "Clarity", benefit: "↑ 60%")
-            }
-            .frame(maxWidth: .infinity)
+    // MARK: The schedule
 
-            HStack(spacing: RampStage.tileGap) {
-                metricCard(emoji: "🎯", label: "Texture", benefit: "↑ 35%")
-                metricCard(emoji: "💧", label: "Hydration", benefit: "↑ 45%")
-            }
-            .frame(maxWidth: .infinity)
-        }
-        .opacity(metricsVisible ? 1 : 0)
-        .offset(y: metricsVisible ? 0 : 8)
+    private struct Stage {
+        let emoji: String
+        let days: String
+        let lede: String
+        let rest: String
     }
 
-    private func metricCard(emoji: String, label: String, benefit: String) -> some View {
-        VStack(alignment: .leading, spacing: VSpace.xs) {
-            HStack(spacing: VSpace.xs) {
-                Text(emoji)
-                    .font(.system(size: 20))
-                Text(label)
-                    .font(VType.bodySmall.weight(.medium))
-                    .foregroundStyle(RampStage.textSecondary)
+    /// Four beats, and the first one is the reason the screen exists.
+    ///
+    /// Days 1–3 is the stretch where a routine looks like it is failing, and
+    /// it is where people abandon one. Promising nothing there — saying, in
+    /// advance, that nothing will show and that this is the routine working
+    /// rather than not — is worth more than any figure we could print.
+    ///
+    /// The fortnight then lands on the second scan, not on a face. That is the
+    /// one outcome we can actually guarantee: a measurement, next to today's.
+    /// Pick emoji that carry a default EMOJI presentation. The first draft used
+    /// 🌤 (U+1F324) for "redness settles", which defaults to TEXT presentation
+    /// and needs a U+FE0F selector — without one it fell back to a hollow
+    /// glyph box. Anything in this list must render in colour unaided, and
+    /// must mean its row rather than merely decorate it.
+    private static let stages: [Stage] = [
+        Stage(emoji: "💧", days: "Days 1–3",
+              lede: "Barrier first.",
+              rest: "Nothing shows yet — that part is normal."),
+        Stage(emoji: "📉", days: "Days 4–7",
+              lede: "Fewer new ones.",
+              rest: "Spots start arriving less often."),
+        Stage(emoji: "🧊", days: "Days 8–11",
+              lede: "Redness settles.",
+              rest: "What's already there gets quieter."),
+        Stage(emoji: "📸", days: "Day 14",
+              lede: "Scan two.",
+              rest: "Side by side with today — a number, not a feeling."),
+    ]
+
+    private var timeline: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            ForEach(Array(Self.stages.enumerated()), id: \.offset) { index, stage in
+                stageRow(stage, isLast: index == Self.stages.count - 1)
+                    .opacity(index < stepsIn ? 1 : 0)
+                    .offset(x: index < stepsIn ? 0 : -8)
             }
-            Text(benefit)
-                .font(.system(size: 16, weight: .semibold, design: .rounded).monospacedDigit())
-                .foregroundStyle(RampStage.accentEdge)
         }
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(VSpace.md)
-        .background(RampStage.hair.opacity(0.04))
-        .cornerRadius(12)
     }
 
+    private func stageRow(_ stage: Stage, isLast: Bool) -> some View {
+        HStack(alignment: .top, spacing: VSpace.md) {
+            // Marker column. The rail is drawn per row rather than as one line
+            // behind the stack, so it stretches with whatever the text beside
+            // it wraps to and cannot fall out of step with it.
+            VStack(spacing: 0) {
+                Text(stage.emoji)
+                    .font(.system(size: 15))
+                    .frame(width: Self.markerSize, height: Self.markerSize)
+                    .background(Circle().fill(RampStage.accentSoft))
+
+                if !isLast {
+                    Rectangle()
+                        .fill(RampStage.hair)
+                        .frame(width: 1.5)
+                        .frame(maxHeight: .infinity)
+                }
+            }
+            .fixedSize(horizontal: true, vertical: false)
+
+            VStack(alignment: .leading, spacing: 2) {
+                Text(LocalizedStringKey(stage.days))
+                    .font(VType.micro)
+                    .tracking(1.1)
+                    .textCase(.uppercase)
+                    .foregroundStyle(RampStage.accentDeep)
+
+                // Lede in semibold, remainder regular, as one wrapping
+                // paragraph — two `Text`s in a stack would break the line
+                // where the layout wants rather than where the sentence does.
+                (Text(LocalizedStringKey(stage.lede)).font(VType.bodyMedium.weight(.semibold))
+                 + Text(" ")
+                 + Text(LocalizedStringKey(stage.rest)).font(VType.body))
+                    .foregroundStyle(RampStage.ink)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .lineSpacing(1)
+            }
+            .padding(.bottom, isLast ? 0 : VSpace.md)
+        }
+        .accessibilityElement(children: .combine)
+    }
+
+    private static let markerSize: CGFloat = 30
+
+    // MARK: Copy
+
+    /// Opens on the duration they gave us. "Years of this" earns the fourteen
+    /// days that follow it; a generic banner does not.
+    private var headline: String {
+        switch answers.acneDuration {
+        case .months:            return "Months of this.\nNow fourteen days."
+        case .aboutAYear:        return "A year of this.\nNow fourteen days."
+        case .fewYears:          return "Years of this.\nNow fourteen days."
+        case .asLongAsIRemember: return "All that time.\nNow fourteen days."
+        case nil:                return "The next\nfourteen days."
+        }
+    }
+
+    // MARK: Choreography
+
+    /// The card lands, then the schedule writes itself downward, one beat per
+    /// stage. Reading order and animation order are the same on purpose — the
+    /// point of the screen is the sequence, so it arrives as a sequence.
     private func choreograph() async {
         if reduceMotion {
-            metricsVisible = true
+            cardIn = true
+            stepsIn = Self.stages.count
             return
         }
 
-        try? await Task.sleep(for: .milliseconds(300))
+        try? await Task.sleep(for: .milliseconds(180))
         guard !Task.isCancelled else { return }
+        withAnimation(VMotion.gentle) { cardIn = true }
 
-        withAnimation(.easeOut(duration: 0.6)) {
-            metricsVisible = true
+        try? await Task.sleep(for: .milliseconds(260))
+        for _ in Self.stages.indices {
+            guard !Task.isCancelled else { return }
+            Haptics.fire(.tick)
+            withAnimation(VMotion.snappy) { stepsIn += 1 }
+            try? await Task.sleep(for: .milliseconds(190))
         }
     }
 }
