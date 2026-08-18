@@ -583,6 +583,29 @@ struct DermiqPaywallCard: View {
     /// BEFORE a scan exists (scan-blocked) — then a one-time buy grants one
     /// scan credit and attaches to the next scan via UnlockStore.pending.
     var scanID: UUID? = nil
+    /// How much sheet furniture the card draws for itself.
+    ///
+    /// It is used two ways and they need opposite things. Over the blurred
+    /// results it IS the sheet: it draws its own grabber, its own rounded top
+    /// edge and its own hairline, and hugs the bottom of the screen. Inside a
+    /// real `.sheet`, UIKit already draws a rounded top — and at that call
+    /// site a drag indicator as well — so drawing them again stacked TWO
+    /// rounded edges and TWO grabbers above the headline, with a strip of the
+    /// sheet's own white ground showing between them.
+    enum Chrome {
+        /// Bottom card over another screen. Supplies everything itself.
+        case own
+        /// Presented by `.sheet`. The host supplies the corners and the
+        /// indicator; the card supplies neither and fills the sheet.
+        case hostedInSheet
+    }
+
+    /// Declared BEFORE `onUnlocked` on purpose: the memberwise initialiser
+    /// follows declaration order, and the results-view call site passes
+    /// `onUnlocked` as a trailing closure, which only compiles while it is the
+    /// last parameter.
+    var chrome: Chrome = .own
+
     let onUnlocked: () -> Void
 
     @Environment(PurchaseManager.self) private var purchases
@@ -601,11 +624,23 @@ struct DermiqPaywallCard: View {
     @State private var restoreDone = false
 
     var body: some View {
-        VStack {
-            Spacer()
-            card
+        Group {
+            switch chrome {
+            case .own:
+                VStack {
+                    Spacer()
+                    card
+                }
+                .ignoresSafeArea(edges: .bottom)
+            case .hostedInSheet:
+                // Fills the sheet rather than sitting at the bottom of it. A
+                // bottom-anchored card inside a `.large` detent leaves the
+                // sheet's own ground visible as a band above the card.
+                card
+                    .frame(maxHeight: .infinity, alignment: .top)
+                    .background(DQColor.surfaceElevated.ignoresSafeArea())
+            }
         }
-        .ignoresSafeArea(edges: .bottom)
         .alert("Couldn't load plans", isPresented: $purchaseFailed) {
             Button("OK", role: .cancel) {}
         } message: {
@@ -620,10 +655,12 @@ struct DermiqPaywallCard: View {
 
     private var card: some View {
         VStack(spacing: 18) {
-            Capsule()
-                .fill(DQColor.stroke)
-                .frame(width: 40, height: 4)
-                .padding(.top, 12)
+            if chrome == .own {
+                Capsule()
+                    .fill(DQColor.stroke)
+                    .frame(width: 40, height: 4)
+                    .padding(.top, 12)
+            }
             // Hugs its content when it fits (the normal case); on SE-class
             // heights it swaps to a ScrollView so every row stays reachable.
             ViewThatFits(in: .vertical) {
@@ -631,21 +668,26 @@ struct DermiqPaywallCard: View {
                 ScrollView { cardContent }
             }
         }
+        // Clears the host's own drag indicator, which occupies the band the
+        // card's grabber used to sit in.
+        .padding(.top, chrome == .hostedInSheet ? 20 : 0)
         .sheet(item: $legalDocument) { document in
             DermiqLegalView(document: document)
         }
         .frame(maxWidth: .infinity)
-        .background(
-            DQColor.surfaceElevated,
-            in: UnevenRoundedRectangle(topLeadingRadius: DQRadius.sheet,
+        .background {
+            if chrome == .own {
+                UnevenRoundedRectangle(topLeadingRadius: DQRadius.sheet,
                                        topTrailingRadius: DQRadius.sheet,
                                        style: .continuous)
-        )
-        .overlay(alignment: .top) {
-            UnevenRoundedRectangle(topLeadingRadius: DQRadius.sheet,
-                                   topTrailingRadius: DQRadius.sheet,
-                                   style: .continuous)
-                .strokeBorder(DQColor.stroke, lineWidth: 1)
+                    .fill(DQColor.surfaceElevated)
+                    .overlay(alignment: .top) {
+                        UnevenRoundedRectangle(topLeadingRadius: DQRadius.sheet,
+                                               topTrailingRadius: DQRadius.sheet,
+                                               style: .continuous)
+                            .strokeBorder(DQColor.stroke, lineWidth: 1)
+                    }
+            }
         }
     }
 

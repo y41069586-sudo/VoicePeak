@@ -82,7 +82,7 @@ struct DermiqTabShell: View {
         .sheet(isPresented: $showPaywall) {
             // Scan-blocked context: a one-time rating buy attaches to the
             // NEXT scan (scanID nil → UnlockStore.pending + one credit).
-            DermiqPaywallCard(onUnlocked: {
+            DermiqPaywallCard(chrome: .hostedInSheet, onUnlocked: {
                 showPaywall = false
                 // They unlocked to scan → start it once the sheet is gone.
                 if scanAfterUnlock {
