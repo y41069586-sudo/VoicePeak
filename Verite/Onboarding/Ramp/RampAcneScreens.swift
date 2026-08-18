@@ -683,21 +683,9 @@ struct RampAcneEmpathyScreen: View {
                         .padding(.horizontal, VSpace.lg)
                         .padding(.top, VSpace.md)
 
-                    Text(LocalizedStringKey(message))
-                        .font(.system(size: 16, weight: .regular))
-                        .foregroundStyle(RampStage.textSecondary)
-                        .lineSpacing(5)
-                        .fixedSize(horizontal: false, vertical: true)
-                        // Held to a readable measure rather than the full
-                        // gutter width. Body this size running the whole way
-                        // across a large phone is a ~60-character line, which
-                        // is where the eye starts losing its place between
-                        // rows.
-                        .frame(maxWidth: 330, alignment: .leading)
-                        .opacity(messageIn ? 1 : 0)
-                        .offset(y: messageIn ? 0 : 8)
+                    reply
                         .padding(.horizontal, VSpace.lg)
-                        .padding(.top, VSpace.sm)
+                        .padding(.top, VSpace.md)
 
                     Spacer(minLength: VSpace.lg)
 
@@ -782,6 +770,43 @@ struct RampAcneEmpathyScreen: View {
             .strokeBorder(RampStage.hair, lineWidth: 1))
         .shadow(color: RampStage.ink.opacity(0.05), radius: 12, y: 4)
         .opacity(recapIn ? 1 : 0)
+    }
+
+    /// Our answer, given a home.
+    ///
+    /// The bottom of this screen was a bare paragraph on white — the ledger
+    /// card ended and the page just kept going as running text, which is the
+    /// one shape a closing beat cannot afford. It reads as the screen running
+    /// out rather than arriving.
+    ///
+    /// The two cards now make the screen a short conversation: their answers
+    /// in white, ours in warm accent, in that order. That is also why the
+    /// badge is 💬 and not a decorative flourish — it marks this block as the
+    /// reply to the block above it, which is exactly what it is.
+    private var reply: some View {
+        VStack(alignment: .leading, spacing: VSpace.sm) {
+            Text(verbatim: "💬")
+                .font(.system(size: 17))
+                .frame(width: 34, height: 34)
+                .background(Circle().fill(Color.white.opacity(0.75)))
+
+            Text(LocalizedStringKey(message))
+                .font(.system(size: 16, weight: .regular))
+                .foregroundStyle(RampStage.ink)
+                .lineSpacing(5)
+                .fixedSize(horizontal: false, vertical: true)
+                // Held to a readable measure rather than the full gutter
+                // width. Body this size running the whole way across a large
+                // phone is a ~60-character line, which is where the eye starts
+                // losing its place between rows.
+                .frame(maxWidth: 330, alignment: .leading)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(VSpace.md)
+        .background(RampStage.accentSoft,
+                    in: RoundedRectangle(cornerRadius: 20, style: .continuous))
+        .opacity(messageIn ? 1 : 0)
+        .offset(y: messageIn ? 0 : 8)
     }
 
     private func run() async {

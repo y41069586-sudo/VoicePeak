@@ -272,14 +272,28 @@ private struct RampIntroArt: View {
 /// Draws its content at a fixed design size, scaled down to whatever room the
 /// page actually has. The mockups are laid out in absolute points, so without
 /// this they would overrun the art slot on a small phone.
+///
+/// A non-positive proxy is treated as "not measured yet" and draws nothing,
+/// rather than being divided by. `min` already yields 0 for a zero size, but a
+/// NEGATIVE proposal — which SwiftUI can hand out mid-transition — produces a
+/// negative scale, and that renders the whole composition mirrored.
+///
+/// NOT clipped, deliberately. Clipping to the slot would also be a way to stop
+/// a stale proxy painting outside it, but the phone mockups carry shadows
+/// (`RampPhoneFrame` uses `radius: width * 0.14`) and the trio is 412pt inside
+/// a 420pt design box — so a tight clip cuts the shadows off square at the
+/// slot edge on every frame, to guard against one that may not happen.
 private struct RampFitted<Content: View>: View {
     let designSize: CGSize
     @ViewBuilder var content: () -> Content
 
     var body: some View {
         GeometryReader { proxy in
-            let scale = min(proxy.size.width / designSize.width,
-                            proxy.size.height / designSize.height, 1)
+            let usable = proxy.size.width > 0 && proxy.size.height > 0
+            let scale = usable
+                ? min(proxy.size.width / designSize.width,
+                      proxy.size.height / designSize.height, 1)
+                : 0
             content()
                 .frame(width: designSize.width, height: designSize.height)
                 .scaleEffect(scale)
