@@ -58,75 +58,36 @@ struct RampSkinProgressScreen: View {
         .task { await choreograph() }
     }
 
+    /// The two states, as photographs rather than icons.
+    ///
+    /// Icons were the first draft and they argued nothing: a sparkle beside a
+    /// tick is a claim written in symbols, and the reader has to take it on
+    /// trust. Real macro skin — inflamed on the left, calm on the right — is
+    /// the same claim made in the only evidence that counts on a screen about
+    /// skin. Circles rather than squares so the crop reads as a sample of skin
+    /// rather than a before/after ad, and big enough that the texture is
+    /// legible at arm's length; at 80pt the lesions were mush.
     private var transformationCard: some View {
         VStack(spacing: 0) {
-            GeometryReader { geo in
-                ZStack {
-                    // Before state (left)
-                    VStack(alignment: .center, spacing: VSpace.sm) {
-                        Circle()
-                            .fill(
-                                LinearGradient(
-                                    gradient: Gradient(stops: [
-                                        .init(color: Color(hex: "#E8A89A"), location: 0),
-                                        .init(color: Color(hex: "#D4957F"), location: 1)
-                                    ]),
-                                    startPoint: .topLeading,
-                                    endPoint: .bottomTrailing
-                                )
-                            )
-                            .overlay(
-                                Image(systemName: "sparkles")
-                                    .font(.system(size: 48))
-                                    .foregroundStyle(.white)
-                                    .opacity(0.6)
-                            )
-                            .frame(width: 80, height: 80)
+            HStack(spacing: VSpace.md) {
+                progressState(photo: "ProgressBefore",
+                              label: "Before",
+                              ringed: false)
 
-                        Text("Before")
-                            .font(VType.caption)
-                            .foregroundStyle(RampStage.textTertiary)
-                    }
-                    .frame(width: geo.size.width / 2)
-                    .position(x: geo.size.width / 4, y: geo.size.height / 2)
+                Image(systemName: "arrow.right")
+                    .font(.system(size: 18, weight: .semibold))
+                    .foregroundStyle(RampStage.accentEdge)
+                    // The labels sit under the circles, so centring the arrow
+                    // on the whole stack would float it low. Nudged up onto
+                    // the circles' own centre line.
+                    .padding(.bottom, 22)
 
-                    // Arrow
-                    HStack(spacing: 0) {
-                        Image(systemName: "arrow.right")
-                            .font(.system(size: 20, weight: .semibold))
-                            .foregroundStyle(RampStage.accentEdge)
-                    }
-                    .position(x: geo.size.width / 2, y: geo.size.height / 2)
-
-                    // After state (right)
-                    VStack(alignment: .center, spacing: VSpace.sm) {
-                        Circle()
-                            .fill(
-                                LinearGradient(
-                                    gradient: Gradient(stops: [
-                                        .init(color: Color(hex: "#F4D4B8"), location: 0),
-                                        .init(color: Color(hex: "#E8C9AB"), location: 1)
-                                    ]),
-                                    startPoint: .topLeading,
-                                    endPoint: .bottomTrailing
-                                )
-                            )
-                            .overlay(
-                                Image(systemName: "checkmark.circle.fill")
-                                    .font(.system(size: 48))
-                                    .foregroundStyle(Color(hex: "#52C41A"))
-                            )
-                            .frame(width: 80, height: 80)
-
-                        Text("After")
-                            .font(VType.caption)
-                            .foregroundStyle(RampStage.textTertiary)
-                    }
-                    .frame(width: geo.size.width / 2)
-                    .position(x: geo.size.width * 0.75, y: geo.size.height / 2)
-                }
+                progressState(photo: "ProgressAfter",
+                              label: "After",
+                              ringed: true)
             }
-            .frame(height: 140)
+            .frame(maxWidth: .infinity)
+            .padding(.top, VSpace.xs)
 
             Divider()
                 .padding(.vertical, VSpace.md)
@@ -136,6 +97,7 @@ struct RampSkinProgressScreen: View {
                 Text("Most people see improvement in 2–3 weeks.")
                     .font(VType.body)
                     .foregroundStyle(RampStage.ink)
+                    .multilineTextAlignment(.center)
                     .lineLimit(nil)
 
                 Text("Some by day five.")
@@ -143,12 +105,57 @@ struct RampSkinProgressScreen: View {
                     .foregroundStyle(RampStage.accentEdge)
             }
             .frame(maxWidth: .infinity, alignment: .center)
-            .padding(.vertical, VSpace.md)
+            .padding(.bottom, VSpace.sm)
         }
         .padding(VSpace.md)
         .background(RampStage.accentSoft)
         .cornerRadius(16)
+        .accessibilityElement()
+        .accessibilityLabel("Before and after: inflamed skin on the left, calm skin on the right.")
     }
+
+    /// One circle plus its caption. `ringed` marks the outcome side with an
+    /// accent ring — the only styling difference between the two, so the eye
+    /// knows which way the arrow points without reading the labels.
+    private func progressState(photo: String, label: String, ringed: Bool) -> some View {
+        VStack(spacing: VSpace.sm) {
+            skinCircle(photo)
+                .frame(width: Self.circleSize, height: Self.circleSize)
+                .clipShape(Circle())
+                .overlay {
+                    Circle()
+                        .strokeBorder(ringed ? RampStage.accentEdge : Color.white.opacity(0.75),
+                                      lineWidth: ringed ? 2.5 : 2)
+                }
+                .shadow(color: RampStage.ink.opacity(0.12), radius: 10, y: 4)
+
+            Text(LocalizedStringKey(label))
+                .font(VType.caption)
+                .foregroundStyle(RampStage.textTertiary)
+        }
+    }
+
+    /// The photo if it shipped, a quiet gradient if it did not — the screen
+    /// must never show tofu or an empty ring just because an asset is missing.
+    @ViewBuilder
+    private func skinCircle(_ name: String) -> some View {
+        #if canImport(UIKit)
+        if let image = RampPhoto.load(name) {
+            Image(uiImage: image)
+                .resizable()
+                .scaledToFill()
+        } else {
+            RampStage.accent
+        }
+        #else
+        RampStage.accent
+        #endif
+    }
+
+    /// 124, not 80. The photographs are macro crops — at 80pt the individual
+    /// lesions blurred into a pink wash and the two circles read as two
+    /// swatches of colour rather than as two states of skin.
+    private static let circleSize: CGFloat = 124
 
     private var metricsGrid: some View {
         VStack(spacing: RampStage.tileGap) {
@@ -199,18 +206,5 @@ struct RampSkinProgressScreen: View {
         withAnimation(.easeOut(duration: 0.6)) {
             metricsVisible = true
         }
-    }
-}
-
-// MARK: — Helper extensions
-
-extension Color {
-    fileprivate init(hex: String) {
-        let hex = hex.trimmingCharacters(in: CharacterSet(charactersIn: "#"))
-        let rgb = Int(hex, radix: 16) ?? 0
-        let r = Double((rgb >> 16) & 0xFF) / 255.0
-        let g = Double((rgb >> 8) & 0xFF) / 255.0
-        let b = Double(rgb & 0xFF) / 255.0
-        self.init(red: r, green: g, blue: b)
     }
 }

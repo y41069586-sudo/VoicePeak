@@ -72,3 +72,24 @@ these tiles need.
 **Do not use the ACNE04 research dataset.** It is the only free source with
 the right subject, which makes it the most tempting — and it is 1,457
 identifiable faces with no documented provenance and no commercial licence.
+
+## Skin progress — the two circles
+
+`RampSkinProgressScreen`. Two macro crops, drawn as **124pt circles** side by
+side under a right arrow, so they are square-cropped and centre-clipped.
+
+| File | Slot | Subject |
+|---|---|---|
+| `ProgressBefore` | left circle, plain white ring | Inflamed skin — papules and pustules, clearly active |
+| `ProgressAfter` | right circle, accent ring | Calm skin — no lesions, even tone |
+
+Committed at **900 × 900** (≈3× the 124pt draw size, so it stays sharp on a
+3x display without bloating the bundle). Both are already square, so a
+replacement should be square too — a non-square file gets centre-cropped by
+`scaledToFill` and the interesting half can fall outside the circle.
+
+The same licensing rules as the acne picker above apply, and for the same
+reason: these are macro crops of skin with nobody identifiable in frame. The
+"after" photo in particular must not be a glamour portrait — it is a claim
+about what a routine does, and a face attached to that claim is a testimonial
+we cannot substantiate.
