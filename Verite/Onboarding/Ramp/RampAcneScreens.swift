@@ -140,29 +140,43 @@ struct RampAcneTypeScreen: View {
             }
         } label: {
             VStack(spacing: 0) {
-                Group {
-                    if let photo = type.photo {
-                        RampAcnePhoto(name: photo)
-                    } else {
-                        ZStack {
-                            // `accent`, not `accentSoft`: the tile's own
-                            // background turns accentSoft when picked, and
-                            // this stand-in would dissolve into it.
-                            RampStage.accent
-                            Image(systemName: "questionmark")
-                                .font(.system(size: 28, weight: .light))
-                                .foregroundStyle(RampStage.accentDeep)
+                // Square, sized off the column — not a fixed 116pt strip. At
+                // that height the photo was a letterbox band with the label
+                // crammed under it, and a grid of six read as squashed
+                // however much gap sat between the tiles. A square is also
+                // the crop these macro frames want: they are pure texture, so
+                // nothing is lost.
+                //
+                // THE SQUARE IS DRIVEN BY `Color.clear`, NOT BY THE PHOTO, and
+                // that is load-bearing. `RampPhoto.load` builds its image with
+                // `UIImage(contentsOfFile:)`, which returns scale 1.0 — so a
+                // 900px JPEG reports an intrinsic size of 900×900 POINTS.
+                // `Image.resizable()` keeps that as its ideal size, and a grid
+                // row proposes no height, so `.aspectRatio(1, .fit)` applied
+                // over the photo resolved against that 900pt ideal instead of
+                // against the column. Every tile then demanded ~900pt inside a
+                // ~170pt column; `LazyVGrid` still placed the columns at their
+                // own fixed offsets, so the tiles drew straight over each
+                // other and the right one clipped the left one's photo and
+                // pick mark. `Color.clear` has no ideal size of its own, so
+                // the square can only come from the proposal — the column.
+                Color.clear
+                    .aspectRatio(1, contentMode: .fit)
+                    .overlay {
+                        if let photo = type.photo {
+                            RampAcnePhoto(name: photo)
+                        } else {
+                            ZStack {
+                                // `accent`, not `accentSoft`: the tile's own
+                                // background turns accentSoft when picked, and
+                                // this stand-in would dissolve into it.
+                                RampStage.accent
+                                Image(systemName: "questionmark")
+                                    .font(.system(size: 28, weight: .light))
+                                    .foregroundStyle(RampStage.accentDeep)
+                            }
                         }
                     }
-                }
-                    // Square, sized off the column — not a fixed 116pt
-                    // strip. At that height the photo was a letterbox band
-                    // with the label crammed under it, and a grid of six
-                    // read as squashed however much gap sat between the
-                    // tiles. A square is also the crop these macro frames
-                    // want: they are pure texture, so nothing is lost.
-                    .frame(maxWidth: .infinity)
-                    .aspectRatio(1, contentMode: .fit)
                     .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
                     .overlay(alignment: .topTrailing) {
                         pickMark(isOn).padding(10)
@@ -250,91 +264,241 @@ private struct RampAcnePhoto: View {
 // MARK: — The loop you're already in
 // ============================================================
 
-/// No input. It names the cycle the user recognises from their own bathroom
-/// shelf — buy something new, wait, see nothing, buy something else — and
-/// turns it into the case for a plan. It reads no answers, which is why it
-/// survived the move to the front of the funnel intact — it used to sit after
-/// the spend question and lean on the figure the reader had just named.
+/// The loop, drawn as a loop.
+///
+/// It used to be a vertical LIST of four steps, which is the one shape that is
+/// not a cycle: a list has a top, a bottom and a way out. The reader had to be
+/// told in prose that it comes back around, because the drawing said the
+/// opposite. Four stops on a closed circuit say it without a caption, and the
+/// choreography then walks that circuit once, so the return trip is something
+/// you watch rather than something you are asked to infer.
+///
+/// THE CIRCUIT IS DRAWN IN NEUTRALS ON PURPOSE. Everywhere else in this flow
+/// the accent means "ours" or "the way out". Rendering the cycle in warm
+/// orange would dress the exact thing this screen argues against in the
+/// brand's own colour, and the tiles would read as four features. Grey
+/// circuit; the accent appears only once the loop has been broken.
+///
+/// IT ALSO HAS TO CLOSE ITS OWN ARGUMENT NOW. It used to name the loop and
+/// leave the answer to the screen after it. Since the reorder `skinProgress`
+/// runs BEFORE this one and the next screen is a question, so the payoff below
+/// the circuit is the only place the case is ever made.
 struct RampCycleScreen: View {
     let onAdvance: () -> Void
 
-    @State private var shown = false
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
-    private let loop: [(icon: String, title: String)] = [
-        ("cart", "Buy something new"),
-        ("clock", "Wait a few weeks"),
-        ("questionmark", "See no real change"),
-        ("arrow.triangle.2.circlepath", "Start again"),
+    @State private var tilesIn = 0
+    @State private var circuitIn = false
+    @State private var travelling: Int?
+    @State private var spin: Double = 0
+    @State private var payoffIn = false
+
+    private struct Stop {
+        let icon: String
+        let title: String
+    }
+
+    /// Clockwise from the top left, and the order IS the argument — so the
+    /// grid below lays them out 0,1 across the top and 3,2 across the bottom
+    /// rather than in reading order.
+    private static let stops: [Stop] = [
+        Stop(icon: "cart",                   title: "Buy something new"),
+        Stop(icon: "hourglass",              title: "Wait a few weeks"),
+        Stop(icon: "questionmark",           title: "See no change"),
+        Stop(icon: "arrow.counterclockwise", title: "Start again"),
     ]
 
+    /// Wide enough that the connecting arrows sit IN the gaps rather than on
+    /// top of the tiles — the circuit only reads if the arrows have their own
+    /// space to live in.
+    private static let gap: CGFloat = 26
+
     var body: some View {
-        VStack(alignment: .leading, spacing: 0) {
-            Spacer(minLength: RampStage.headerClearance)
+        GeometryReader { proxy in
+            ScrollView {
+                VStack(alignment: .leading, spacing: 0) {
+                    Spacer(minLength: RampStage.headerClearance)
 
-            Text("Products aren't\nthe problem.")
-                .font(RampStage.serif(26, weight: .semibold))
+                    Text("Products aren't\nthe problem.")
+                        .font(RampStage.serif(26, weight: .semibold))
+                        .foregroundStyle(RampStage.ink)
+                        .lineSpacing(2)
+                        .fixedSize(horizontal: false, vertical: true)
+                        .padding(.horizontal, VSpace.lg)
+
+                    Text("Not knowing what changed is.")
+                        .font(VType.body)
+                        .foregroundStyle(RampStage.textSecondary)
+                        .fixedSize(horizontal: false, vertical: true)
+                        .padding(.horizontal, VSpace.lg)
+                        .padding(.top, VSpace.xs)
+
+                    Spacer(minLength: VSpace.lg)
+
+                    circuit
+                        .padding(.horizontal, VSpace.lg)
+                        .padding(.top, VSpace.md)
+
+                    Spacer(minLength: VSpace.lg)
+
+                    payoff
+                        .padding(.horizontal, VSpace.lg)
+                        .padding(.top, VSpace.md)
+
+                    Spacer(minLength: VSpace.lg)
+
+                    RampPrimaryButton(title: "Continue") { onAdvance() }
+                        .padding(.horizontal, VSpace.lg)
+                    Spacer().frame(height: VSpace.xxl)
+                }
+                .frame(minHeight: proxy.size.height, alignment: .leading)
+            }
+            .scrollBounceBehavior(.basedOnSize)
+        }
+        .task { await choreograph() }
+    }
+
+    // MARK: The circuit
+
+    private var circuit: some View {
+        VStack(spacing: Self.gap) {
+            HStack(spacing: Self.gap) { tile(0); tile(1) }
+            HStack(spacing: Self.gap) { tile(3); tile(2) }
+        }
+        .overlay { connectors }
+        .accessibilityElement()
+        .accessibilityLabel("A loop: buy something new, wait a few weeks, see no change, start again.")
+    }
+
+    /// The four arrows and the hub, positioned into the gaps the grid leaves.
+    /// Derived from the measured size rather than from constants so they stay
+    /// centred on the crossing whatever the tiles grow to.
+    private var connectors: some View {
+        GeometryReader { geo in
+            let w = geo.size.width
+            let h = geo.size.height
+            let colCentre = (w - Self.gap) / 4   // centre of one column
+            let rowCentre = (h - Self.gap) / 4   // centre of one row
+
+            ZStack {
+                arrow("arrow.right", at: CGPoint(x: w / 2, y: rowCentre))
+                arrow("arrow.down",  at: CGPoint(x: w - colCentre, y: h / 2))
+                arrow("arrow.left",  at: CGPoint(x: w / 2, y: h - rowCentre))
+                arrow("arrow.up",    at: CGPoint(x: colCentre, y: h / 2))
+                hub.position(x: w / 2, y: h / 2)
+            }
+            .opacity(circuitIn ? 1 : 0)
+        }
+        .allowsHitTesting(false)
+    }
+
+    private func arrow(_ symbol: String, at point: CGPoint) -> some View {
+        Image(systemName: symbol)
+            .font(.system(size: 13, weight: .semibold))
+            .foregroundStyle(RampStage.inkFaint)
+            .position(point)
+    }
+
+    /// Sits on the crossing of both gaps and turns once while the highlight
+    /// travels — the one moving part that says "again" without a word.
+    private var hub: some View {
+        Image(systemName: "arrow.triangle.2.circlepath")
+            .font(.system(size: 14, weight: .semibold))
+            .foregroundStyle(RampStage.inkFaint)
+            .frame(width: 34, height: 34)
+            .background(Circle().fill(RampStage.card))
+            .overlay(Circle().strokeBorder(RampStage.hair, lineWidth: 1))
+            .rotationEffect(.degrees(spin))
+    }
+
+    private func tile(_ index: Int) -> some View {
+        let stop = Self.stops[index]
+        let isHere = travelling == index
+        let arrived = index < tilesIn
+
+        return VStack(spacing: VSpace.sm) {
+            Image(systemName: stop.icon)
+                .font(.system(size: 16, weight: .semibold))
+                .foregroundStyle(RampStage.inkSoft)
+                .frame(width: 38, height: 38)
+                .background(Circle().fill(RampStage.recess))
+
+            Text(LocalizedStringKey(stop.title))
+                .font(VType.bodyMedium)
                 .foregroundStyle(RampStage.ink)
-                .lineSpacing(2)
+                .multilineTextAlignment(.center)
                 .fixedSize(horizontal: false, vertical: true)
-                .padding(.horizontal, VSpace.lg)
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.vertical, VSpace.md)
+        .padding(.horizontal, VSpace.sm)
+        .background(RampStage.card,
+                    in: RoundedRectangle(cornerRadius: 18, style: .continuous))
+        .overlay(RoundedRectangle(cornerRadius: 18, style: .continuous)
+            .strokeBorder(isHere ? RampStage.inkFaint : RampStage.hair,
+                          lineWidth: isHere ? 1.5 : 1))
+        .scaleEffect(isHere ? 1.04 : (arrived ? 1 : 0.94))
+        .opacity(arrived ? 1 : 0)
+    }
 
-            Text("Without knowing what changed and why, every new product is another guess — and the loop starts over.")
+    // MARK: The turn
+
+    /// The first accent on the screen, and it arrives only after the circuit
+    /// has closed once — so the colour itself marks the moment the loop stops
+    /// being the whole story.
+    private var payoff: some View {
+        VStack(alignment: .leading, spacing: VSpace.xs) {
+            Text("Nothing in that loop remembers.")
+                .font(VType.bodyLarge.weight(.semibold))
+                .foregroundStyle(RampStage.accentDeep)
+
+            Text("Every scan is kept, side by side — so the next thing you change is a decision instead of another guess.")
                 .font(VType.body)
                 .foregroundStyle(RampStage.textSecondary)
-                .fixedSize(horizontal: false, vertical: true)
-                .padding(.horizontal, VSpace.lg)
-                .padding(.top, VSpace.xs)
-
-            Spacer()
-
-            VStack(spacing: 0) {
-                ForEach(Array(loop.enumerated()), id: \.offset) { index, item in
-                    HStack(spacing: 14) {
-                        ZStack {
-                            Circle()
-                                .fill(RampStage.accent)
-                                .frame(width: 38, height: 38)
-                            Image(systemName: item.icon)
-                                .font(.system(size: 15, weight: .semibold))
-                                .foregroundStyle(RampStage.accentDeep)
-                        }
-                        Text(LocalizedStringKey(item.title))
-                            .font(VType.bodyLarge)
-                            .foregroundStyle(RampStage.ink)
-                        Spacer(minLength: 0)
-                    }
-                    .opacity(shown ? 1 : 0)
-                    .offset(y: shown ? 0 : 8)
-                    .animation(VMotion.gentle.delay(Double(index) * 0.12), value: shown)
-
-                    if index < loop.count - 1 {
-                        Rectangle()
-                            .fill(RampStage.hair)
-                            .frame(width: 1.5, height: 22)
-                            .padding(.leading, 18)
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                            .opacity(shown ? 1 : 0)
-                            .animation(VMotion.gentle.delay(Double(index) * 0.12 + 0.06), value: shown)
-                    }
-                }
-            }
-            .padding(.horizontal, VSpace.xl)
-
-            // The loop is named here and ANSWERED on the next screen. This
-            // used to close with a paragraph ("A plan breaks it. It
-            // remembers what you used…") that made the case in prose — the
-            // reader had to hold the four steps above in their head and
-            // weigh them against a sentence. `RampSawtoothScreen` draws the
-            // same loop as a shape with the user's own arithmetic on it,
-            // which is an argument you can see rather than parse.
-
-            Spacer()
-
-            RampPrimaryButton(title: "Continue") { onAdvance() }
-                .padding(.horizontal, VSpace.lg)
-            Spacer().frame(height: VSpace.xxl)
         }
-        .onAppear { shown = true }
+        .fixedSize(horizontal: false, vertical: true)
+        .opacity(payoffIn ? 1 : 0)
+        .offset(y: payoffIn ? 0 : 8)
+    }
+
+    // MARK: Choreography
+
+    /// Build the circuit, run it once, then break it. The single trip round is
+    /// the whole point — a static diagram of a cycle still has to be read as
+    /// one, where a diagram that visibly returns to its first tile has already
+    /// made the argument by the time the sentence below it appears.
+    private func choreograph() async {
+        if reduceMotion {
+            tilesIn = Self.stops.count
+            circuitIn = true
+            payoffIn = true
+            return
+        }
+
+        try? await Task.sleep(for: .milliseconds(200))
+        for _ in Self.stops.indices {
+            guard !Task.isCancelled else { return }
+            Haptics.fire(.tick)
+            withAnimation(VMotion.snappy) { tilesIn += 1 }
+            try? await Task.sleep(for: .milliseconds(120))
+        }
+
+        withAnimation(VMotion.gentle) { circuitIn = true }
+        try? await Task.sleep(for: .milliseconds(280))
+        guard !Task.isCancelled else { return }
+
+        withAnimation(.easeInOut(duration: 1.2)) { spin = 360 }
+        for index in Self.stops.indices {
+            guard !Task.isCancelled else { return }
+            withAnimation(VMotion.snappy) { travelling = index }
+            try? await Task.sleep(for: .milliseconds(280))
+        }
+        withAnimation(VMotion.snappy) { travelling = nil }
+
+        guard !Task.isCancelled else { return }
+        Haptics.fire(.milestone)
+        withAnimation(VMotion.gentle) { payoffIn = true }
     }
 }
 
