@@ -10,22 +10,37 @@ import os
 /// luminous Teint-Orb lives behind every screen and only re-stages between
 /// them.
 ///
-///   opening → the acne chapter (kind → how long → what you've tried →
-///   what it costs → what we heard) → demo → questions → insights
-///   → spend → the loop → skin progress → goal → the reading → the curve
-///   → the plan → commitment → daily ritual → handoff (the scan).
+///   opening → the offer (the fortnight, then the loop it replaces)
+///   → the acne chapter (kind → how long → what you've tried → what it costs
+///   → what we heard) → demo → questions → insights → goal → the reading
+///   → the curve → the plan → commitment → daily ritual → handoff (the scan).
 ///
 /// Quiz selection IS the advance. (Case names are kept stable so analytics and
 /// the routing stay compatible with earlier builds.)
 enum RampStep: Int, CaseIterable {
     case boot            // 0  — opening carousel
-    // Acne type comes FIRST, before anything is demonstrated — no broad
-    // "what draws your eye" question ahead of it asking about concerns
-    // (redness, pores, texture...) this screen can't actually use. It is
-    // the one question the user actually came to answer, specifically, and
+    // THE OFFER, MOVED TO THE FRONT. These two used to sit at 19–20, after
+    // eighteen questions — which meant the reader had to spend most of the
+    // funnel on faith, answering things before being told what any of it
+    // buys them. Leading with the fortnight and the loop it replaces states
+    // the deal before the asking starts.
+    //
+    // The cost of the move is real and is worth writing down: at position 1
+    // nothing has been answered yet, so `RampSkinProgressScreen` cannot open
+    // on the user's own duration the way it did at 20, and `RampCycleScreen`
+    // names the buy-wait-repeat loop before `acneTried` and `brands` have
+    // established that the reader is in one. Both screens still stand on
+    // their own — neither reads any answer — but they argue in general terms
+    // here where they used to argue in the reader's own.
+    case skinProgress    // 1  — the fourteen days, staged day by day
+    case theCycle        // 2  — the loop, named
+    // Acne type comes FIRST of the questions, before anything is demonstrated
+    // — no broad "what draws your eye" question ahead of it asking about
+    // concerns (redness, pores, texture...) this screen can't actually use. It
+    // is the one question the user actually came to answer, specifically, and
     // every screen after it can mirror it back. A demo shown before we know
     // what is wrong is a demo about somebody else.
-    case acneType        // 1  — which kind, over photographs
+    case acneType        // 3  — which kind, over photographs
     // THE ACNE CHAPTER. `acneType` used to hand straight over to
     // `sampleReading` — the user named the thing they came here about, and
     // the very next screen was a product demo. It reads as being cut off
@@ -38,41 +53,40 @@ enum RampStep: Int, CaseIterable {
     // before any product appears. Two of the three feed the plan (duration
     // sets the ramp, history keeps us from re-selling what already failed);
     // the third feeds nothing and is asked anyway, which is the point.
-    case acneDuration    // 2  — how long has this been going on
-    case acneTried       // 3  — what have you already tried
-    case acneImpact      // 4  — how much does it get to you
-    case acneEmpathy     // 5  — what we heard, said back
-    case sampleReading   // 6  — the real results chart, previewed
-    case theSplit        // 7  — what 14 days moves (interactive bars)
-    case quizSelfRating  // 8  — Q · your skin
-    case quizAge         // 9  — Q · your skin
-    case insightSkin     // 10 — mirrored insight, chapter 1
+    case acneDuration    // 4  — how long has this been going on
+    case acneTried       // 5  — what have you already tried
+    case acneImpact      // 6  — how much does it get to you
+    case acneEmpathy     // 7  — what we heard, said back
+    case sampleReading   // 8  — the real results chart, previewed
+    case theSplit        // 9  — what 14 days moves (interactive bars)
+    case quizSelfRating  // 10 — Q · your skin
+    case quizAge         // 11 — Q · your skin
+    case insightSkin     // 12 — mirrored insight, chapter 1
     // Asked once, immediately after the first insight — so the name is given
     // in exchange for something, not before anything.
-    case name            // 11 — "what should we call you?" (optional)
-    case quizRoutine     // 12 — Q · your life
-    case quizSleep       // 13 — Q · your life
-    case quizSPF         // 14 — Q · your life
-    case insightLife     // 15 — mirrored insight, chapter 2
-    case sensitivities   // 16 — allergies the routine must avoid
-    case brands          // 17 — what's already on the shelf (names, never logos)
-    // Spend, then the loop it bought. Naming the monthly figure and THEN
-    // naming the cycle it funded is the argument for a plan, made with the
-    // user's own number rather than ours — and it is the anchor every later
-    // price is read against.
-    case spend           // 18 — what you already spend each month
-    case theCycle        // 19 — the loop, named
-    // The fortnight, as a schedule rather than a claim: what happens on
-    // which days, ending on the second scan rather than on a promise about
-    // their face. No product and no price enters the conversation here.
-    case skinProgress    // 20 — the fourteen days, staged day by day
+    case name            // 13 — "what should we call you?" (optional)
+    case quizRoutine     // 14 — Q · your life
+    case quizSleep       // 15 — Q · your life
+    case quizSPF         // 16 — Q · your life
+    case insightLife     // 17 — mirrored insight, chapter 2
+    case sensitivities   // 18 — allergies the routine must avoid
+    case brands          // 19 — what's already on the shelf (names, never logos)
+    // `spend` — "what do you spend on your skin a month?", a slider over six
+    // buckets — used to sit here, ahead of `theCycle`, as the anchor every
+    // later price was read against. It was cut because it earns that anchor
+    // by making the reader total up money they already regret, immediately
+    // before being asked for more, and it is the one question in the funnel
+    // that takes without giving anything back: nothing downstream ever read
+    // the answer. `RampCycleScreen` reads no data and makes the same case
+    // without it. Recoverable from git if the anchor is ever wanted again.
+    //
     // The goal-setting act. Everything downstream — the curve, the plan, the
     // paywall headline — refers back to the sentence chosen here.
-    case goal            // 21 — "what does better look like for you?"
-    case theReading      // 22 — visible processing + prediction range
-    case theCurve        // 23 — where do you land?
-    case planPreview     // 24 — your first plan, previewed
-    case evidence        // 25 — the science behind the plan (tappable sources)
+    case goal            // 20 — "what does better look like for you?"
+    case theReading      // 21 — visible processing + prediction range
+    case theCurve        // 22 — where do you land?
+    case planPreview     // 23 — your first plan, previewed
+    case evidence        // 24 — the science behind the plan (tappable sources)
     // Attribution sits here, not at position 3 and not right after the
     // signature. It serves our reporting, not the user, so it used to sit at
     // position 3 — a screen that takes before anything has been given — and
@@ -83,11 +97,11 @@ enum RampStep: Int, CaseIterable {
     // behind it), so the ask is earned here too — and putting it BEFORE
     // commitment means nothing interrupts the signature → reminder-time →
     // sign-in → scan run that follows.
-    case attribution     // 26 — "where did you find us?" (marketing attribution)
-    case commitment      // 27 — sign your 14-day commitment
-    case dailyRitual     // 28 — time choice + notifications
-    case signIn          // 29 — register before the first scan
-    case handoff         // 30 — "now, the real you" → the scan
+    case attribution     // 25 — "where did you find us?" (marketing attribution)
+    case commitment      // 26 — sign your 14-day commitment
+    case dailyRitual     // 27 — time choice + notifications
+    case signIn          // 28 — register before the first scan
+    case handoff         // 29 — "now, the real you" → the scan
 
     var next: RampStep? { RampStep(rawValue: rawValue + 1) }
     var previous: RampStep? { RampStep(rawValue: rawValue - 1) }
@@ -116,7 +130,6 @@ enum RampStep: Int, CaseIterable {
         case .acneEmpathy:    return "acne_empathy"
         case .sensitivities:  return "sensitivities"
         case .brands:         return "brands"
-        case .spend:          return "spend"
         case .theCycle:       return "the_cycle"
         case .skinProgress:   return "skin_progress"
         case .goal:           return "goal"
@@ -631,11 +644,6 @@ struct RampQuizAnswers {
         if acneTypes.contains("scars")      { return "Scarring" }
         return nil
     }
-
-    /// Index into the spend screen's buckets, not an amount. Kept as a bucket
-    /// because nobody knows this figure precisely, and a number implying they
-    /// do would be a false record.
-    var spendBucket: Int = 2
 
     /// Set once the sensitivity screen has been seen. An EMPTY set is a real
     /// answer there ("Nothing I know of"), so emptiness alone can't tell us

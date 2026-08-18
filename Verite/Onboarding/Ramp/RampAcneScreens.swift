@@ -11,9 +11,6 @@ import SwiftUI
 //   RampAcneTypeScreen  — multi-select over photographs. Naming your own kind
 //                         of acne is more specific than "breakouts", and the
 //                         plan can actually branch on it.
-//   RampSpendScreen     — a slider. What you already spend every month is the
-//                         number every later price is judged against; asking
-//                         it here means the paywall lands next to it.
 //   RampCycleScreen     — no input at all. It names the loop — new product,
 //                         no result, more money, repeat — and turns it into
 //                         the argument for a plan.
@@ -250,128 +247,14 @@ private struct RampAcnePhoto: View {
 }
 
 // ============================================================
-// MARK: — What you already spend (the anchor)
-// ============================================================
-
-/// One slider over six buckets. This is the number every later price is
-/// measured against: somebody who just told you they spend €50–80 a month on
-/// products that did not work reads a subscription very differently from
-/// somebody who was never asked.
-///
-/// The buckets are shown in the device's own currency and never stored as an
-/// amount — it is an anchor and a segmentation signal, not billing data.
-struct RampSpendScreen: View {
-    @Binding var bucket: Int
-    let onAdvance: () -> Void
-
-    /// Lower bounds; the last bucket is open-ended.
-    private let bounds = [0, 10, 25, 50, 80, 120]
-
-    private var label: String {
-        let currency = Locale.current.currencySymbol ?? "$"
-        if bucket <= 0 { return String(localized: "Nothing yet") }
-        if bucket >= bounds.count - 1 { return "\(currency)\(bounds[bounds.count - 1])+" }
-        return "\(currency)\(bounds[bucket])–\(bounds[bucket + 1])"
-    }
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: 0) {
-            Spacer(minLength: RampStage.headerClearance)
-
-            Text("What do you spend\non your skin a month?")
-                .font(RampStage.serif(26, weight: .semibold))
-                .foregroundStyle(RampStage.ink)
-                .lineSpacing(2)
-                .fixedSize(horizontal: false, vertical: true)
-                .padding(.horizontal, VSpace.lg)
-
-            Text("Roughly is fine.")
-                .font(VType.body)
-                .foregroundStyle(RampStage.textSecondary)
-                .fixedSize(horizontal: false, vertical: true)
-                .padding(.horizontal, VSpace.lg)
-                .padding(.top, VSpace.xs)
-
-            Spacer()
-
-            Text(verbatim: label)
-                .font(.system(size: 40, weight: .heavy, design: .rounded).monospacedDigit())
-                .foregroundStyle(RampStage.ink)
-                .frame(maxWidth: .infinity)
-                .contentTransition(.numericText(value: Double(bucket)))
-                .animation(VMotion.snappy, value: bucket)
-
-            segmentedSlider
-                .padding(.horizontal, VSpace.xl)
-                .padding(.top, VSpace.lg)
-
-            Spacer()
-
-            RampPrimaryButton(title: "Continue") { onAdvance() }
-                .padding(.horizontal, VSpace.lg)
-            Spacer().frame(height: VSpace.xxl)
-        }
-    }
-
-    /// Six segments rather than a continuous track: the answer is a bucket, and
-    /// a continuous slider would imply a precision nobody has about this.
-    private var segmentedSlider: some View {
-        GeometryReader { proxy in
-            let count = bounds.count
-            let gap: CGFloat = 6
-            let segment = (proxy.size.width - gap * CGFloat(count - 1)) / CGFloat(count)
-            ZStack(alignment: .leading) {
-                HStack(spacing: gap) {
-                    ForEach(0..<count, id: \.self) { index in
-                        Capsule()
-                            .fill(index <= bucket ? RampStage.accentEdge : RampStage.hair)
-                            .frame(height: 10)
-                    }
-                }
-                Circle()
-                    .fill(Color.white)
-                    .overlay(Circle().strokeBorder(RampStage.accentEdge, lineWidth: 2))
-                    .shadow(color: RampStage.ink.opacity(0.18), radius: 6, y: 2)
-                    .frame(width: 30, height: 30)
-                    .offset(x: (segment + gap) * CGFloat(bucket) + segment / 2 - 15)
-            }
-            .frame(maxHeight: .infinity)
-            .contentShape(Rectangle())
-            .gesture(
-                DragGesture(minimumDistance: 0)
-                    .onChanged { value in
-                        let step = (segment + gap)
-                        let raw = Int(((value.location.x) / step).rounded(.down))
-                        let clamped = max(0, min(count - 1, raw))
-                        if clamped != bucket {
-                            bucket = clamped
-                            Haptics.fire(.tick)
-                        }
-                    }
-            )
-        }
-        .frame(height: 44)
-        .accessibilityElement()
-        .accessibilityLabel("Monthly spend")
-        .accessibilityValue(label)
-        .accessibilityAdjustableAction { direction in
-            switch direction {
-            case .increment: bucket = min(bounds.count - 1, bucket + 1)
-            case .decrement: bucket = max(0, bucket - 1)
-            @unknown default: break
-            }
-        }
-    }
-}
-
-// ============================================================
 // MARK: — The loop you're already in
 // ============================================================
 
 /// No input. It names the cycle the user recognises from their own bathroom
 /// shelf — buy something new, wait, see nothing, buy something else — and
-/// turns it into the case for a plan. Placed directly after the spend
-/// question, so the money they just named is still on the screen behind them.
+/// turns it into the case for a plan. It reads no answers, which is why it
+/// survived the move to the front of the funnel intact — it used to sit after
+/// the spend question and lean on the figure the reader had just named.
 struct RampCycleScreen: View {
     let onAdvance: () -> Void
 

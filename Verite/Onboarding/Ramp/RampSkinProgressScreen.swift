@@ -23,10 +23,17 @@ import SwiftUI
 ///     under the photographs said "improvement in 2–3 weeks" — up to twenty
 ///     one. The screen promised a fortnight and then quietly took it back,
 ///     inside the same card.
-///  3. IT SAID NOTHING ABOUT THIS USER. Twenty screens of mirroring their own
-///     answers back, and then a page identical for everybody. The headline now
-///     opens on the duration they gave us, because "years of this, now
-///     fourteen days" is an argument and "14 days with SkinFix" is a banner.
+///  3. IT SAID NOTHING ABOUT THIS USER. At the time it sat at step 20, after
+///     twenty screens of mirroring their own answers back — and then a page
+///     identical for everybody. `headline` was rewritten to open on the
+///     duration they gave us, because "years of this, now fourteen days" is
+///     an argument and "14 days with SkinFix" is a banner.
+///
+///     That fix is currently dormant: the screen has since moved to step 1,
+///     where nothing has been answered yet, so the headline always takes its
+///     `nil` branch. See the note on `headline` — the branches are kept
+///     because they cost nothing and come back the moment this screen sits
+///     anywhere after `acneDuration` again.
 ///
 /// WHY A SCHEDULE IS THE STRONGER SCREEN. A before and an after state two
 /// things and skip the part the reader is actually anxious about: the middle,
@@ -264,6 +271,13 @@ struct RampSkinProgressScreen: View {
 
     /// Opens on the duration they gave us. "Years of this" earns the fourteen
     /// days that follow it; a generic banner does not.
+    ///
+    /// AT THE MOMENT ONLY THE `nil` BRANCH EVER RUNS. This screen sits at step
+    /// 1, ahead of `acneDuration`, so there is no duration to open on and the
+    /// fallback is what everybody reads — write it as the primary headline,
+    /// not as a stopgap. The four specific branches are deliberately kept: they
+    /// cost nothing, and they light up again the moment this screen is placed
+    /// anywhere after the acne chapter.
     private var headline: String {
         switch answers.acneDuration {
         case .months:            return "Months of this.\nNow fourteen days."

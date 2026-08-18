@@ -277,13 +277,6 @@ struct OnboardingRampFlow: View {
                                 UserDefaults.standard.set(picked, forKey: "dq.brands")
                                 advance()
                             })
-        case .spend:
-            RampSpendScreen(bucket: spendBinding) {
-                RampAnalytics.quizAnswer(question: "monthly_spend_bucket",
-                                         answer: "\(answers.spendBucket)")
-                UserDefaults.standard.set(answers.spendBucket, forKey: "dq.spendBucket")
-                advance()
-            }
         case .theCycle:
             RampCycleScreen { advance() }
         case .skinProgress:
@@ -340,10 +333,6 @@ struct OnboardingRampFlow: View {
 
     private var brandsBinding: Binding<Set<String>> {
         Binding(get: { answers.brands }, set: { answers.brands = $0 })
-    }
-
-    private var spendBinding: Binding<Int> {
-        Binding(get: { answers.spendBucket }, set: { answers.spendBucket = $0 })
     }
 
     /// Swaps in the name-addressed variant once the user has given a name.
