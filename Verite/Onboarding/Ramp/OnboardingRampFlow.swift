@@ -119,8 +119,6 @@ struct OnboardingRampFlow: View {
                            })
         case .sampleReading:
             RampSampleReadingScreen { advance() }
-        case .theSplit:
-            RampSplitScreen { advance() }
         case .attribution:
             RampQuizScreen(
                 question: "Where did you find SkinFix?",

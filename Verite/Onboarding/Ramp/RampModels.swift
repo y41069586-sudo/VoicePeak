@@ -58,19 +58,26 @@ enum RampStep: Int, CaseIterable {
     case acneImpact      // 6  — how much does it get to you
     case acneEmpathy     // 7  — what we heard, said back
     case sampleReading   // 8  — the real results chart, previewed
-    case theSplit        // 9  — what 14 days moves (interactive bars)
-    case quizSelfRating  // 10 — Q · your skin
-    case quizAge         // 11 — Q · your skin
-    case insightSkin     // 12 — mirrored insight, chapter 1
+    // `theSplit` — "What fourteen days can move", four metric bars driven by
+    // a DAY 1 / DAY 14 slider — used to sit here. It was cut as a duplicate:
+    // `skinProgress` now opens the funnel at step 1 saying the same thing,
+    // and the two sat twelve screens apart before the reorder, which is the
+    // only reason the overlap was not obvious. Making the fortnight's case
+    // twice, once before the questions and once in the middle of them, spends
+    // a screen to tell the reader something they were told first.
+    // `RampSplitScreen`, `RampSplitMetric` and `RampMorphSlider` went with it.
+    case quizSelfRating  // 9  — Q · your skin
+    case quizAge         // 10 — Q · your skin
+    case insightSkin     // 11 — mirrored insight, chapter 1
     // Asked once, immediately after the first insight — so the name is given
     // in exchange for something, not before anything.
-    case name            // 13 — "what should we call you?" (optional)
-    case quizRoutine     // 14 — Q · your life
-    case quizSleep       // 15 — Q · your life
-    case quizSPF         // 16 — Q · your life
-    case insightLife     // 17 — mirrored insight, chapter 2
-    case sensitivities   // 18 — allergies the routine must avoid
-    case brands          // 19 — what's already on the shelf (names, never logos)
+    case name            // 12 — "what should we call you?" (optional)
+    case quizRoutine     // 13 — Q · your life
+    case quizSleep       // 14 — Q · your life
+    case quizSPF         // 15 — Q · your life
+    case insightLife     // 16 — mirrored insight, chapter 2
+    case sensitivities   // 17 — allergies the routine must avoid
+    case brands          // 18 — what's already on the shelf (names, never logos)
     // `spend` — "what do you spend on your skin a month?", a slider over six
     // buckets — used to sit here, ahead of `theCycle`, as the anchor every
     // later price was read against. It was cut because it earns that anchor
@@ -82,11 +89,11 @@ enum RampStep: Int, CaseIterable {
     //
     // The goal-setting act. Everything downstream — the curve, the plan, the
     // paywall headline — refers back to the sentence chosen here.
-    case goal            // 20 — "what does better look like for you?"
-    case theReading      // 21 — visible processing + prediction range
-    case theCurve        // 22 — where do you land?
-    case planPreview     // 23 — your first plan, previewed
-    case evidence        // 24 — the science behind the plan (tappable sources)
+    case goal            // 19 — "what does better look like for you?"
+    case theReading      // 20 — visible processing + prediction range
+    case theCurve        // 21 — where do you land?
+    case planPreview     // 22 — your first plan, previewed
+    case evidence        // 23 — the science behind the plan (tappable sources)
     // Attribution sits here, not at position 3 and not right after the
     // signature. It serves our reporting, not the user, so it used to sit at
     // position 3 — a screen that takes before anything has been given — and
@@ -97,11 +104,11 @@ enum RampStep: Int, CaseIterable {
     // behind it), so the ask is earned here too — and putting it BEFORE
     // commitment means nothing interrupts the signature → reminder-time →
     // sign-in → scan run that follows.
-    case attribution     // 25 — "where did you find us?" (marketing attribution)
-    case commitment      // 26 — sign your 14-day commitment
-    case dailyRitual     // 27 — time choice + notifications
-    case signIn          // 28 — register before the first scan
-    case handoff         // 29 — "now, the real you" → the scan
+    case attribution     // 24 — "where did you find us?" (marketing attribution)
+    case commitment      // 25 — sign your 14-day commitment
+    case dailyRitual     // 26 — time choice + notifications
+    case signIn          // 27 — register before the first scan
+    case handoff         // 28 — "now, the real you" → the scan
 
     var next: RampStep? { RampStep(rawValue: rawValue + 1) }
     var previous: RampStep? { RampStep(rawValue: rawValue - 1) }
@@ -113,7 +120,6 @@ enum RampStep: Int, CaseIterable {
         switch self {
         case .boot:           return "boot"
         case .sampleReading:  return "sample_reading"
-        case .theSplit:       return "the_split"
         case .attribution:    return "attribution"
         case .name:           return "name"
         case .quizSelfRating: return "quiz_self_rating"
