@@ -495,14 +495,6 @@ struct RampSplitScreen: View {
                             Text(LocalizedStringKey(metric.label))
                                 .font(VType.caption)
                                 .foregroundStyle(RampStage.textSecondary)
-                            Text(LocalizedStringKey(metric.tag))
-                                .font(VType.micro)
-                                .foregroundStyle(metric.tag == "Slower"
-                                                 ? RampStage.textTertiary : RampStage.accentDeep)
-                                .padding(.horizontal, 6).padding(.vertical, 1)
-                                .background((metric.tag == "Slower"
-                                             ? RampStage.hair : RampStage.accentSoft),
-                                            in: Capsule())
                             Spacer()
                             Text(verbatim: "\(Int(metric.value(at: t) * 100))")
                                 .font(VType.captionBold)
@@ -581,9 +573,15 @@ struct RampSplitScreen: View {
 /// The after-values are deliberately UNEVEN: fast movers (hydration, glow)
 /// climb a lot in two weeks, slow ones (texture) barely — the honest message
 /// is built into the bars, not just the caption.
+///
+/// Each row used to carry a "Fast" / "Gradual" / "Slower" capsule beside its
+/// label, which said in a word what the bar beside it was already saying in
+/// length — and cost the row a second colour and a second shape to parse. The
+/// bars are the argument; a label that ranks them for the reader only competes
+/// with the thing it is labelling. Keep the spread between `before` and
+/// `after` honest and the tags stay unnecessary.
 private struct RampSplitMetric {
     let label: String
-    let tag: String      // "Fast" / "Gradual" / "Slower"
     let before: Double
     let after: Double
 
@@ -592,10 +590,10 @@ private struct RampSplitMetric {
     }
 
     static let samples: [RampSplitMetric] = [
-        RampSplitMetric(label: "Hydration", tag: "Fast",    before: 0.40, after: 0.78),
-        RampSplitMetric(label: "Glow",      tag: "Fast",    before: 0.38, after: 0.72),
-        RampSplitMetric(label: "Redness",   tag: "Gradual", before: 0.50, after: 0.67),
-        RampSplitMetric(label: "Texture",   tag: "Slower",  before: 0.44, after: 0.55),
+        RampSplitMetric(label: "Hydration", before: 0.40, after: 0.78),
+        RampSplitMetric(label: "Glow",      before: 0.38, after: 0.72),
+        RampSplitMetric(label: "Redness",   before: 0.50, after: 0.67),
+        RampSplitMetric(label: "Texture",   before: 0.44, after: 0.55),
     ]
 }
 
