@@ -264,20 +264,26 @@ private struct RampAcnePhoto: View {
 // MARK: — The loop you're already in
 // ============================================================
 
-/// The loop, drawn as a loop.
+/// The loop, drawn as a loop — and running.
 ///
 /// It used to be a vertical LIST of four steps, which is the one shape that is
 /// not a cycle: a list has a top, a bottom and a way out. The reader had to be
 /// told in prose that it comes back around, because the drawing said the
-/// opposite. Four stops on a closed circuit say it without a caption, and the
-/// choreography then walks that circuit once, so the return trip is something
-/// you watch rather than something you are asked to infer.
+/// opposite. Four stops on a closed circuit say it without a caption.
 ///
-/// THE CIRCUIT IS DRAWN IN NEUTRALS ON PURPOSE. Everywhere else in this flow
-/// the accent means "ours" or "the way out". Rendering the cycle in warm
-/// orange would dress the exact thing this screen argues against in the
-/// brand's own colour, and the tiles would read as four features. Grey
-/// circuit; the accent appears only once the loop has been broken.
+/// THE CIRCULATION IS THE POINT, AND SO IS STOPPING IT. The current runs the
+/// circuit twice — arrow by arrow, hub turning — and then halts on the exact
+/// beat the payoff line arrives. Motion stopping is the argument: the loop
+/// does not end because you tried harder, it ends when something finally keeps
+/// a record. A static diagram has to be read as a cycle; one that visibly
+/// comes back to its first tile and then stops has already made the case.
+///
+/// THE CHROME STAYS NEUTRAL. The emoji carry the colour, but the tiles,
+/// arrows and hub are drawn in hairline and ink. Everywhere else in this flow
+/// the accent means "ours" or "the way out" — rendering the circuit in brand
+/// orange would dress the thing this screen argues against in our own colour,
+/// and the four stops would read as features. The first accent on the screen
+/// appears only once the loop has stopped.
 ///
 /// IT ALSO HAS TO CLOSE ITS OWN ARGUMENT NOW. It used to name the loop and
 /// leave the answer to the screen after it. Since the reorder `skinProgress`
@@ -290,29 +296,47 @@ struct RampCycleScreen: View {
 
     @State private var tilesIn = 0
     @State private var circuitIn = false
-    @State private var travelling: Int?
+    /// Which leg the current is on, 0…3 clockwise from the top. `nil` once the
+    /// loop has been stopped for good.
+    @State private var live: Int?
     @State private var spin: Double = 0
     @State private var payoffIn = false
 
     private struct Stop {
-        let icon: String
+        let emoji: String
         let title: String
     }
 
     /// Clockwise from the top left, and the order IS the argument — so the
-    /// grid below lays them out 0,1 across the top and 3,2 across the bottom
-    /// rather than in reading order.
+    /// grid lays these out 0,1 across the top and 3,2 across the bottom rather
+    /// than in reading order.
+    ///
+    /// Every emoji here carries default EMOJI presentation, so none of them
+    /// needs a U+FE0F selector to render in colour (a `🌤` on the skin-progress
+    /// screen fell back to a hollow glyph box for exactly that reason).
+    ///
+    /// 🪞 rather than a question mark for "see no change": this is a skincare
+    /// funnel, and the mirror is where that verdict actually gets delivered.
+    /// 💸 rather than a trolley for the first stop, because the money is the
+    /// part of the loop that stings and there is no longer a spend screen
+    /// anywhere in the flow to say it.
+    ///
+    /// 🌀 rather than the obvious 🔁 for the last stop, and the reason is
+    /// colour rather than meaning. 🔁 renders in almost exactly this app's
+    /// accent orange — it became the most saturated thing on a deliberately
+    /// grey screen, sitting a thumb away from an orange button, and pulled
+    /// the eye to "Start again" as though that were the point being sold.
     private static let stops: [Stop] = [
-        Stop(icon: "cart",                   title: "Buy something new"),
-        Stop(icon: "hourglass",              title: "Wait a few weeks"),
-        Stop(icon: "questionmark",           title: "See no change"),
-        Stop(icon: "arrow.counterclockwise", title: "Start again"),
+        Stop(emoji: "💸", title: "Buy something new"),
+        Stop(emoji: "⏳", title: "Wait a few weeks"),
+        Stop(emoji: "🪞", title: "See no change"),
+        Stop(emoji: "🌀", title: "Start again"),
     ]
 
-    /// Wide enough that the connecting arrows sit IN the gaps rather than on
-    /// top of the tiles — the circuit only reads if the arrows have their own
-    /// space to live in.
-    private static let gap: CGFloat = 26
+    /// Wide enough that the arrows sit IN the gaps with room to move rather
+    /// than pressed against the tiles — the circuit only reads if its
+    /// connectors have space of their own.
+    private static let gap: CGFloat = 30
 
     var body: some View {
         GeometryReader { proxy in
@@ -368,12 +392,12 @@ struct RampCycleScreen: View {
         }
         .overlay { connectors }
         .accessibilityElement()
-        .accessibilityLabel("A loop: buy something new, wait a few weeks, see no change, start again.")
+        .accessibilityLabel("A loop that keeps returning to its start: buy something new, wait a few weeks, see no change, start again.")
     }
 
     /// The four arrows and the hub, positioned into the gaps the grid leaves.
-    /// Derived from the measured size rather than from constants so they stay
-    /// centred on the crossing whatever the tiles grow to.
+    /// Derived from the measured size rather than from constants, so they stay
+    /// on the crossing whatever the tiles grow to.
     private var connectors: some View {
         GeometryReader { geo in
             let w = geo.size.width
@@ -382,10 +406,14 @@ struct RampCycleScreen: View {
             let rowCentre = (h - Self.gap) / 4   // centre of one row
 
             ZStack {
-                arrow("arrow.right", at: CGPoint(x: w / 2, y: rowCentre))
-                arrow("arrow.down",  at: CGPoint(x: w - colCentre, y: h / 2))
-                arrow("arrow.left",  at: CGPoint(x: w / 2, y: h - rowCentre))
-                arrow("arrow.up",    at: CGPoint(x: colCentre, y: h / 2))
+                arrow(0, "arrow.right", at: CGPoint(x: w / 2, y: rowCentre),
+                      nudge: CGSize(width: 3, height: 0))
+                arrow(1, "arrow.down", at: CGPoint(x: w - colCentre, y: h / 2),
+                      nudge: CGSize(width: 0, height: 3))
+                arrow(2, "arrow.left", at: CGPoint(x: w / 2, y: h - rowCentre),
+                      nudge: CGSize(width: -3, height: 0))
+                arrow(3, "arrow.up", at: CGPoint(x: colCentre, y: h / 2),
+                      nudge: CGSize(width: 0, height: -3))
                 hub.position(x: w / 2, y: h / 2)
             }
             .opacity(circuitIn ? 1 : 0)
@@ -393,20 +421,28 @@ struct RampCycleScreen: View {
         .allowsHitTesting(false)
     }
 
-    private func arrow(_ symbol: String, at point: CGPoint) -> some View {
-        Image(systemName: symbol)
+    /// One leg of the circuit. When the current reaches it the arrow darkens,
+    /// grows and slides a little the way it points — small enough to read as
+    /// flow rather than as four separate blinking icons.
+    private func arrow(_ index: Int, _ symbol: String,
+                       at point: CGPoint, nudge: CGSize) -> some View {
+        let isLive = live == index
+        return Image(systemName: symbol)
             .font(.system(size: 13, weight: .semibold))
-            .foregroundStyle(RampStage.inkFaint)
+            .foregroundStyle(isLive ? RampStage.inkSoft : RampStage.inkFaint)
+            .scaleEffect(isLive ? 1.25 : 1)
+            .offset(isLive ? nudge : .zero)
             .position(point)
     }
 
-    /// Sits on the crossing of both gaps and turns once while the highlight
-    /// travels — the one moving part that says "again" without a word.
+    /// Sits on the crossing of both gaps and turns while the current runs —
+    /// the one moving part that says "again" without a word. Left as a grey
+    /// symbol rather than a 🔁 so it cannot be mistaken for a fifth stop.
     private var hub: some View {
         Image(systemName: "arrow.triangle.2.circlepath")
-            .font(.system(size: 14, weight: .semibold))
+            .font(.system(size: 15, weight: .semibold))
             .foregroundStyle(RampStage.inkFaint)
-            .frame(width: 34, height: 34)
+            .frame(width: 38, height: 38)
             .background(Circle().fill(RampStage.card))
             .overlay(Circle().strokeBorder(RampStage.hair, lineWidth: 1))
             .rotationEffect(.degrees(spin))
@@ -414,15 +450,18 @@ struct RampCycleScreen: View {
 
     private func tile(_ index: Int) -> some View {
         let stop = Self.stops[index]
-        let isHere = travelling == index
+        let isHere = live == index
         let arrived = index < tilesIn
 
         return VStack(spacing: VSpace.sm) {
-            Image(systemName: stop.icon)
-                .font(.system(size: 16, weight: .semibold))
-                .foregroundStyle(RampStage.inkSoft)
-                .frame(width: 38, height: 38)
+            Text(stop.emoji)
+                .font(.system(size: 26))
+                .frame(width: 50, height: 50)
                 .background(Circle().fill(RampStage.recess))
+                // A ring that only appears under the current, so the emoji
+                // well reads as the thing being visited.
+                .overlay(Circle().strokeBorder(isHere ? RampStage.inkFaint : .clear,
+                                               lineWidth: 1.5))
 
             Text(LocalizedStringKey(stop.title))
                 .font(VType.bodyMedium)
@@ -434,19 +473,20 @@ struct RampCycleScreen: View {
         .padding(.vertical, VSpace.md)
         .padding(.horizontal, VSpace.sm)
         .background(RampStage.card,
-                    in: RoundedRectangle(cornerRadius: 18, style: .continuous))
-        .overlay(RoundedRectangle(cornerRadius: 18, style: .continuous)
-            .strokeBorder(isHere ? RampStage.inkFaint : RampStage.hair,
-                          lineWidth: isHere ? 1.5 : 1))
+                    in: RoundedRectangle(cornerRadius: 20, style: .continuous))
+        .overlay(RoundedRectangle(cornerRadius: 20, style: .continuous)
+            .strokeBorder(RampStage.hair, lineWidth: 1))
+        .shadow(color: RampStage.ink.opacity(isHere ? 0.10 : 0.04),
+                radius: isHere ? 14 : 6, y: isHere ? 5 : 2)
         .scaleEffect(isHere ? 1.04 : (arrived ? 1 : 0.94))
         .opacity(arrived ? 1 : 0)
     }
 
     // MARK: The turn
 
-    /// The first accent on the screen, and it arrives only after the circuit
-    /// has closed once — so the colour itself marks the moment the loop stops
-    /// being the whole story.
+    /// The first accent on the screen, and it lands on the same beat the
+    /// circulation stops — so the colour and the stillness make the point
+    /// together, before the sentence has been read.
     private var payoff: some View {
         VStack(alignment: .leading, spacing: VSpace.xs) {
             Text("Nothing in that loop remembers.")
@@ -464,10 +504,11 @@ struct RampCycleScreen: View {
 
     // MARK: Choreography
 
-    /// Build the circuit, run it once, then break it. The single trip round is
-    /// the whole point — a static diagram of a cycle still has to be read as
-    /// one, where a diagram that visibly returns to its first tile has already
-    /// made the argument by the time the sentence below it appears.
+    /// Build it, run it twice, break it.
+    ///
+    /// Two laps, not one: a single pass reads as a sequence that happens to
+    /// end where it began, where the second lap is the moment the reader
+    /// realises it is not going to stop on its own. Three would be nagging.
     private func choreograph() async {
         if reduceMotion {
             tilesIn = Self.stops.count
@@ -485,20 +526,30 @@ struct RampCycleScreen: View {
         }
 
         withAnimation(VMotion.gentle) { circuitIn = true }
-        try? await Task.sleep(for: .milliseconds(280))
+        try? await Task.sleep(for: .milliseconds(260))
         guard !Task.isCancelled else { return }
 
-        withAnimation(.easeInOut(duration: 1.2)) { spin = 360 }
-        for index in Self.stops.indices {
-            guard !Task.isCancelled else { return }
-            withAnimation(VMotion.snappy) { travelling = index }
-            try? await Task.sleep(for: .milliseconds(280))
+        let laps = 2
+        let perLeg = 260
+        withAnimation(.linear(duration: Double(laps * 4 * perLeg) / 1000)) {
+            spin = Double(laps) * 360
         }
-        withAnimation(VMotion.snappy) { travelling = nil }
+        for _ in 0..<laps {
+            for index in Self.stops.indices {
+                guard !Task.isCancelled else { return }
+                withAnimation(VMotion.snappy) { live = index }
+                try? await Task.sleep(for: .milliseconds(UInt64(perLeg)))
+            }
+        }
 
+        // The stop. Everything settles at once — current off, and the sentence
+        // that explains why arrives on the same beat.
         guard !Task.isCancelled else { return }
         Haptics.fire(.milestone)
-        withAnimation(VMotion.gentle) { payoffIn = true }
+        withAnimation(VMotion.gentle) {
+            live = nil
+            payoffIn = true
+        }
     }
 }
 
