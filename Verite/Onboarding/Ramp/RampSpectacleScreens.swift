@@ -294,64 +294,93 @@ private struct RampFitted<Content: View>: View {
 // ============================================================
 
 /// The strongest opener: the exact chart the app produces after a scan — a
-/// circular photo above a two-column metric grid, the numbers counting up from
-/// zero and resolving from a blur, just like the real reveal. Illustrative
-/// data + a stock example face; the user's own is built from their scan.
+/// circular photo above the reading, the numbers counting up from zero and
+/// resolving from a blur, just like the real reveal. Illustrative data and a
+/// stock example face; the user's own is built from their scan.
+///
+/// ONE NUMBER LEADS. This used to be six equal cells in a two-column grid,
+/// which flattened the one figure the whole product is built on — the 0–100
+/// score — into a peer of "Evenness". A reader scanning it came away with six
+/// numbers in the sixties and no idea which one mattered. Overall now runs at
+/// 72pt with the five sub-scores as compact rows beneath it, so the hierarchy
+/// on the page matches the hierarchy in the product.
+///
+/// TWO LAYOUT FAULTS FIXED HERE, both of which only showed on a short canvas:
+///
+///  · The headline had no `fixedSize`, while the standfirst under it did. On a
+///    viewport too short for the fixed VStack, SwiftUI compressed whichever
+///    text would yield — so "Your skin, fully read." truncated to "Your
+///    skin,…" with the standfirst below it intact and fully wrapped.
+///  · There was no `ScrollView` at all, so a short canvas had nowhere to put
+///    the overflow and every child got squeezed instead. It now scrolls with
+///    `minHeight`, the same shape every other screen in the flow uses.
+///
+/// The standfirst is gone rather than fixed. It said "the exact chart your
+/// first scan builds — photo and all", which is the picture explaining itself
+/// while the picture is right there; the honesty line at the foot is the only
+/// caption this screen actually needs.
 struct RampSampleReadingScreen: View {
     let onAdvance: () -> Void
 
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var reveal: Double = 0        // 0 → 1 count-up driver
 
-    // Illustrative reading — Overall leads, then five sub-scores. Kept in a
-    // realistic 60–70 band: a first honest scan rarely reads higher, and an
-    // over-bright sample sets a promise the real reveal can't match. Overall
-    // ≈ the average of the five sub-scores.
-    private let cells: [(String, Int, Bool)] = [
-        ("Overall", 66, true),
-        ("Glow", 69, false),
-        ("Hydration", 63, false),
-        ("Texture", 65, false),
-        ("Redness", 61, false),
-        ("Evenness", 68, false),
+    /// Illustrative reading, kept in a realistic 60–70 band: a first honest
+    /// scan rarely reads higher, and an over-bright sample sets a promise the
+    /// real reveal cannot match. Overall ≈ the average of the five sub-scores,
+    /// because a headline figure that does not follow from the rows under it
+    /// is the first thing a sceptical reader catches.
+    private static let overall = 66
+    private static let subs: [(String, Int)] = [
+        ("Glow", 69),
+        ("Hydration", 63),
+        ("Texture", 65),
+        ("Redness", 61),
+        ("Evenness", 68),
     ]
 
-    private let columns = [GridItem(.flexible(), spacing: 20),
-                           GridItem(.flexible(), spacing: 20)]
-
     var body: some View {
-        VStack(spacing: 0) {
-            Spacer().frame(height: VSpace.xxl * 1.1)
+        GeometryReader { proxy in
+            ScrollView {
+                VStack(spacing: 0) {
+                    // Fixed, not flexible. Three flexible spacers in one
+                    // column share the slack equally, so a `minLength`
+                    // spacer here would grow with the others and push the
+                    // first element away from the header on a tall canvas.
+                    Spacer().frame(height: RampStage.headerClearance)
 
-            Text("Your skin,\nfully read.")
-                .font(RampStage.serif(26))
-                .foregroundStyle(RampStage.ink)
-                .multilineTextAlignment(.center)
-                .lineSpacing(2)
+                    Text("Your skin,\nfully read.")
+                        .font(RampStage.serif(26))
+                        .foregroundStyle(RampStage.ink)
+                        .multilineTextAlignment(.center)
+                        .lineSpacing(2)
+                        .fixedSize(horizontal: false, vertical: true)
 
-            Text("The exact chart your first scan builds — photo and all.")
-                .font(VType.caption)
-                .foregroundStyle(RampStage.textSecondary)
-                .multilineTextAlignment(.center)
-                .fixedSize(horizontal: false, vertical: true)
-                .padding(.horizontal, VSpace.xl)
-                .padding(.top, VSpace.sm)
+                    Spacer(minLength: VSpace.lg)
 
-            Spacer()
+                    chartCard
+                        .padding(.horizontal, VSpace.xl)
 
-            chartCard
-                .padding(.horizontal, VSpace.xl)
+                    Spacer(minLength: VSpace.lg)
 
-            Spacer()
+                    // Stays, and stays visible. The card is a mock-up of a
+                    // measurement, which is exactly the kind of thing a reader
+                    // is entitled to mistake for their own result.
+                    Text("Illustrative reading. Yours is built from your scan.")
+                        .font(VType.micro)
+                        .foregroundStyle(RampStage.textTertiary)
+                        .multilineTextAlignment(.center)
+                        .fixedSize(horizontal: false, vertical: true)
+                        .padding(.horizontal, VSpace.lg)
 
-            Text("Illustrative reading. Yours is built from your scan.")
-                .font(VType.micro)
-                .foregroundStyle(RampStage.textTertiary)
-
-            RampPrimaryButton(title: "I want mine") { onAdvance() }
-                .padding(.horizontal, VSpace.lg)
-                .padding(.top, VSpace.md)
-            Spacer().frame(height: VSpace.xxl)
+                    RampPrimaryButton(title: "I want mine") { onAdvance() }
+                        .padding(.horizontal, VSpace.lg)
+                        .padding(.top, VSpace.md)
+                    Spacer().frame(height: VSpace.xxl)
+                }
+                .frame(minHeight: proxy.size.height)
+            }
+            .scrollBounceBehavior(.basedOnSize)
         }
         .task {
             if reduceMotion { reveal = 1; return }
@@ -373,13 +402,22 @@ struct RampSampleReadingScreen: View {
         }
     }
 
-    /// The card: circular photo straddling the top of a metric grid — the
-    /// real results layout.
+    /// The card: circular photo straddling the top of the reading — the real
+    /// results layout.
     private var chartCard: some View {
         ZStack(alignment: .top) {
-            LazyVGrid(columns: columns, alignment: .leading, spacing: 18) {
-                ForEach(cells.indices, id: \.self) { i in
-                    metricCell(cells[i].0, cells[i].1, lead: cells[i].2)
+            VStack(spacing: 0) {
+                heroScore
+
+                Rectangle()
+                    .fill(RampStage.hair)
+                    .frame(height: 1)
+                    .padding(.vertical, VSpace.md)
+
+                VStack(spacing: 14) {
+                    ForEach(Self.subs.indices, id: \.self) { i in
+                        subRow(Self.subs[i].0, Self.subs[i].1)
+                    }
                 }
             }
             .padding(.horizontal, 20)
@@ -395,36 +433,72 @@ struct RampSampleReadingScreen: View {
         .padding(.top, 56)
     }
 
-    private func metricCell(_ label: String, _ value: Int, lead: Bool) -> some View {
-        let shown = Int((Double(value) * reveal).rounded())
-        return VStack(alignment: .leading, spacing: 6) {
-            Text(LocalizedStringKey(label))
-                .font(.system(size: 13, weight: .semibold, design: .rounded))
-                .foregroundStyle(RampStage.textSecondary)
-                .lineLimit(1)
-            // The iOS-teaser look that RESOLVES: numbers start blurred and
-            // sharpen as they count up (blur → 0 as reveal → 1), just like the
-            // real reveal — not a permanent smudge covering the whole card.
+    /// The figure the product is actually about, set at the size that says so.
+    private var heroScore: some View {
+        let shown = Int((Double(Self.overall) * reveal).rounded())
+        return VStack(spacing: 2) {
+            Text("OVERALL")
+                .font(VType.micro)
+                .tracking(3)
+                .foregroundStyle(RampStage.accentDeep)
+
+            // The iOS-teaser look that RESOLVES: the number starts blurred and
+            // sharpens as it counts up, just like the real reveal — not a
+            // permanent smudge sitting over the card.
             Text(verbatim: "\(shown)")
-                .font(.system(size: 26, weight: .heavy, design: .rounded).monospacedDigit())
-                .foregroundStyle(lead ? RampStage.accentDeep : RampStage.ink)
+                .font(.system(size: 72, weight: .heavy, design: .rounded).monospacedDigit())
+                .foregroundStyle(RampStage.ink)
                 .contentTransition(.numericText(value: Double(shown)))
-                .blur(radius: 9 * (1 - reveal))
+                .blur(radius: 12 * (1 - reveal))
+
             GeometryReader { proxy in
                 ZStack(alignment: .leading) {
                     Capsule().fill(RampStage.hair.opacity(0.7))
                     Capsule()
-                        .fill(lead ? RampStage.accentDeep : RampStage.accent)
-                        // Only the pale fill needs bounding; accentDeep carries
-                        // its own separation from the track.
-                        .overlay(Capsule().strokeBorder(lead ? .clear : RampStage.accentEdge,
-                                                        lineWidth: 1))
+                        .fill(RampStage.accentGradient)
+                        .frame(width: proxy.size.width * CGFloat(shown) / 100)
+                }
+            }
+            .frame(height: 8)
+            .padding(.top, 8)
+            .blur(radius: 4 * (1 - reveal))
+            .opacity(0.7 + 0.3 * reveal)
+        }
+    }
+
+    /// A sub-score. Label column fixed so the five bars share one left edge —
+    /// ragged bar starts turn a reading into a bar chart nobody can compare
+    /// across.
+    private func subRow(_ label: String, _ value: Int) -> some View {
+        let shown = Int((Double(value) * reveal).rounded())
+        return HStack(spacing: 12) {
+            Text(LocalizedStringKey(label))
+                .font(.system(size: 13, weight: .semibold, design: .rounded))
+                .foregroundStyle(RampStage.textSecondary)
+                .lineLimit(1)
+                .frame(width: 76, alignment: .leading)
+
+            GeometryReader { proxy in
+                ZStack(alignment: .leading) {
+                    Capsule().fill(RampStage.hair.opacity(0.7))
+                    // Only the pale fill needs bounding; it sits at about
+                    // 1.2:1 against the track, so the bar's length would be
+                    // guesswork without the outline.
+                    Capsule()
+                        .fill(RampStage.accent)
+                        .overlay(Capsule().strokeBorder(RampStage.accentEdge, lineWidth: 1))
                         .frame(width: proxy.size.width * CGFloat(shown) / 100)
                 }
             }
             .frame(height: 6)
-            .blur(radius: 4 * (1 - reveal))
+            .blur(radius: 3 * (1 - reveal))
             .opacity(0.7 + 0.3 * reveal)
+
+            Text(verbatim: "\(shown)")
+                .font(.system(size: 15, weight: .heavy, design: .rounded).monospacedDigit())
+                .foregroundStyle(RampStage.ink)
+                .contentTransition(.numericText(value: Double(shown)))
+                .frame(width: 26, alignment: .trailing)
         }
     }
 

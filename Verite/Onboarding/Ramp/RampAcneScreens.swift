@@ -646,37 +646,47 @@ struct RampAcneEmpathyScreen: View {
         GeometryReader { proxy in
             ScrollView {
                 VStack(alignment: .leading, spacing: 0) {
-                    Spacer(minLength: VSpace.xl)
+                    // Fixed, not flexible. Three flexible spacers in one
+                    // column share the slack equally, so a `minLength` spacer
+                    // here would grow with the others and push the eyebrow
+                    // away from the header on a tall canvas.
+                    Spacer().frame(height: RampStage.headerClearance)
 
-                    recap
+                    Text("WHAT WE HEARD")
+                        .font(VType.micro)
+                        .tracking(3)
+                        .foregroundStyle(RampStage.accentDeep)
+                        .opacity(recapIn ? 1 : 0)
                         .padding(.horizontal, VSpace.lg)
 
-                    // The one big break on the screen. Everything above it is
-                    // a restatement of what the user already chose; everything
-                    // below is the only thing here they haven't seen. Two
-                    // groups, one gap — not four evenly-spaced blocks.
-                    Spacer().frame(height: 30)
+                    // `chips` can legitimately be empty — nothing recognised
+                    // on the photo grid and nothing tried — and an empty
+                    // bordered card reads as a component that failed to load.
+                    if !chips.isEmpty {
+                        ledger
+                            .padding(.horizontal, VSpace.lg)
+                            .padding(.top, VSpace.md)
+                    }
 
-                    // The sentence IS the screen, so it is set like one — 36pt
-                    // against the old 28. That size is not decoration: this
-                    // page carries one short line and a paragraph, and at 28
-                    // the composition didn't fill the canvas, it floated in
-                    // the middle of it with dead space above and below. Type
-                    // that occupies the space it's given is the difference
-                    // between "sparse on purpose" and "unfinished".
+                    // The one big break on the screen. Above it is the user's
+                    // own testimony; below it is the only thing here they
+                    // haven't seen. Two groups, one gap.
+                    Spacer(minLength: 30)
+
                     Text(LocalizedStringKey(headline))
-                        .font(.system(size: 36, weight: .heavy, design: .rounded))
+                        .font(.system(size: 28, weight: .heavy, design: .rounded))
                         .foregroundStyle(RampStage.ink)
                         .lineSpacing(1)
                         .fixedSize(horizontal: false, vertical: true)
                         .opacity(headlineIn ? 1 : 0)
                         .offset(y: headlineIn ? 0 : 12)
                         .padding(.horizontal, VSpace.lg)
+                        .padding(.top, VSpace.md)
 
                     Text(LocalizedStringKey(message))
-                        .font(.system(size: 17, weight: .regular))
+                        .font(.system(size: 16, weight: .regular))
                         .foregroundStyle(RampStage.textSecondary)
-                        .lineSpacing(6)
+                        .lineSpacing(5)
                         .fixedSize(horizontal: false, vertical: true)
                         // Held to a readable measure rather than the full
                         // gutter width. Body this size running the whole way
@@ -687,9 +697,9 @@ struct RampAcneEmpathyScreen: View {
                         .opacity(messageIn ? 1 : 0)
                         .offset(y: messageIn ? 0 : 8)
                         .padding(.horizontal, VSpace.lg)
-                        .padding(.top, VSpace.md)
+                        .padding(.top, VSpace.sm)
 
-                    Spacer(minLength: VSpace.xl)
+                    Spacer(minLength: VSpace.lg)
 
                     RampPrimaryButton(title: "Continue") { onAdvance() }
                         .padding(.horizontal, VSpace.lg)
@@ -701,14 +711,12 @@ struct RampAcneEmpathyScreen: View {
             }
             .scrollBounceBehavior(.basedOnSize)
         }
-        // One soft pool of warmth behind the headline. The flow's ground is
-        // flat white, which is right for the screens made of white cards —
-        // but this screen has no cards, just type, and on bare white that
-        // reads as a blank page someone forgot to finish. The glow is scoped
-        // to this screen for exactly that reason: it gives the type something
-        // to sit on without putting an uneven ground back under the tiles
-        // everywhere else. Kept low enough to read as light, never as a
-        // coloured shape.
+        // One soft pool of warmth behind the type. The flow's ground is flat
+        // white, which is right for the screens made of white cards — but this
+        // screen is mostly type, and on bare white that reads as a blank page
+        // someone forgot to finish. Scoped to this screen so the tiles
+        // elsewhere keep an even ground. Low enough to read as light, never as
+        // a coloured shape.
         .background(alignment: .topLeading) {
             RadialGradient(colors: [RampStage.accent.opacity(0.45), .clear],
                            center: .center, startRadius: 0, endRadius: 300)
@@ -720,41 +728,60 @@ struct RampAcneEmpathyScreen: View {
         .task { await run() }
     }
 
-    /// Eyebrow and chips, one unit. Six points apart — barely more than the
-    /// eyebrow's own line height — so they read as a single caption rather
-    /// than as two separate things that happen to be stacked.
-    private var recap: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Text("WHAT WE HEARD")
-                .font(VType.micro)
-                .tracking(3)
-                .foregroundStyle(RampStage.accentDeep)
-
-            if !chips.isEmpty {
-                let row = HStack(spacing: 6) {
-                    ForEach(chips.indices, id: \.self) { i in
-                        Text(LocalizedStringKey(chips[i]))
-                            .font(.system(size: 12, weight: .semibold, design: .rounded))
-                            .foregroundStyle(RampStage.accentDeep)
-                            .lineLimit(1)
-                            .padding(.horizontal, 10).padding(.vertical, 5.5)
-                            // Lighter than the old solid fill: these are a
-                            // footnote under a 36pt headline, and at full
-                            // strength three of them out-shouted it.
-                            .background(RampStage.accent.opacity(0.55), in: Capsule())
-                            .opacity(i < chipsShown ? 1 : 0)
-                            .scaleEffect(i < chipsShown ? 1 : 0.6)
+    /// What they told us, ticked off one line at a time.
+    ///
+    /// These answers used to be three 12pt capsules in a caption under a 36pt
+    /// headline, at 55% fill so they would not "out-shout" it. That is the
+    /// wrong way round for a screen whose entire claim is that we listened:
+    /// our sentence was set four times larger than the things we were claiming
+    /// to have heard, and the reader's own words arrived as a footnote to it.
+    ///
+    /// They are now the first thing on the page and the largest thing in the
+    /// top half — a ledger of their testimony, each line ticked as it lands,
+    /// so the screen demonstrates the listening instead of asserting it. The
+    /// headline drops from 36 to 28, which also puts it back on the scale
+    /// every other screen in the flow uses.
+    private var ledger: some View {
+        VStack(spacing: 0) {
+            ForEach(chips.indices, id: \.self) { index in
+                HStack(spacing: VSpace.md) {
+                    ZStack {
+                        Circle()
+                            .fill(RampStage.accentGradient)
+                            .frame(width: 24, height: 24)
+                        Image(systemName: "checkmark")
+                            .font(.system(size: 11, weight: .bold))
+                            .foregroundStyle(Color.white)
                     }
+                    .scaleEffect(index < chipsShown ? 1 : 0.5)
+
+                    Text(LocalizedStringKey(chips[index]))
+                        .font(VType.bodyLarge.weight(.semibold))
+                        .foregroundStyle(RampStage.ink)
+                        .fixedSize(horizontal: false, vertical: true)
+
+                    Spacer(minLength: 0)
                 }
-                ViewThatFits(in: .horizontal) {
-                    row
-                    ScrollView(.horizontal) { row }
-                        .scrollIndicators(.hidden)
+                .padding(.vertical, 14)
+                .opacity(index < chipsShown ? 1 : 0)
+                .offset(x: index < chipsShown ? 0 : -10)
+
+                if index < chips.count - 1 {
+                    Rectangle()
+                        .fill(RampStage.hair)
+                        .frame(height: 1)
+                        .opacity(index < chipsShown ? 1 : 0)
                 }
             }
         }
+        .padding(.horizontal, VSpace.md)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(RampStage.card,
+                    in: RoundedRectangle(cornerRadius: 20, style: .continuous))
+        .overlay(RoundedRectangle(cornerRadius: 20, style: .continuous)
+            .strokeBorder(RampStage.hair, lineWidth: 1))
+        .shadow(color: RampStage.ink.opacity(0.05), radius: 12, y: 4)
         .opacity(recapIn ? 1 : 0)
-        .offset(y: recapIn ? 0 : 6)
     }
 
     private func run() async {
@@ -768,12 +795,12 @@ struct RampAcneEmpathyScreen: View {
         // grid, nothing tried) — stepping 1...1 there would fire a haptic for
         // a chip that never appears.
         for i in chips.indices {
-            try? await Task.sleep(for: .milliseconds(110))
+            try? await Task.sleep(for: .milliseconds(150))
             guard !Task.isCancelled else { return }
             withAnimation(VMotion.snappy) { chipsShown = i + 1 }
             Haptics.fire(.tick)
         }
-        try? await Task.sleep(for: .milliseconds(180))
+        try? await Task.sleep(for: .milliseconds(220))
         guard !Task.isCancelled else { return }
         withAnimation(VMotion.gentle) { headlineIn = true }
         try? await Task.sleep(for: .milliseconds(260))
