@@ -610,24 +610,26 @@ struct RampGoalScreen: View {
 // MARK: — What we heard (the acne chapter's closing beat)
 // ============================================================
 
-/// The interstitial that closes the acne chapter, and the emotional peak of
-/// the first third of the flow.
+/// The close of the acne chapter: four questions asked, and the first thing
+/// said back.
 ///
-/// It exists because of a specific hole: the user named their acne on screen
-/// two, and screen three used to be a product demo. Four questions later
-/// they had been asked a lot and told nothing. This screen is the reply —
-/// their own answers held up as chips, then one sentence that is ABOUT them
-/// rather than about us.
+/// THREE DESIGNS BEFORE THIS ONE, ALL THE SAME MISTAKE. Chips under a headline,
+/// then a ledger card, then a ledger card plus a warm reply card — each one a
+/// different way of dressing the identical structure: a LIST of their answers,
+/// followed by a PARAGRAPH of ours. Restyling that structure could not fix it,
+/// because the problem was the structure. Our sentence was always the biggest
+/// thing on a screen whose entire claim is that we listened.
 ///
-/// Two rules for anything edited into this file:
+/// So the hierarchy is inverted instead of decorated. Their answers ARE the
+/// headline now — set large, in the display serif this app reserves for its
+/// own headlines, one per line with nothing around them. Our reply is set
+/// underneath in the body sans, deliberately subordinate. A reader who takes
+/// one glance at this screen reads their own words back, which is the entire
+/// point of it existing.
 ///
-///  1. No numbers. "87% of people with cystic acne…" is the easiest line to
-///     write here and the one that would make every honest claim elsewhere
-///     in the app worth less. The copy in `acneEmpathyHeadline` /
-///     `acneEmpathyBody` is derived purely from what the user just told us.
-///  2. No promise. This screen does not say the plan will work — the
-///     screens after it make the (measured, hedged) case. It says we heard
-///     them, and stops.
+/// No cards, either. Every screen either side of this one is made of tiles and
+/// panels; this is the beat where the flow stops asking and says something, and
+/// bare type on the ground is what that sounds like.
 struct RampAcneEmpathyScreen: View {
     let headline: String
     let message: String
@@ -638,6 +640,7 @@ struct RampAcneEmpathyScreen: View {
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var recapIn = false
     @State private var chipsShown = 0
+    @State private var ruleIn = false
     @State private var headlineIn = false
     @State private var messageIn = false
     @State private var buttonIn = false
@@ -646,7 +649,7 @@ struct RampAcneEmpathyScreen: View {
         GeometryReader { proxy in
             ScrollView {
                 VStack(alignment: .leading, spacing: 0) {
-                    // Fixed, not flexible. Three flexible spacers in one
+                    // Fixed, not flexible. Several flexible spacers in one
                     // column share the slack equally, so a `minLength` spacer
                     // here would grow with the others and push the eyebrow
                     // away from the header on a tall canvas.
@@ -659,35 +662,48 @@ struct RampAcneEmpathyScreen: View {
                         .opacity(recapIn ? 1 : 0)
                         .padding(.horizontal, VSpace.lg)
 
-                    // `chips` can legitimately be empty — nothing recognised
-                    // on the photo grid and nothing tried — and an empty
-                    // bordered card reads as a component that failed to load.
-                    if !chips.isEmpty {
-                        ledger
-                            .padding(.horizontal, VSpace.lg)
-                            .padding(.top, VSpace.md)
-                    }
+                    testimony
+                        .padding(.horizontal, VSpace.lg)
+                        .padding(.top, VSpace.md)
 
-                    // The one big break on the screen. Above it is the user's
-                    // own testimony; below it is the only thing here they
-                    // haven't seen. Two groups, one gap.
-                    Spacer(minLength: 30)
+                    // A short rule rather than a full-width divider: this is a
+                    // turn in the argument, not a section break, and a rule
+                    // that crosses the whole page cuts the screen into two
+                    // unrelated halves.
+                    Capsule()
+                        .fill(RampStage.accentGradient)
+                        .frame(width: 40, height: 3)
+                        .scaleEffect(x: ruleIn ? 1 : 0, anchor: .leading)
+                        .padding(.horizontal, VSpace.lg)
+                        .padding(.top, VSpace.lg)
 
                     Text(LocalizedStringKey(headline))
-                        .font(.system(size: 28, weight: .heavy, design: .rounded))
+                        .font(.system(size: 22, weight: .heavy, design: .rounded))
                         .foregroundStyle(RampStage.ink)
                         .lineSpacing(1)
                         .fixedSize(horizontal: false, vertical: true)
                         .opacity(headlineIn ? 1 : 0)
-                        .offset(y: headlineIn ? 0 : 12)
+                        .offset(y: headlineIn ? 0 : 10)
                         .padding(.horizontal, VSpace.lg)
                         .padding(.top, VSpace.md)
 
-                    reply
+                    Text(LocalizedStringKey(message))
+                        .font(.system(size: 15, weight: .regular))
+                        .foregroundStyle(RampStage.textSecondary)
+                        .lineSpacing(5)
+                        .fixedSize(horizontal: false, vertical: true)
+                        // Held to a readable measure rather than the full
+                        // gutter width. Body this size running the whole way
+                        // across a large phone is a ~60-character line, which
+                        // is where the eye starts losing its place between
+                        // rows.
+                        .frame(maxWidth: 320, alignment: .leading)
+                        .opacity(messageIn ? 1 : 0)
+                        .offset(y: messageIn ? 0 : 8)
                         .padding(.horizontal, VSpace.lg)
-                        .padding(.top, VSpace.md)
+                        .padding(.top, VSpace.sm)
 
-                    Spacer(minLength: VSpace.lg)
+                    Spacer(minLength: VSpace.xl)
 
                     RampPrimaryButton(title: "Continue") { onAdvance() }
                         .padding(.horizontal, VSpace.lg)
@@ -701,7 +717,7 @@ struct RampAcneEmpathyScreen: View {
         }
         // One soft pool of warmth behind the type. The flow's ground is flat
         // white, which is right for the screens made of white cards — but this
-        // screen is mostly type, and on bare white that reads as a blank page
+        // screen is only type, and on bare white that reads as a blank page
         // someone forgot to finish. Scoped to this screen so the tiles
         // elsewhere keep an even ground. Low enough to read as light, never as
         // a coloured shape.
@@ -716,119 +732,52 @@ struct RampAcneEmpathyScreen: View {
         .task { await run() }
     }
 
-    /// What they told us, ticked off one line at a time.
+    /// Their answers, one per line, at headline size.
     ///
-    /// These answers used to be three 12pt capsules in a caption under a 36pt
-    /// headline, at 55% fill so they would not "out-shout" it. That is the
-    /// wrong way round for a screen whose entire claim is that we listened:
-    /// our sentence was set four times larger than the things we were claiming
-    /// to have heard, and the reader's own words arrived as a footnote to it.
-    ///
-    /// They are now the first thing on the page and the largest thing in the
-    /// top half — a ledger of their testimony, each line ticked as it lands,
-    /// so the screen demonstrates the listening instead of asserting it. The
-    /// headline drops from 36 to 28, which also puts it back on the scale
-    /// every other screen in the flow uses.
-    private var ledger: some View {
-        VStack(spacing: 0) {
+    /// The last line carries the accent. Not decoration: it is the most recent
+    /// thing they told us and it is what the sentence below turns on, so the
+    /// colour points at the hinge rather than spreading evenly over three
+    /// equally-weighted facts.
+    private var testimony: some View {
+        VStack(alignment: .leading, spacing: 2) {
             ForEach(chips.indices, id: \.self) { index in
-                HStack(spacing: VSpace.md) {
-                    ZStack {
-                        Circle()
-                            .fill(RampStage.accentGradient)
-                            .frame(width: 24, height: 24)
-                        Image(systemName: "checkmark")
-                            .font(.system(size: 11, weight: .bold))
-                            .foregroundStyle(Color.white)
-                    }
-                    .scaleEffect(index < chipsShown ? 1 : 0.5)
-
-                    Text(LocalizedStringKey(chips[index]))
-                        .font(VType.bodyLarge.weight(.semibold))
-                        .foregroundStyle(RampStage.ink)
-                        .fixedSize(horizontal: false, vertical: true)
-
-                    Spacer(minLength: 0)
-                }
-                .padding(.vertical, 14)
-                .opacity(index < chipsShown ? 1 : 0)
-                .offset(x: index < chipsShown ? 0 : -10)
-
-                if index < chips.count - 1 {
-                    Rectangle()
-                        .fill(RampStage.hair)
-                        .frame(height: 1)
-                        .opacity(index < chipsShown ? 1 : 0)
-                }
+                Text(LocalizedStringKey(chips[index]))
+                    .font(RampStage.serif(34, weight: .semibold))
+                    .foregroundStyle(index == chips.count - 1
+                                     ? RampStage.accentDeep : RampStage.ink)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .opacity(index < chipsShown ? 1 : 0)
+                    .offset(y: index < chipsShown ? 0 : 14)
             }
         }
-        .padding(.horizontal, VSpace.md)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(RampStage.card,
-                    in: RoundedRectangle(cornerRadius: 20, style: .continuous))
-        .overlay(RoundedRectangle(cornerRadius: 20, style: .continuous)
-            .strokeBorder(RampStage.hair, lineWidth: 1))
-        .shadow(color: RampStage.ink.opacity(0.05), radius: 12, y: 4)
-        .opacity(recapIn ? 1 : 0)
-    }
-
-    /// Our answer, given a home.
-    ///
-    /// The bottom of this screen was a bare paragraph on white — the ledger
-    /// card ended and the page just kept going as running text, which is the
-    /// one shape a closing beat cannot afford. It reads as the screen running
-    /// out rather than arriving.
-    ///
-    /// The two cards now make the screen a short conversation: their answers
-    /// in white, ours in warm accent, in that order. That is also why the
-    /// badge is 💬 and not a decorative flourish — it marks this block as the
-    /// reply to the block above it, which is exactly what it is.
-    private var reply: some View {
-        VStack(alignment: .leading, spacing: VSpace.sm) {
-            Text(verbatim: "💬")
-                .font(.system(size: 17))
-                .frame(width: 34, height: 34)
-                .background(Circle().fill(Color.white.opacity(0.75)))
-
-            Text(LocalizedStringKey(message))
-                .font(.system(size: 16, weight: .regular))
-                .foregroundStyle(RampStage.ink)
-                .lineSpacing(5)
-                .fixedSize(horizontal: false, vertical: true)
-                // Held to a readable measure rather than the full gutter
-                // width. Body this size running the whole way across a large
-                // phone is a ~60-character line, which is where the eye starts
-                // losing its place between rows.
-                .frame(maxWidth: 330, alignment: .leading)
-        }
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(VSpace.md)
-        .background(RampStage.accentSoft,
-                    in: RoundedRectangle(cornerRadius: 20, style: .continuous))
-        .opacity(messageIn ? 1 : 0)
-        .offset(y: messageIn ? 0 : 8)
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel("What we heard: " + chips.joined(separator: ", "))
     }
 
     private func run() async {
         if reduceMotion {
-            recapIn = true; chipsShown = chips.count
+            recapIn = true; chipsShown = chips.count; ruleIn = true
             headlineIn = true; messageIn = true; buttonIn = true
             return
         }
         withAnimation(VMotion.gentle) { recapIn = true }
         // `chips` can legitimately be empty (nothing recognised on the photo
         // grid, nothing tried) — stepping 1...1 there would fire a haptic for
-        // a chip that never appears.
+        // a line that never appears.
         for i in chips.indices {
-            try? await Task.sleep(for: .milliseconds(150))
+            try? await Task.sleep(for: .milliseconds(170))
             guard !Task.isCancelled else { return }
-            withAnimation(VMotion.snappy) { chipsShown = i + 1 }
+            withAnimation(VMotion.gentle) { chipsShown = i + 1 }
             Haptics.fire(.tick)
         }
         try? await Task.sleep(for: .milliseconds(220))
         guard !Task.isCancelled else { return }
+        withAnimation(.easeOut(duration: 0.45)) { ruleIn = true }
+        try? await Task.sleep(for: .milliseconds(180))
+        guard !Task.isCancelled else { return }
         withAnimation(VMotion.gentle) { headlineIn = true }
-        try? await Task.sleep(for: .milliseconds(260))
+        try? await Task.sleep(for: .milliseconds(240))
         guard !Task.isCancelled else { return }
         withAnimation(VMotion.gentle) { messageIn = true }
         try? await Task.sleep(for: .milliseconds(240))
