@@ -437,15 +437,13 @@ struct RampCycleScreen: View {
             }
             .padding(.horizontal, VSpace.xl)
 
-            // The closing line: the loop above, answered.
-            Text("A plan breaks it. It remembers what you used, what your skin did, and what to change next.")
-                .font(VType.body)
-                .foregroundStyle(RampStage.textSecondary)
-                .fixedSize(horizontal: false, vertical: true)
-                .padding(.horizontal, VSpace.lg)
-                .padding(.top, VSpace.xl)
-                .opacity(shown ? 1 : 0)
-                .animation(VMotion.gentle.delay(0.6), value: shown)
+            // The loop is named here and ANSWERED on the next screen. This
+            // used to close with a paragraph ("A plan breaks it. It
+            // remembers what you used…") that made the case in prose — the
+            // reader had to hold the four steps above in their head and
+            // weigh them against a sentence. `RampSawtoothScreen` draws the
+            // same loop as a shape with the user's own arithmetic on it,
+            // which is an argument you can see rather than parse.
 
             Spacer()
 
