@@ -1061,7 +1061,7 @@ struct GoogleGLogo: View {
         .accessibilityHidden(true)
     }
 
-    private func shape(_ build: @escaping (inout Path) -> Void) -> Path {
+    private func shape(_ build: (inout Path) -> Void) -> Path {
         var path = Path()
         build(&path)
         return path
