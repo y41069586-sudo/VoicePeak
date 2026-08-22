@@ -4,34 +4,69 @@
     "NSCameraUsageDescription": {
       "extractionState": "manual",
       "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Vérité uses the camera to analyze your skin and scan product barcodes. Photos are processed on your device and never uploaded."
-          }
-        },
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "Vérité verwendet die Kamera, um deine Haut zu analysieren und Produkt-Barcodes zu scannen. Fotos werden auf deinem Gerät verarbeitet und niemals hochgeladen."
+            "value": "SkinFix nutzt die Kamera, um deine Haut aufzunehmen. Dein Foto wird sicher zur Analyse übertragen und vom Analysedienst nicht gespeichert — es bleibt auf diesem Gerät, damit du deinen Fortschritt siehst, und ist jederzeit löschbar."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "SkinFix uses the camera to capture your skin. Your photo is sent securely for analysis and isn't kept by the analysis service — it stays on this device so you can track your progress, and you can delete it any time."
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Vérité usa la cámara para analizar tu piel y escanear códigos de barras de productos. Las fotos se procesan en tu dispositivo y nunca se suben."
+            "value": "SkinFix usa la cámara para capturar tu piel. Tu foto se envía de forma segura para el análisis y el servicio no la conserva: permanece en este dispositivo para que veas tu progreso y puedes borrarla cuando quieras."
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Vérité utilise l’appareil photo pour analyser votre peau et scanner les codes-barres des produits. Les photos sont traitées sur votre appareil et ne sont jamais téléchargées."
+            "value": "SkinFix utilise l’appareil photo pour capturer ta peau. Ta photo est envoyée de façon sécurisée pour l’analyse et n’est pas conservée par le service — elle reste sur cet appareil pour suivre tes progrès, et tu peux la supprimer à tout moment."
           }
         },
         "it": {
           "stringUnit": {
             "state": "translated",
-            "value": "Vérité usa la fotocamera per analizzare la tua pelle e scansionare i codici a barre dei prodotti. Le foto vengono elaborate sul dispositivo e non vengono mai caricate."
+            "value": "SkinFix usa la fotocamera per acquisire la tua pelle. La foto viene inviata in modo sicuro per l’analisi e non viene conservata dal servizio: resta su questo dispositivo per farti vedere i progressi e puoi eliminarla quando vuoi."
+          }
+        }
+      }
+    },
+    "NSPhotoLibraryAddUsageDescription": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "SkinFix needs permission to save your Glow-Up Reel to your photo library."
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "SkinFix braucht die Berechtigung, um dein Glow-Up-Reel in deiner Fotomediathek zu speichern."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "SkinFix necesita permiso para guardar tu Glow-Up Reel en tu fototeca."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "SkinFix a besoin de l'autorisation d'enregistrer ton Glow-Up Reel dans ta photothèque."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "SkinFix ha bisogno dell'autorizzazione per salvare il tuo Glow-Up Reel nella tua libreria foto."
           }
         }
       }

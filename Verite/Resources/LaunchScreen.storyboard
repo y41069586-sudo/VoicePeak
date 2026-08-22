@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  The frame iOS puts on screen before a single line of our code has run.
+
+  It exists to be INVISIBLE, not to be a design: the moment the process is
+  ready, `SplashScreen` (SwiftUI) draws over it and takes the animation from
+  here. So this file has exactly one job — match that view's first frame, to
+  the pixel and to the colour. Flat white ground, the mark centred at 116pt,
+  nothing else. The wordmark is deliberately absent: it rises in under the
+  mark once SwiftUI is live, which is the one moment that would give the
+  handoff away if it were already sitting here.
+
+  The mark's rounded corners are baked into `SplashMark` as alpha rather than
+  applied as a layer cornerRadius, for two reasons. A launch storyboard runs
+  before any of our code, so a userDefinedRuntimeAttribute with a bad keyPath
+  takes the app down at startup with no way to catch it — the fewer of those
+  here the better. And a CALayer corner is a plain rounded rect while
+  SwiftUI's `.continuous` is a squircle, so applying it on both sides would
+  produce two subtly different shapes in the two frames this file exists to
+  make identical. One masked PNG, drawn straight, in both places.
+
+  If `SplashScreen`'s mark size or ground colour changes, change it here in
+  the same commit — a mismatch shows up as a jump on every cold launch, on
+  the first screen of the app, which is the worst place to have one.
+-->
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="22155" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" launchScreen="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="01J-lp-oVM">
+    <device id="retina6_12" orientation="portrait" appearance="light"/>
+    <dependencies>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="22131"/>
+        <capability name="Safe area layout guides" minToolsVersion="9.0"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <scenes>
+        <!--Launch: flat white ground, the app mark centred.-->
+        <scene sceneID="EHf-IW-A2E">
+            <objects>
+                <viewController id="01J-lp-oVM" sceneMemberID="viewController">
+                    <view key="view" contentMode="scaleToFill" id="Ze5-6b-2t3">
+                        <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <imageView userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="SplashMark" translatesAutoresizingMaskIntoConstraints="NO" id="mrk-00-001">
+                                <rect key="frame" x="138.5" y="368" width="116" height="116"/>
+                                <constraints>
+                                    <constraint firstAttribute="width" constant="116" id="mrk-w0-001"/>
+                                    <constraint firstAttribute="height" constant="116" id="mrk-h0-001"/>
+                                </constraints>
+                            </imageView>
+                        </subviews>
+                        <viewLayoutGuide key="safeArea" id="6Tk-OE-BBY"/>
+                        <color key="backgroundColor" name="LaunchBackground"/>
+                        <constraints>
+                            <constraint firstItem="mrk-00-001" firstAttribute="centerX" secondItem="Ze5-6b-2t3" secondAttribute="centerX" id="mrk-cx-001"/>
+                            <constraint firstItem="mrk-00-001" firstAttribute="centerY" secondItem="Ze5-6b-2t3" secondAttribute="centerY" id="mrk-cy-001"/>
+                        </constraints>
+                    </view>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="iYj-Kq-Ea1" userLabel="First Responder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="53" y="375"/>
+        </scene>
+    </scenes>
+    <resources>
+        <image name="SplashMark" width="512" height="512"/>
+        <namedColor name="LaunchBackground">
+            <color red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+        </namedColor>
+    </resources>
+</document>

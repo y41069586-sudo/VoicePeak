@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>SkinFix</title>
+  <meta property="og:title" content="SkinFix — skin analysis in 60 seconds">
+  <meta property="og:description" content="Scan your skin, get an honest score and a 14-day plan.">
+  <style>
+    :root { color-scheme: light; }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; height: 100%; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: linear-gradient(160deg, #F6EFE3 0%, #E8DCC8 100%);
+      color: #1C1A17; display: flex; align-items: center; justify-content: center; padding: 24px;
+    }
+    .card {
+      width: 100%; max-width: 380px; text-align: center;
+      background: rgba(255,255,255,.72); border: 1px solid rgba(255,255,255,.6);
+      border-radius: 28px; padding: 40px 28px; backdrop-filter: blur(12px);
+      box-shadow: 0 20px 60px rgba(40,34,26,.18);
+    }
+    h1 { font-size: 34px; letter-spacing: 4px; margin: 0 0 6px; font-weight: 800; }
+    p  { color: #6B6053; font-size: 15px; margin: 0 0 26px; }
+    .btn {
+      display: block; text-decoration: none; font-weight: 700; font-size: 16px;
+      padding: 15px; border-radius: 16px; margin-top: 12px;
+    }
+    /* Sand CTA carries ink, not white — white on this sand is 2.6:1. */
+    /* The pale fill is 1.4:1 on this ground, so the edge is what makes it a button. */
+    .primary { background: #E6D4B4; color: #1C1A17; border: 1.5px solid #BCA070; }
+    .ghost   { background: transparent; color: #7D5F33; border: 1.5px solid rgba(125,95,51,.4); }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>SKINFIX</h1>
+    <p id="msg">Opening the app…</p>
+    <a id="open" class="btn primary" href="#">Open SkinFix</a>
+    <a class="btn ghost" href="https://apps.apple.com/app/id6787454842">Get SkinFix</a>
+  </div>
+  <script>
+    // The deep-link target rides in a normal query parameter:
+    //   ?go=invite&code=ABC  ->  verite://invite?code=ABC
+    // Query, not #fragment: chat link detectors truncate a fragment that
+    // contains a "?", so a hash-routed link arrives here with an empty hash
+    // and the invite silently dies. Legacy "#invite?code=ABC" links that are
+    // already out in the wild are still accepted below.
+    function target() {
+      var params = new URLSearchParams(location.search);
+      var go = params.get("go");
+      if (go) {
+        params.delete("go");
+        var rest = params.toString();
+        return "verite://" + go + (rest ? "?" + rest : "");
+      }
+      var frag = location.hash.slice(1);          // legacy: #host?query
+      return frag ? "verite://" + frag : null;
+    }
+
+    var deepLink = target();
+    if (deepLink) {
+      document.getElementById("open").setAttribute("href", deepLink);
+      // Auto-launch the app; if it isn't installed nothing happens and the
+      // buttons remain for a manual choice.
+      window.location.href = deepLink;
+    } else {
+      document.getElementById("msg").textContent = "Skin analysis in 60 seconds.";
+      document.getElementById("open").style.display = "none";
+    }
+  </script>
+</body>
+</html>

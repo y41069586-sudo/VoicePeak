@@ -1,4 +1,4 @@
-# Zapier-Copilot-Prompt — Glowé TikTok-Slideshow-Autopilot
+# Zapier-Copilot-Prompt — SkinFix TikTok-Slideshow-Autopilot
 
 Alles unterhalb der Linie in **Zapier Copilot** einfügen. Er baut daraus den Zap.
 
@@ -19,7 +19,7 @@ Vorher einmalig bereitstellen (Copilot kann das nicht für dich anlegen):
 ---
 
 Baue mir einen Zap, der einmal täglich einen kompletten TikTok-Slideshow-Post
-für meine iOS-Skincare-App **Glowé** erzeugt und in Buffer einplant. Jeder Post
+für meine iOS-Skincare-App **SkinFix** erzeugt und in Buffer einplant. Jeder Post
 muss sich vom vorherigen unterscheiden, damit es keine Duplicate-Content-
 Drosselung gibt.
 
@@ -119,12 +119,12 @@ ist — sonst kein halber Post in der Queue.
 
 System/Prompt sinngemäß:
 
-> Du schreibst TikTok-Captions für Glowé, eine iOS-App, die per Selfie die Haut
+> Du schreibst TikTok-Captions für SkinFix, eine iOS-App, die per Selfie die Haut
 > scannt, 8 Scores von 0–100 gibt und einen 14-Tage-Plan erstellt.
 > Schreib mir für einen Vorher/Nachher-Slideshow-Post:
 > 1. einen Titel (max. 60 Zeichen, Hook, kein Clickbait-Versprechen)
 > 2. eine Caption (max. 150 Zeichen, locker, erste Person, ein Call-to-Action
->    „Glowé im App Store")
+>    „SkinFix im App Store")
 > 3. genau 8 Hashtags, Mix aus groß und Nische, deutsch und englisch
 > Variiere Wortwahl und Hook stark gegenüber üblichen Skincare-Captions.
 > Gib JSON zurück: {"titel": …, "caption": …, "hashtags": [...]}

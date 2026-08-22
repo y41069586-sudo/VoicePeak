@@ -13,6 +13,21 @@
 # below + `xcode-project use-profiles` then pick them up — no signing secrets in
 # this file. The `Verite` env-var group only needs the 3 API values used to
 # UPLOAD to TestFlight (see the publishing block).
+#
+# BUILD NUMBER: ios-release stamps a strictly-monotonic number (floor above
+# the highest uploaded build + Codemagic's own build counter) as the CFBundleVersion
+# ("Determine next build number" step) — always numeric, always increasing,
+# always higher than anything already uploaded, and needs no App Store Connect
+# query that could fail. project.yml's CURRENT_PROJECT_VERSION is only a
+# local-dev/compile-check fallback; the release workflow always overrides it at
+# archive time.
+#
+# MARKETING VERSION: this one you DO bump by hand, once per App Store release.
+# Apple closes a version's upload train as soon as that version is approved and
+# then refuses every further build for it (90186 "train is closed" + 90062
+# "must contain a higher version"). A new build number does not help — only a
+# higher CFBundleShortVersionString does. It lives in ios-release's
+# `MARKETING_VERSION` var; mirror it in project.yml and Info.plist.
 
 workflows:
   ios-compile-check:
@@ -21,6 +36,8 @@ workflows:
     max_build_duration: 45
     environment:
       xcode: latest
+      groups:
+        - Verite   # PERFECTCORP_API_KEY + PERFECTCORP_RSA_KEY (secure)
       vars:
         XCODE_PROJECT: "Verite.xcodeproj"
         XCODE_SCHEME: "Verite"
@@ -33,6 +50,201 @@ workflows:
     scripts:
       - name: Install XcodeGen
         script: brew install xcodegen
+      - name: Inject API secrets
+        script: |
+          # Overwrites the committed-empty DermiqSecrets.swift with the real
+          # keys so this build runs the LIVE engines. Add these as Secure app
+          # variables in the "Verite" group (already referenced below):
+          #   PERFECTCORP_API_KEY  — YCE skin-analysis key (sk-…)
+          #   PERFECTCORP_RSA_KEY  — the one-time base64 "secret key" block
+          #   GEMINI_API_KEY       — Google AI Studio key (Potential image)
+          # Any subset may be set; whatever is empty keeps that engine on mock.
+          # Strip whitespace/newlines a PEM-style paste would carry (they break
+          # the generated Swift string literal).
+          # Strip ALL whitespace/newlines from every key — a value pasted with
+          # a line break (the console wraps long keys visually) would otherwise
+          # produce an unterminated Swift string literal and fail the build.
+          API_CLEAN="$(printf '%s' "${PERFECTCORP_API_KEY:-}" | tr -d ' \t\r\n')"
+          RSA_CLEAN="$(printf '%s' "${PERFECTCORP_RSA_KEY:-}" | tr -d ' \t\r\n')"
+          GEMINI_CLEAN="$(printf '%s' "${GEMINI_API_KEY:-}" | tr -d ' \t\r\n')"
+          # Supabase (auth + account deletion). Anon key is a JWT — strip only
+          # whitespace/newlines a wrapped paste would carry.
+          SUPA_URL_CLEAN="$(printf '%s' "${SUPABASE_URL:-}" | tr -d ' \t\r\n')"
+          SUPA_ANON_CLEAN="$(printf '%s' "${SUPABASE_ANON_KEY:-}" | tr -d ' \t\r\n')"
+          {
+            echo '// CI-GENERATED — values injected from Codemagic env vars. Never committed.'
+            echo 'enum DermiqSecrets {'
+            echo "    static let perfectCorpAPIKey = \"${API_CLEAN}\""
+            echo "    static let perfectCorpRSAPublicKey = \"${RSA_CLEAN}\""
+            echo "    static let geminiAPIKey = \"${GEMINI_CLEAN}\""
+            echo "    static let supabaseURL = \"${SUPA_URL_CLEAN}\""
+            echo "    static let supabaseAnonKey = \"${SUPA_ANON_CLEAN}\""
+            echo '}'
+          } > Verite/Dermiq/DermiqSecrets.swift
+          echo "Analysis: $([ -n "${PERFECTCORP_API_KEY:-}" ] && [ -n "${PERFECTCORP_RSA_KEY:-}" ] && echo LIVE || echo mock)"
+          echo "Potential: $([ -n "${GEMINI_API_KEY:-}" ] && echo LIVE || echo mock)"
+          echo "Backend: $([ -n "${SUPABASE_URL:-}" ] && [ -n "${SUPABASE_ANON_KEY:-}" ] && echo LIVE || echo local-only)"
+      - name: Probe Perfect Corp auth (only when keys are set)
+        script: |
+          # Proves the keys + auth contract from CI (this container has open
+          # network). Fails loudly on bad keys instead of letting the app
+          # silently fall back to mock scores.
+          if [ -z "${PERFECTCORP_API_KEY:-}" ] || [ -z "${PERFECTCORP_RSA_KEY:-}" ]; then
+            echo "Keys not set — probe skipped"; exit 0
+          fi
+          # Normalize both values: drop any PEM header lines the console value
+          # might carry, plus all whitespace/newlines.
+          API_CLEAN="$(printf '%s' "$PERFECTCORP_API_KEY" | tr -d ' \t\r\n')"
+          RSA_CLEAN="$(printf '%s' "$PERFECTCORP_RSA_KEY" | sed -E 's/-----[^-]*-----//g' | tr -d ' \t\r\n')"
+          echo "API key: ${#API_CLEAN} chars (expect ~60-70, starts sk-)"
+          echo "RSA key: ${#RSA_CLEAN} base64 chars (a valid key is exactly 216)"
+          case "$RSA_CLEAN" in MIGf*) echo "  starts 'MIGf': yes";; *) echo "  starts 'MIGf': NO ← wrong value";; esac
+          case "$RSA_CLEAN" in *IDAQAB) echo "  ends 'IDAQAB': yes";; *) echo "  ends 'IDAQAB': NO ← truncated/wrong";; esac
+          echo "  length mod 4 = $(( ${#RSA_CLEAN} % 4 )) (must be 0; else a character is missing)"
+          printf '%s\n' '-----BEGIN PUBLIC KEY-----' > /tmp/pc.pem
+          printf '%s' "$RSA_CLEAN" | fold -w64 >> /tmp/pc.pem
+          printf '\n%s\n' '-----END PUBLIC KEY-----' >> /tmp/pc.pem
+          # Does the RSA value actually load as a public key?
+          if ! openssl pkey -pubin -in /tmp/pc.pem -noout 2>/tmp/pc.keyerr; then
+            echo "RSA PUBLIC KEY FAILED TO LOAD:"; cat /tmp/pc.keyerr
+            echo "→ PERFECTCORP_RSA_KEY must be the console 'Secret key' / 'Geheimschlüssel'"
+            echo "  (base64 starting MIGf…, ending …IDAQAB) — NOT the sk- API key."
+            exit 1
+          fi
+          echo "RSA public key: loads OK"
+          TS="$(($(date +%s) * 1000))"
+          printf 'client_id=%s&timestamp=%s' "$API_CLEAN" "$TS" > /tmp/pc.payload
+          openssl pkeyutl -encrypt -pubin -inkey /tmp/pc.pem \
+            -pkeyopt rsa_padding_mode:pkcs1 -in /tmp/pc.payload -out /tmp/pc.enc
+          ID_TOKEN="$(base64 < /tmp/pc.enc | tr -d '\n')"
+          RESP="$(curl -sS -X POST https://yce-api-01.perfectcorp.com/s2s/v1.0/client/auth \
+            -H 'Content-Type: application/json' \
+            -d "{\"client_id\":\"$API_CLEAN\",\"id_token\":\"$ID_TOKEN\"}")"
+          echo "$RESP" | sed -E 's/"access_token" *: *"[^"]+"/"access_token":"***"/'
+          echo "$RESP" | grep -q access_token \
+            && echo "PERFECT CORP AUTH OK" \
+            || { echo "PERFECT CORP AUTH FAILED — see response above"; exit 1; }
+      - name: Probe Gemini key (only when set)
+        script: |
+          # Cheap validity check: list models. 200 = key works; 400/403 = bad
+          # key. Fails the build loudly rather than silently falling back to
+          # the on-device retouch.
+          if [ -z "${GEMINI_API_KEY:-}" ]; then echo "GEMINI_API_KEY not set — probe skipped"; exit 0; fi
+          CODE="$(curl -sS -o /tmp/gemini.json -w '%{http_code}' \
+            -H "x-goog-api-key: $GEMINI_API_KEY" \
+            https://generativelanguage.googleapis.com/v1beta/models)"
+          if [ "$CODE" = "200" ]; then
+            echo "GEMINI KEY OK"
+          else
+            echo "GEMINI KEY FAILED (HTTP $CODE):"
+            head -c 400 /tmp/gemini.json
+            exit 1
+          fi
+      - name: E2E API diagnostic (opt-in — set RUN_API_E2E=1; consumes 1 unit + 1 image credit)
+        script: |
+          # Runs the REAL data-plane end to end so we can see the actual API
+          # responses and fix parsing. Gated on RUN_API_E2E so normal pushes
+          # don't burn units. Never fails the build (diagnostic only).
+          set +e
+          if [ "${RUN_API_E2E:-}" != "1" ]; then echo "RUN_API_E2E != 1 — E2E diagnostic skipped"; exit 0; fi
+          # Face-filling crop (ScanHero is a wide shot → "face too small").
+          # Not under Verite/, so it is NOT bundled into the app.
+          IMG="ci/facetest.jpg"
+          SIZE=$(wc -c < "$IMG" | tr -d ' ')
+          echo "=== test image: $IMG ($SIZE bytes) ==="
+
+          echo "##################### PERFECT CORP #####################"
+          if [ -n "${PERFECTCORP_API_KEY:-}" ] && [ -n "${PERFECTCORP_RSA_KEY:-}" ]; then
+            API_CLEAN="$(printf '%s' "$PERFECTCORP_API_KEY" | tr -d ' \t\r\n')"
+            RSA_CLEAN="$(printf '%s' "$PERFECTCORP_RSA_KEY" | sed -E 's/-----[^-]*-----//g' | tr -d ' \t\r\n')"
+            printf '%s\n' '-----BEGIN PUBLIC KEY-----' > /tmp/e.pem
+            printf '%s' "$RSA_CLEAN" | fold -w64 >> /tmp/e.pem
+            printf '\n%s\n' '-----END PUBLIC KEY-----' >> /tmp/e.pem
+            TS="$(($(date +%s) * 1000))"
+            printf 'client_id=%s&timestamp=%s' "$API_CLEAN" "$TS" > /tmp/e.pl
+            openssl pkeyutl -encrypt -pubin -inkey /tmp/e.pem -pkeyopt rsa_padding_mode:pkcs1 -in /tmp/e.pl -out /tmp/e.enc
+            IDT="$(base64 < /tmp/e.enc | tr -d '\n')"
+            TOKEN=$(curl -sS -X POST https://yce-api-01.perfectcorp.com/s2s/v1.0/client/auth \
+              -H 'Content-Type: application/json' \
+              -d "{\"client_id\":\"$API_CLEAN\",\"id_token\":\"$IDT\"}" | jq -r '.result.access_token // empty')
+            echo "access_token: $([ -n "$TOKEN" ] && echo got || echo EMPTY)"
+
+            # v2.0 for everything; responses use the "data" envelope (v1.x used
+            # "result"), so parse both. jq helper: .result.X // .data.X
+            echo "----- declare file @ /s2s/v2.0/file/skin-analysis -----"
+            D=$(curl -sS -X POST "https://yce-api-01.perfectcorp.com/s2s/v2.0/file/skin-analysis" \
+              -H "Authorization: Bearer $TOKEN" -H 'Content-Type: application/json' \
+              -d "{\"files\":[{\"content_type\":\"image/jpeg\",\"file_name\":\"scan.jpg\",\"file_size\":$SIZE}]}")
+            echo "$D" | head -c 500; echo
+            FID=$(echo "$D" | jq -r '(.result.files[0].file_id // .data.files[0].file_id) // empty')
+            PUT_URL=$(echo "$D" | jq -r '(.result.files[0].requests[0].url // .data.files[0].requests[0].url) // empty')
+            CT=$(echo "$D" | jq -r '(.result.files[0].requests[0].headers."Content-Type" // .data.files[0].requests[0].headers."Content-Type") // "image/jpeg"')
+            echo "file_id: $([ -n "$FID" ] && echo got || echo EMPTY)"
+
+            if [ -n "$FID" ] && [ -n "$PUT_URL" ]; then
+              echo "----- PUT bytes to presigned url -----"
+              PUTCODE=$(curl -sS -o /dev/null -w '%{http_code}' -X PUT "$PUT_URL" -H "Content-Type: $CT" --data-binary @"$IMG")
+              echo "PUT status: $PUTCODE"
+              echo "----- start task @ /s2s/v2.0/task/skin-analysis -----"
+              T=$(curl -sS -X POST "https://yce-api-01.perfectcorp.com/s2s/v2.0/task/skin-analysis" \
+                -H "Authorization: Bearer $TOKEN" -H 'Content-Type: application/json' \
+                -d "{\"src_file_id\":\"$FID\",\"dst_actions\":[\"hd_texture\",\"hd_redness\",\"hd_pore\",\"hd_age_spot\",\"hd_radiance\",\"hd_moisture\",\"hd_acne\"],\"format\":\"json\"}")
+              echo "$T" | head -c 700; echo
+              TID=$(echo "$T" | jq -r '(.result.task_id // .data.task_id // .task_id) // empty')
+              echo "task_id: ${TID:-EMPTY}"
+              if [ -n "$TID" ]; then
+                LAST=""
+                for i in $(seq 1 30); do
+                  sleep 5
+                  P=$(curl -sS "https://yce-api-01.perfectcorp.com/s2s/v2.0/task/skin-analysis/$TID" -H "Authorization: Bearer $TOKEN")
+                  LAST="$P"
+                  ST=$(echo "$P" | jq -r '(.data.task_status // .data.status // .data.state // "running")')
+                  # results_filled = a non-empty object/array (empty {} means
+                  # still running — do NOT stop on that).
+                  FILLED=$(echo "$P" | jq -r '((.data.results // {}) | if ((type=="object" and (length>0)) or (type=="array" and (length>0))) then "yes" else "no" end)' 2>/dev/null)
+                  echo "poll $i: task_status=$ST results_filled=$FILLED"
+                  case "$ST" in success|done|completed|finished|error|failed|fail) break;; esac
+                  [ "$FILLED" = "yes" ] && break
+                done
+                echo "===== FINAL / LAST POLL RESPONSE ====="; echo "$LAST" | head -c 6000; echo
+              fi
+            else
+              echo ">>> declare failed to yield a file_id/url — see response above"
+            fi
+          else
+            echo "Perfect Corp keys not set"
+          fi
+          echo "##################### GEMINI (image) #####################"
+          # The cheap probe above only LISTS models, which a free-tier key may
+          # do even though it cannot generate images — so a build could report
+          # "GEMINI KEY OK" while every Potential render silently fell back to
+          # the on-device retouch. This runs the REAL call the app makes and
+          # prints Google's own reason (typically a billing/quota error on
+          # gemini-2.5-flash-image, which is not on the free tier).
+          if [ -n "${GEMINI_API_KEY:-}" ]; then
+            GKEY="$(printf '%s' "$GEMINI_API_KEY" | tr -d ' \t\r\n')"
+            B64="$(base64 < "$IMG" | tr -d '\n')"
+            # Built with printf, not a heredoc: a heredoc terminator must sit at
+            # column 0, which would close this YAML block scalar early.
+            printf '{"contents":[{"parts":[{"text":"Reduce visible blemishes slightly. Keep the same person. Return only the edited photograph."},{"inline_data":{"mime_type":"image/jpeg","data":"%s"}}]}],"generationConfig":{"responseModalities":["IMAGE"]}}' \
+              "$B64" > /tmp/gemini_req.json
+            GCODE="$(curl -sS -o /tmp/gemini_img.json -w '%{http_code}' \
+              -X POST -H 'Content-Type: application/json' -H "x-goog-api-key: $GKEY" \
+              --data @/tmp/gemini_req.json \
+              'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image:generateContent')"
+            echo "HTTP $GCODE"
+            if [ "$GCODE" = "200" ] && grep -q '"inlineData"\|"inline_data"' /tmp/gemini_img.json; then
+              echo ">>> GEMINI IMAGE OK — Potential renders live."
+            else
+              echo ">>> GEMINI IMAGE FAILED — the app falls back to the on-device retouch."
+              # Strip the echoed base64 so the log stays readable.
+              sed -E 's/"data"[[:space:]]*:[[:space:]]*"[^"]{80,}"/"data":"<base64 omitted>"/g' \
+                /tmp/gemini_img.json | head -c 1200; echo
+            fi
+          else
+            echo "GEMINI_API_KEY not set"
+          fi
+          echo "=== E2E diagnostic done ==="
       - name: Generate Xcode project
         script: xcodegen generate --spec project.yml
       - name: Build for iOS Simulator (no code signing)
@@ -61,12 +273,25 @@ workflows:
       xcode: latest
       ios_signing:
         distribution_type: app_store
+        # bundle_identifier is REQUIRED by Codemagic. It is matched as a
+        # PREFIX, so `com.verite.com` also covers the embedded widget
+        # (`com.verite.com.widget`) — Codemagic fetches/creates profiles for
+        # both. Both App IDs must have the `group.verite.com` App Group
+        # enabled in the developer portal.
         bundle_identifier: com.verite.com
+      groups:
+        - Verite   # PERFECTCORP_API_KEY + PERFECTCORP_RSA_KEY (secure)
       vars:
         XCODE_PROJECT: "Verite.xcodeproj"
         XCODE_SCHEME: "Verite"
-      # groups:
-      #   - verite_secrets   # only if you turn the backend/affiliate modules ON
+        BUNDLE_ID: "com.verite.com"
+        # The App Store version users see. Apple CLOSES a version's upload
+        # "train" the moment that version is approved, and then rejects every
+        # further build for it (error 90186 + 90062). So this MUST be bumped
+        # for each new App Store release — build numbers alone are not enough.
+        # Defined once here and stamped into the plist + archive below; keep
+        # project.yml's MARKETING_VERSION in step for local builds.
+        MARKETING_VERSION: "1.1"
     triggering:
       events:
         - tag
@@ -76,24 +301,191 @@ workflows:
     scripts:
       - name: Install XcodeGen
         script: brew install xcodegen
+      - name: Inject API secrets
+        script: |
+          # Same injection as the compile-check workflow (see comments there).
+          # No auth probes here — a transient API outage must not block a
+          # release; the app falls back to mock engines at runtime if a live
+          # call fails.
+          # Strip ALL whitespace/newlines from every key — a value pasted with
+          # a line break (the console wraps long keys visually) would otherwise
+          # produce an unterminated Swift string literal and fail the build.
+          API_CLEAN="$(printf '%s' "${PERFECTCORP_API_KEY:-}" | tr -d ' \t\r\n')"
+          RSA_CLEAN="$(printf '%s' "${PERFECTCORP_RSA_KEY:-}" | tr -d ' \t\r\n')"
+          GEMINI_CLEAN="$(printf '%s' "${GEMINI_API_KEY:-}" | tr -d ' \t\r\n')"
+          # Supabase (auth + account deletion). Anon key is a JWT — strip only
+          # whitespace/newlines a wrapped paste would carry.
+          SUPA_URL_CLEAN="$(printf '%s' "${SUPABASE_URL:-}" | tr -d ' \t\r\n')"
+          SUPA_ANON_CLEAN="$(printf '%s' "${SUPABASE_ANON_KEY:-}" | tr -d ' \t\r\n')"
+          {
+            echo '// CI-GENERATED — values injected from Codemagic env vars. Never committed.'
+            echo 'enum DermiqSecrets {'
+            echo "    static let perfectCorpAPIKey = \"${API_CLEAN}\""
+            echo "    static let perfectCorpRSAPublicKey = \"${RSA_CLEAN}\""
+            echo "    static let geminiAPIKey = \"${GEMINI_CLEAN}\""
+            echo "    static let supabaseURL = \"${SUPA_URL_CLEAN}\""
+            echo "    static let supabaseAnonKey = \"${SUPA_ANON_CLEAN}\""
+            echo '}'
+          } > Verite/Dermiq/DermiqSecrets.swift
+          echo "Analysis: $([ -n "${PERFECTCORP_API_KEY:-}" ] && [ -n "${PERFECTCORP_RSA_KEY:-}" ] && echo LIVE || echo mock)"
+          echo "Potential: $([ -n "${GEMINI_API_KEY:-}" ] && echo LIVE || echo mock)"
+          echo "Backend: $([ -n "${SUPABASE_URL:-}" ] && [ -n "${SUPABASE_ANON_KEY:-}" ] && echo LIVE || echo local-only)"
       - name: Generate Xcode project
         script: xcodegen generate --spec project.yml
       - name: Set up signing
-        script: xcode-project use-profiles
+        script: |
+          set +e
+          # Resource-id extractor for codemagic-cli-tools --json output. The
+          # tool prints logs AND the JSON on the same stream in non-tty runs,
+          # so we scan the combined output (2>&1) for the first valid JSON
+          # array of resources and return [0].id (or the first DISTRIBUTION
+          # certificate id). jq / naive regex tripped on the log prefix.
+          cat > /tmp/pickid.py <<'PY'
+          import sys, json
+          mode = sys.argv[1] if len(sys.argv) > 1 else 'first'
+          raw = sys.stdin.read()
+          dec = json.JSONDecoder()
+          arr = None
+          for i, ch in enumerate(raw):
+              if ch == '[':
+                  try:
+                      data, _ = dec.raw_decode(raw[i:])
+                  except Exception:
+                      continue
+                  if isinstance(data, list) and data and isinstance(data[0], dict) and 'id' in data[0]:
+                      arr = data
+                      break
+          if not arr:
+              print(''); sys.exit(0)
+          if mode == 'allcerts':
+              # EVERY distribution cert id — the profile must include whichever
+              # one xcodebuild signs with (there can be more than one).
+              ids = [c['id'] for c in arr if 'DISTRIBUTION' in ((c.get('attributes') or {}).get('certificateType') or '')]
+              print(' '.join(ids))
+          elif mode.startswith('bundle:'):
+              target = mode.split(':', 1)[1]
+              match = [b['id'] for b in arr if ((b.get('attributes') or {}).get('identifier')) == target]
+              print(match[0] if match else '')
+          else:
+              print(arr[0]['id'])
+          PY
+
+          CERT_IDS=$(app-store-connect list-certificates --json 2>&1 | python3 /tmp/pickid.py allcerts)
+          APP_APPID=$(app-store-connect list-bundle-ids --bundle-id-identifier com.verite.com --json 2>&1 | python3 /tmp/pickid.py bundle:com.verite.com)
+          WIDGET_APPID=$(app-store-connect list-bundle-ids --bundle-id-identifier com.verite.com.widget --json 2>&1 | python3 /tmp/pickid.py bundle:com.verite.com.widget)
+          echo "Dist certs: ${CERT_IDS:-NONE}"
+          echo "App IDs -> app: ${APP_APPID:-NONE} | widget: ${WIDGET_APPID:-NONE}"
+
+          # Codemagic's automatic pre-fetch reuses a STALE app profile ("Verite1")
+          # that predates the App Group, and a widget profile can carry the wrong
+          # cert. Clear ALL downloaded profiles, then mint fresh App Store profiles
+          # for BOTH bundle ids — each including EVERY distribution cert (so the
+          # "Apple Distribution" signing identity is covered) and inheriting the
+          # App Group enabled on the App IDs. The cert stays in the keychain.
+          rm -f "$HOME/Library/Developer/Xcode/UserData/Provisioning Profiles/"*.mobileprovision 2>/dev/null
+          rm -f "$HOME/Library/MobileDevice/Provisioning Profiles/"*.mobileprovision 2>/dev/null
+
+          if [ -n "$CERT_IDS" ] && [ -n "$APP_APPID" ] && [ -n "$WIDGET_APPID" ]; then
+            app-store-connect create-profile --certificate-ids $CERT_IDS \
+              --type IOS_APP_STORE --name "Verite App CI $(date +%s)" --save "$APP_APPID" \
+              && echo "App profile created + saved." || echo "WARNING: app profile creation failed."
+            app-store-connect create-profile --certificate-ids $CERT_IDS \
+              --type IOS_APP_STORE --name "Verite Widget CI $(date +%s)" --save "$WIDGET_APPID" \
+              && echo "Widget profile created + saved." || echo "WARNING: widget profile creation failed."
+          else
+            echo "WARNING: missing certs or app ids — cannot mint profiles."
+          fi
+
+          set -e
+          xcode-project use-profiles
+      - name: Determine next build number
+        script: |
+          set -e
+          # Build number must be numeric AND strictly greater than every prior
+          # upload. A plain Unix timestamp FAILED here: the CI builders' clock
+          # sits near ~1784225345, so `date +%s` returned near-identical values
+          # each run and repeatedly landed at/below an already-uploaded build.
+          #
+          # Reliable monotonic source = Codemagic's own $BUILD_NUMBER (increments
+          # every build). Floor it above the highest known-uploaded version so it
+          # is always accepted; take the max with the wall clock in case the
+          # builder clock ever advances past the floor.
+          HIGHEST_UPLOADED=1784225345
+          COUNTER=${BUILD_NUMBER:-1}
+          FLOOR=$(( HIGHEST_UPLOADED + COUNTER ))
+          EPOCH=$(date +%s)
+          if [ "$EPOCH" -gt "$FLOOR" ]; then NEXT_BUILD_NUMBER=$EPOCH; else NEXT_BUILD_NUMBER=$FLOOR; fi
+          echo "BUILD_NUMBER=$COUNTER  epoch=$EPOCH  floor=$FLOOR  ->  $NEXT_BUILD_NUMBER"
+          echo "NEXT_BUILD_NUMBER=$NEXT_BUILD_NUMBER" >> $CM_ENV
       - name: Stamp build version into Info.plist
         script: |
+          set -e
+          # set -e so a bad PlistBuddy fails LOUDLY instead of the build silently
+          # shipping the static Info.plist CFBundleVersion (=12), which is what
+          # produced the recurring "must be higher than 1784225345" rejection.
+          test -n "$NEXT_BUILD_NUMBER" || { echo "ERROR: NEXT_BUILD_NUMBER empty"; exit 1; }
           PLIST="$CM_BUILD_DIR/Verite/Resources/Info.plist"
-          /usr/libexec/PlistBuddy -c "Set :CFBundleVersion 11" "$PLIST"
-          /usr/libexec/PlistBuddy -c "Set :CFBundleShortVersionString 1.0.3" "$PLIST"
-          echo "Stamped CFBundleVersion=$(/usr/libexec/PlistBuddy -c 'Print :CFBundleVersion' $PLIST)"
+          test -f "$PLIST" || { echo "ERROR: plist not found at $PLIST"; exit 1; }
+          /usr/libexec/PlistBuddy -c "Set :CFBundleVersion $NEXT_BUILD_NUMBER" "$PLIST"
+          test -n "$MARKETING_VERSION" || { echo "ERROR: MARKETING_VERSION empty"; exit 1; }
+          /usr/libexec/PlistBuddy -c "Set :CFBundleShortVersionString $MARKETING_VERSION" "$PLIST"
+          echo "Stamped CFBundleVersion=$(/usr/libexec/PlistBuddy -c 'Print :CFBundleVersion' "$PLIST")"
+          echo "Stamped CFBundleShortVersionString=$(/usr/libexec/PlistBuddy -c 'Print :CFBundleShortVersionString' "$PLIST")"
       - name: Build & sign IPA
         script: |
           set -o pipefail
+          # Capture the build output; on failure, surface the actual compiler
+          # `error:` lines at the very bottom of the step so they can't be
+          # missed (xcodebuild buries them in thousands of lines).
           xcode-project build-ipa \
             --project "$XCODE_PROJECT" \
             --scheme "$XCODE_SCHEME" \
             --config Release \
-            --archive-xcargs "CURRENT_PROJECT_VERSION=11 MARKETING_VERSION=1.0.3"
+            --archive-xcargs "CURRENT_PROJECT_VERSION=$NEXT_BUILD_NUMBER MARKETING_VERSION=$MARKETING_VERSION" \
+            2>&1 | tee /tmp/buildipa.log || BUILD_RC=$?
+          if [ -n "${BUILD_RC:-}" ]; then
+            echo ""
+            echo "################ ARCHIVE FAILED — SWIFT ERRORS ################"
+            { grep -hE "error: " /tmp/buildipa.log 2>/dev/null
+              grep -rhE "error: " /tmp/xcodebuild_logs/ 2>/dev/null; } \
+              | grep -vE "linker command failed|Command .* failed" \
+              | sort -u | head -60
+            echo "##############################################################"
+            exit 1
+          fi
+      - name: Verify IPA packaging (plist keys, launch screen)
+        script: |
+          set -e
+          IPA=$(ls build/ios/ipa/*.ipa | head -1)
+          echo "Checking $IPA"
+          # The compiled launch storyboard MUST be in the bundle — without it
+          # iOS letterboxes the app into the tiny legacy canvas on iPad.
+          unzip -l "$IPA" | grep -q "LaunchScreen.storyboardc" \
+            || { echo "ERROR: LaunchScreen.storyboardc missing from the app bundle"; exit 1; }
+          # Ground truth: inspect the BUILT Info.plist. XcodeGen used to
+          # regenerate/clobber the source plist during `xcodegen generate`
+          # (see project.yml), which silently stripped these keys from every
+          # previous build. Fail loudly if that ever happens again.
+          TMP=$(mktemp -d)
+          unzip -q "$IPA" "Payload/*.app/Info.plist" -d "$TMP"
+          PLIST=$(ls "$TMP"/Payload/*.app/Info.plist)
+          for key in UILaunchStoryboardName NSCameraUsageDescription UIAppFonts; do
+            /usr/libexec/PlistBuddy -c "Print :$key" "$PLIST" > /dev/null 2>&1 \
+              || { echo "ERROR: $key missing from the BUILT Info.plist — plist was clobbered"; exit 1; }
+          done
+          BUILT_VERSION=$(/usr/libexec/PlistBuddy -c 'Print :CFBundleVersion' "$PLIST")
+          echo "Built plist: CFBundleVersion=$BUILT_VERSION, launch=$(/usr/libexec/PlistBuddy -c 'Print :UILaunchStoryboardName' "$PLIST")"
+          # Upload guard: App Store Connect rejects anything ≤ the highest
+          # already-uploaded build (1784225345). Fail HERE with a clear message
+          # instead of at publishing with a cryptic 409 — if this trips, the
+          # stamp step didn't run (e.g. a Rebuild of an old commit).
+          if [ "$BUILT_VERSION" -le 1784225345 ] 2>/dev/null || ! [ "$BUILT_VERSION" -gt 0 ] 2>/dev/null; then
+            echo "ERROR: CFBundleVersion ($BUILT_VERSION) is not above 1784225345 —"
+            echo "the IPA would be rejected by App Store Connect. The stamp step"
+            echo "did not take effect. Start a NEW build from the latest commit."
+            exit 1
+          fi
+          echo "Packaging OK: plist intact, launch storyboard present, version $BUILT_VERSION accepted-range"
     artifacts:
       - build/ios/ipa/*.ipa
       - /tmp/xcodebuild_logs/*.log

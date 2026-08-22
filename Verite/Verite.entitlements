@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<!-- App Group: shared container with the Home Screen widget extension.
+	     Must ALSO be enabled for BOTH App IDs (com.verite.com and
+	     com.verite.com.widget) in the Apple Developer portal, or the signed
+	     (release) build fails at the signing step. Same string on both sides. -->
+	<key>com.apple.security.application-groups</key>
+	<array>
+		<string>group.verite.com</string>
+	</array>
+
+	<!-- Sign in with Apple (onboarding sign-in screen). The capability must be
+	     enabled for App ID com.verite.com in the Apple Developer portal, or
+	     release archiving fails at the signing step. -->
+	<key>com.apple.developer.applesignin</key>
+	<array>
+		<string>Default</string>
+	</array>
+</dict>
+</plist>

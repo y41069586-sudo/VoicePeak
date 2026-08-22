@@ -44,7 +44,20 @@ final class SupabaseBackend: BackendService, @unchecked Sendable {
     // MARK: Auth (GoTrue)
 
     func signInWithApple(idToken: String, nonce: String) async throws -> BackendUser {
-        let body: [String: String] = ["provider": "apple", "id_token": idToken, "nonce": nonce]
+        try await idTokenGrant(provider: "apple", idToken: idToken, nonce: nonce)
+    }
+
+    func signInWithGoogle(idToken: String) async throws -> BackendUser {
+        // Google's native ID token needs no nonce (the GoogleSignIn SDK handles
+        // it). Supabase verifies the token's audience against the configured
+        // Google client IDs.
+        try await idTokenGrant(provider: "google", idToken: idToken, nonce: nil)
+    }
+
+    /// Shared GoTrue `grant_type=id_token` exchange for Apple/Google.
+    private func idTokenGrant(provider: String, idToken: String, nonce: String?) async throws -> BackendUser {
+        var body: [String: String] = ["provider": provider, "id_token": idToken]
+        if let nonce { body["nonce"] = nonce }
         let data = try await send("auth/v1/token", query: [URLQueryItem(name: "grant_type", value: "id_token")],
                                   method: "POST", authorized: false,
                                   body: try JSONSerialization.data(withJSONObject: body))
@@ -77,6 +90,18 @@ final class SupabaseBackend: BackendService, @unchecked Sendable {
         let body = try encoder.encode(["metrics": payload])
         _ = try await send("rest/v1/user_metrics", method: "POST", authorized: true, body: body,
                            extraHeaders: ["Prefer": "resolution=merge-duplicates"])
+    }
+
+    func fetchMetrics() async throws -> MetricsPayload? {
+        guard currentUser() != nil else { throw BackendError.notSignedIn }
+        let data = try await send("rest/v1/user_metrics",
+                                  query: [URLQueryItem(name: "select", value: "metrics")],
+                                  method: "GET", authorized: true, body: nil)
+        struct Row: Decodable { let metrics: MetricsPayload }
+        let decoder = JSONDecoder()
+        decoder.dateDecodingStrategy = .iso8601
+        let rows = (try? decoder.decode([Row].self, from: data)) ?? []
+        return rows.first?.metrics
     }
 
     func fetchCommunityEfficacy(skinType: String?) async throws -> [CommunityEfficacy] {
